@@ -2,15 +2,15 @@
 // Mwanga — Financial Calculation Utilities
 // ═══════════════════════════════════════
 
-export function fmt(n) {
-  return Number(n || 0).toLocaleString('pt-MZ', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' MT';
+export function fmt(n, currency = 'MT') {
+  return Number(n || 0).toLocaleString('pt-MZ', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' ' + currency;
 }
 
-export function fmtShort(n) {
+export function fmtShort(n, currency = 'MT') {
   const abs = Math.abs(n);
-  if (abs >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M MT';
-  if (abs >= 1_000) return (n / 1_000).toFixed(0) + 'k MT';
-  return fmt(n);
+  if (abs >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M ' + currency;
+  if (abs >= 1_000) return (n / 1_000).toFixed(0) + 'k ' + currency;
+  return fmt(n, currency);
 }
 
 export function fmtPercent(n) {
@@ -39,11 +39,18 @@ export function daysUntil(dateStr) {
 }
 
 // ═══ Monthly Totals ═══
-export function calcMonthlyTotals(transactions, monthKey = getMonthKey()) {
+export function calcMonthlyTotals(transactions, monthKey = getMonthKey(), rendas = []) {
   const monthTx = transactions.filter(t => t.data && t.data.startsWith(monthKey));
   const receitas = monthTx.filter(t => t.tipo === 'receita').reduce((s, t) => s + t.valor, 0);
   const despesas = monthTx.filter(t => t.tipo === 'despesa').reduce((s, t) => s + t.valor, 0);
-  const renda = monthTx.filter(t => t.tipo === 'renda').reduce((s, t) => s + t.valor, 0);
+  
+  // Combine transactions of type 'renda' with housing module 'pago' entries
+  const txRenda = monthTx.filter(t => t.tipo === 'renda').reduce((s, t) => s + t.valor, 0);
+  const housingRenda = rendas
+    .filter(r => r.mes === monthKey && r.estado === 'pago')
+    .reduce((s, r) => s + r.valor, 0);
+  
+  const renda = txRenda + housingRenda;
   const poupanca = monthTx.filter(t => t.tipo === 'poupanca').reduce((s, t) => s + t.valor, 0);
   const totalIncome = receitas;
   const totalExpenses = despesas + renda;
@@ -52,11 +59,22 @@ export function calcMonthlyTotals(transactions, monthKey = getMonthKey()) {
 }
 
 // ═══ Category Breakdown ═══
-export function calcCategoryBreakdown(transactions, tipo = 'despesa', monthKey = null) {
+export function calcCategoryBreakdown(transactions, tipo = 'despesa', monthKey = null, rendas = []) {
   let filtered = transactions.filter(t => t.tipo === tipo);
   if (monthKey) filtered = filtered.filter(t => t.data && t.data.startsWith(monthKey));
   const map = {};
   filtered.forEach(t => { map[t.cat] = (map[t.cat] || 0) + t.valor; });
+  
+  // Include housing expenses in 'Habitação' category if viewing despesas
+  if (tipo === 'despesa' || tipo === 'renda') {
+    const housingFiltered = rendas.filter(r => r.estado === 'pago');
+    const monthHousing = monthKey ? housingFiltered.filter(r => r.mes === monthKey) : housingFiltered;
+    const housingTotal = monthHousing.reduce((s, r) => s + r.valor, 0);
+    if (housingTotal > 0) {
+      map['Habitação'] = (map['Habitação'] || 0) + housingTotal;
+    }
+  }
+
   const total = Object.values(map).reduce((s, v) => s + v, 0) || 1;
   return Object.entries(map)
     .sort((a, b) => b[1] - a[1])
@@ -64,7 +82,7 @@ export function calcCategoryBreakdown(transactions, tipo = 'despesa', monthKey =
 }
 
 // ═══ Monthly History ═══
-export function calcMonthlyHistory(transactions) {
+export function calcMonthlyHistory(transactions, rendas = []) {
   const monthly = {};
   transactions.forEach(t => {
     const m = (t.data || '').slice(0, 7);
@@ -75,6 +93,14 @@ export function calcMonthlyHistory(transactions) {
     if (t.tipo === 'renda') monthly[m].renda += t.valor;
     if (t.tipo === 'poupanca') monthly[m].poupanca += t.valor;
   });
+
+  // Add housing module history
+  rendas.filter(r => r.estado === 'pago').forEach(r => {
+    const m = r.mes;
+    if (!monthly[m]) monthly[m] = { receitas: 0, despesas: 0, renda: 0, poupanca: 0 };
+    monthly[m].renda += r.valor;
+  });
+
   return Object.entries(monthly)
     .sort((a, b) => b[0].localeCompare(a[0]))
     .map(([month, d]) => ({
@@ -94,12 +120,12 @@ export function calcSavingsRate(totalIncome, despesas) {
 }
 
 // ═══ Financial Score (0-100) ═══
-export function calcFinancialScore(transactions, budgets = [], monthKey = getMonthKey()) {
-  const tot = calcMonthlyTotals(transactions, monthKey);
+export function calcFinancialScore(transactions, budgets = [], monthKey = getMonthKey(), rendas = []) {
+  const tot = calcMonthlyTotals(transactions, monthKey, rendas);
   let score = 50; // base
 
   // Savings rate component (up to +30)
-  const savingsRate = calcSavingsRate(tot.totalIncome, tot.despesas);
+  const savingsRate = calcSavingsRate(tot.totalIncome, tot.despesas + tot.renda);
   if (savingsRate >= 30) score += 30;
   else if (savingsRate >= 20) score += 25;
   else if (savingsRate >= 10) score += 15;
@@ -112,7 +138,7 @@ export function calcFinancialScore(transactions, budgets = [], monthKey = getMon
 
   // Budget adherence component (up to +10)
   if (budgets.length > 0) {
-    const cats = calcCategoryBreakdown(transactions, 'despesa', monthKey);
+    const cats = calcCategoryBreakdown(transactions, 'despesa', monthKey, rendas);
     let withinBudget = 0;
     budgets.forEach(b => {
       const cat = cats.find(c => c.category === b.category);

@@ -6,6 +6,7 @@ import { fmt } from '../utils/calculations';
 
 export default function Patrimony() {
   const { state, dispatch } = useFinance();
+  const currency = state.settings.currency || 'MT';
   const { showToast } = useOutletContext();
   const [showAssetModal, setShowAssetModal] = useState(false);
   const [showLiabilityModal, setShowLiabilityModal] = useState(false);
@@ -66,7 +67,7 @@ export default function Patrimony() {
             <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500"><TrendingUp size={20} /></div>
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Activos</span>
           </div>
-          <div className="text-2xl font-bold font-serif text-slate-800">{fmt(totalAssets)}</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{fmt(totalAssets, currency)}</div>
         </div>
         
         <div className="glass-card p-5" style={{ borderLeft: '4px solid var(--color-coral)' }}>
@@ -74,7 +75,7 @@ export default function Patrimony() {
             <div className="p-2 rounded-lg bg-rose-500/10 text-rose-500"><TrendingDown size={20} /></div>
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Passivos</span>
           </div>
-          <div className="text-2xl font-bold font-serif text-slate-800">{fmt(totalLiabilities)}</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{fmt(totalLiabilities, currency)}</div>
         </div>
 
         <div className="glass-card p-5" style={{ borderLeft: `4px solid ${netWorth >= 0 ? 'var(--color-ocean)' : 'var(--color-coral)'}` }}>
@@ -83,7 +84,7 @@ export default function Patrimony() {
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Líquido</span>
           </div>
           <div className={`text-2xl font-bold font-serif ${netWorth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-            {fmt(netWorth)}
+            {fmt(netWorth, currency)}
           </div>
         </div>
       </div>
@@ -115,7 +116,7 @@ export default function Patrimony() {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <div className="font-bold text-emerald-600">{fmt(asset.value)}</div>
+                        <div className="font-bold text-emerald-600">{fmt(asset.value, currency)}</div>
                         <button 
                           className="text-slate-300 hover:text-rose-500 transition-colors"
                           onClick={() => dispatch({ type: 'DELETE_ASSET', payload: asset.id })}

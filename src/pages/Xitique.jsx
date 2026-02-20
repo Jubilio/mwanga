@@ -5,6 +5,7 @@ import { Plus, Trash2, CheckCircle2, AlertCircle, RefreshCcw, Wallet } from 'luc
 
 export default function Xitique() {
   const { state, dispatch } = useFinance();
+  const currency = state.settings.currency || 'MT';
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -61,7 +62,7 @@ export default function Xitique() {
                 <input type="text" className="form-input" placeholder="Ex: Amigos de Pemba" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
               </div>
               <div>
-                <label className="form-label">Valor Mensal (MT)</label>
+                <label className="form-label">Valor Mensal ({currency})</label>
                 <input type="number" className="form-input" placeholder="Ex: 5000" value={form.monthly_amount} onChange={e => setForm({ ...form, monthly_amount: e.target.value })} />
               </div>
               <div>
@@ -96,7 +97,7 @@ export default function Xitique() {
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{x.name}</h3>
                   <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--color-muted)' }}>
-                    <span>Mensalidade: <strong>{fmt(x.monthly_amount)}</strong></span>
+                    <span>Mensalidade: <strong>{fmt(x.monthly_amount, currency)}</strong></span>
                     <span>Participantes: <strong>{x.total_participants}</strong></span>
                     <span>Sua Vez: <strong>Mês {x.your_position}</strong></span>
                   </div>
@@ -110,11 +111,11 @@ export default function Xitique() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>Total Contribuído</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>{fmt(x.contributions.filter(c => c.paid).reduce((s, c) => s + c.amount, 0))}</div>
+                   <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>{fmt(x.contributions.filter(c => c.paid).reduce((s, c) => s + c.amount, 0), currency)}</div>
                 </div>
                 <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>Total a Receber</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-leaf)' }}>{fmt(x.monthly_amount * x.total_participants)}</div>
+                   <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-leaf)' }}>{fmt(x.monthly_amount * x.total_participants, currency)}</div>
                 </div>
               </div>
 
@@ -167,7 +168,7 @@ export default function Xitique() {
                               )}
                               {isYourTurn && !receipt.received_date && (
                                 <button onClick={() => handleReceive(x.id, receipt.id)} className="btn btn-leaf" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
-                                  Receber {fmt(receipt.total_received)}
+                                   Receber {fmt(receipt.total_received, currency)}
                                 </button>
                               )}
                             </div>

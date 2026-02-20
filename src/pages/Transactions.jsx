@@ -19,6 +19,7 @@ const TYPES = [
 
 export default function Transactions() {
   const { state, dispatch } = useFinance();
+  const currency = state.settings.currency || 'MT';
   const { showToast } = useOutletContext();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -212,7 +213,7 @@ export default function Transactions() {
                       whiteSpace: 'nowrap',
                       color: t.tipo === 'despesa' ? 'var(--color-coral)' : 'var(--color-leaf)',
                     }}>
-                      {t.tipo === 'despesa' ? '−' : '+'}{fmt(t.valor)}
+                      {t.tipo === 'despesa' ? '−' : '+'}{fmt(t.valor, currency)}
                     </td>
                     <td>
                       <button

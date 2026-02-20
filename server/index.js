@@ -259,6 +259,20 @@ app.get('/api/auth/me', authenticate, (req, res) => {
   res.json(user);
 });
 
+app.put('/api/auth/profile', authenticate, (req, res) => {
+  const { name } = req.body;
+  db.prepare('UPDATE users SET name = ? WHERE id = ?').run(name, req.user.id);
+  logAction(req.user.id, 'UPDATE_PROFILE', 'USER', req.user.id);
+  res.json({ success: true, name });
+});
+
+app.put('/api/households', authenticate, (req, res) => {
+  const { name } = req.body;
+  db.prepare('UPDATE households SET name = ? WHERE id = ?').run(name, req.user.householdId);
+  logAction(req.user.id, 'UPDATE_HOUSEHOLD', 'HOUSEHOLD', req.user.householdId);
+  res.json({ success: true, name });
+});
+
 // --- TRANSACTIONS ---
 app.get('/api/transactions', authenticate, (req, res) => {
   const ts = db.prepare('SELECT * FROM transactions WHERE household_id = ? ORDER BY date DESC').all(req.user.householdId);
@@ -517,10 +531,23 @@ app.get('/api/settings', authenticate, (req, res) => {
 });
 
 app.post('/api/settings', authenticate, (req, res) => {
-  const { key, value } = req.body;
-  db.prepare('INSERT INTO settings (key, value, household_id) VALUES (?, ?, ?) ON CONFLICT(key, household_id) DO UPDATE SET value = ?')
-    .run(key, value.toString(), req.user.householdId, value.toString());
-  res.json({ success: true, key, value });
+  try {
+    const { key, value } = req.body;
+    if (!key) return res.status(400).json({ error: 'Key is required' });
+    
+    const safeValue = value === null || value === undefined ? '' : value.toString();
+    const householdId = req.user?.householdId;
+
+    if (!householdId) return res.status(401).json({ error: 'Household ID not found' });
+
+    db.prepare('INSERT INTO settings (key, value, household_id) VALUES (?, ?, ?) ON CONFLICT(key, household_id) DO UPDATE SET value = ?')
+      .run(key, safeValue, householdId, safeValue);
+    
+    res.json({ success: true, key, value: safeValue });
+  } catch (error) {
+    console.error('Settings Error:', error);
+    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+  }
 });
 
 // Error Handler

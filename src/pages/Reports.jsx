@@ -13,14 +13,15 @@ import {
 
 export default function Reports() {
   const { state } = useFinance();
+  const currency = state.settings.currency || 'MT';
   const { showToast } = useOutletContext();
   const monthKey = getMonthKey();
-  const tot = calcMonthlyTotals(state.transacoes, monthKey);
-  const score = calcFinancialScore(state.transacoes, state.budgets, monthKey);
+  const tot = calcMonthlyTotals(state.transacoes, monthKey, state.rendas);
+  const score = calcFinancialScore(state.transacoes, state.budgets, monthKey, state.rendas);
   const risk = calcRiskLevel(score);
-  const savingsRate = calcSavingsRate(tot.totalIncome, tot.despesas);
-  const categories = calcCategoryBreakdown(state.transacoes, 'despesa', monthKey);
-  const history = calcMonthlyHistory(state.transacoes).slice(0, 12).reverse();
+  const savingsRate = calcSavingsRate(tot.totalIncome, tot.despesas + tot.renda);
+  const categories = calcCategoryBreakdown(state.transacoes, 'despesa', monthKey, state.rendas);
+  const history = calcMonthlyHistory(state.transacoes, state.rendas).slice(0, 12).reverse();
 
   return (
     <div className="animate-fade-in" style={{ paddingBottom: '5rem' }}>
@@ -76,20 +77,20 @@ export default function Reports() {
               <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-muted)', marginBottom: '0.2rem' }}>
                 Receitas Totais
               </div>
-              <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--color-leaf)' }}>{fmt(tot.totalIncome)}</div>
+              <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--color-leaf)' }}>{fmt(tot.totalIncome, currency)}</div>
             </div>
             <div>
               <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-muted)', marginBottom: '0.2rem' }}>
                 Despesas Totais
               </div>
-              <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--color-coral)' }}>{fmt(tot.despesas)}</div>
+              <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--color-coral)' }}>{fmt(tot.despesas, currency)}</div>
             </div>
             <div>
               <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-muted)', marginBottom: '0.2rem' }}>
                 Saldo do Mês
               </div>
               <div style={{ fontWeight: 700, fontSize: '1.1rem', color: tot.saldo >= 0 ? 'var(--color-leaf)' : 'var(--color-coral)' }}>
-                {fmt(tot.saldo)}
+                {fmt(tot.saldo, currency)}
               </div>
             </div>
             <div>
@@ -124,7 +125,7 @@ export default function Reports() {
               <div key={c.category}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.3rem' }}>
                   <span style={{ fontWeight: 500 }}>{c.category}</span>
-                  <span style={{ color: 'var(--color-muted)' }}>{fmt(c.amount)} ({c.percent}%)</span>
+                   <span style={{ color: 'var(--color-muted)' }}>{fmt(c.amount, currency)} ({c.percent}%)</span>
                 </div>
                 <div className="progress-bar-track" style={{ height: '8px' }}>
                   <div className="progress-bar-fill" style={{ width: `${c.percent}%`, background: 'var(--color-coral)', height: '8px' }} />
@@ -145,7 +146,7 @@ export default function Reports() {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                 <XAxis dataKey="label" tick={{ fontSize: 10 }} tickFormatter={v => v.split(' ')[0].slice(0, 3)} />
                 <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                <RTooltip formatter={v => fmt(v)} />
+                 <RTooltip formatter={v => fmt(v, currency)} />
                 <Legend iconSize={10} wrapperStyle={{ fontSize: '0.75rem' }} />
                 <Bar dataKey="totalIncome" name="Receitas" fill="#3d6b45" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="despesas" name="Despesas" fill="#e07a5f" radius={[4, 4, 0, 0]} />
@@ -170,11 +171,11 @@ export default function Reports() {
                 [...history].reverse().map(m => (
                   <tr key={m.month}>
                     <td style={{ fontWeight: 500 }}>{m.label}</td>
-                    <td style={{ color: 'var(--color-leaf)' }}>{fmt(m.receitas)}</td>
-                    <td style={{ color: 'var(--color-coral)' }}>{fmt(m.despesas)}</td>
-                    <td style={{ color: 'var(--color-gold)' }}>{fmt(m.renda)}</td>
+                     <td style={{ color: 'var(--color-leaf)' }}>{fmt(m.receitas, currency)}</td>
+                     <td style={{ color: 'var(--color-coral)' }}>{fmt(m.despesas, currency)}</td>
+                     <td style={{ color: 'var(--color-gold)' }}>{fmt(m.renda, currency)}</td>
                     <td style={{ fontWeight: 600, color: m.saldo >= 0 ? 'var(--color-leaf)' : 'var(--color-coral)' }}>
-                      {fmt(m.saldo)}
+                       {fmt(m.saldo, currency)}
                     </td>
                   </tr>
                 ))

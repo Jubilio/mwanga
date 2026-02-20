@@ -11,6 +11,7 @@ import Reports from './pages/Reports';
 import Patrimony from './pages/Patrimony';
 import Xitique from './pages/Xitique';
 import NexoVibe from './pages/NexoVibe';
+import Settings from './pages/Settings';
 import Login from './pages/Login';
 import { useFinance } from './hooks/useFinanceStore';
 import { Navigate } from 'react-router-dom';
@@ -41,6 +42,7 @@ export default function App() {
             <Route path="relatorio" element={<Reports />} />
             <Route path="patrimonio" element={<Patrimony />} />
             <Route path="nexovibe" element={<NexoVibe />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
           <Route path="login" element={<Login />} />
         </Routes>

@@ -12,6 +12,7 @@ const EXPENSE_CATEGORIES = [
 
 export default function Budget() {
   const { state, dispatch } = useFinance();
+  const currency = state.settings.currency || 'MT';
   const { showToast } = useOutletContext();
   const monthKey = getMonthKey();
 
@@ -103,8 +104,8 @@ export default function Budget() {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--color-muted)', marginBottom: '0.4rem' }}>
-                  <span>{fmt(spent)} gasto</span>
-                  <span>Limite: {fmt(budget.limit)}</span>
+                  <span>{fmt(spent, currency)} gasto</span>
+                  <span>Meta: {fmt(budget.limit, currency)}</span>
                 </div>
 
                 <div className="progress-bar-track">

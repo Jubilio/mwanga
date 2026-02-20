@@ -17,13 +17,14 @@ const COLORS = ['#e07a5f', '#0a4d68', '#c9963a', '#3d6b45', '#1a8fa8', '#9b59b6'
 
 export default function Dashboard() {
   const { state } = useFinance();
+  const currency = state.settings.currency || 'MT';
   const monthKey = getMonthKey();
-  const tot = calcMonthlyTotals(state.transacoes, monthKey);
-  const categories = calcCategoryBreakdown(state.transacoes, 'despesa', monthKey);
-  const history = calcMonthlyHistory(state.transacoes).slice(0, 6).reverse();
-  const score = calcFinancialScore(state.transacoes, state.budgets, monthKey);
+  const tot = calcMonthlyTotals(state.transacoes, monthKey, state.rendas);
+  const categories = calcCategoryBreakdown(state.transacoes, 'despesa', monthKey, state.rendas);
+  const history = calcMonthlyHistory(state.transacoes, state.rendas).slice(0, 6).reverse();
+  const score = calcFinancialScore(state.transacoes, state.budgets, monthKey, state.rendas);
   const risk = calcRiskLevel(score);
-  const savingsRate = calcSavingsRate(tot.totalIncome, tot.despesas);
+  const savingsRate = calcSavingsRate(tot.totalIncome, tot.despesas + tot.renda);
 
   const summaryCards = [
     { label: 'Receitas', value: tot.receitas, icon: TrendingUp, color: 'var(--color-leaf)', accent: '#e8f5e9', sub: 'Salários + extras' },
@@ -36,6 +37,17 @@ export default function Dashboard() {
 
   return (
     <div className="animate-fade-in" style={{ paddingBottom: '5rem' }}>
+      
+      {/* Welcome Message */}
+      <div style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', fontWeight: 900, color: 'var(--color-ocean)' }}>
+          Olá, {state.user?.name?.split(' ')[0] || 'Explorador'} <span style={{ color: 'var(--color-gold)' }}>✦</span>
+        </h2>
+        <p style={{ fontSize: '0.85rem', color: 'var(--color-muted)', marginTop: '0.2rem' }}>
+          Aqui está o resumo financeiro da <strong style={{ color: 'var(--color-ocean)' }}>{state.settings.household_name || 'sua família'}</strong> para este mês.
+        </p>
+      </div>
+
       {/* Summary Cards */}
       <div style={{
         display: 'grid',
@@ -64,7 +76,7 @@ export default function Dashboard() {
                   fontWeight: 700,
                   color: card.color,
                 }}>
-                  {fmt(card.value)}
+                  {fmt(card.value, currency)}
                 </div>
                 <div style={{ fontSize: '0.73rem', color: 'var(--color-muted)', marginTop: '0.15rem' }}>
                   {card.sub}
@@ -180,7 +192,7 @@ export default function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                 <XAxis dataKey="label" tick={{ fontSize: 11 }} tickFormatter={v => v.split(' ')[0].slice(0, 3)} />
                 <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                <RTooltip formatter={(v) => fmt(v)} labelStyle={{ fontWeight: 600 }} />
+                <RTooltip formatter={(v) => fmt(v, currency)} labelStyle={{ fontWeight: 600 }} />
                 <Area type="monotone" dataKey="totalIncome" name="Receitas" stroke="#3d6b45" fill="url(#colorIncome)" strokeWidth={2} />
                 <Area type="monotone" dataKey="despesas" name="Despesas" stroke="#e07a5f" fill="url(#colorExpense)" strokeWidth={2} />
               </AreaChart>
@@ -201,7 +213,7 @@ export default function Dashboard() {
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
-                <RTooltip formatter={v => fmt(v)} />
+                <RTooltip formatter={v => fmt(v, currency)} />
                 <Legend iconSize={10} wrapperStyle={{ fontSize: '0.72rem' }} />
               </PieChart>
             </ResponsiveContainer>
@@ -229,7 +241,7 @@ export default function Dashboard() {
                     fontWeight: 600,
                     color: t.tipo === 'despesa' ? 'var(--color-coral)' : 'var(--color-leaf)',
                   }}>
-                    {t.tipo === 'despesa' ? '−' : '+'}{fmt(t.valor)}
+                    {t.tipo === 'despesa' ? '−' : '+'}{fmt(t.valor, currency)}
                   </td>
                 </tr>
               ))

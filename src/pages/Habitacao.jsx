@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useFinance } from '../hooks/useFinanceStore';
 import { Plus, Trash2, Home, Key, Settings } from 'lucide-react';
@@ -6,25 +6,19 @@ import { fmt, getMonthKey } from '../utils/calculations';
 
 export default function Habitacao() {
   const { state, dispatch } = useFinance();
+  const currency = state.settings.currency || 'MT';
   const { showToast } = useOutletContext();
   const monthKey = getMonthKey();
 
   const type = state.settings.housing_type || 'renda';
 
   const [form, setForm] = useState({
-    mes: monthKey, proprietario: '', valor: '', estado: 'pago', obs: '',
+    mes: monthKey, 
+    proprietario: state.settings.landlord_name || '', 
+    valor: state.settings.default_rent || '', 
+    estado: 'pago', 
+    obs: '',
   });
-
-  // Load defaults from global settings
-  useEffect(() => {
-    if (state.settings.default_rent || state.settings.landlord_name) {
-      setForm(prev => ({
-        ...prev,
-        proprietario: prev.proprietario || state.settings.landlord_name || '',
-        valor: prev.valor || state.settings.default_rent || '',
-      }));
-    }
-  }, [state.settings.default_rent, state.settings.landlord_name]);
 
   function saveDefaults() {
     if (!form.proprietario || !form.valor) {
@@ -55,6 +49,21 @@ export default function Habitacao() {
         valor: parseFloat(form.valor) 
       } 
     });
+
+    if (form.estado === 'pago') {
+      dispatch({
+        type: 'ADD_TRANSACTION',
+        payload: {
+          data: form.mes + '-01',
+          tipo: 'renda',
+          desc: `${type === 'renda' ? 'Aluguer' : 'Prestação'}: ${type === 'propria' ? 'Casa Própria' : form.proprietario}`,
+          valor: parseFloat(form.valor),
+          cat: 'Habitação',
+          nota: form.obs
+        }
+      });
+    }
+
     setForm({ ...form, proprietario: '', valor: '', obs: '' });
     showToast(type === 'renda' ? '🏠 Aluguer registado!' : '🏠 Manutenção registada!');
   }
@@ -118,13 +127,13 @@ export default function Habitacao() {
           fontWeight: 700,
           marginBottom: '0.5rem',
         }}>
-          {fmt(totalPago)}
+          {fmt(totalPago, currency)}
         </div>
         <div style={{ opacity: 0.75, fontSize: '0.8rem' }}>Total investido este ano</div>
         <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem', fontSize: '0.82rem' }}>
           <div>
             <span style={{ opacity: 0.7 }}>A pagar: </span>
-            <strong>{fmt(pendente)}</strong>
+            <strong>{fmt(pendente, currency)}</strong>
           </div>
         </div>
       </div>
@@ -151,7 +160,7 @@ export default function Habitacao() {
               </div>
             )}
             <div>
-              <label className="form-label">Valor (MT)</label>
+              <label className="form-label">Valor ({currency})</label>
               <input type="number" className="form-input" placeholder="Valor mensal" min="0" value={form.valor} onChange={e => setForm({ ...form, valor: e.target.value })} />
             </div>
             <div>
@@ -197,7 +206,7 @@ export default function Habitacao() {
                 <tr key={r.id || `rent-${idx}`}>
                   <td>{r.mes}</td>
                   <td style={{ fontWeight: 500 }}>{r.proprietario}</td>
-                  <td style={{ fontWeight: 600 }}>{fmt(r.valor)}</td>
+                  <td style={{ fontWeight: 600 }}>{fmt(r.valor, currency)}</td>
                   <td>
                     <span className={`badge badge-${r.estado}`}>
                       {statusIcon[r.estado]} {r.estado}

@@ -6,6 +6,7 @@ import { fmt, daysUntil, calcMonthlySavingsNeeded } from '../utils/calculations'
 
 export default function Goals() {
   const { state, dispatch } = useFinance();
+  const currency = state.settings.currency || 'MT';
   const { showToast } = useOutletContext();
 
   const [form, setForm] = useState({ nome: '', alvo: '', poupado: '', prazo: '' });
@@ -95,8 +96,9 @@ export default function Goals() {
                     <div style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.2rem' }}>
                       {isComplete ? '🎉 ' : ''}{m.nome}
                     </div>
+                    <p style={{ fontSize: '1.2rem', fontWeight: 800 }}>{fmt(m.poupado, currency)} / {fmt(m.alvo, currency)}</p>
                     <div style={{ fontSize: '0.78rem', color: 'var(--color-muted)', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                      <span>Meta: {fmt(m.alvo)}</span>
+                      <span>Mensal: <strong>{fmt(m.mensal, currency)}</strong></span>
                       {days !== null && (
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <Clock size={12} />

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { 
   LayoutDashboard, ArrowRightLeft, Home, Target, 
-  PieChart, Calculator, Moon, Sun, Menu, X, Wallet, Globe
+  PieChart, Calculator, Moon, Sun, Menu, X, Wallet, Globe, Settings as SettingsIcon
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinanceStore';
 import { getCurrentMonthLabel } from '../utils/calculations';
@@ -21,6 +21,7 @@ const navItems = [
   { to: '/simuladores', icon: Calculator, label: 'Simuladores' },
   { to: '/nexovibe', icon: Globe, label: 'NEXO VIBE' },
   { to: '/relatorio', icon: PieChart, label: 'Relatório' },
+  { to: '/settings', icon: SettingsIcon, label: 'Definições' },
 ];
 
 export default function Layout() {
@@ -154,22 +155,38 @@ export default function Layout() {
 
           <div style={{ marginTop: 'auto', padding: '1rem', borderTop: '1px solid var(--color-border)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--color-gold)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.8rem' }}>
-                {state.user?.name?.charAt(0) || 'U'}
+              <div style={{ 
+                width: '42px', 
+                height: '42px', 
+                borderRadius: '12px', 
+                background: 'var(--color-surface-variant)', 
+                overflow: 'hidden',
+                border: '2px solid rgba(10, 77, 104, 0.1)',
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}>
+                {state.settings.profile_pic ? (
+                  <img src={state.settings.profile_pic} alt="Profile" style={{ width: '100%', height: '100%', objectCover: 'cover' }} />
+                ) : (
+                  <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-ocean)' }}>
+                    {state.user?.name?.charAt(0) || 'U'}
+                  </span>
+                )}
               </div>
-              <div style={{ overflow: 'hidden' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+              <div style={{ overflow: 'hidden', flex: 1 }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-text)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
                   {state.user?.name || 'Utilizador'}
                 </div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--color-muted)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                  {state.user?.email}
+                <div style={{ fontSize: '0.65rem', color: 'var(--color-ocean)', fontWeight: 600, opacity: 0.8, whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                  {state.settings.household_name || 'Família Mwanga'}
                 </div>
               </div>
             </div>
             <button 
               onClick={() => { localStorage.removeItem('mwanga-token'); window.location.reload(); }}
               className="btn btn-ghost" 
-              style={{ width: '100%', fontSize: '0.8rem', color: '#ff5252', justifyContent: 'flex-start', padding: '0.5rem' }}
+              style={{ width: '100%', fontSize: '0.75rem', color: '#ff5252', justifyContent: 'flex-start', padding: '0.4rem', marginTop: '0.5rem' }}
             >
               Terminar Sessão
             </button>

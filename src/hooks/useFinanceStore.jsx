@@ -63,6 +63,11 @@ function reducer(state, action) {
         ...state, 
         settings: { ...state.settings, [action.payload.key]: action.payload.value } 
       };
+    case 'UPDATE_USER':
+      return {
+        ...state,
+        user: { ...state.user, ...action.payload }
+      };
 
     case 'ADD_ASSET':
       return { ...state, activos: [...state.activos, action.payload] };
@@ -393,6 +398,22 @@ export function FinanceProvider({ children }) {
         case 'UPDATE_SETTING': {
           await fetch(`${FINANCE_API_URL}/settings`, {
             method: 'POST',
+            headers,
+            body: JSON.stringify(action.payload)
+          });
+          break;
+        }
+        case 'UPDATE_USER': {
+          await fetch(`${FINANCE_API_URL}/auth/profile`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify(action.payload)
+          });
+          break;
+        }
+        case 'UPDATE_HOUSEHOLD': {
+          await fetch(`${FINANCE_API_URL}/households`, {
+            method: 'PUT',
             headers,
             body: JSON.stringify(action.payload)
           });
