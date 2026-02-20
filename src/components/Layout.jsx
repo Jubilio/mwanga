@@ -167,7 +167,7 @@ export default function Layout() {
                 justifyContent: 'center' 
               }}>
                 {state.settings.profile_pic ? (
-                  <img src={state.settings.profile_pic} alt="Profile" style={{ width: '100%', height: '100%', objectCover: 'cover' }} />
+                  <img src={state.settings.profile_pic} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-ocean)' }}>
                     {state.user?.name?.charAt(0) || 'U'}
@@ -175,8 +175,11 @@ export default function Layout() {
                 )}
               </div>
               <div style={{ overflow: 'hidden', flex: 1 }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-text)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                  {state.user?.name || 'Utilizador'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.1rem' }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-dark)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                    {state.user?.name || 'Utilizador'}
+                  </div>
+                  <span className="premium-badge">Premium</span>
                 </div>
                 <div style={{ fontSize: '0.65rem', color: 'var(--color-ocean)', fontWeight: 600, opacity: 0.8, whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
                   {state.settings.household_name || 'Família Mwanga'}

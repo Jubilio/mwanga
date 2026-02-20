@@ -166,8 +166,48 @@ db.exec(`
   );
 `);
 
+// --- DATABASE MIGRATIONS ---
+try {
+  const settingsColumns = db.prepare("PRAGMA table_info(settings)").all();
+  const hasHouseholdId = settingsColumns.some(col => col.name === 'household_id');
+
+  if (!hasHouseholdId && settingsColumns.length > 0) {
+    console.log('Migrating settings table to include household_id...');
+    // Ensure we have at least one household to link to
+    let firstHousehold = db.prepare('SELECT id FROM households LIMIT 1').get();
+    if (!firstHousehold) {
+      const hInfo = db.prepare("INSERT INTO households (name) VALUES (?)").run('Default Household');
+      firstHousehold = { id: hInfo.lastInsertRowid };
+    }
+    const householdId = firstHousehold.id;
+
+    db.transaction(() => {
+      const oldData = db.prepare('SELECT * FROM settings').all();
+      db.prepare('DROP TABLE settings').run();
+      db.prepare(`
+        CREATE TABLE settings (
+          key TEXT NOT NULL,
+          value TEXT,
+          household_id INTEGER,
+          PRIMARY KEY(key, household_id),
+          FOREIGN KEY(household_id) REFERENCES households(id)
+        )
+      `).run();
+
+      const insert = db.prepare('INSERT INTO settings (key, value, household_id) VALUES (?, ?, ?)');
+      for (const row of oldData) {
+        insert.run(row.key, row.value, householdId);
+      }
+    })();
+    console.log('Settings migration successfully completed.');
+  }
+} catch (migError) {
+  console.error('Migration error:', migError);
+}
+
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Logger
 app.use((req, res, next) => {

@@ -1,7 +1,7 @@
 import { useFinance } from '../hooks/useFinanceStore';
 import {
   TrendingUp, TrendingDown, Home as HomeIcon, Wallet,
-  AlertTriangle, CheckCircle, Bell,
+  AlertTriangle, CheckCircle, Bell, Globe,
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
@@ -26,6 +26,44 @@ export default function Dashboard() {
   const risk = calcRiskLevel(score);
   const savingsRate = calcSavingsRate(tot.totalIncome, tot.despesas + tot.renda);
 
+  // --- OLIVIA'S AI BRAIN (Proactive Insights) ---
+  const getOliviaAdvice = () => {
+    const advice = [];
+    
+    // Savings Rate Logic
+    if (savingsRate < 20) {
+      advice.push({
+        text: `Olá ${state.user?.name?.split(' ')[0]}! Notei que sua taxa de poupança está em ${savingsRate}%. Para uma vida financeira premium, tente atingir os 20%. Que tal rever a categoria "${categories[0]?.category || 'Geral'}"?`,
+        type: 'warn'
+      });
+    } else if (savingsRate >= 30) {
+      advice.push({
+        text: `Incrível! Sua taxa de poupança está em ${savingsRate}%. Você está no topo dos 5% da NEXO VIBE. Já pensou em diversificar seus investimentos?`,
+        type: 'success'
+      });
+    }
+
+    // Rent Logic
+    if (tot.renda === 0) {
+      advice.push({
+        text: "Ainda não registou a renda da casa este mês. Manter os pagamentos em dia é o segredo do investidor de elite.",
+        type: 'info'
+      });
+    }
+
+    // Surplus logic
+    if (tot.saldo > 10000) {
+      advice.push({
+        text: `Tens um excedente de ${fmt(tot.saldo, currency)}. Que tal colocar uma parte disto na tua meta de poupança?`,
+        type: 'action'
+      });
+    }
+
+    return advice;
+  };
+
+  const oliviaTips = getOliviaAdvice();
+
   const summaryCards = [
     { label: 'Receitas', value: tot.receitas, icon: TrendingUp, color: 'var(--color-leaf)', accent: '#e8f5e9', sub: 'Salários + extras' },
     { label: 'Despesas', value: tot.despesas, icon: TrendingDown, color: 'var(--color-coral)', accent: '#fde8e4', sub: 'Gastos do mês' },
@@ -38,15 +76,110 @@ export default function Dashboard() {
   return (
     <div className="animate-fade-in" style={{ paddingBottom: '5rem' }}>
       
-      {/* Welcome Message */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', fontWeight: 900, color: 'var(--color-ocean)' }}>
-          Olá, {state.user?.name?.split(' ')[0] || 'Explorador'} <span style={{ color: 'var(--color-gold)' }}>✦</span>
-        </h2>
-        <p style={{ fontSize: '0.85rem', color: 'var(--color-muted)', marginTop: '0.2rem' }}>
-          Aqui está o resumo financeiro da <strong style={{ color: 'var(--color-ocean)' }}>{state.settings.household_name || 'sua família'}</strong> para este mês.
-        </p>
+      {/* ─── PREMIUM HEADER ─── */}
+      <div style={{ 
+        marginBottom: '2.5rem', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'flex-end',
+        flexWrap: 'wrap',
+        gap: '1rem'
+      }}>
+        <div>
+          <div style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '0.5rem', 
+            padding: '0.3rem 0.6rem', 
+            background: 'var(--color-gold)20', 
+            borderRadius: '8px',
+            color: 'var(--color-gold)',
+            fontSize: '0.65rem',
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+            marginBottom: '0.5rem'
+          }}>
+            <Globe size={12} /> Experiência Premium NEXO
+          </div>
+          <h1 style={{ 
+            fontFamily: 'var(--font-display)', 
+            fontSize: '2.4rem', 
+            fontWeight: 900, 
+            color: 'var(--color-dark)',
+            lineHeight: 1
+          }}>
+            Olá, {state.user?.name?.split(' ')[0] || 'Explorador'} <span style={{ color: 'var(--color-gold)' }}>✦</span>
+          </h1>
+          <p style={{ fontSize: '0.9rem', color: 'var(--color-muted)', marginTop: '0.4rem' }}>
+            A sua saúde financeira está <strong style={{ color: score > 70 ? 'var(--color-leaf)' : 'var(--color-gold)' }}>{score > 70 ? 'Excelente' : 'Estável'}</strong>. Aqui está a visão actual.
+          </p>
+        </div>
+        
+        {/* Olivia Mini Badge */}
+        <div className="glass-card animate-float" style={{ 
+          padding: '0.5rem 1rem', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.75rem',
+          border: '1px solid var(--color-gold)30'
+        }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--color-ocean), var(--color-gold))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '0.8rem' }}>O</div>
+          <div>
+            <div style={{ fontSize: '0.6rem', color: 'var(--color-muted)', fontWeight: 600 }}>ASSISTENTE VIRTUAL</div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-dark)' }}>Olivia ✨</div>
+          </div>
+        </div>
       </div>
+
+      {/* ─── OLIVIA'S INSIGHTS (NEW) ─── */}
+      {oliviaTips.length > 0 && (
+        <div className="glass-card animate-fade-in-up stagger-1" style={{ 
+          padding: '1.5rem', 
+          marginBottom: '2rem', 
+          background: 'linear-gradient(135deg, var(--color-midnight), #1c3545)',
+          color: 'white',
+          border: 'none',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{ 
+              width: '40px', 
+              height: '40px', 
+              borderRadius: '12px', 
+              background: 'rgba(255,255,255,0.1)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              color: 'var(--color-gold)' 
+            }}>
+              <Bell size={20} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Conselhos da Olivia</h3>
+              <p style={{ fontSize: '0.7rem', opacity: 0.6 }}>BASEADO NO TEU COMPORTAMENTO ACTUAL</p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {oliviaTips.map((tip, idx) => (
+              <div key={idx} style={{ 
+                display: 'flex', 
+                alignItems: 'flex-start', 
+                gap: '0.75rem', 
+                padding: '0.75rem', 
+                background: 'rgba(255,255,255,0.05)', 
+                borderRadius: '12px',
+                fontSize: '0.88rem'
+              }}>
+                <div style={{ marginTop: '0.2rem' }}>
+                  {tip.type === 'warn' ? <AlertTriangle size={16} color="var(--color-gold)" /> : <CheckCircle size={16} color="var(--color-leaf-light)" />}
+                </div>
+                {tip.text}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Summary Cards */}
       <div style={{
