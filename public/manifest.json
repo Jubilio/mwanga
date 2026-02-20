@@ -1,0 +1,17 @@
+{
+  "name": "Mwanga — Gestão Financeira",
+  "short_name": "Mwanga",
+  "description": "Gestão financeira inteligente para a sua família",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0a4d68",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
