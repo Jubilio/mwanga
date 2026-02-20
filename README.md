@@ -1,36 +1,37 @@
-# 🌊 Mwanga — Gestão Financeira Inteligente
+# 🌊 Mwanga ✦ — Gestão Familiar & Crescimento Patrimonial
 
 ![Mwanga Banner](public/favicon.svg)
 
-O **Mwanga** é uma plataforma SaaS premium de gestão financeira familiar, desenhada para trazer clareza, controlo e crescimento ao seu património. Com uma estética moderna e futurista sob a marca **NEXO VIBE**, o Mwanga combina ferramentas financeiras tradicionais com inovações locais como o **Xitique**.
+O **Mwanga** é uma plataforma SaaS de elite para gestão financeira familiar, desenhada para transformar o controle de gastos em **Crescimento Patrimonial**. Sob o selo de qualidade **NEXO VIBE**, o Mwanga alia a sofisticação do design **Glassmorphism 2.0** à inteligência proactiva da assistente virtual **Olivia**.
 
 ---
 
-## ✨ Funcionalidades Principais
+## ✨ Funcionalidades Premium
 
-### 🏢 SaaS & Multi-Tenant
+### 🤖 Olivia AI (Assistente Proactiva)
 
-- **Isolamento de Dados**: Sistema multi-agregado familiar onde cada família gere os seus próprios dados com total privacidade.
-- **Autenticação Segura**: Gestão de acessos via JWT (JSON Web Tokens).
-- **Audit Log**: Todas as operações críticas são registadas para garantir transparência e segurança.
+- **Conselhos em Tempo Real**: A Olivia analisa os seus dados reais (salário, poupança, excedentes) e sugere acções imediatas para optimizar o seu capital.
+- **Score Financeiro Dinâmico**: Avaliação constante da sua saúde financeira com base no seu comportamento.
+
+### 💳 Modelo de Monetização SaaS
+
+- **Três Níveis de Prosperidade**:
+  - **Starter (Free)**: Para quem está a começar a organizar a casa.
+  - **Crescimento (Plus)**: Simuladores inteligentes e score avançado para profissionais urbanos.
+  - **Património (Premium)**: Planeamento de reforma, BI avançado e suporte prioritário.
+
+- **Toggle de Facturação**: Suporte para pagamentos mensais e anuais (com desconto).
 
 ### 💰 Gestão Financeira 360º
 
-- **Dashboard Dinâmico**: Visualização em tempo real de receitas, despesas e saldo líquido.
-- **Xitique (Fintech Social)**: Módulo exclusivo para gestão de poupança rotativa comunitária, com automação de ciclos e pagamentos.
-- **Gestão de Património**: Monitorização detalhada de Activos (bens) e Passivos (dívidas) com cálculo automático de Património Líquido.
-- **Simuladores Inteligentes**: Planeamento de reformas, compra de casa própria e estratégias de investimento.
+- **Xitique (Fintech Social)**: Módulo exclusivo para gestão de poupança rotativa comunitária, formalizando uma tradição local com tecnologia moderna.
+- **Património Líquido**: Monitorização detalhada de Activos e Passivos com visualização Glassmorphism.
+- **Simuladores Inteligentes**: Planeamento de reformas, compra de casa própria e juros compostos.
 
-### 🏠 Habitação & Salários
+### 🎨 Design Glassmorphism 2.0
 
-- **Controlo de Habitação**: Gestão de rendas ou manutenção de casa própria.
-- **Gestão Salarial**: Planeamento baseado no rendimento mensal com sugestões automáticas de orçamentação (50/30/20).
-
-### 📱 Experiência Premium (PWA)
-
-- **Instalável**: Funciona como uma aplicação nativa no seu telemóvel ou desktop (Progressive Web App).
-- **Offline Ready**: Acesso rápido e interface fluida mesmo em ligações lentas.
-- **Branding NEXO VIBE**: Interface futurista ("Ocean & Gold") que alia estética e usabilidade.
+- **Estética "Midnight Gold"**: Um sistema visual luxuoso com transparências ultra-suaves, desfoques de fundo e micro-animações fluidas.
+- **Interface NEXO VIBE**: Totalmente responsiva e optimizada para uma experiência de utilizador superior.
 
 ---
 
@@ -38,16 +39,16 @@ O **Mwanga** é uma plataforma SaaS premium de gestão financeira familiar, dese
 
 ### **Frontend**
 
-- **React + Vite**: Performance ultra-rápida.
-- **Lucide React**: Ícones modernos e consistentes.
-- **Recharts**: Gráficos interactivos e elegantes.
-- **Vanilla CSS**: Design customizado e responsivo ("Mobile First").
+- **React + Vite**: Performance e rapidez de carregamento.
+- **Lucide React**: Ícones premium e consistentes.
+- **Recharts**: Gráficos de fluxo de caixa e BI.
+- **Vanilla CSS (Glassmorphism 2.0)**: Sistema de design proprietário com mesh gradients e filtros de fundo.
 
 ### **Backend**
 
-- **Node.js + Express**: API robusta e escalável.
-- **SQLite (better-sqlite3)**: Base de dados relacional eficiente com suporte para multi-tenancy.
-- **JSON Web Tokens (JWT)**: Segurança e persistência de sessão.
+- **Node.js + Express**: API de alta performance (limites de payload optimizados para 10MB).
+- **SQLite (better-sqlite3)**: Base de dados relacional com isolamento total por Agregado Familiar (Multi-tenancy).
+- **JWT (JSON Web Tokens)**: Segurança bancária e gestão de sessões.
 
 ---
 
@@ -66,6 +67,7 @@ O **Mwanga** é uma plataforma SaaS premium de gestão financeira familiar, dese
    git clone https://github.com/Jubilio/mwanga.git
    cd mwanga
    ```
+
 2. **Instale as dependências**
 
    ```bash
@@ -73,44 +75,37 @@ O **Mwanga** é uma plataforma SaaS premium de gestão financeira familiar, dese
    npm install
 
    # Backend
-   cd server
-   npm install
+   cd server && npm install
    ```
+
 3. **Configuração**
+
    Crie um ficheiro `.env` na pasta `server/` com:
 
    ```env
    JWT_SECRET=sua_chave_secreta_aqui
    PORT=3001
    ```
+
 4. **Execução**
 
    ```bash
-   # Numa consola (server)
-   npm start
+   # Terminal 1 (server)
+   cd server && npm start
 
-   # Noutra consola (root)
+   # Terminal 2 (root)
    npm run dev
    ```
 
 ---
 
 ## 🎨 Branding: NEXO VIBE
-
-O Mwanga faz parte do ecossistema **NEXO VIBE**, uma marca dedicada à excelência em:
-
-- **Software Development**
-- **AI & Prompt Engineering**
-- **Data Analysis**
-
-Visite a nossa página oficial dentro da app em `/nexovibe`.
+O Mwanga faz parte do ecossistema **NEXO VIBE**, uma marca dedicada à excelência tecnológica e inovação digital liderada por Jubílio Maússe.
 
 ---
 
-## 👨‍💻 Autor
-
-Desenvolvido com ❤️ por **Jubílio Maússe** — *Fullstack Developer & Financial Strategist*.
+## 👨‍💻 Autor e Estrategista
+Desenvolvido por **Jubílio Maússe** — *Fullstack Developer & Financial Strategist*.
 
 ---
-
-*Mwanga 2026 — Ilumine as suas finanças.*
+*Mwanga ✦ 2026 — O seu legado começa aqui.*

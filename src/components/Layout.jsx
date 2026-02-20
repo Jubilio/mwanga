@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { 
   LayoutDashboard, ArrowRightLeft, Home, Target, 
-  PieChart, Calculator, Moon, Sun, Menu, X, Wallet, Globe, Settings as SettingsIcon
+  PieChart, Calculator, Moon, Sun, Menu, X, Wallet, Globe, Settings as SettingsIcon,
+  Landmark, BarChart3, Crown
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinanceStore';
 import { getCurrentMonthLabel } from '../utils/calculations';
@@ -17,10 +18,11 @@ const navItems = [
   { to: '/habitacao', icon: Home, label: 'Habitação' },
   { to: '/xitique', icon: Wallet, label: 'Xitique' },
   { to: '/metas', icon: Target, label: 'Metas' },
-  { to: '/patrimonio', icon: PieChart, label: 'Património' },
+  { to: '/patrimonio', icon: Landmark, label: 'Património' },
   { to: '/simuladores', icon: Calculator, label: 'Simuladores' },
   { to: '/nexovibe', icon: Globe, label: 'NEXO VIBE' },
-  { to: '/relatorio', icon: PieChart, label: 'Relatório' },
+  { to: '/relatorio', icon: BarChart3, label: 'Relatórios' },
+  { to: '/pricing', icon: Crown, label: 'Mover para Premium', premium: true },
   { to: '/settings', icon: SettingsIcon, label: 'Definições' },
 ];
 
@@ -228,20 +230,16 @@ export default function Layout() {
                   to={item.to}
                   end={item.to === '/'}
                   onClick={() => setMobileMenuOpen(false)}
-                  style={({ isActive }) => ({
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '0.85rem 1.5rem',
-                    fontSize: '0.95rem',
-                    fontWeight: isActive ? 600 : 400,
-                    color: isActive ? 'var(--color-ocean)' : 'var(--color-text)',
-                    background: isActive ? 'rgba(10, 77, 104, 0.08)' : 'transparent',
-                    textDecoration: 'none',
-                  })}
+                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                    isActive 
+                      ? 'bg-ocean text-white shadow-lg' 
+                      : item.premium 
+                        ? 'text-gold-deep hover:bg-gold/10 font-bold bg-gold/5' 
+                        : 'text-muted hover:bg-black/5 dark:hover:bg-white/5'
+                  }`}
                 >
-                  <item.icon size={20} />
-                  {item.label}
+                  <item.icon size={20} className={item.premium ? 'animate-pulse' : ''} />
+                  <span className="text-sm font-medium">{item.label}</span>
                 </NavLink>
               ))}
             </nav>
