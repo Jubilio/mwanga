@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useFinance } from '../hooks/useFinanceStore';
 import { useOutletContext } from 'react-router-dom';
-import { Calculator, TrendingUp, RefreshCcw, Wallet, Banknote, BarChart3, Check } from 'lucide-react';
+import { Calculator, TrendingUp, RefreshCcw, Wallet, Banknote, BarChart3, Check, Target } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip as RTooltip, ResponsiveContainer, Legend,
+  Tooltip as RTooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell
 } from 'recharts';
 import { fmt, calcCompoundInterest } from '../utils/calculations';
 
@@ -497,6 +497,115 @@ export default function Simulators() {
           <div style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--color-ocean)', fontSize: '0.82rem' }}>
             <Wallet size={14} /> 
             <span>Equivalente a poupar <strong>{fmt(xitiqueAmount)}</strong> por mês durante <strong>{xitiqueParticipants} meses</strong>.</span>
+          </div>
+        </div>
+      </div>
+      {/* Retirement Planner (Advanced) */}
+      <div className="glass-card" style={{ padding: '1.5rem', marginTop: '1.5rem' }}>
+        <div className="section-title">
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Target size={18} /> Planejador de Reforma (FIRE)
+          </span>
+        </div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div>
+            <label className="form-label text-[10px]">Gasto Mensal Desejado (MT)</label>
+            <input type="number" className="form-input" value={monthly} onChange={e => setMonthly(parseFloat(e.target.value) || 0)} />
+          </div>
+          <div>
+            <label className="form-label text-[10px]">Inflação Estimada (% Anual)</label>
+            <input type="number" className="form-input" defaultValue={5} step="0.5" />
+          </div>
+          <div>
+            <label className="form-label text-[10px]">Idade Atual</label>
+            <input type="number" className="form-input" defaultValue={30} />
+          </div>
+          <div>
+            <label className="form-label text-[10px]">Idade de Reforma</label>
+            <input type="number" className="form-input" defaultValue={60} />
+          </div>
+        </div>
+
+        <div style={{ background: 'rgba(201, 150, 58, 0.05)', borderRadius: '16px', padding: '1.5rem', border: '1px solid rgba(201, 150, 58, 0.1)' }}>
+          <div className="text-center mb-6">
+            <div className="text-[10px] uppercase tracking-wider text-muted mb-1">Seu Número de Independência Financeira</div>
+            <div className="text-3xl font-black text-gold-deep">{fmt(monthly * 12 * 25)}</div>
+            <p className="text-[10px] text-muted mt-2">Baseado na Regra dos 4% (25x seu gasto anual)</p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+              <div className="text-[10px] text-muted mb-1">Património Ajustado (30 anos)</div>
+              <div className="text-sm font-bold text-gray-200">{fmt(monthly * 12 * 25 * Math.pow(1.05, 30))}</div>
+            </div>
+            <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+              <div className="text-[10px] text-muted mb-1">Poupança Mensal Necessária</div>
+              <div className="text-sm font-bold text-ocean">{fmt(25000)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Portfolio Risk/Return Simulator */}
+      <div className="glass-card" style={{ padding: '1.5rem', marginTop: '1.5rem' }}>
+        <div className="section-title">
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <BarChart3 size={18} /> Simulador de Alocação de Carteira
+          </span>
+        </div>
+        
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          {['Conservador', 'Moderado', 'Agressivo'].map((p) => (
+            <button key={p} className={`btn btn-sm ${p === 'Moderado' ? 'btn-primary' : 'btn-ghost'}`}>{p}</button>
+          ))}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Ações', value: 60, color: 'var(--color-ocean)' },
+                    { name: 'Obrigações', value: 30, color: 'var(--color-leaf)' },
+                    { name: 'Cash', value: 10, color: 'var(--color-gold)' },
+                  ]}
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  <Cell fill="var(--color-ocean)" />
+                  <Cell fill="var(--color-leaf)" />
+                  <Cell fill="var(--color-gold)" />
+                </Pie>
+                <RTooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-muted">Retorno Esperado</span>
+                <span className="font-bold text-leaf">~12% aa</span>
+              </div>
+              <div className="h-1 bg-black/10 rounded-full overflow-hidden">
+                <div className="h-full bg-leaf w-[70%]" />
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-muted">Risco (Volatilidade)</span>
+                <span className="font-bold text-coral">Média-Alta</span>
+              </div>
+              <div className="h-1 bg-black/10 rounded-full overflow-hidden">
+                <div className="h-full bg-coral w-[40%]" />
+              </div>
+            </div>
+            <p className="text-[10px] text-muted italic">
+              "Uma carteira moderada equilibra o crescimento global com a estabilidade de ativos locais em Moçambique."
+            </p>
           </div>
         </div>
       </div>

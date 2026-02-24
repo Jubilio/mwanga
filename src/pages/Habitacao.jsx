@@ -1,8 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useFinance } from '../hooks/useFinanceStore';
-import { Plus, Trash2, Home, Key, Settings } from 'lucide-react';
-import { fmt, getMonthKey } from '../utils/calculations';
+import { Key, Home } from 'lucide-react';
+import { getMonthKey } from '../utils/calculations';
+
+import HousingSummaryCard from '../components/housing/HousingSummaryCard';
+import HousingInsights from '../components/housing/HousingInsights';
+import HousingChart from '../components/housing/HousingChart';
+import HousingForm from '../components/housing/HousingForm';
+import HousingHistoryTable from '../components/housing/HousingHistoryTable';
 
 export default function Habitacao() {
   const { state, dispatch } = useFinance();
@@ -68,165 +74,108 @@ export default function Habitacao() {
     showToast(type === 'renda' ? '🏠 Aluguer registado!' : '🏠 Manutenção registada!');
   }
 
+  const handleDelete = (id) => {
+    dispatch({ type: 'DELETE_RENDA', payload: id });
+  };
+
   const toggleType = (newType) => {
     dispatch({ type: 'UPDATE_SETTING', payload: { key: 'housing_type', value: newType } });
     showToast(`Perfil alterado para: ${newType === 'renda' ? 'Arrendamento' : 'Casa Própria'}`);
   };
 
   const totalPago = state.rendas.filter(r => r.estado === 'pago').reduce((s, r) => s + r.valor, 0);
-  const pendente = state.rendas.filter(r => r.estado === 'pendente').reduce((s, r) => s + r.valor, 0);
 
-  const statusIcon = { pago: '✅', pendente: '⏳', atrasado: '⚠️' };
+  // Advanced calculations
+  const chartData = useMemo(() => {
+    const monthlyMap = state.rendas.reduce((acc, r) => {
+      acc[r.mes] = (acc[r.mes] || 0) + r.valor;
+      return acc;
+    }, {});
+    return Object.entries(monthlyMap).map(([mes, valor]) => ({ mes, valor })).sort((a,b) => a.mes.localeCompare(b.mes));
+  }, [state.rendas]);
+
+  const committedIncome = useMemo(() => {
+    const rendasMes = state.rendas.filter(r => r.mes === monthKey).reduce((s, r) => s + r.valor, 0);
+    const receitasMes = state.receitas.filter(r => r.data.startsWith(monthKey)).reduce((s, r) => s + r.valor, 0);
+    if (!receitasMes || receitasMes === 0) return rendasMes > 0 ? 100 : 0; 
+    return Math.min(100, Math.round((rendasMes / receitasMes) * 100));
+  }, [state.rendas, state.receitas, monthKey]);
+
+  const momComparison = useMemo(() => {
+    const curMonth = monthKey;
+    const [y, m] = monthKey.split('-');
+    const lastMonthDate = new Date(y, m - 2); 
+    const lastMonthStr = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
+    
+    const curVal = state.rendas.filter(r => r.mes === curMonth).reduce((s, r) => s + r.valor, 0);
+    const lastVal = state.rendas.filter(r => r.mes === lastMonthStr).reduce((s, r) => s + r.valor, 0);
+    
+    if (lastVal === 0) return curVal > 0 ? 100 : 0;
+    return Math.round(((curVal - lastVal) / lastVal) * 100);
+  }, [state.rendas, monthKey]);
 
   return (
-    <div className="animate-fade-in" style={{ paddingBottom: '5rem' }}>
-      {/* Header Selector */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-ocean)' }}>
-          Gestão de Habitação
-        </h2>
-        <div className="glass-card" style={{ padding: '0.25rem', display: 'flex', gap: '0.25rem' }}>
+    <div className="animate-fade-in pb-20 max-w-5xl mx-auto space-y-6">
+      {/* Header with Breadcrumb and Toggle */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Visão Geral</div>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+            Gestão de Habitação
+          </h2>
+        </div>
+        
+        {/* Toggle Elegante */}
+        <div className="bg-black/5 dark:bg-white/5 p-1 rounded-xl flex items-center border border-black/5 dark:border-white/5 shadow-inner">
           <button 
             onClick={() => toggleType('renda')}
-            className={`btn ${type === 'renda' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
+            className={`flex flex-1 md:flex-none items-center justify-center gap-2 px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
+              type === 'renda' 
+                ? 'bg-white dark:bg-[#2a2a2a] text-ocean shadow-sm border border-black/5 dark:border-white/10' 
+                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+            }`}
           >
-            <Key size={14} style={{ marginRight: '0.4rem' }} /> Arrendamento
+            <Key size={16} /> Arrendamento
           </button>
           <button 
             onClick={() => toggleType('propria')}
-            className={`btn ${type === 'propria' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
+             className={`flex flex-1 md:flex-none items-center justify-center gap-2 px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
+              type === 'propria' 
+                ? 'bg-white dark:bg-[#2a2a2a] text-ocean shadow-sm border border-black/5 dark:border-white/10' 
+                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+            }`}
           >
-            <Home size={14} style={{ marginRight: '0.4rem' }} /> Casa Própria
+            <Home size={16} /> Casa Própria
           </button>
         </div>
       </div>
 
-      {/* Hero Card */}
-      <div style={{
-        background: type === 'renda' 
-          ? 'linear-gradient(135deg, var(--color-ocean), var(--color-sky))'
-          : 'linear-gradient(135deg, #2c3e50, #4ca1af)',
-        borderRadius: '20px',
-        padding: '2rem',
-        color: 'white',
-        marginBottom: '1.5rem',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        <div style={{ position: 'absolute', right: '2rem', top: '50%', transform: 'translateY(-50%)', fontSize: '5rem', opacity: 0.15 }}>
-          {type === 'renda' ? '🔑' : '🏡'}
-        </div>
-        <div style={{ opacity: 0.8, fontSize: '0.8rem', marginBottom: '0.25rem' }}>
-          {type === 'renda' ? 'Habitação — Em Arrendamento' : 'Habitação — Casa Própria'}
-        </div>
-        <div style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: '2.2rem',
-          fontWeight: 700,
-          marginBottom: '0.5rem',
-        }}>
-          {fmt(totalPago, currency)}
-        </div>
-        <div style={{ opacity: 0.75, fontSize: '0.8rem' }}>Total investido este ano</div>
-        <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem', fontSize: '0.82rem' }}>
-          <div>
-            <span style={{ opacity: 0.7 }}>A pagar: </span>
-            <strong>{fmt(pendente, currency)}</strong>
-          </div>
-        </div>
-      </div>
+      {/* 2. Resumo Inteligente */}
+      <HousingSummaryCard totalInvested={totalPago} currency={currency} type={type} />
 
-      {/* Form */}
-      <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-        <div className="section-title">
-          {type === 'renda' ? 'Registar Aluguer' : 'Registar Manutenção / Prestação'}
-        </div>
-        <form onSubmit={handleSubmit}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '1rem',
-          }}>
-            <div>
-              <label className="form-label">Mês/Ano</label>
-              <input type="month" className="form-input" value={form.mes} onChange={e => setForm({ ...form, mes: e.target.value })} />
-            </div>
-            {type === 'renda' && (
-              <div>
-                <label className="form-label">Proprietário</label>
-                <input type="text" className="form-input" placeholder="Nome do senhorio" value={form.proprietario} onChange={e => setForm({ ...form, proprietario: e.target.value })} />
-              </div>
-            )}
-            <div>
-              <label className="form-label">Valor ({currency})</label>
-              <input type="number" className="form-input" placeholder="Valor mensal" min="0" value={form.valor} onChange={e => setForm({ ...form, valor: e.target.value })} />
-            </div>
-            <div>
-              <label className="form-label">Estado</label>
-              <select className="form-input" value={form.estado} onChange={e => setForm({ ...form, estado: e.target.value })}>
-                <option value="pago">✅ Pago</option>
-                <option value="pendente">⏳ Pendente</option>
-              </select>
-            </div>
-            <div style={{ gridColumn: '1 / -1' }}>
-              <label className="form-label">Observações</label>
-              <input type="text" className="form-input" placeholder="Detalhes adicionais..." value={form.obs} onChange={e => setForm({ ...form, obs: e.target.value })} />
-            </div>
-          </div>
-          <div style={{ marginTop: '1.25rem', display: 'flex', gap: '1rem' }}>
-            <button type="submit" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Plus size={18} /> {type === 'renda' ? 'Registar' : 'Registar Despesa'}
-            </button>
-            {type === 'renda' && (
-              <button 
-                type="button" 
-                onClick={saveDefaults} 
-                className="btn btn-ghost" 
-                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid rgba(255,255,255,0.1)' }}
-              >
-                💾 Definir como Padrão
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
+      {/* 3. Indicadores Financeiros */}
+      <HousingInsights committedIncome={committedIncome} momComparison={momComparison} />
 
-      {/* List */}
-      <div className="section-title">Histórico de Gastos</div>
-      <div className="glass-card" style={{ overflow: 'hidden', borderRadius: '16px' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="data-table">
-            <thead>
-              <tr><th>Mês</th><th>Descrição</th><th>Valor</th><th>Estado</th><th>Notas</th><th></th></tr>
-            </thead>
-            <tbody>
-              {state.rendas.map((r, idx) => (
-                <tr key={r.id || `rent-${idx}`}>
-                  <td>{r.mes}</td>
-                  <td style={{ fontWeight: 500 }}>{r.proprietario}</td>
-                  <td style={{ fontWeight: 600 }}>{fmt(r.valor, currency)}</td>
-                  <td>
-                    <span className={`badge badge-${r.estado}`}>
-                      {statusIcon[r.estado]} {r.estado}
-                    </span>
-                  </td>
-                  <td style={{ color: 'var(--color-muted)', fontSize: '0.82rem' }}>{r.obs}</td>
-                  <td>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => { dispatch({ type: 'DELETE_RENDA', payload: r.id }); showToast('🗑️ Removido'); }}
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* 4. Gráfico Evolução */}
+      <HousingChart data={chartData} currency={currency} />
+
+      {/* 5. Formulário Compacto */}
+      <HousingForm 
+        form={form} 
+        setForm={setForm} 
+        handleSubmit={handleSubmit} 
+        type={type} 
+        currency={currency} 
+        saveDefaults={saveDefaults} 
+      />
+
+      {/* 6. Histórico */}
+      <HousingHistoryTable 
+        rendas={state.rendas} 
+        currency={currency} 
+        handleDelete={handleDelete} 
+        showToast={showToast} 
+      />
     </div>
   );
 }

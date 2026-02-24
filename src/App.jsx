@@ -13,6 +13,7 @@ import Xitique from './pages/Xitique';
 import NexoVibe from './pages/NexoVibe';
 import Settings from './pages/Settings';
 import Pricing from './pages/Pricing';
+import Insights from './pages/Insights';
 import Login from './pages/Login';
 import { useFinance } from './hooks/useFinanceStore';
 import { Navigate } from 'react-router-dom';
@@ -45,6 +46,7 @@ export default function App() {
             <Route path="nexovibe" element={<NexoVibe />} />
             <Route path="settings" element={<Settings />} />
             <Route path="pricing" element={<Pricing />} />
+            <Route path="insights" element={<Insights />} />
           </Route>
           <Route path="login" element={<Login />} />
         </Routes>

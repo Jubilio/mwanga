@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFinance } from '../hooks/useFinanceStore';
 import { useOutletContext } from 'react-router-dom';
-import { TrendingUp, TrendingDown, Medal, Plus, Trash2, Home, Car, Smartphone, Briefcase, Star } from 'lucide-react';
+import { TrendingUp, TrendingDown, Medal, Plus, Trash2, Home, Car, Smartphone, Briefcase, Star, Shield, Zap, Flame, Target, Info, ArrowRight, ShieldAlert } from 'lucide-react';
 import { fmt } from '../utils/calculations';
 
 export default function Patrimony() {
@@ -14,9 +14,46 @@ export default function Patrimony() {
   const [assetForm, setAssetForm] = useState({ name: '', type: 'imóvel', value: '' });
   const [liabilityForm, setLiabilityForm] = useState({ name: '', totalAmount: '', remainingAmount: '', interestRate: '' });
 
+  // Advanced Simulators State
+  const [retireMonthlySavings, setRetireMonthlySavings] = useState(10000);
+  const [retireReturnRate, setRetireReturnRate] = useState(10);
+  const [retireTargetIncome, setRetireTargetIncome] = useState(50000);
+  
+  const [inflationYears, setInflationYears] = useState(10);
+  const [inflationRate, setInflationRate] = useState(7);
+
   const totalAssets = state.activos?.reduce((s, a) => s + a.value, 0) || 0;
   const totalLiabilities = state.passivos?.reduce((s, p) => s + p.restante, 0) || 0;
   const netWorth = totalAssets - totalLiabilities;
+
+  const getNetWorthTier = (amount) => {
+    if (amount < 0) return { label: 'Em Dívida', color: 'var(--color-coral)', icon: TrendingDown };
+    if (amount < 100000) return { label: 'Iniciante', color: 'var(--color-sky)', icon: Star };
+    if (amount < 1000000) return { label: 'Bronze', color: '#cd7f32', icon: Shield };
+    if (amount < 5000000) return { label: 'Prata', color: '#94a3b8', icon: Medal };
+    if (amount < 15000000) return { label: 'Ouro', color: 'var(--color-gold)', icon: Flame };
+    return { label: 'Diamante', color: '#0ea5e9', icon: Zap };
+  };
+  const tier = getNetWorthTier(netWorth);
+
+  // Retirement Logic
+  const fireNumber = retireTargetIncome * 12 * 25;
+  let yearsToFire = 0;
+  if (fireNumber > netWorth) {
+    const rate = retireReturnRate / 100;
+    const monthlyRate = rate / 12;
+    let currentBalance = Math.max(0, netWorth);
+    let months = 0;
+    while (currentBalance < fireNumber && months < 1200) {
+      currentBalance = currentBalance * (1 + monthlyRate) + retireMonthlySavings;
+      months++;
+    }
+    yearsToFire = (months / 12).toFixed(1);
+  }
+
+  // Inflation Logic
+  const purchasingPower = Math.max(0, netWorth) / Math.pow(1 + (inflationRate / 100), inflationYears);
+  const investedPower = Math.max(0, netWorth) * Math.pow(1 + ((retireReturnRate - inflationRate) / 100), inflationYears);
 
   const handleAddAsset = (e) => {
     e.preventDefault();
@@ -62,28 +99,39 @@ export default function Patrimony() {
       </div>
 
       <div className="summary-grid mb-6 animate-fade-in-up">
-        <div className="glass-card p-5" style={{ borderLeft: '4px solid var(--color-leaf)' }}>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500"><TrendingUp size={20} /></div>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Activos</span>
+        <div className="glass-card p-5 group cursor-pointer" style={{ borderLeft: '4px solid var(--color-leaf)' }}>
+          <div className="flex items-center gap-3 mb-2 justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 group-hover:scale-110 transition-transform"><TrendingUp size={20} /></div>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Activos</span>
+            </div>
           </div>
           <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{fmt(totalAssets, currency)}</div>
         </div>
         
-        <div className="glass-card p-5" style={{ borderLeft: '4px solid var(--color-coral)' }}>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-rose-500/10 text-rose-500"><TrendingDown size={20} /></div>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Passivos</span>
+        <div className="glass-card p-5 group cursor-pointer" style={{ borderLeft: '4px solid var(--color-coral)' }}>
+          <div className="flex items-center gap-3 mb-2 justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-rose-500/10 text-rose-500 group-hover:scale-110 transition-transform"><TrendingDown size={20} /></div>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Passivos</span>
+            </div>
           </div>
           <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{fmt(totalLiabilities, currency)}</div>
         </div>
 
-        <div className="glass-card p-5" style={{ borderLeft: `4px solid ${netWorth >= 0 ? 'var(--color-ocean)' : 'var(--color-coral)'}` }}>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500"><Medal size={20} /></div>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Líquido</span>
+        <div className="glass-card p-5 group cursor-pointer" style={{ borderLeft: `4px solid ${netWorth >= 0 ? 'var(--color-ocean)' : 'var(--color-coral)'}` }}>
+          <div className="flex items-center gap-3 mb-2 justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500 group-hover:scale-110 transition-transform"><Medal size={20} /></div>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Líquido</span>
+            </div>
+            {netWorth >= 0 && (
+              <div className="premium-badge animate-float" style={{ background: `linear-gradient(135deg, ${tier.color}, #333)`, color: 'white', border: `1px solid ${tier.color}` }}>
+                <tier.icon size={12} /> {tier.label}
+              </div>
+            )}
           </div>
-          <div className={`text-2xl font-bold font-serif ${netWorth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+          <div className={`text-2xl font-bold font-serif ${netWorth >= 0 ? 'text-emerald-600' : 'text-rose-600'} transition-colors`}>
             {fmt(netWorth, currency)}
           </div>
         </div>
@@ -181,6 +229,88 @@ export default function Patrimony() {
                 <p>Nenhum passivo registado.</p>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── ADVANCED SIMULATORS (PATRIMONY) ─── */}
+      <div className="mt-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+        <div className="sh">
+          <div>
+            <h2 className="section-title" style={{ border: 'none', marginBottom: 0 }}>Projeções de Património <span className="premium-badge ml-3 animate-pulse" style={{ background: 'var(--color-ocean)', color: 'white' }}>PRO</span></h2>
+            <p className="ssub" style={{ marginTop: '-4px' }}>Simuladores de reforma e impacto inflacionário</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
+          {/* Retirement / FIRE Simulator */}
+          <div className="glass-card p-5" style={{ background: 'linear-gradient(135deg, rgba(201, 150, 58, 0.03), rgba(10, 77, 104, 0.03))' }}>
+            <div className="flex items-center gap-2 mb-4 text-emerald-700 font-bold text-sm uppercase tracking-wide">
+              <Flame size={18} /> Simulador FIRE (Reforma)
+            </div>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="form-label text-[10px]">Renda Desejada na Reforma</label>
+                <input type="number" className="form-input text-sm" value={retireTargetIncome} onChange={(e) => setRetireTargetIncome(parseFloat(e.target.value) || 0)} />
+              </div>
+              <div>
+                <label className="form-label text-[10px]">Taxa de Retorno Anual (%)</label>
+                <input type="number" className="form-input text-sm" value={retireReturnRate} onChange={(e) => setRetireReturnRate(parseFloat(e.target.value) || 0)} />
+              </div>
+              <div className="col-span-2">
+                <label className="form-label text-[10px]">Poupança Mensal</label>
+                <input type="number" className="form-input text-sm" value={retireMonthlySavings} onChange={(e) => setRetireMonthlySavings(parseFloat(e.target.value) || 0)} />
+              </div>
+            </div>
+            
+            <div className="bg-white/40 dark:bg-black/20 p-4 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
+              <div className="flex justify-between items-end mb-2">
+                <span className="text-xs text-slate-500 font-semibold uppercase">Potencial de Reforma</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{yearsToFire > 0 ? `Em ${yearsToFire} Anos` : 'Meta Atingida! 🎉'}</span>
+              </div>
+              <div className="progress-bar-track mb-3">
+                <div className="progress-bar-fill" style={{ width: `${Math.min(100, Math.max(0, (netWorth / fireNumber) * 100))}%`, background: 'var(--color-ocean)' }} />
+              </div>
+              <div className="flex justify-between text-[11px] text-slate-400">
+                <span>Atual: {fmt(Math.max(0, netWorth), currency)}</span>
+                <span>Alvo FIRE: <strong className="text-amber-600">{fmt(fireNumber, currency)}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          {/* Inflation Simulator */}
+          <div className="glass-card p-5">
+            <div className="flex items-center gap-2 mb-4 text-rose-600 font-bold text-sm uppercase tracking-wide">
+              <ShieldAlert size={18} /> Simulador de Inflação
+            </div>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="form-label text-[10px]">Tempo de Projeção (Anos)</label>
+                <input type="number" className="form-input text-sm" value={inflationYears} onChange={(e) => setInflationYears(parseInt(e.target.value) || 0)} />
+              </div>
+              <div>
+                <label className="form-label text-[10px]">Taxa de Inflação Média (%)</label>
+                <input type="number" className="form-input text-sm" value={inflationRate} onChange={(e) => setInflationRate(parseFloat(e.target.value) || 0)} />
+              </div>
+            </div>
+            
+            <div className="bg-rose-50/50 dark:bg-rose-950/10 p-4 rounded-xl border border-rose-100 dark:border-rose-900/30">
+              <p className="text-[11px] text-slate-500 leading-relaxed mb-3">
+                Seu património líquido atual de <strong className="text-slate-700 dark:text-slate-300">{fmt(Math.max(0, netWorth), currency)}</strong> valerá em <strong>{inflationYears} anos</strong>:
+              </p>
+              <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-2 px-3 rounded-lg mb-2 shadow-sm">
+                <div className="flex items-center gap-2 text-rose-600 text-xs font-semibold">
+                  <TrendingDown size={14} /> Se deixado parado
+                </div>
+                <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{fmt(purchasingPower, currency)}</div>
+              </div>
+              <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-2 px-3 rounded-lg shadow-sm">
+                <div className="flex items-center gap-2 text-emerald-600 text-xs font-semibold">
+                  <TrendingUp size={14} /> Se investido ({retireReturnRate}%)
+                </div>
+                <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{fmt(investedPower, currency)}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

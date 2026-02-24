@@ -6,6 +6,8 @@ const { getRentals, createRental, deleteRental } = require('../controllers/renta
 const { getAssets, createAsset, deleteAsset, getLiabilities, createLiability, deleteLiability } = require('../controllers/patrimony.controller');
 const { getXitiques, createXitique, deleteXitique, payContribution, receiveFunds } = require('../controllers/xitique.controller');
 const { getSettings, upsertSetting, updateHousehold } = require('../controllers/settings.controller');
+const { getOverview: getInsights } = require('../controllers/insights.controller');
+const { getNotifications, markAsRead, clearAll } = require('../controllers/notification.controller');
 const { authenticate } = require('../middleware/auth.middleware');
 
 const router = express.Router();
@@ -46,6 +48,14 @@ router.post('/xitiques', createXitique);
 router.post('/xitiques/pay/:contributionId', payContribution);
 router.post('/xitiques/receive/:receiptId', receiveFunds);
 router.delete('/xitiques/:id', deleteXitique);
+
+// Insights
+router.get('/insights', getInsights);
+
+// Notifications
+router.get('/notifications', getNotifications);
+router.put('/notifications/:id/read', markAsRead);
+router.delete('/notifications', clearAll);
 
 // Settings & Household
 router.get('/settings', getSettings);

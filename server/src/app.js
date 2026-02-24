@@ -6,6 +6,11 @@ const errorHandler = require('./middleware/error.middleware');
 const authRoutes = require('./routes/auth.routes');
 const financeRoutes = require('./routes/finance.routes');
 const logger = require('./utils/logger');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const path = require('path');
+
+const swaggerDocument = YAML.load(path.join(__dirname, 'config', 'swagger.yaml'));
 
 const app = express();
 
@@ -40,6 +45,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', branding: 'Mwanga ✦', timestamp: new Date() });
 });
 
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api/auth', authRoutes);
 app.use('/api', financeRoutes);
 

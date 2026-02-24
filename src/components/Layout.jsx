@@ -1,12 +1,13 @@
-import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, Outlet, useLocation, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, ArrowRightLeft, Home, Target, 
   PieChart, Calculator, Moon, Sun, Menu, X, Wallet, Globe, Settings as SettingsIcon,
-  Landmark, BarChart3, Crown
+  Landmark, BarChart3, Crown, Brain, Bell
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinanceStore';
 import { getCurrentMonthLabel } from '../utils/calculations';
+import api from '../utils/api';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import Toast from './Toast';
 import { useToast } from './Toast';
@@ -18,6 +19,7 @@ const navItems = [
   { to: '/habitacao', icon: Home, label: 'Habitação' },
   { to: '/xitique', icon: Wallet, label: 'Xitique' },
   { to: '/metas', icon: Target, label: 'Metas' },
+  { to: '/insights', icon: Brain, label: 'Binth Insights' },
   { to: '/patrimonio', icon: Landmark, label: 'Património' },
   { to: '/simuladores', icon: Calculator, label: 'Simuladores' },
   { to: '/nexovibe', icon: Globe, label: 'NEXO VIBE' },
@@ -30,273 +32,215 @@ export default function Layout() {
   const { state, dispatch } = useFinance();
   const { toast, showToast } = useToast();
   const { isInstallable, installApp } = usePWAInstall();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const location = useLocation();
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await api.get('/notifications');
+        setNotifications(response.data);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 60000); // Poll every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleMarkRead = async (id) => {
+    try {
+      await api.put(`/notifications/${id}/read`);
+      setNotifications(notifications.map(n => n.id === id ? { ...n, read: 1 } : n));
+    } catch (error) { console.error(error); }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* ═══ HEADER ═══ */}
-      <header
-        style={{
-          background: 'var(--color-dark)',
-          height: '64px',
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 1.25rem',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button
-            className="btn-ghost hide-desktop"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{ color: 'var(--color-sand)' }}
-            aria-label="Menu"
-          >
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
-          <div>
-            <div style={{
-              fontFamily: 'var(--font-display)',
-              color: 'var(--color-sand)',
-              fontSize: '1.4rem',
-              fontWeight: 900,
-              letterSpacing: '1px',
-              lineHeight: 1.1,
-            }}>
-              Mwanga <span style={{ color: 'var(--color-gold)' }}>✦</span>
-            </div>
-            <div style={{ color: 'var(--color-sand)', fontSize: '0.7rem', opacity: 0.5 }}>
-              Gestão Financeira
-            </div>
+    <div className={`app-container ${state.settings.darkMode ? 'dark transition-colors' : 'transition-colors'}`}>
+      {/* Notifications Drawer */}
+      <div className={`fixed inset-0 z-[100] transition-opacity duration-300 ${isNotificationsOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsNotificationsOpen(false)} />
+        <div className={`absolute right-0 top-0 h-full w-80 bg-white dark:bg-[#1a1a1a] border-l border-white/10 p-6 transform transition-transform duration-300 shadow-2xl ${isNotificationsOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+              <Bell size={20} className="text-ocean dark:text-aurora" /> Notificações
+            </h3>
+            <button onClick={() => setIsNotificationsOpen(false)} className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-full"><X size={20} /></button>
+          </div>
+          <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-150px)] pr-2 custom-scrollbar">
+            {notifications.length === 0 ? (
+              <p className="text-gray-500 text-center py-10 italic">Nenhuma notificação por agora.</p>
+            ) : (
+              notifications.map(n => (
+                <div 
+                  key={n.id} 
+                  onClick={() => !n.read && handleMarkRead(n.id)}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer ${n.read ? 'bg-black/2 dark:bg-white/2 border-black/5 dark:border-white/5 opacity-60' : 'bg-ocean/5 dark:bg-aurora/5 border-ocean/30 dark:border-aurora/30 shadow-lg'}`}
+                >
+                  <div className="flex justify-between items-start gap-2 mb-1">
+                    <span className="text-[10px] uppercase tracking-widest text-ocean dark:text-aurora font-bold">{n.type}</span>
+                    {!n.read && <div className="w-2 h-2 rounded-full bg-ocean dark:bg-aurora animate-pulse" />}
+                  </div>
+                  <p className="text-sm text-gray-700 dark:text-gray-200">{n.message}</p>
+                  <span className="text-[10px] text-gray-500 mt-2 block">{new Date(n.created_at).toLocaleString()}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
+      </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span className="hide-mobile" style={{ color: 'var(--color-sand)', fontSize: '0.8rem', opacity: 0.7 }}>
-            {getCurrentMonthLabel()}
-          </span>
-          <button
-            className="btn-ghost"
-            onClick={() => dispatch({ type: 'TOGGLE_DARK_MODE' })}
-            style={{ color: 'var(--color-gold)' }}
-            aria-label="Modo escuro"
-          >
-            {state.darkMode ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-
-          {isInstallable && (
-            <button
-              onClick={installApp}
-              className="btn btn-primary btn-sm"
-              style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-            >
-              <Globe size={14} /> <span className="hide-mobile">Instalar</span>
-            </button>
-          )}
-        </div>
-      </header>
-
-      <div style={{ display: 'flex', flex: 1 }}>
+      <div style={{ display: 'flex', minHeight: '100vh' }}>
         {/* ═══ SIDEBAR (Desktop) ═══ */}
-        <nav
-          className="hide-mobile"
+        <aside
+          className={`sidebar-new ${isSidebarOpen ? 'open' : ''} hide-mobile`}
           style={{
-            width: '220px',
+            width: '280px',
             background: 'var(--color-surface)',
             borderRight: '1px solid var(--color-border)',
-            padding: '1rem 0',
             display: 'flex',
             flexDirection: 'column',
-            gap: '0.2rem',
             position: 'sticky',
-            top: '64px',
-            height: 'calc(100vh - 64px)',
+            top: 0,
+            height: '100vh',
             overflowY: 'auto',
             flexShrink: 0,
+            zIndex: 50,
+            boxShadow: '4px 0 24px rgba(0,0,0,0.02)'
           }}
         >
-          {navItems.map(item => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              style={({ isActive }) => ({
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.7rem 1.25rem',
-                fontSize: '0.88rem',
-                fontWeight: isActive ? 600 : 400,
-                color: isActive ? 'var(--color-ocean)' : 'var(--color-muted)',
-                background: isActive ? 'rgba(10, 77, 104, 0.08)' : 'transparent',
-                borderRight: isActive ? '3px solid var(--color-ocean)' : '3px solid transparent',
-                textDecoration: 'none',
-                transition: 'all 0.15s ease',
-              })}
-            >
-              <item.icon size={18} />
-              {item.label}
-            </NavLink>
-          ))}
-          
-          {isInstallable && (
-            <div style={{ padding: '0 1rem 1rem' }}>
-              <button 
-                onClick={installApp}
-                className="btn btn-primary" 
-                style={{ width: '100%', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}
-              >
-                <Globe size={16} /> Instalar Mwanga
-              </button>
-            </div>
-          )}
-
-          <div style={{ marginTop: 'auto', padding: '1rem', borderTop: '1px solid var(--color-border)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              <div style={{ 
-                width: '42px', 
-                height: '42px', 
-                borderRadius: '12px', 
-                background: 'var(--color-surface-variant)', 
-                overflow: 'hidden',
-                border: '2px solid rgba(10, 77, 104, 0.1)',
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center' 
-              }}>
-                {state.settings.profile_pic ? (
-                  <img src={state.settings.profile_pic} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-ocean)' }}>
-                    {state.user?.name?.charAt(0) || 'U'}
-                  </span>
-                )}
+          <div className="p-6">
+            <div className="logo-container mb-10 flex items-center justify-center">
+              <div className="logo-icon animate-pulse" style={{ fontSize: '1.5rem', marginRight: '8px' }}>✦</div>
+              <div className="logo-text">
+                <span className="logo-mwanga font-black text-2xl tracking-tight text-gray-900 dark:text-white">Mwanga</span>
               </div>
-              <div style={{ overflow: 'hidden', flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.1rem' }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-dark)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                    {state.user?.name || 'Utilizador'}
-                  </div>
-                  <span className="premium-badge">Premium</span>
+            </div>
+
+            <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 px-4">Menu Principal</div>
+            <nav className="space-y-2 mb-8">
+              {navItems.slice(0, 6).map(item => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === '/'}
+                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+                    isActive 
+                      ? 'bg-gradient-to-r from-ocean to-sky text-white shadow-md shadow-ocean/20' 
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 hover:translate-x-1'
+                  }`}
+                >
+                  <item.icon size={18} className={`transition-transform duration-200 ${item.premium ? 'animate-pulse text-gold-deep' : ''} group-hover:scale-110`} />
+                  <span className="text-sm font-semibold">{item.label}</span>
+                </NavLink>
+              ))}
+            </nav>
+
+            <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 px-4">Ferramentas Pro</div>
+            <nav className="space-y-2">
+              {navItems.slice(6).map(item => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === '/'}
+                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+                    isActive 
+                      ? 'bg-gradient-to-r from-ocean to-sky text-white shadow-md shadow-ocean/20' 
+                      : item.premium 
+                        ? 'bg-gradient-to-r from-gold/10 to-transparent text-gold-deep hover:bg-gold/20 font-bold border border-gold/20' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 hover:translate-x-1'
+                  }`}
+                >
+                  <item.icon size={18} className={`transition-transform duration-200 ${item.premium ? 'text-gold-deep drop-shadow-sm' : ''} group-hover:scale-110`} />
+                  <span className="text-sm font-semibold">{item.label}</span>
+                  {item.premium && <span className="ml-auto text-[9px] bg-gold-deep text-white px-1.5 py-0.5 rounded-md tracking-wider uppercase">Pro</span>}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+
+          <div className="mt-auto p-5 mx-4 mb-4 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/2 border border-gray-200 dark:border-white/10 shadow-sm">
+            <div className="flex items-center gap-3 justify-between mb-3">
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-ocean to-sky flex items-center justify-center font-bold text-white shadow-inner shrink-0">
+                  {state.user?.name?.charAt(0) || 'U'}
                 </div>
-                <div style={{ fontSize: '0.65rem', color: 'var(--color-ocean)', fontWeight: 600, opacity: 0.8, whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                  {state.settings.household_name || 'Família Mwanga'}
+                <div className="overflow-hidden">
+                  <div className="text-sm font-bold text-gray-800 dark:text-white truncate">{state.user?.name || 'Utilizador'}</div>
+                  <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider truncate">{state.settings.household_name || 'Família Mwanga'}</div>
                 </div>
               </div>
             </div>
             <button 
               onClick={() => { localStorage.removeItem('mwanga-token'); window.location.reload(); }}
-              className="btn btn-ghost" 
-              style={{ width: '100%', fontSize: '0.75rem', color: '#ff5252', justifyContent: 'flex-start', padding: '0.4rem', marginTop: '0.5rem' }}
+              className="w-full py-1.5 text-xs text-center text-rose-500 dark:text-rose-400 font-semibold hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
             >
               Terminar Sessão
             </button>
           </div>
-        </nav>
+        </aside>
 
-        {/* ═══ MOBILE MENU OVERLAY ═══ */}
-        {mobileMenuOpen && (
-          <div
-            className="hide-desktop"
-            style={{
-              position: 'fixed',
-              top: '64px',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0,0,0,0.5)',
-              zIndex: 90,
-            }}
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            <nav
-              onClick={e => e.stopPropagation()}
-              style={{
-                background: 'var(--color-surface)',
-                width: '260px',
-                height: '100%',
-                padding: '1rem 0',
-                boxShadow: '4px 0 24px rgba(0,0,0,0.15)',
-                animation: 'slideInRight 0.2s ease-out',
-              }}
-            >
-              {navItems.map(item => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.to === '/'}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                    isActive 
-                      ? 'bg-ocean text-white shadow-lg' 
-                      : item.premium 
-                        ? 'text-gold-deep hover:bg-gold/10 font-bold bg-gold/5' 
-                        : 'text-muted hover:bg-black/5 dark:hover:bg-white/5'
-                  }`}
-                >
-                  <item.icon size={20} className={item.premium ? 'animate-pulse' : ''} />
-                  <span className="text-sm font-medium">{item.label}</span>
-                </NavLink>
-              ))}
-            </nav>
-          </div>
-        )}
+        {/* ═══ MOBILE HEADER & CONTENT ═══ */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <header className="sticky top-0 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-md border-bottom p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button className="hide-desktop p-2" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                <Menu size={24} />
+              </button>
+              <div>
+                <h1 className="text-lg font-bold text-gray-800 dark:text-white">
+                  {navItems.find(i => i.to === location.pathname)?.label || 'Dashboard'}
+                </h1>
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest">{getCurrentMonthLabel()}</p>
+              </div>
+            </div>
 
-        {/* ═══ MAIN CONTENT ═══ */}
-        <main style={{
-          flex: 1,
-          padding: '1.5rem',
-          maxWidth: '960px',
-          margin: '0 auto',
-          width: '100%',
-        }}>
-          <Outlet context={{ showToast }} />
-        </main>
+            <div className="flex items-center gap-2">
+              <button 
+                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 relative"
+                onClick={() => setIsNotificationsOpen(true)}
+              >
+                <Bell size={20} />
+                {unreadCount > 0 && <span className="absolute top-2 right-2 w-2 h-2 bg-coral rounded-full" />}
+              </button>
+              <button 
+                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5"
+                onClick={() => dispatch({ type: 'TOGGLE_DARK_MODE' })}
+              >
+                {state.settings.darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+            </div>
+          </header>
+
+          <main className="p-4 md:p-8 w-full flex-1 pb-24 md:pb-8">
+            <Outlet context={{ showToast }} />
+          </main>
+        </div>
       </div>
 
-      {/* ═══ BOTTOM NAV (Mobile) ═══ */}
-      <nav
-        className="hide-desktop"
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: 'var(--color-surface)',
-          borderTop: '1px solid var(--color-border)',
-          display: 'flex',
-          justifyContent: 'space-around',
-          padding: '0.4rem 0 env(safe-area-inset-bottom, 0.4rem)',
-          zIndex: 80,
-          boxShadow: '0 -2px 12px rgba(0,0,0,0.06)',
-        }}
-      >
-        {navItems.slice(0, 5).map(item => (
+      {/* ═══ MOBILE BOTTOM NAV ═══ */}
+      <nav className="hide-desktop fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-black/5 dark:border-white/5 flex justify-around p-3 z-50">
+        {navItems.slice(0, 4).map(item => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.to === '/'}
-            style={({ isActive }) => ({
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.15rem',
-              padding: '0.3rem 0.5rem',
-              fontSize: '0.62rem',
-              fontWeight: isActive ? 600 : 400,
-              color: isActive ? 'var(--color-ocean)' : 'var(--color-muted)',
-              textDecoration: 'none',
-              transition: 'color 0.15s',
-            })}
+            className={({ isActive }) => `flex flex-col items-center gap-1 ${isActive ? 'text-ocean' : 'text-gray-400'}`}
           >
             <item.icon size={20} />
-            {item.label}
+            <span className="text-[10px] font-medium">{item.label}</span>
           </NavLink>
         ))}
+        <button onClick={() => setIsNotificationsOpen(true)} className="flex flex-col items-center gap-1 text-gray-400 relative">
+          <Bell size={20} />
+          {unreadCount > 0 && <span className="absolute -top-1 right-0 w-2 h-2 bg-coral rounded-full" />}
+          <span className="text-[10px] font-medium">Alertas</span>
+        </button>
       </nav>
 
       <Toast message={toast.message} visible={toast.visible} />

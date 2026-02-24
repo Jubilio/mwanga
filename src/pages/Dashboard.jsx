@@ -26,8 +26,8 @@ export default function Dashboard() {
   const risk = calcRiskLevel(score);
   const savingsRate = calcSavingsRate(tot.totalIncome, tot.despesas + tot.renda);
 
-  // --- OLIVIA'S AI BRAIN (Proactive Insights) ---
-  const getOliviaAdvice = () => {
+  // --- BINTH'S AI BRAIN (Proactive Insights) ---
+  const getBinthAdvice = () => {
     const advice = [];
     
     // Savings Rate Logic
@@ -62,7 +62,7 @@ export default function Dashboard() {
     return advice;
   };
 
-  const oliviaTips = getOliviaAdvice();
+  const binthTips = getBinthAdvice();
 
   const summaryCards = [
     { label: 'Receitas', value: tot.receitas, icon: TrendingUp, color: 'var(--color-leaf)', accent: '#e8f5e9', sub: 'Salários + extras' },
@@ -111,12 +111,17 @@ export default function Dashboard() {
           }}>
             Olá, {state.user?.name?.split(' ')[0] || 'Explorador'} <span style={{ color: 'var(--color-gold)' }}>✦</span>
           </h1>
-          <p style={{ fontSize: '0.9rem', color: 'var(--color-muted)', marginTop: '0.4rem' }}>
-            A sua saúde financeira está <strong style={{ color: score > 70 ? 'var(--color-leaf)' : 'var(--color-gold)' }}>{score > 70 ? 'Excelente' : 'Estável'}</strong>. Aqui está a visão actual.
-          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${score > 70 ? 'bg-leaf/10 text-leaf' : 'bg-gold/10 text-gold-deep'}`}>
+              SAÚDE FINANCEIRA: {score > 70 ? 'EXCELENTE' : 'ESTÁVEL'}
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-ocean/10 text-ocean text-[10px] font-bold uppercase tracking-wider">
+              NEXO SCORE: {score}/100
+            </span>
+          </div>
         </div>
         
-        {/* Olivia Mini Badge */}
+        {/* Binth Mini Badge */}
         <div className="glass-card animate-float" style={{ 
           padding: '0.5rem 1rem', 
           display: 'flex', 
@@ -124,16 +129,16 @@ export default function Dashboard() {
           gap: '0.75rem',
           border: '1px solid var(--color-gold)30'
         }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--color-ocean), var(--color-gold))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '0.8rem' }}>O</div>
+          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--color-ocean), var(--color-gold))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '0.8rem' }}>B</div>
           <div>
             <div style={{ fontSize: '0.6rem', color: 'var(--color-muted)', fontWeight: 600 }}>ASSISTENTE VIRTUAL</div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-dark)' }}>Olivia ✨</div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-dark)' }}>Binth ✨</div>
           </div>
         </div>
       </div>
 
-      {/* ─── OLIVIA'S INSIGHTS (NEW) ─── */}
-      {oliviaTips.length > 0 && (
+      {/* ─── BINTH'S INSIGHTS (NEW) ─── */}
+      {binthTips.length > 0 && (
         <div className="glass-card animate-fade-in-up stagger-1" style={{ 
           padding: '1.5rem', 
           marginBottom: '2rem', 
@@ -156,12 +161,12 @@ export default function Dashboard() {
               <Bell size={20} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Conselhos da Olivia</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Conselhos da Binth</h3>
               <p style={{ fontSize: '0.7rem', opacity: 0.6 }}>BASEADO NO TEU COMPORTAMENTO ACTUAL</p>
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {oliviaTips.map((tip, idx) => (
+            {binthTips.map((tip, idx) => (
               <div key={idx} style={{ 
                 display: 'flex', 
                 alignItems: 'flex-start', 
