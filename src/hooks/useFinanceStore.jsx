@@ -12,6 +12,8 @@ const defaultState = {
   activos: [],
   passivos: [],
   xitiques: [],
+  dividas: [],
+  contas: [],
   settings: {
     user_salary: 50000,
     default_rent: 15000,
@@ -81,6 +83,22 @@ function reducer(state, action) {
     case 'SET_XITIQUES':
       return { ...state, xitiques: action.payload };
 
+    case 'ADD_DEBT':
+      return { ...state, dividas: [action.payload, ...state.dividas] };
+    case 'DELETE_DEBT':
+      return { ...state, dividas: state.dividas.filter(d => d.id !== action.payload) };
+    case 'SET_DEBTS':
+      return { ...state, dividas: action.payload };
+
+    case 'ADD_ACCOUNT':
+      return { ...state, contas: [action.payload, ...state.contas] };
+    case 'UPDATE_ACCOUNT_BALANCE':
+      return { ...state, contas: state.contas.map(c => c.id === action.payload.id ? { ...c, current_balance: action.payload.balance } : c) };
+    case 'DELETE_ACCOUNT':
+      return { ...state, contas: state.contas.filter(c => c.id !== action.payload) };
+    case 'SET_ACCOUNTS':
+      return { ...state, contas: action.payload };
+
     case 'TOGGLE_DARK_MODE':
       return { ...state, darkMode: !state.darkMode };
     
@@ -107,7 +125,7 @@ export function FinanceProvider({ children }) {
 
       try {
         console.log('Fetching initial data from:', FINANCE_API_URL);
-        const [ts, rendas, metas, budgets, assets, liabs, xitiques, settings, user] = await Promise.all([
+        const [ts, rendas, metas, budgets, assets, liabs, xitiques, settings, user, debts, accounts] = await Promise.all([
           fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
           fetch(`${FINANCE_API_URL}/rentals`, { headers }).then(r => r.json()),
           fetch(`${FINANCE_API_URL}/goals`, { headers }).then(r => r.json()),
@@ -117,6 +135,8 @@ export function FinanceProvider({ children }) {
           fetch(`${FINANCE_API_URL}/xitiques`, { headers }).then(r => r.json()),
           fetch(`${FINANCE_API_URL}/settings`, { headers }).then(r => r.json()),
           fetch(`${FINANCE_API_URL}/auth/me`, { headers }).then(r => r.json()),
+          fetch(`${FINANCE_API_URL}/debts`, { headers }).then(r => r.json()),
+          fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json()),
         ]);
 
         dispatch({
@@ -158,6 +178,8 @@ export function FinanceProvider({ children }) {
               interestRate: l.interest_rate 
             })) : [],
             xitiques: Array.isArray(xitiques) ? xitiques : [],
+            dividas: Array.isArray(debts) ? debts : [],
+            contas: Array.isArray(accounts) ? accounts : [],
             settings: settings || defaultState.settings
           }
         });
@@ -416,6 +438,56 @@ export function FinanceProvider({ children }) {
             method: 'PUT',
             headers,
             body: JSON.stringify(action.payload)
+          });
+          break;
+        }
+        case 'ADD_DEBT': {
+          const debtRet = await fetch(`${FINANCE_API_URL}/debts`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(action.payload)
+          }).then(r => r.json());
+          payload = { ...action.payload, id: debtRet.id, payments: [] };
+          break;
+        }
+        case 'DELETE_DEBT': {
+          await fetch(`${FINANCE_API_URL}/debts/${action.payload}`, { 
+            method: 'DELETE',
+            headers
+          });
+          break;
+        }
+        case 'PAY_DEBT': {
+          await fetch(`${FINANCE_API_URL}/debts/${action.payload.debtId}/pay`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(action.payload)
+          });
+          const refreshD = await fetch(`${FINANCE_API_URL}/debts`, { headers }).then(r => r.json());
+          dispatch({ type: 'SET_DEBTS', payload: refreshD });
+          return;
+        }
+        case 'ADD_ACCOUNT': {
+          const accRet = await fetch(`${FINANCE_API_URL}/accounts`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(action.payload)
+          }).then(r => r.json());
+          payload = { ...action.payload, id: accRet.id, current_balance: action.payload.initial_balance };
+          break;
+        }
+        case 'UPDATE_ACCOUNT_BALANCE': {
+          await fetch(`${FINANCE_API_URL}/accounts/${action.payload.id}/balance`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({ current_balance: action.payload.balance })
+          });
+          break;
+        }
+        case 'DELETE_ACCOUNT': {
+          await fetch(`${FINANCE_API_URL}/accounts/${action.payload}`, { 
+            method: 'DELETE',
+            headers
           });
           break;
         }

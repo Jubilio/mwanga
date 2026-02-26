@@ -3,14 +3,13 @@ import { NavLink, Outlet, useLocation, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, ArrowRightLeft, Home, Target, 
   PieChart, Calculator, Moon, Sun, Menu, X, Wallet, Globe, Settings as SettingsIcon,
-  Landmark, BarChart3, Crown, Brain, Bell
+  Landmark, BarChart3, Crown, Brain, Bell, CreditCard
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinanceStore';
 import { getCurrentMonthLabel } from '../utils/calculations';
 import api from '../utils/api';
-import { usePWAInstall } from '../hooks/usePWAInstall';
-import Toast from './Toast';
-import { useToast } from './Toast';
+import Toast, { useToast } from './Toast';
+import Sidebar from './layout/Sidebar';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -19,6 +18,7 @@ const navItems = [
   { to: '/habitacao', icon: Home, label: 'Habitação' },
   { to: '/xitique', icon: Wallet, label: 'Xitique' },
   { to: '/metas', icon: Target, label: 'Metas' },
+  { to: '/dividas', icon: CreditCard, label: 'Dívidas' },
   { to: '/insights', icon: Brain, label: 'Binth Insights' },
   { to: '/patrimonio', icon: Landmark, label: 'Património' },
   { to: '/simuladores', icon: Calculator, label: 'Simuladores' },
@@ -31,7 +31,6 @@ const navItems = [
 export default function Layout() {
   const { state, dispatch } = useFinance();
   const { toast, showToast } = useToast();
-  const { isInstallable, installApp } = usePWAInstall();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -63,7 +62,7 @@ export default function Layout() {
   return (
     <div className={`app-container ${state.settings.darkMode ? 'dark transition-colors' : 'transition-colors'}`}>
       {/* Notifications Drawer */}
-      <div className={`fixed inset-0 z-[100] transition-opacity duration-300 ${isNotificationsOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`fixed inset-0 z-100 transition-opacity duration-300 ${isNotificationsOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsNotificationsOpen(false)} />
         <div className={`absolute right-0 top-0 h-full w-80 bg-white dark:bg-[#1a1a1a] border-l border-white/10 p-6 transform transition-transform duration-300 shadow-2xl ${isNotificationsOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           <div className="flex items-center justify-between mb-6">
@@ -97,93 +96,7 @@ export default function Layout() {
 
       <div style={{ display: 'flex', minHeight: '100vh' }}>
         {/* ═══ SIDEBAR (Desktop) ═══ */}
-        <aside
-          className={`sidebar-new ${isSidebarOpen ? 'open' : ''} hide-mobile`}
-          style={{
-            width: '280px',
-            background: 'var(--color-surface)',
-            borderRight: '1px solid var(--color-border)',
-            display: 'flex',
-            flexDirection: 'column',
-            position: 'sticky',
-            top: 0,
-            height: '100vh',
-            overflowY: 'auto',
-            flexShrink: 0,
-            zIndex: 50,
-            boxShadow: '4px 0 24px rgba(0,0,0,0.02)'
-          }}
-        >
-          <div className="p-6">
-            <div className="logo-container mb-10 flex items-center justify-center">
-              <div className="logo-icon animate-pulse" style={{ fontSize: '1.5rem', marginRight: '8px' }}>✦</div>
-              <div className="logo-text">
-                <span className="logo-mwanga font-black text-2xl tracking-tight text-gray-900 dark:text-white">Mwanga</span>
-              </div>
-            </div>
-
-            <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 px-4">Menu Principal</div>
-            <nav className="space-y-2 mb-8">
-              {navItems.slice(0, 6).map(item => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.to === '/'}
-                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-                    isActive 
-                      ? 'bg-gradient-to-r from-ocean to-sky text-white shadow-md shadow-ocean/20' 
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 hover:translate-x-1'
-                  }`}
-                >
-                  <item.icon size={18} className={`transition-transform duration-200 ${item.premium ? 'animate-pulse text-gold-deep' : ''} group-hover:scale-110`} />
-                  <span className="text-sm font-semibold">{item.label}</span>
-                </NavLink>
-              ))}
-            </nav>
-
-            <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 px-4">Ferramentas Pro</div>
-            <nav className="space-y-2">
-              {navItems.slice(6).map(item => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.to === '/'}
-                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-                    isActive 
-                      ? 'bg-gradient-to-r from-ocean to-sky text-white shadow-md shadow-ocean/20' 
-                      : item.premium 
-                        ? 'bg-gradient-to-r from-gold/10 to-transparent text-gold-deep hover:bg-gold/20 font-bold border border-gold/20' 
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 hover:translate-x-1'
-                  }`}
-                >
-                  <item.icon size={18} className={`transition-transform duration-200 ${item.premium ? 'text-gold-deep drop-shadow-sm' : ''} group-hover:scale-110`} />
-                  <span className="text-sm font-semibold">{item.label}</span>
-                  {item.premium && <span className="ml-auto text-[9px] bg-gold-deep text-white px-1.5 py-0.5 rounded-md tracking-wider uppercase">Pro</span>}
-                </NavLink>
-              ))}
-            </nav>
-          </div>
-
-          <div className="mt-auto p-5 mx-4 mb-4 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/2 border border-gray-200 dark:border-white/10 shadow-sm">
-            <div className="flex items-center gap-3 justify-between mb-3">
-              <div className="flex items-center gap-3 overflow-hidden">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-ocean to-sky flex items-center justify-center font-bold text-white shadow-inner shrink-0">
-                  {state.user?.name?.charAt(0) || 'U'}
-                </div>
-                <div className="overflow-hidden">
-                  <div className="text-sm font-bold text-gray-800 dark:text-white truncate">{state.user?.name || 'Utilizador'}</div>
-                  <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider truncate">{state.settings.household_name || 'Família Mwanga'}</div>
-                </div>
-              </div>
-            </div>
-            <button 
-              onClick={() => { localStorage.removeItem('mwanga-token'); window.location.reload(); }}
-              className="w-full py-1.5 text-xs text-center text-rose-500 dark:text-rose-400 font-semibold hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
-            >
-              Terminar Sessão
-            </button>
-          </div>
-        </aside>
+        <Sidebar isOpen={isSidebarOpen} />
 
         {/* ═══ MOBILE HEADER & CONTENT ═══ */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>

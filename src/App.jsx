@@ -11,7 +11,9 @@ import Reports from './pages/Reports';
 import Patrimony from './pages/Patrimony';
 import Xitique from './pages/Xitique';
 import NexoVibe from './pages/NexoVibe';
+import SmsImport from './pages/SmsImport';
 import Settings from './pages/Settings';
+import Dividas from './pages/Dividas';
 import Pricing from './pages/Pricing';
 import Insights from './pages/Insights';
 import Login from './pages/Login';
@@ -40,9 +42,11 @@ export default function App() {
             <Route path="habitacao" element={<Habitacao />} />
             <Route path="xitique" element={<Xitique />} />
             <Route path="metas" element={<Goals />} />
+            <Route path="dividas" element={<Dividas />} />
             <Route path="simuladores" element={<Simulators />} />
             <Route path="relatorio" element={<Reports />} />
             <Route path="patrimonio" element={<Patrimony />} />
+            <Route path="sms-import" element={<SmsImport />} />
             <Route path="nexovibe" element={<NexoVibe />} />
             <Route path="settings" element={<Settings />} />
             <Route path="pricing" element={<Pricing />} />

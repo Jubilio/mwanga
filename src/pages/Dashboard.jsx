@@ -16,7 +16,7 @@ import {
 const COLORS = ['#e07a5f', '#0a4d68', '#c9963a', '#3d6b45', '#1a8fa8', '#9b59b6', '#e74c3c'];
 
 export default function Dashboard() {
-  const { state } = useFinance();
+  const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
   const monthKey = getMonthKey();
   const tot = calcMonthlyTotals(state.transacoes, monthKey, state.rendas);
@@ -25,6 +25,8 @@ export default function Dashboard() {
   const score = calcFinancialScore(state.transacoes, state.budgets, monthKey, state.rendas);
   const risk = calcRiskLevel(score);
   const savingsRate = calcSavingsRate(tot.totalIncome, tot.despesas + tot.renda);
+  const totalContas = state.contas?.reduce((acc, curr) => acc + curr.current_balance, 0) || 0;
+  const realBalance = tot.saldo + totalContas;
 
   // --- BINTH'S AI BRAIN (Proactive Insights) ---
   const getBinthAdvice = () => {
@@ -59,16 +61,23 @@ export default function Dashboard() {
       });
     }
 
+    if (totalContas === 0) {
+      advice.push({
+        text: "Parece que ainda não registou o saldo das suas contas (M-Pesa, e-Mola, Bancos). Registe os seus saldos iniciais para que possamos monitorar o seu verdadeiro Património Líquido.",
+        type: 'info'
+      });
+    }
+
     return advice;
   };
 
   const binthTips = getBinthAdvice();
 
   const summaryCards = [
-    { label: 'Receitas', value: tot.receitas, icon: TrendingUp, color: 'var(--color-leaf)', accent: '#e8f5e9', sub: 'Salários + extras' },
-    { label: 'Despesas', value: tot.despesas, icon: TrendingDown, color: 'var(--color-coral)', accent: '#fde8e4', sub: 'Gastos do mês' },
-    { label: 'Renda Casa', value: tot.renda, icon: HomeIcon, color: 'var(--color-gold)', accent: '#fff8e6', sub: 'Arrendamento Pemba' },
-    { label: 'Saldo Líquido', value: tot.saldo, icon: Wallet, color: tot.saldo >= 0 ? 'var(--color-leaf)' : 'var(--color-coral)', accent: tot.saldo >= 0 ? '#e8f5e9' : '#fde8e4', sub: 'Receitas − Despesas' },
+    { label: 'Saldos Disponíveis', value: totalContas, icon: Wallet, color: 'var(--color-ocean)', accent: '#e6f0f9', sub: 'M-Pesa, Bancos, etc.' },
+    { label: 'Receitas (Mês)', value: tot.receitas, icon: TrendingUp, color: 'var(--color-leaf)', accent: '#e8f5e9', sub: 'O que entrou' },
+    { label: 'Despesas (Mês)', value: tot.despesas + tot.renda, icon: TrendingDown, color: 'var(--color-coral)', accent: '#fde8e4', sub: 'O que saiu' },
+    { label: 'Balanço Real', value: realBalance, icon: TrendingUp, color: realBalance >= 0 ? 'var(--color-leaf)' : 'var(--color-coral)', accent: realBalance >= 0 ? '#e8f5e9' : '#fde8e4', sub: 'Saldos + Fluxo do Mês' },
   ];
 
   const pieData = categories.map(c => ({ name: c.category, value: c.amount }));
@@ -230,6 +239,65 @@ export default function Dashboard() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* ─── WALLETS & ACCOUNTS MANAGEMENT ─── */}
+      <div className="section-title mt-2">Suas Contas (Saldos Iniciais)</div>
+      <div className="glass-card p-6 mb-6 animate-fade-in-up stagger-1">
+        <p className="text-sm text-gray-500 mb-4">Adicione as suas contas (banco, M-Pesa, numerário) para refletir o seu património inicial real.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          {state.contas?.map(conta => (
+            <div key={conta.id} className="p-4 border border-gray-200 dark:border-gray-800 rounded-xl relative">
+              <div className="text-xs uppercase tracking-widest text-muted">{conta.type}</div>
+              <div className="font-bold text-lg">{conta.name}</div>
+              <div className="text-ocean font-bold mt-1">{fmt(conta.current_balance, currency)}</div>
+              <button onClick={() => {
+                if(confirm('Remover esta conta?')) {
+                  dispatch({ type: 'DELETE_ACCOUNT', payload: conta.id });
+                }
+              }} className="absolute top-4 right-4 text-gray-400 hover:text-coral">
+                <AlertTriangle size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+        
+        <form 
+          className="flex flex-wrap gap-3 items-end bg-black/5 dark:bg-white/5 p-4 rounded-xl border border-gray-100 dark:border-gray-800"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            dispatch({
+              type: 'ADD_ACCOUNT',
+              payload: {
+                name: fd.get('name'),
+                type: fd.get('type'),
+                initial_balance: Number(fd.get('balance'))
+              }
+            });
+            e.target.reset();
+          }}
+        >
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-xs font-semibold mb-1">NOME DA CONTA</label>
+            <input name="name" type="text" className="input py-2 text-sm" placeholder="Ex: M-Pesa, BCI, Millennium..." required />
+          </div>
+          <div className="w-1/4 min-w-[120px]">
+            <label className="block text-xs font-semibold mb-1">TIPO</label>
+            <select name="type" className="input py-2 text-sm" required>
+              <option value="mobile">Carteira Móvel</option>
+              <option value="bank">Banco</option>
+              <option value="cash">Numerário</option>
+            </select>
+          </div>
+          <div className="w-1/4 min-w-[120px]">
+            <label className="block text-xs font-semibold mb-1">SALDO ACTUAL</label>
+            <input name="balance" type="number" step="any" className="input py-2 text-sm" placeholder="Ex: 5000" required />
+          </div>
+          <button type="submit" className="btn btn-primary py-2 text-sm font-semibold whitespace-nowrap">
+            Adicionar Conta
+          </button>
+        </form>
       </div>
 
       {/* Score + Alerts Row */}

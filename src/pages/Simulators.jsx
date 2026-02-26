@@ -563,7 +563,7 @@ export default function Simulators() {
 
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={192}>
               <PieChart>
                 <Pie
                   data={[

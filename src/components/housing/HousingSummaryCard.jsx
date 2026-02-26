@@ -40,7 +40,7 @@ export default function HousingSummaryCard({ totalInvested, currency, type }) {
         {/* Sparkline & Call to Action side */}
         <div className="w-full md:w-48 flex flex-col items-end gap-4">
           <div className="w-full h-16 opacity-80 group-hover:opacity-100 transition-opacity">
-             <ResponsiveContainer width="100%" height="100%">
+             <ResponsiveContainer width="100%" height={64}>
               <AreaChart data={sparklineData}>
                 <defs>
                   <linearGradient id="sparklineGrad" x1="0" y1="0" x2="0" y2="1">

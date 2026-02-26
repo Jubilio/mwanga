@@ -96,10 +96,10 @@ export default function Habitacao() {
 
   const committedIncome = useMemo(() => {
     const rendasMes = state.rendas.filter(r => r.mes === monthKey).reduce((s, r) => s + r.valor, 0);
-    const receitasMes = state.receitas.filter(r => r.data.startsWith(monthKey)).reduce((s, r) => s + r.valor, 0);
+    const receitasMes = state.transacoes.filter(t => t.tipo === 'receita' && t.data.startsWith(monthKey)).reduce((s, t) => s + t.valor, 0);
     if (!receitasMes || receitasMes === 0) return rendasMes > 0 ? 100 : 0; 
     return Math.min(100, Math.round((rendasMes / receitasMes) * 100));
-  }, [state.rendas, state.receitas, monthKey]);
+  }, [state.rendas, state.transacoes, monthKey]);
 
   const momComparison = useMemo(() => {
     const curMonth = monthKey;

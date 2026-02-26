@@ -8,6 +8,8 @@ const { getXitiques, createXitique, deleteXitique, payContribution, receiveFunds
 const { getSettings, upsertSetting, updateHousehold } = require('../controllers/settings.controller');
 const { getOverview: getInsights } = require('../controllers/insights.controller');
 const { getNotifications, markAsRead, clearAll } = require('../controllers/notification.controller');
+const { getDebts, addDebt, deleteDebt, addPayment } = require('../controllers/debtController');
+const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require('../controllers/accountController');
 const { authenticate } = require('../middleware/auth.middleware');
 
 const router = express.Router();
@@ -61,5 +63,17 @@ router.delete('/notifications', clearAll);
 router.get('/settings', getSettings);
 router.post('/settings', upsertSetting);
 router.put('/households', updateHousehold);
+
+// Debts
+router.get('/debts', getDebts);
+router.post('/debts', addDebt);
+router.delete('/debts/:id', deleteDebt);
+router.post('/debts/:id/pay', addPayment);
+
+// Accounts
+router.get('/accounts', getAccounts);
+router.post('/accounts', addAccount);
+router.put('/accounts/:id/balance', updateAccountBalance);
+router.delete('/accounts/:id', deleteAccount);
 
 module.exports = router;

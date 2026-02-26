@@ -32,6 +32,10 @@ const initDb = () => {
         amount REAL NOT NULL,
         category TEXT,
         note TEXT,
+        source_type TEXT DEFAULT 'manual',
+        external_reference TEXT,
+        fee_amount REAL DEFAULT 0,
+        confidence_score REAL,
         household_id INTEGER,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(household_id) REFERENCES households(id)
@@ -164,6 +168,51 @@ const initDb = () => {
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id)
       );
+
+      CREATE TABLE IF NOT EXISTS accounts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        initial_balance REAL DEFAULT 0,
+        current_balance REAL DEFAULT 0,
+        household_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(household_id) REFERENCES households(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS debts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        creditor_name TEXT NOT NULL,
+        total_amount REAL NOT NULL,
+        remaining_amount REAL NOT NULL,
+        due_date TEXT,
+        status TEXT DEFAULT 'pending',
+        household_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(household_id) REFERENCES households(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS debt_payments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        debt_id INTEGER NOT NULL,
+        amount REAL NOT NULL,
+        payment_date TEXT NOT NULL,
+        household_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(debt_id) REFERENCES debts(id) ON DELETE CASCADE,
+        FOREIGN KEY(household_id) REFERENCES households(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS financial_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tenant_id INTEGER,
+        raw_text TEXT NOT NULL,
+        source_detected TEXT,
+        parsed_json TEXT,
+        status TEXT DEFAULT 'pending', -- 'pending', 'parsed', 'error', 'processed'
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(tenant_id) REFERENCES households(id)
+      );
     `);
     logger.info('Database tables initialized.');
     
@@ -209,6 +258,21 @@ const runMigrations = () => {
         }
       })();
       logger.info('Settings migration completed.');
+    }
+
+    // Migration for transactions SMS fields
+    const txColumns = db.prepare("PRAGMA table_info(transactions)").all();
+    const hasSourceType = txColumns.some(col => col.name === 'source_type');
+    
+    if (!hasSourceType) {
+      logger.info('Migrating transactions table to include SMS parsing fields...');
+      db.exec(`
+        ALTER TABLE transactions ADD COLUMN source_type TEXT DEFAULT 'manual';
+        ALTER TABLE transactions ADD COLUMN external_reference TEXT;
+        ALTER TABLE transactions ADD COLUMN fee_amount REAL DEFAULT 0;
+        ALTER TABLE transactions ADD COLUMN confidence_score REAL;
+      `);
+      logger.info('Transactions migration completed.');
     }
   } catch (error) {
     logger.warn('Migration check skipped or failed:', error.message);

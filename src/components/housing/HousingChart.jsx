@@ -15,7 +15,7 @@ export default function HousingChart({ data, currency }) {
       </div>
       
       <div style={{ width: '100%', height: 280, minHeight: 280 }}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={280}>
           <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(150,150,150,0.1)" />
             <XAxis 
