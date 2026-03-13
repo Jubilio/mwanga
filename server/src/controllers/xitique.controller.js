@@ -10,13 +10,27 @@ const xitiqueSchema = z.object({
 });
 
 const getXitiques = async (req, res) => {
-  const list = db.prepare('SELECT * FROM xitiques WHERE household_id = ? ORDER BY created_at DESC').all(req.user.householdId);
-  const fullList = list.map(x => {
-    const cycles = db.prepare('SELECT * FROM xitique_cycles WHERE xitique_id = ?').all(x.id);
-    const contributions = db.prepare('SELECT * FROM xitique_contributions WHERE xitique_id = ?').all(x.id);
-    const receipts = db.prepare('SELECT * FROM xitique_receipts WHERE xitique_id = ?').all(x.id);
-    return { ...x, cycles, contributions, receipts };
+  const result = await db.execute({
+    sql: 'SELECT * FROM xitiques WHERE household_id = ? ORDER BY created_at DESC',
+    args: [req.user.householdId]
   });
+  const list = result.rows;
+
+  const fullList = await Promise.all(list.map(async (x) => {
+    const cyclesRes = await db.execute({
+      sql: 'SELECT * FROM xitique_cycles WHERE xitique_id = ?',
+      args: [x.id]
+    });
+    const contributionsRes = await db.execute({
+      sql: 'SELECT * FROM xitique_contributions WHERE xitique_id = ?',
+      args: [x.id]
+    });
+    const receiptsRes = await db.execute({
+      sql: 'SELECT * FROM xitique_receipts WHERE xitique_id = ?',
+      args: [x.id]
+    });
+    return { ...x, cycles: cyclesRes.rows, contributions: contributionsRes.rows, receipts: receiptsRes.rows };
+  }));
   res.json(fullList);
 };
 
@@ -28,44 +42,38 @@ const createXitique = async (req, res, next) => {
       return res.status(400).json({ error: 'Sua posição não pode ser maior que o total de participantes' });
     }
 
-    const transaction = db.transaction(() => {
-      const info = db.prepare(`
-        INSERT INTO xitiques (name, monthly_amount, total_participants, start_date, your_position, household_id)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `).run(data.name, data.monthlyAmount, data.totalParticipants, data.startDate, data.yourPosition, req.user.householdId);
-      
-      const xitiqueId = info.lastInsertRowid;
-      
-      // Generate Cycles
-      for (let i = 1; i <= data.totalParticipants; i++) {
+    const xResult = await db.execute({
+      sql: 'INSERT INTO xitiques (name, monthly_amount, total_participants, start_date, your_position, household_id) VALUES (?, ?, ?, ?, ?, ?)',
+      args: [data.name, data.monthlyAmount, data.totalParticipants, data.startDate, data.yourPosition, req.user.householdId]
+    });
+    const xitiqueId = Number(xResult.lastInsertRowid);
+
+    // Sequential creation for reliable lastInsertRowid
+    for (let i = 1; i <= data.totalParticipants; i++) {
         const date = new Date(data.startDate);
         date.setMonth(date.getMonth() + (i - 1));
         const dueDate = date.toISOString().slice(0, 7);
         
-        const cycleInfo = db.prepare(`
-          INSERT INTO xitique_cycles (xitique_id, cycle_number, due_date, receiver_position)
-          VALUES (?, ?, ?, ?)
-        `).run(xitiqueId, i, dueDate, i);
+        const cResult = await db.execute({
+          sql: 'INSERT INTO xitique_cycles (xitique_id, cycle_number, due_date, receiver_position) VALUES (?, ?, ?, ?)',
+          args: [xitiqueId, i, dueDate, i]
+        });
+        const cycleId = Number(cResult.lastInsertRowid);
         
-        const cycleId = cycleInfo.lastInsertRowid;
-        
-        db.prepare(`
-          INSERT INTO xitique_contributions (xitique_id, cycle_id, amount, paid)
-          VALUES (?, ?, ?, 0)
-        `).run(xitiqueId, cycleId, data.monthlyAmount);
+        await db.execute({
+          sql: 'INSERT INTO xitique_contributions (xitique_id, cycle_id, amount, paid) VALUES (?, ?, ?, 0)',
+          args: [xitiqueId, cycleId, data.monthlyAmount]
+        });
 
         if (i === data.yourPosition) {
-          db.prepare(`
-            INSERT INTO xitique_receipts (xitique_id, cycle_id, total_received)
-            VALUES (?, ?, ?)
-          `).run(xitiqueId, cycleId, data.monthlyAmount * data.totalParticipants);
+          await db.execute({
+            sql: 'INSERT INTO xitique_receipts (xitique_id, cycle_id, total_received) VALUES (?, ?, ?)',
+            args: [xitiqueId, cycleId, data.monthlyAmount * data.totalParticipants]
+          });
         }
-      }
-      return xitiqueId;
-    });
+    }
 
-    const id = transaction();
-    res.status(201).json({ id, ...data });
+    res.status(201).json({ id: xitiqueId, ...data });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     next(error);
@@ -73,7 +81,10 @@ const createXitique = async (req, res, next) => {
 };
 
 const deleteXitique = async (req, res) => {
-  db.prepare('DELETE FROM xitiques WHERE id = ? AND household_id = ?').run(req.params.id, req.user.householdId);
+  await db.execute({
+    sql: 'DELETE FROM xitiques WHERE id = ? AND household_id = ?',
+    args: [req.params.id, req.user.householdId]
+  });
   res.json({ success: true });
 };
 
@@ -82,24 +93,32 @@ const payContribution = async (req, res, next) => {
   const { contributionId } = req.params;
 
   try {
-    const contribution = db.prepare(`
-      SELECT c.*, x.name as xitique_name
-      FROM xitique_contributions c 
-      JOIN xitiques x ON c.xitique_id = x.id 
-      WHERE c.id = ? AND x.household_id = ?
-    `).get(contributionId, req.user.householdId);
+    const result = await db.execute({
+      sql: `
+        SELECT c.*, x.name as xitique_name
+        FROM xitique_contributions c 
+        JOIN xitiques x ON c.xitique_id = x.id 
+        WHERE c.id = ? AND x.household_id = ?
+      `,
+      args: [contributionId, req.user.householdId]
+    });
+    const contribution = result.rows[0];
 
-    if (!contribution) return res.status(403).json({ error: 'Access denied or contribution not found' });
+    if (!contribution) return res.status(403).json({ error: 'Acesso negado ou contribuição não encontrada' });
 
-    db.transaction(() => {
-      db.prepare('UPDATE xitique_contributions SET paid = 1, payment_date = ? WHERE id = ?')
-        .run(date, contributionId);
-      
-      db.prepare(`
-        INSERT INTO transactions (date, type, description, amount, category, note, household_id)
-        VALUES (?, 'despesa', ?, ?, 'Xitique', ?, ?)
-      `).run(date, `Contribuição Xitique: ${contribution.xitique_name}`, contribution.amount, 'Pagamento automático via módulo Xitique', req.user.householdId);
-    })();
+    await db.batch([
+      {
+        sql: 'UPDATE xitique_contributions SET paid = 1, payment_date = ? WHERE id = ?',
+        args: [date, contributionId]
+      },
+      {
+        sql: `
+          INSERT INTO transactions (date, type, description, amount, category, note, household_id)
+          VALUES (?, 'despesa', ?, ?, 'Xitique', ?, ?)
+        `,
+        args: [date, `Contribuição Xitique: ${contribution.xitique_name}`, contribution.amount, 'Pagamento automático via módulo Xitique', req.user.householdId]
+      }
+    ], "write");
 
     res.json({ success: true });
   } catch (error) {
@@ -112,24 +131,32 @@ const receiveFunds = async (req, res, next) => {
   const { receiptId } = req.params;
 
   try {
-    const receipt = db.prepare(`
-      SELECT r.*, x.name as xitique_name
-      FROM xitique_receipts r 
-      JOIN xitiques x ON r.xitique_id = x.id 
-      WHERE r.id = ? AND x.household_id = ?
-    `).get(receiptId, req.user.householdId);
+    const result = await db.execute({
+      sql: `
+        SELECT r.*, x.name as xitique_name
+        FROM xitique_receipts r 
+        JOIN xitiques x ON r.xitique_id = x.id 
+        WHERE r.id = ? AND x.household_id = ?
+      `,
+      args: [receiptId, req.user.householdId]
+    });
+    const receipt = result.rows[0];
 
-    if (!receipt) return res.status(403).json({ error: 'Access denied or receipt not found' });
+    if (!receipt) return res.status(403).json({ error: 'Acesso negado ou recebimento não encontrado' });
 
-    db.transaction(() => {
-      db.prepare('UPDATE xitique_receipts SET received_date = ? WHERE id = ?')
-        .run(date, receiptId);
-      
-      db.prepare(`
-        INSERT INTO transactions (date, type, description, amount, category, note, household_id)
-        VALUES (?, 'receita', ?, ?, 'Xitique', ?, ?)
-      `).run(date, `Recebimento Xitique: ${receipt.xitique_name}`, receipt.total_received, 'Recebimento automático via módulo Xitique', req.user.householdId);
-    })();
+    await db.batch([
+      {
+        sql: 'UPDATE xitique_receipts SET received_date = ? WHERE id = ?',
+        args: [date, receiptId]
+      },
+      {
+        sql: `
+          INSERT INTO transactions (date, type, description, amount, category, note, household_id)
+          VALUES (?, 'receita', ?, ?, 'Xitique', ?, ?)
+        `,
+        args: [date, `Recebimento Xitique: ${receipt.xitique_name}`, receipt.total_received, 'Recebimento automático via módulo Xitique', req.user.householdId]
+      }
+    ], "write");
 
     res.json({ success: true });
   } catch (error) {

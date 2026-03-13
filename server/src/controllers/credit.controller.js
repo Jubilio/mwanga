@@ -38,7 +38,7 @@ const submitApplication = async (req, res) => {
     const householdId = req.user.household_id;
 
     if (!amount || !months || !partner || !purpose) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: 'Faltam campos obrigatórios' });
     }
 
     // Get file paths if uploaded
@@ -48,41 +48,45 @@ const submitApplication = async (req, res) => {
     const rendaPath = files['rendaDocument'] ? files['rendaDocument'][0].filename : null;
     const selfiePath = files['selfieDocument'] ? files['selfieDocument'][0].filename : null;
 
-    const stmt = db.prepare(`
-      INSERT INTO credit_applications (
-        household_id, amount, months, partner, purpose, status,
-        bi_path, residencia_path, renda_path, selfie_path
-      ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
-    `);
-
-    const result = stmt.run(
-      householdId,
-      parseFloat(amount),
-      parseInt(months),
-      partner,
-      purpose,
-      biPath,
-      residenciaPath,
-      rendaPath,
-      selfiePath
-    );
+    const result = await db.execute({
+      sql: `
+        INSERT INTO credit_applications (
+          household_id, amount, months, partner, purpose, status,
+          bi_path, residencia_path, renda_path, selfie_path
+        ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
+      `,
+      args: [
+        householdId,
+        parseFloat(amount),
+        parseInt(months),
+        partner,
+        purpose,
+        biPath,
+        residenciaPath,
+        rendaPath,
+        selfiePath
+      ]
+    });
 
     logger.info(`Credit application ${result.lastInsertRowid} created for household ${householdId}`);
-    res.status(201).json({ message: 'Application submitted successfully', id: result.lastInsertRowid });
+    res.status(201).json({ message: 'Pedido submetido com sucesso', id: Number(result.lastInsertRowid) });
   } catch (error) {
     logger.error('Error submitting credit application:', error);
-    res.status(500).json({ error: 'Failed to submit application' });
+    res.status(500).json({ error: 'Falha ao submeter pedido' });
   }
 };
 
 const getApplications = async (req, res) => {
   try {
     const householdId = req.user.household_id;
-    const applications = db.prepare('SELECT * FROM credit_applications WHERE household_id = ? ORDER BY created_at DESC').all(householdId);
-    res.json(applications);
+    const result = await db.execute({
+      sql: 'SELECT * FROM credit_applications WHERE household_id = ? ORDER BY created_at DESC',
+      args: [householdId]
+    });
+    res.json(result.rows);
   } catch (error) {
     logger.error('Error fetching credit applications:', error);
-    res.status(500).json({ error: 'Failed to fetch applications' });
+    res.status(500).json({ error: 'Falha ao buscar pedidos' });
   }
 };
 

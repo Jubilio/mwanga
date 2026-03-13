@@ -18,17 +18,20 @@ const tools = [
     },
     // Execução determinística controlada
     execute: async ({ householdId }) => {
-      // 1. Lógica rigorosa ligada ao SQLite (sem invenções do LLM)
-      const thisMonth = new Date().toISOString().slice(0, 10);
-      const summary = db.prepare(`
-        SELECT 
-          SUM(CASE WHEN type='receita' THEN amount ELSE 0 END) as receita,
-          SUM(CASE WHEN type='despesa' THEN amount ELSE 0 END) as despesa
-        FROM transactions WHERE household_id = ?
-      `).get(householdId);
+      // 1. Lógica rigorosa ligada ao LibSQL
+      const summaryRes = await db.execute({
+        sql: `
+          SELECT 
+            SUM(CASE WHEN type='receita' THEN amount ELSE 0 END) as receita,
+            SUM(CASE WHEN type='despesa' THEN amount ELSE 0 END) as despesa
+          FROM transactions WHERE household_id = ?
+        `,
+        args: [householdId]
+      });
+      const summary = summaryRes.rows[0] || { receita: 0, despesa: 0 };
 
-      const income = summary.receita || 0;
-      const spent = summary.despesa || 0;
+      const income = Number(summary.receita || 0);
+      const spent = Number(summary.despesa || 0);
       const liquidity = income - spent;
 
       const score = income > 0 ? ((liquidity / income) * 100).toFixed(1) : 0;
@@ -63,14 +66,18 @@ const tools = [
       const now = new Date();
       const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
       
-      const budgets = db.prepare(`
-        SELECT b.category, b.limit_amount, COALESCE(SUM(t.amount), 0) as spent
-        FROM budgets b
-        LEFT JOIN transactions t ON t.category = b.category 
-          AND t.household_id = b.household_id AND t.type = 'despesa' AND t.date >= ?
-        WHERE b.household_id = ?
-        GROUP BY b.category
-      `).all(monthStart, householdId);
+      const budgetsRes = await db.execute({
+        sql: `
+          SELECT b.category, b.limit_amount, COALESCE(SUM(t.amount), 0) as spent
+          FROM budgets b
+          LEFT JOIN transactions t ON t.category = b.category 
+            AND t.household_id = b.household_id AND t.type = 'despesa' AND t.date >= ?
+          WHERE b.household_id = ?
+          GROUP BY b.category
+        `,
+        args: [monthStart, householdId]
+      });
+      const budgets = budgetsRes.rows;
 
       const exceeded = budgets.filter(b => b.spent > b.limit_amount);
       

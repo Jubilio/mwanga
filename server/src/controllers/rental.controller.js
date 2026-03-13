@@ -10,35 +10,48 @@ const rentalSchema = z.object({
 });
 
 const getRentals = async (req, res) => {
-  const data = db.prepare('SELECT * FROM rentals WHERE household_id = ? ORDER BY month DESC').all(req.user.householdId);
-  res.json(data);
+  const result = await db.execute({
+    sql: 'SELECT * FROM rentals WHERE household_id = ? ORDER BY month DESC',
+    args: [req.user.householdId]
+  });
+  res.json(result.rows);
 };
 
 const createRental = async (req, res, next) => {
   try {
     const data = rentalSchema.parse(req.body);
     
-    const transaction = db.transaction(() => {
-      const info = db.prepare('INSERT INTO rentals (month, landlord, amount, status, notes, household_id) VALUES (?, ?, ?, ?, ?, ?)')
-                    .run(data.month, data.landlord, data.amount, data.status, data.notes, req.user.householdId);
-      
-      if (data.status === 'pago') {
-        db.prepare(`
-          INSERT INTO transactions (date, type, description, amount, category, note, household_id)
-          VALUES (?, 'despesa', ?, ?, 'Renda', ?, ?)
-        `).run(
-          new Date().toISOString().slice(0, 10),
-          `Renda: ${data.month} - ${data.landlord}`,
-          data.amount,
-          data.notes || 'Pagamento registado via módulo Habitação',
-          req.user.householdId
-        );
-      }
-      return info.lastInsertRowid;
-    });
+    let lastRowId;
+    if (data.status === 'pago') {
+      const result = await db.batch([
+        {
+          sql: 'INSERT INTO rentals (month, landlord, amount, status, notes, household_id) VALUES (?, ?, ?, ?, ?, ?)',
+          args: [data.month, data.landlord, data.amount, data.status, data.notes, req.user.householdId]
+        },
+        {
+          sql: `
+            INSERT INTO transactions (date, type, description, amount, category, note, household_id)
+            VALUES (?, 'despesa', ?, ?, 'Renda', ?, ?)
+          `,
+          args: [
+            new Date().toISOString().slice(0, 10),
+            `Renda: ${data.month} - ${data.landlord}`,
+            data.amount,
+            data.notes || 'Pagamento registado via módulo Habitação',
+            req.user.householdId
+          ]
+        }
+      ], "write");
+      lastRowId = result[0].lastInsertRowid;
+    } else {
+      const result = await db.execute({
+        sql: 'INSERT INTO rentals (month, landlord, amount, status, notes, household_id) VALUES (?, ?, ?, ?, ?, ?)',
+        args: [data.month, data.landlord, data.amount, data.status, data.notes, req.user.householdId]
+      });
+      lastRowId = result.lastInsertRowid;
+    }
 
-    const id = transaction();
-    res.status(201).json({ id, ...data });
+    res.status(201).json({ id: Number(lastRowId), ...data });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     next(error);
@@ -46,7 +59,10 @@ const createRental = async (req, res, next) => {
 };
 
 const deleteRental = async (req, res) => {
-  db.prepare('DELETE FROM rentals WHERE id = ? AND household_id = ?').run(req.params.id, req.user.householdId);
+  await db.execute({
+    sql: 'DELETE FROM rentals WHERE id = ? AND household_id = ?',
+    args: [req.params.id, req.user.householdId]
+  });
   res.json({ success: true });
 };
 

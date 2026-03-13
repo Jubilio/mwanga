@@ -31,43 +31,60 @@ FORMATO DE RESPOSTA:
 `.trim();
 
 // ─── Financial Context Builder ─────────────────────────────────────────────────
-function buildUserContext(householdId) {
+async function buildUserContext(householdId) {
   try {
     const fmt = (n) => Number(n || 0).toLocaleString('pt-MZ', { minimumFractionDigits: 2 });
     const now = new Date();
     const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
 
-    // 1. Summary
-    const summary = db.prepare(`
-      SELECT 
-        SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as receitas,
-        SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as despesas
-      FROM transactions 
-      WHERE household_id = ? AND date >= ?
-    `).get(householdId, monthStart) || { receitas: 0, despesas: 0 };
+    // Fetch all context data in parallel
+    const [summaryRes, recentTxRes, budgetsRes, assetsRes, liabsRes] = await Promise.all([
+      db.execute({
+        sql: `
+          SELECT 
+            SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as receitas,
+            SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as despesas
+          FROM transactions 
+          WHERE household_id = ? AND date >= ?
+        `,
+        args: [householdId, monthStart]
+      }),
+      db.execute({
+        sql: `
+          SELECT description, amount, type, category, date 
+          FROM transactions 
+          WHERE household_id = ? 
+          ORDER BY date DESC, id DESC LIMIT 5
+        `,
+        args: [householdId]
+      }),
+      db.execute({
+        sql: `
+          SELECT b.category, b.limit_amount, COALESCE(SUM(t.amount), 0) as spent
+          FROM budgets b
+          LEFT JOIN transactions t ON t.category = b.category 
+            AND t.household_id = b.household_id
+            AND t.type = 'despesa' AND t.date >= ?
+          WHERE b.household_id = ?
+          GROUP BY b.category
+        `,
+        args: [monthStart, householdId]
+      }),
+      db.execute({
+        sql: `SELECT SUM(value) as total FROM assets WHERE household_id = ?`,
+        args: [householdId]
+      }),
+      db.execute({
+        sql: `SELECT SUM(remaining_amount) as total FROM debts WHERE household_id = ? AND status = 'pending'`,
+        args: [householdId]
+      })
+    ]);
 
-    // 2. Recent Transactions (Last 5)
-    const recentTx = db.prepare(`
-      SELECT description, amount, type, category, date 
-      FROM transactions 
-      WHERE household_id = ? 
-      ORDER BY date DESC, id DESC LIMIT 5
-    `).all(householdId);
-
-    // 3. Budgets
-    const budgets = db.prepare(`
-      SELECT b.category, b.limit_amount, COALESCE(SUM(t.amount), 0) as spent
-      FROM budgets b
-      LEFT JOIN transactions t ON t.category = b.category 
-        AND t.household_id = b.household_id
-        AND t.type = 'despesa' AND t.date >= ?
-      WHERE b.household_id = ?
-      GROUP BY b.category
-    `).all(monthStart, householdId);
-
-    // 4. Assets & Liabilities Summary
-    const assets = db.prepare(`SELECT SUM(value) as total FROM assets WHERE household_id = ?`).get(householdId);
-    const liabs = db.prepare(`SELECT SUM(remaining_amount) as total FROM debts WHERE household_id = ? AND status = 'pending'`).get(householdId);
+    const summary = summaryRes.rows[0] || { receitas: 0, despesas: 0 };
+    const recentTx = recentTxRes.rows;
+    const budgets = budgetsRes.rows;
+    const assets = assetsRes.rows[0];
+    const liabs = liabsRes.rows[0];
 
     return `
 === ESTADO FINANCEIRO ACTUAL ===
@@ -160,7 +177,7 @@ function getFallbackResponse(userMessage) {
 
 // ─── Main Caller with Fallback ─────────────────────────────────────────────────
 async function callBinth({ messages, apiKey, provider = 'gemini', householdId }) {
-  const userContext = buildUserContext(householdId);
+  const userContext = await buildUserContext(householdId);
   const system = BINTH_SYSTEM_PROMPT.replace('{user_context}', userContext);
 
   // Try preferred provider first, then fall back

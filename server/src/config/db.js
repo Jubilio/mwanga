@@ -1,19 +1,29 @@
-const Database = require('better-sqlite3');
+const { createClient } = require('@libsql/client');
 const path = require('path');
 const logger = require('../utils/logger');
 
-const db = new Database(path.join(__dirname, '../../mwanga_v1.db'));
+// Support both local SQLite file and Turso Cloud
+const isProd = process.env.NODE_ENV === 'production';
+const dbUrl = isProd ? process.env.TURSO_DATABASE_URL : `file:${path.join(__dirname, '../../mwanga_v1.db')}`;
+const dbToken = process.env.TURSO_AUTH_TOKEN;
+
+const db = createClient({
+  url: dbUrl,
+  authToken: dbToken,
+});
 
 // Initialize Tables (Schema)
-const initDb = () => {
+const initDb = async () => {
   try {
-    db.exec(`
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS households (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -23,7 +33,9 @@ const initDb = () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
@@ -40,7 +52,9 @@ const initDb = () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS budgets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         category TEXT NOT NULL,
@@ -49,7 +63,9 @@ const initDb = () => {
         UNIQUE(category, household_id),
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS goals (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -62,7 +78,9 @@ const initDb = () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS rentals (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         month TEXT NOT NULL,
@@ -74,7 +92,9 @@ const initDb = () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS assets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -84,7 +104,9 @@ const initDb = () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS liabilities (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -95,7 +117,9 @@ const initDb = () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS xitiques (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -109,7 +133,9 @@ const initDb = () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS xitique_cycles (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         xitique_id INTEGER NOT NULL,
@@ -119,7 +145,9 @@ const initDb = () => {
         status TEXT DEFAULT 'pending',
         FOREIGN KEY(xitique_id) REFERENCES xitiques(id) ON DELETE CASCADE
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS xitique_contributions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         xitique_id INTEGER NOT NULL,
@@ -130,7 +158,9 @@ const initDb = () => {
         FOREIGN KEY(xitique_id) REFERENCES xitiques(id) ON DELETE CASCADE,
         FOREIGN KEY(cycle_id) REFERENCES xitique_cycles(id) ON DELETE CASCADE
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS xitique_receipts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         xitique_id INTEGER NOT NULL,
@@ -140,7 +170,9 @@ const initDb = () => {
         FOREIGN KEY(xitique_id) REFERENCES xitiques(id) ON DELETE CASCADE,
         FOREIGN KEY(cycle_id) REFERENCES xitique_cycles(id) ON DELETE CASCADE
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS settings (
         key TEXT NOT NULL,
         value TEXT,
@@ -148,7 +180,9 @@ const initDb = () => {
         PRIMARY KEY(key, household_id),
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS notifications (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         household_id INTEGER,
@@ -158,7 +192,9 @@ const initDb = () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS audit_log (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
@@ -168,7 +204,9 @@ const initDb = () => {
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS accounts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -179,7 +217,9 @@ const initDb = () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS debts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         creditor_name TEXT NOT NULL,
@@ -191,7 +231,9 @@ const initDb = () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS debt_payments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         debt_id INTEGER NOT NULL,
@@ -202,7 +244,9 @@ const initDb = () => {
         FOREIGN KEY(debt_id) REFERENCES debts(id) ON DELETE CASCADE,
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS financial_messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         tenant_id INTEGER,
@@ -213,7 +257,9 @@ const initDb = () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(tenant_id) REFERENCES households(id)
       );
+    `);
 
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS credit_applications (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         amount REAL NOT NULL,
@@ -230,10 +276,11 @@ const initDb = () => {
         FOREIGN KEY(household_id) REFERENCES households(id)
       );
     `);
+
     logger.info('Database tables initialized.');
     
     // Check for migrations
-    runMigrations();
+    await runMigrations();
 
   } catch (error) {
     logger.error('Database initialization failed:', error);
@@ -241,53 +288,54 @@ const initDb = () => {
   }
 };
 
-const runMigrations = () => {
+const runMigrations = async () => {
   try {
-    const settingsColumns = db.prepare("PRAGMA table_info(settings)").all();
-    const hasHouseholdId = settingsColumns.some(col => col.name === 'household_id');
+    const settingsColumns = await db.execute("PRAGMA table_info(settings)");
+    const hasHouseholdId = settingsColumns.rows.some(col => col.name === 'household_id');
 
-    if (!hasHouseholdId && settingsColumns.length > 0) {
+    if (!hasHouseholdId && settingsColumns.rows.length > 0) {
       logger.info('Migrating settings table to include household_id...');
-      let firstHousehold = db.prepare('SELECT id FROM households LIMIT 1').get();
+      let firstHousehold = (await db.execute('SELECT id FROM households LIMIT 1')).rows[0];
       if (!firstHousehold) {
-        const hInfo = db.prepare("INSERT INTO households (name) VALUES (?)").run('Default Household');
+        const hInfo = await db.execute({
+          sql: "INSERT INTO households (name) VALUES (?)",
+          args: ['Default Household']
+        });
         firstHousehold = { id: hInfo.lastInsertRowid };
       }
       const householdId = firstHousehold.id;
 
-      db.transaction(() => {
-        const oldData = db.prepare('SELECT * FROM settings').all();
-        db.prepare('DROP TABLE settings').run();
-        db.prepare(`
-          CREATE TABLE settings (
-            key TEXT NOT NULL,
-            value TEXT,
-            household_id INTEGER,
-            PRIMARY KEY(key, household_id),
-            FOREIGN KEY(household_id) REFERENCES households(id)
-          )
-        `).run();
+      const oldData = (await db.execute('SELECT * FROM settings')).rows;
+      await db.execute('DROP TABLE settings');
+      await db.execute(`
+        CREATE TABLE settings (
+          key TEXT NOT NULL,
+          value TEXT,
+          household_id INTEGER,
+          PRIMARY KEY(key, household_id),
+          FOREIGN KEY(household_id) REFERENCES households(id)
+        )
+      `);
 
-        const insert = db.prepare('INSERT INTO settings (key, value, household_id) VALUES (?, ?, ?)');
-        for (const row of oldData) {
-          insert.run(row.key, row.value, householdId);
-        }
-      })();
+      for (const row of oldData) {
+        await db.execute({
+          sql: 'INSERT INTO settings (key, value, household_id) VALUES (?, ?, ?)',
+          args: [row.key, row.value, householdId]
+        });
+      }
       logger.info('Settings migration completed.');
     }
 
     // Migration for transactions SMS fields
-    const txColumns = db.prepare("PRAGMA table_info(transactions)").all();
-    const hasSourceType = txColumns.some(col => col.name === 'source_type');
+    const txColumns = await db.execute("PRAGMA table_info(transactions)");
+    const hasSourceType = txColumns.rows.some(col => col.name === 'source_type');
     
     if (!hasSourceType) {
       logger.info('Migrating transactions table to include SMS parsing fields...');
-      db.exec(`
-        ALTER TABLE transactions ADD COLUMN source_type TEXT DEFAULT 'manual';
-        ALTER TABLE transactions ADD COLUMN external_reference TEXT;
-        ALTER TABLE transactions ADD COLUMN fee_amount REAL DEFAULT 0;
-        ALTER TABLE transactions ADD COLUMN confidence_score REAL;
-      `);
+      await db.execute(`ALTER TABLE transactions ADD COLUMN source_type TEXT DEFAULT 'manual'`);
+      await db.execute(`ALTER TABLE transactions ADD COLUMN external_reference TEXT`);
+      await db.execute(`ALTER TABLE transactions ADD COLUMN fee_amount REAL DEFAULT 0`);
+      await db.execute(`ALTER TABLE transactions ADD COLUMN confidence_score REAL`);
       logger.info('Transactions migration completed.');
     }
   } catch (error) {

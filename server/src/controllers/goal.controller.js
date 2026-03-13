@@ -11,16 +11,21 @@ const goalSchema = z.object({
 });
 
 const getGoals = async (req, res) => {
-  const data = db.prepare('SELECT * FROM goals WHERE household_id = ?').all(req.user.householdId);
-  res.json(data);
+  const result = await db.execute({
+    sql: 'SELECT * FROM goals WHERE household_id = ?',
+    args: [req.user.householdId]
+  });
+  res.json(result.rows);
 };
 
 const createGoal = async (req, res, next) => {
   try {
     const data = goalSchema.parse(req.body);
-    const info = db.prepare('INSERT INTO goals (name, target_amount, saved_amount, deadline, category, monthly_saving, household_id) VALUES (?, ?, ?, ?, ?, ?, ?)')
-                  .run(data.name, data.targetAmount, data.savedAmount, data.deadline, data.category, data.monthlySaving, req.user.householdId);
-    res.status(201).json({ id: info.lastInsertRowid, ...data });
+    const result = await db.execute({
+      sql: 'INSERT INTO goals (name, target_amount, saved_amount, deadline, category, monthly_saving, household_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      args: [data.name, data.targetAmount, data.savedAmount, data.deadline, data.category, data.monthlySaving, req.user.householdId]
+    });
+    res.status(201).json({ id: Number(result.lastInsertRowid), ...data });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     next(error);
@@ -29,12 +34,18 @@ const createGoal = async (req, res, next) => {
 
 const updateGoalProgress = async (req, res) => {
   const { savedAmount } = req.body;
-  db.prepare('UPDATE goals SET saved_amount = ? WHERE id = ? AND household_id = ?').run(savedAmount, req.params.id, req.user.householdId);
+  await db.execute({
+    sql: 'UPDATE goals SET saved_amount = ? WHERE id = ? AND household_id = ?',
+    args: [savedAmount, req.params.id, req.user.householdId]
+  });
   res.json({ success: true });
 };
 
 const deleteGoal = async (req, res) => {
-  db.prepare('DELETE FROM goals WHERE id = ? AND household_id = ?').run(req.params.id, req.user.householdId);
+  await db.execute({
+    sql: 'DELETE FROM goals WHERE id = ? AND household_id = ?',
+    args: [req.params.id, req.user.householdId]
+  });
   res.json({ success: true });
 };
 

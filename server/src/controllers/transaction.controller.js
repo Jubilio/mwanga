@@ -11,16 +11,21 @@ const transactionSchema = z.object({
 });
 
 const getTransactions = async (req, res) => {
-  const ts = db.prepare('SELECT * FROM transactions WHERE household_id = ? ORDER BY date DESC').all(req.user.householdId);
-  res.json(ts);
+  const result = await db.execute({
+    sql: 'SELECT * FROM transactions WHERE household_id = ? ORDER BY date DESC',
+    args: [req.user.householdId]
+  });
+  res.json(result.rows);
 };
 
 const createTransaction = async (req, res, next) => {
   try {
     const data = transactionSchema.parse(req.body);
-    const info = db.prepare('INSERT INTO transactions (date, type, description, amount, category, note, household_id) VALUES (?, ?, ?, ?, ?, ?, ?)')
-                  .run(data.date, data.type, data.description, data.amount, data.category, data.note, req.user.householdId);
-    res.status(201).json({ id: info.lastInsertRowid, ...data });
+    const result = await db.execute({
+      sql: 'INSERT INTO transactions (date, type, description, amount, category, note, household_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      args: [data.date, data.type, data.description, data.amount, data.category, data.note, req.user.householdId]
+    });
+    res.status(201).json({ id: Number(result.lastInsertRowid), ...data });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     next(error);
@@ -28,10 +33,17 @@ const createTransaction = async (req, res, next) => {
 };
 
 const deleteTransaction = async (req, res) => {
-  const tx = db.prepare('SELECT * FROM transactions WHERE id = ? AND household_id = ?').get(req.params.id, req.user.householdId);
-  if (!tx) return res.status(403).json({ error: 'Access denied or not found' });
+  const result = await db.execute({
+    sql: 'SELECT * FROM transactions WHERE id = ? AND household_id = ?',
+    args: [req.params.id, req.user.householdId]
+  });
+  const tx = result.rows[0];
+  if (!tx) return res.status(403).json({ error: 'Acesso negado ou não encontrado' });
   
-  db.prepare('DELETE FROM transactions WHERE id = ?').run(req.params.id);
+  await db.execute({
+    sql: 'DELETE FROM transactions WHERE id = ?',
+    args: [req.params.id]
+  });
   res.json({ success: true });
 };
 

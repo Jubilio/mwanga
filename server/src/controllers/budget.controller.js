@@ -7,15 +7,20 @@ const budgetSchema = z.object({
 });
 
 const getBudgets = async (req, res) => {
-  const data = db.prepare('SELECT * FROM budgets WHERE household_id = ?').all(req.user.householdId);
-  res.json(data);
+  const result = await db.execute({
+    sql: 'SELECT * FROM budgets WHERE household_id = ?',
+    args: [req.user.householdId]
+  });
+  res.json(result.rows);
 };
 
 const upsertBudget = async (req, res, next) => {
   try {
     const { category, limit } = budgetSchema.parse(req.body);
-    db.prepare('INSERT INTO budgets (category, limit_amount, household_id) VALUES (?, ?, ?) ON CONFLICT(category, household_id) DO UPDATE SET limit_amount = ?')
-      .run(category, limit, req.user.householdId, limit);
+    await db.execute({
+      sql: 'INSERT INTO budgets (category, limit_amount, household_id) VALUES (?, ?, ?) ON CONFLICT(category, household_id) DO UPDATE SET limit_amount = ?',
+      args: [category, limit, req.user.householdId, limit]
+    });
     res.json({ category, limit });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });

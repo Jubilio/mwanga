@@ -22,25 +22,26 @@ const register = async (req, res, next) => {
   try {
     const { name, email, password, householdName } = registerSchema.parse(req.body);
 
-    const transaction = db.transaction(() => {
-      // Create household
-      const hInfo = db.prepare('INSERT INTO households (name) VALUES (?)').run(householdName || `${name}'s Home`);
-      const householdId = hInfo.lastInsertRowid;
-
-      // Hash password
-      const salt = bcrypt.genSaltSync(10);
-      const hash = bcrypt.hashSync(password, salt);
-
-      const uInfo = db.prepare('INSERT INTO users (name, email, password_hash, household_id) VALUES (?, ?, ?, ?)')
-                    .run(name, email, hash, householdId);
-      
-      const userId = uInfo.lastInsertRowid;
-      logAction(userId, 'REGISTER', 'USER', userId);
-      
-      return { id: userId, name, email, householdId };
+    // Create household
+    const hInfo = await db.execute({
+      sql: 'INSERT INTO households (name) VALUES (?)',
+      args: [householdName || `${name}'s Home`]
     });
+    const householdId = Number(hInfo.lastInsertRowid);
 
-    const user = transaction();
+    // Hash password
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+
+    const uInfo = await db.execute({
+      sql: 'INSERT INTO users (name, email, password_hash, household_id) VALUES (?, ?, ?, ?)',
+      args: [name, email, hash, householdId]
+    });
+    
+    const userId = Number(uInfo.lastInsertRowid);
+    await logAction(userId, 'REGISTER', 'USER', userId);
+    
+    const user = { id: userId, name, email, householdId };
     const token = jwt.sign({ id: user.id, householdId: user.householdId }, JWT_SECRET, { expiresIn: '7d' });
     
     res.status(201).json({ user, token });
@@ -49,8 +50,8 @@ const register = async (req, res, next) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: error.errors });
     }
-    if (error.message.includes('UNIQUE constraint failed: users.email')) {
-      return res.status(400).json({ error: 'Email already exists' });
+    if (error.message && error.message.includes('UNIQUE constraint failed: users.email')) {
+      return res.status(400).json({ error: 'Email já existe' });
     }
     next(error);
   }
@@ -59,16 +60,20 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { email, password } = loginSchema.parse(req.body);
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    const result = await db.execute({
+      sql: 'SELECT * FROM users WHERE email = ?',
+      args: [email]
+    });
+    const user = result.rows[0];
 
     if (!user || !bcrypt.compareSync(password, user.password_hash)) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
     const token = jwt.sign({ id: user.id, householdId: user.household_id }, JWT_SECRET, { expiresIn: '7d' });
     const userData = { id: user.id, name: user.name, email: user.email, householdId: user.household_id };
     
-    logAction(user.id, 'LOGIN', 'USER', user.id);
+    await logAction(user.id, 'LOGIN', 'USER', user.id);
     res.json({ user: userData, token });
 
   } catch (error) {
@@ -80,14 +85,20 @@ const login = async (req, res, next) => {
 };
 
 const getMe = async (req, res) => {
-  const user = db.prepare('SELECT id, name, email, household_id as householdId FROM users WHERE id = ?').get(req.user.id);
-  res.json(user);
+  const result = await db.execute({
+    sql: 'SELECT id, name, email, household_id as householdId FROM users WHERE id = ?',
+    args: [req.user.id]
+  });
+  res.json(result.rows[0]);
 };
 
 const updateProfile = async (req, res) => {
   const { name } = req.body;
-  db.prepare('UPDATE users SET name = ? WHERE id = ?').run(name, req.user.id);
-  logAction(req.user.id, 'UPDATE_PROFILE', 'USER', req.user.id);
+  await db.execute({
+    sql: 'UPDATE users SET name = ? WHERE id = ?',
+    args: [name, req.user.id]
+  });
+  await logAction(req.user.id, 'UPDATE_PROFILE', 'USER', req.user.id);
   res.json({ success: true, name });
 };
 

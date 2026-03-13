@@ -8,25 +8,33 @@ const getOverview = async (req, res) => {
   last30Days.setDate(last30Days.getDate() - 30);
   const dateStr = last30Days.toISOString().slice(0, 10);
 
-  const categorySpending = db.prepare(`
-    SELECT category, SUM(amount) as total 
-    FROM transactions 
-    WHERE household_id = ? AND date >= ? AND type = 'despesa'
-    GROUP BY category
-    ORDER BY total DESC
-  `).all(householdId, dateStr);
+  const catResult = await db.execute({
+    sql: `
+      SELECT category, SUM(amount) as total 
+      FROM transactions 
+      WHERE household_id = ? AND date >= ? AND type = 'despesa'
+      GROUP BY category
+      ORDER BY total DESC
+    `,
+    args: [householdId, dateStr]
+  });
+  const categorySpending = catResult.rows;
 
   // Income vs Expenses (Last 6 months)
-  const monthlyTrends = db.prepare(`
-    SELECT strftime('%Y-%m', date) as month, 
-           SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as income,
-           SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as expenses
-    FROM transactions 
-    WHERE household_id = ?
-    GROUP BY month
-    ORDER BY month DESC
-    LIMIT 6
-  `).all(householdId);
+  const trendResult = await db.execute({
+    sql: `
+      SELECT strftime('%Y-%m', date) as month, 
+             SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as income,
+             SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as expenses
+      FROM transactions 
+      WHERE household_id = ?
+      GROUP BY month
+      ORDER BY month DESC
+      LIMIT 6
+    `,
+    args: [householdId]
+  });
+  const monthlyTrends = trendResult.rows;
 
   // Savings Projection (Simple logic)
   const avgMonthlySavings = monthlyTrends.reduce((acc, curr) => acc + (curr.income - curr.expenses), 0) / (monthlyTrends.length || 1);
@@ -43,7 +51,7 @@ const getOverview = async (req, res) => {
 
   res.json({
     categorySpending,
-    monthlyTrends: monthlyTrends.reverse(),
+    monthlyTrends: [...monthlyTrends].reverse(),
     projection: {
       avgMonthlySavings,
       projectedYearlySavings: avgMonthlySavings * 12

@@ -43,26 +43,47 @@ const getScore = async (req, res) => {
     const now = new Date();
     const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
 
-    // Financial data for score calculation
-    const summary = db.prepare(`
-      SELECT 
-        SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as receitas,
-        SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as despesas
-      FROM transactions WHERE household_id = ? AND date >= ?
-    `).get(householdId, monthStart) || { receitas: 0, despesas: 0 };
+    // Financial data for score calculation in parallel
+    const [summaryRes, budgetsRes, goalsRes, debtsRes, xitiqueRes] = await Promise.all([
+      db.execute({
+        sql: `
+          SELECT 
+            SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as receitas,
+            SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as despesas
+          FROM transactions WHERE household_id = ? AND date >= ?
+        `,
+        args: [householdId, monthStart]
+      }),
+      db.execute({
+        sql: `
+          SELECT b.category, b.limit_amount, COALESCE(SUM(t.amount), 0) as spent
+          FROM budgets b
+          LEFT JOIN transactions t ON t.category = b.category 
+            AND t.household_id = b.household_id AND t.type = 'despesa' AND t.date >= ?
+          WHERE b.household_id = ?
+          GROUP BY b.category
+        `,
+        args: [monthStart, householdId]
+      }),
+      db.execute({
+        sql: `SELECT target_amount, saved_amount FROM goals WHERE household_id = ?`,
+        args: [householdId]
+      }),
+      db.execute({
+        sql: `SELECT SUM(remaining_amount) as total FROM debts WHERE household_id = ? AND status = 'pending'`,
+        args: [householdId]
+      }),
+      db.execute({
+        sql: `SELECT id FROM xitiques WHERE household_id = ? AND status = 'active' LIMIT 1`,
+        args: [householdId]
+      })
+    ]);
 
-    const budgets = db.prepare(`
-      SELECT b.category, b.limit_amount, COALESCE(SUM(t.amount), 0) as spent
-      FROM budgets b
-      LEFT JOIN transactions t ON t.category = b.category 
-        AND t.household_id = b.household_id AND t.type = 'despesa' AND t.date >= ?
-      WHERE b.household_id = ?
-      GROUP BY b.category
-    `).all(monthStart, householdId);
-
-    const goals = db.prepare(`SELECT target_amount, saved_amount FROM goals WHERE household_id = ?`).all(householdId);
-    const debts = db.prepare(`SELECT SUM(remaining_amount) as total FROM debts WHERE household_id = ? AND status = 'pending'`).get(householdId);
-    const xitique = db.prepare(`SELECT id FROM xitiques WHERE household_id = ? AND status = 'active' LIMIT 1`).get(householdId);
+    const summary = summaryRes.rows[0] || { receitas: 0, despesas: 0 };
+    const budgets = budgetsRes.rows;
+    const goals = goalsRes.rows;
+    const debts = debtsRes.rows[0];
+    const xitique = xitiqueRes.rows[0];
 
     const receitas = summary.receitas || 0;
     const despesas = summary.despesas || 0;

@@ -1,15 +1,23 @@
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
 
-exports.getDebts = (req, res) => {
+exports.getDebts = async (req, res) => {
   try {
     const householdId = req.user.householdId;
-    const debts = db.prepare('SELECT * FROM debts WHERE household_id = ? ORDER BY created_at DESC').all(householdId);
+    const result = await db.execute({
+      sql: 'SELECT * FROM debts WHERE household_id = ? ORDER BY created_at DESC',
+      args: [householdId]
+    });
+    const debts = result.rows;
     
-    // Attach payments to each debt
-    for (let d of debts) {
-      d.payments = db.prepare('SELECT * FROM debt_payments WHERE debt_id = ? ORDER BY payment_date DESC').all(d.id);
-    }
+    // Attach payments to each debt in parallel
+    await Promise.all(debts.map(async (d) => {
+      const pResult = await db.execute({
+        sql: 'SELECT * FROM debt_payments WHERE debt_id = ? ORDER BY payment_date DESC',
+        args: [d.id]
+      });
+      d.payments = pResult.rows;
+    }));
     
     res.json(debts);
   } catch (error) {
@@ -18,65 +26,70 @@ exports.getDebts = (req, res) => {
   }
 };
 
-exports.addDebt = (req, res) => {
+exports.addDebt = async (req, res) => {
   try {
     const { creditor_name, total_amount, due_date } = req.body;
     const householdId = req.user.householdId;
     
-    const stmt = db.prepare(`
-      INSERT INTO debts (creditor_name, total_amount, remaining_amount, due_date, status, household_id)
-      VALUES (?, ?, ?, ?, 'pending', ?)
-    `);
-    const info = stmt.run(creditor_name, total_amount, total_amount, due_date, householdId);
+    const result = await db.execute({
+      sql: `
+        INSERT INTO debts (creditor_name, total_amount, remaining_amount, due_date, status, household_id)
+        VALUES (?, ?, ?, ?, 'pending', ?)
+      `,
+      args: [creditor_name, total_amount, total_amount, due_date, householdId]
+    });
     
-    res.status(201).json({ id: info.lastInsertRowid, message: 'Debt added successfully' });
+    res.status(201).json({ id: Number(result.lastInsertRowid), message: 'Dívida adicionada com sucesso' });
   } catch (error) {
     logger.error('Error adding debt:', error);
     res.status(500).json({ error: 'Failed to add debt' });
   }
 };
 
-exports.deleteDebt = (req, res) => {
+exports.deleteDebt = async (req, res) => {
   try {
     const { id } = req.params;
     const householdId = req.user.householdId;
     
-    db.prepare('DELETE FROM debts WHERE id = ? AND household_id = ?').run(id, householdId);
-    res.json({ message: 'Debt deleted' });
+    await db.execute({
+      sql: 'DELETE FROM debts WHERE id = ? AND household_id = ?',
+      args: [id, householdId]
+    });
+    res.json({ message: 'Dívida eliminada' });
   } catch (error) {
     logger.error('Error deleting debt:', error);
     res.status(500).json({ error: 'Failed to delete debt' });
   }
 };
 
-exports.addPayment = (req, res) => {
+exports.addPayment = async (req, res) => {
   try {
     const { id } = req.params;
     const { amount, payment_date } = req.body;
     const householdId = req.user.householdId;
 
-    const debt = db.prepare('SELECT * FROM debts WHERE id = ? AND household_id = ?').get(id, householdId);
-    if (!debt) return res.status(404).json({ error: 'Debt not found' });
+    const result = await db.execute({
+      sql: 'SELECT * FROM debts WHERE id = ? AND household_id = ?',
+      args: [id, householdId]
+    });
+    const debt = result.rows[0];
+    if (!debt) return res.status(404).json({ error: 'Dívida não encontrada' });
 
-    db.transaction(() => {
-      // Create payment record
-      db.prepare(`
-        INSERT INTO debt_payments (debt_id, amount, payment_date, household_id)
-        VALUES (?, ?, ?, ?)
-      `).run(id, amount, payment_date, householdId);
+    const newRemaining = Math.max(0, debt.remaining_amount - amount);
+    const newStatus = newRemaining === 0 ? 'paid' : 'pending';
 
-      // Update remaining balance
-      const newRemaining = Math.max(0, debt.remaining_amount - amount);
-      const newStatus = newRemaining === 0 ? 'paid' : 'pending';
+    await db.batch([
+      {
+        sql: 'INSERT INTO debt_payments (debt_id, amount, payment_date, household_id) VALUES (?, ?, ?, ?)',
+        args: [id, amount, payment_date, householdId]
+      },
+      {
+        sql: 'UPDATE debts SET remaining_amount = ?, status = ? WHERE id = ?',
+        args: [newRemaining, newStatus, id]
+      }
+    ], "write");
 
-      db.prepare(`
-        UPDATE debts 
-        SET remaining_amount = ?, status = ?
-        WHERE id = ?
-      `).run(newRemaining, newStatus, id);
-    })();
-
-    res.status(201).json({ message: 'Payment registered successfully' });
+    res.status(201).json({ message: 'Pagamento registado com sucesso' });
   } catch (error) {
     logger.error('Error registering debt payment:', error);
     res.status(500).json({ error: 'Failed to register payment' });

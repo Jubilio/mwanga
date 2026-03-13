@@ -781,7 +781,7 @@ function TabApplication({ scoreData, eligData, onSuccess }) {
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {PURPOSES.map(p => (
                     <button key={p} onClick={() => setForm(f => ({ ...f, purpose: p }))} style={{
-                      padding: "7px 14px", borderRadius: 99, border: "none", cursor: "pointer",
+                      padding: "7px 14px", borderRadius: 99, cursor: "pointer",
                       background: form.purpose === p ? `${G.credit}25` : G.muted3,
                       border: `1px solid ${form.purpose === p ? G.credit : "transparent"}`,
                       color: form.purpose === p ? G.credit : G.muted, fontSize: 12, fontWeight: 600, fontFamily: "inherit",

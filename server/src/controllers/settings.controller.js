@@ -2,8 +2,11 @@ const { db } = require('../config/db');
 const { logAction } = require('../utils/audit');
 
 const getSettings = async (req, res) => {
-  const data = db.prepare('SELECT * FROM settings WHERE household_id = ?').all(req.user.householdId);
-  const settings = data.reduce((acc, curr) => {
+  const result = await db.execute({
+    sql: 'SELECT * FROM settings WHERE household_id = ?',
+    args: [req.user.householdId]
+  });
+  const settings = result.rows.reduce((acc, curr) => {
     acc[curr.key] = curr.value;
     return acc;
   }, {});
@@ -18,8 +21,10 @@ const upsertSetting = async (req, res) => {
     const safeValue = value === null || value === undefined ? '' : value.toString();
     const householdId = req.user.householdId;
 
-    db.prepare('INSERT INTO settings (key, value, household_id) VALUES (?, ?, ?) ON CONFLICT(key, household_id) DO UPDATE SET value = ?')
-      .run(key, safeValue, householdId, safeValue);
+    await db.execute({
+      sql: 'INSERT INTO settings (key, value, household_id) VALUES (?, ?, ?) ON CONFLICT(key, household_id) DO UPDATE SET value = ?',
+      args: [key, safeValue, householdId, safeValue]
+    });
     
     res.json({ success: true, key, value: safeValue });
   } catch (error) {
@@ -29,8 +34,11 @@ const upsertSetting = async (req, res) => {
 
 const updateHousehold = async (req, res) => {
   const { name } = req.body;
-  db.prepare('UPDATE households SET name = ? WHERE id = ?').run(name, req.user.householdId);
-  logAction(req.user.id, 'UPDATE_HOUSEHOLD', 'HOUSEHOLD', req.user.householdId);
+  await db.execute({
+    sql: 'UPDATE households SET name = ? WHERE id = ?',
+    args: [name, req.user.householdId]
+  });
+  await logAction(req.user.id, 'UPDATE_HOUSEHOLD', 'HOUSEHOLD', req.user.householdId);
   res.json({ success: true, name });
 };
 
