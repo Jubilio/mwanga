@@ -130,8 +130,19 @@ export function FinanceProvider({ children }) {
       const safeFetch = async (url) => {
         try {
           const res = await fetch(url, { headers });
+          if (res.status === 401) {
+            // Session expired or invalid — clear token so user is redirected to login
+            console.warn(`Session expired (401): ${url}. Clearing token.`);
+            localStorage.removeItem('mwanga-token');
+            dispatch({ type: 'SET_DATA', payload: { loading: false } });
+            return [];
+          }
           if (res.status === 429) {
             console.warn(`Rate limited: ${url}`);
+            return [];
+          }
+          if (!res.ok) {
+            console.warn(`Failed fetch (${res.status}): ${url}`);
             return [];
           }
           const contentType = res.headers.get('content-type');
