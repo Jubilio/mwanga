@@ -116,13 +116,19 @@ export default function Dashboard() {
           <div
             key={card.label}
             className={`glass-card animate-fade-in-up stagger-${i + 1} p-5`}
-            style={{ position: 'relative', overflow: 'hidden' }}
+            style={{ 
+              position: 'relative', 
+              overflow: 'hidden',
+              borderTop: `2px solid ${card.color}80`,
+              boxShadow: `0 8px 30px ${card.color}15, 0 1px 3px rgba(0,0,0,0.1)`
+            }}
           >
             <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, height: '4px',
-              background: card.color,
+              position: 'absolute', top: 0, left: 0, right: 0, height: '100px',
+              background: `linear-gradient(to bottom, ${card.color}15, transparent)`,
+              pointerEvents: 'none'
             }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
               <div>
                 <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1.2px', color: 'var(--color-muted)', marginBottom: '0.4rem' }}>
                   {card.label}

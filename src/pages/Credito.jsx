@@ -484,7 +484,7 @@ function TabSimulator({ scoreData, eligData, userData, isPro }) {
       <Card glow={isAffordable ? G.credit : G.red} style={{ background: isAffordable ? "rgba(16,185,129,0.06)" : "rgba(255,76,76,0.05)", border: `1px solid ${isAffordable ? G.credit : G.red}30` }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: G.muted, letterSpacing: "0.12em", marginBottom: 16 }}>RESULTADO DA SIMULAÇÃO</div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
           {[
             { l: "Parcela mensal", v: `MT ${fmt(parcela)}`, c: isAffordable ? G.green : G.red, big: true },
             { l: "Total a pagar", v: `MT ${fmt(totalDue)}`, c: G.text, big: true },
@@ -566,7 +566,7 @@ function TabSimulator({ scoreData, eligData, userData, isPro }) {
         <Card style={{ background: "rgba(96,165,250,0.05)", border: `1px solid ${G.blue}20` }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: G.blue, letterSpacing: "0.1em", marginBottom: 14 }}>📚 EDUCAÇÃO FINANCEIRA</div>
           <div style={{ fontSize: 13, color: G.text, fontWeight: 700, marginBottom: 8 }}>Juros Simples vs Compostos</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div style={{ background: G.muted3, borderRadius: 12, padding: 14 }}>
               <div style={{ fontSize: 11, color: G.muted, marginBottom: 6 }}>Juros Simples</div>
               <div style={{ fontSize: 15, fontWeight: 800, color: G.green }}>

@@ -107,19 +107,19 @@ export default function Layout() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', minHeight: '100vh' }}>
+      <div style={{ display: 'flex', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
         {/* ═══ SIDEBAR (Desktop) ═══ */}
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
         {/* ═══ MOBILE HEADER & CONTENT ═══ */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
           <header className="sticky top-0 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-md border-bottom p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button className="hide-desktop p-2" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
                 <Menu size={24} />
               </button>
               <div>
-                <h1 className="text-lg font-bold text-gray-800 dark:text-white">
+                <h1 className="text-lg font-bold text-gray-800 dark:text-white truncate max-w-[150px] sm:max-w-xs">
                   {navItems.find(i => i.to === location.pathname)?.label || 'Dashboard'}
                 </h1>
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest">{getCurrentMonthLabel()}</p>
@@ -143,7 +143,7 @@ export default function Layout() {
             </div>
           </header>
 
-          <main className="p-4 md:p-8 w-full flex-1 pb-24 md:pb-8">
+          <main className="p-4 md:p-8 w-full flex-1 pb-24 md:pb-8 flex flex-col pt-6 max-w-full overflow-hidden">
             <Outlet context={{ showToast }} />
           </main>
         </div>
