@@ -21,8 +21,13 @@ export default function Login() {
       ? { email: form.email, password: form.password }
       : form;
 
+    let apiUrl = import.meta.env.VITE_API_URL || '';
+    if (!apiUrl.endsWith('/api')) {
+      apiUrl = `${apiUrl.replace(/\/$/, '')}/api`;
+    }
+
     try {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
+      const resp = await fetch(`${apiUrl}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)

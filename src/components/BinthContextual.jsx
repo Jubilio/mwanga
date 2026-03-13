@@ -9,8 +9,13 @@ export default function BinthContextual({ page }) {
 
   const fetchInsight = async () => {
     setLoading(true);
+    let apiUrl = import.meta.env.VITE_API_URL || '';
+    if (!apiUrl.endsWith('/api')) {
+      apiUrl = `${apiUrl.replace(/\/$/, '')}/api`;
+    }
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/binth/insights/${page}`, {
+      const response = await fetch(`${apiUrl}/binth/insights/${page}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('mwanga-token')}`
         }

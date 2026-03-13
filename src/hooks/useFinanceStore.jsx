@@ -2,7 +2,10 @@ import { createContext, useContext, useReducer, useEffect } from 'react';
 import { generateDemoData } from '../utils/calculations';
 
 // Define the API Base URL
-const FINANCE_API_URL = import.meta.env.VITE_API_URL;
+let FINANCE_API_URL = import.meta.env.VITE_API_URL || '';
+if (!FINANCE_API_URL.endsWith('/api')) {
+  FINANCE_API_URL = `${FINANCE_API_URL.replace(/\/$/, '')}/api`;
+}
 
 const defaultState = {
   transacoes: [],
