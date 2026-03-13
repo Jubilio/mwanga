@@ -106,7 +106,7 @@ ${budgets.length > 0 ? budgets.map(b => `- ${b.category}: MT ${fmt(b.spent)} / M
 // ─── Multi-Provider Configuration ─────────────────────────────────────────────
 const PROVIDERS = {
   gemini: {
-    url: (key) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
+    url: (key) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
     headers: () => ({ 'Content-Type': 'application/json' }),
     body: (messages, system, tools = []) => ({
       system_instruction: { parts: [{ text: system }] },

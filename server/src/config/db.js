@@ -3,13 +3,19 @@ const path = require('path');
 const logger = require('../utils/logger');
 
 // Support both local SQLite file and Turso Cloud
-const dbUrl = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || process.env.DB_URL || `file:${path.join(__dirname, '../../mwanga_v1.db')}`;
-const dbToken = process.env.TURSO_AUTH_TOKEN;
+const dbUrl = process.env.TURSO_DATABASE_URL || process.env.DB_URL || process.env.DATABASE_URL || `file:${path.join(__dirname, '../../mwanga_v1.db')}`;
+const dbToken = process.env.TURSO_AUTH_TOKEN || process.env.DB_AUTH_TOKEN;
+
+logger.info(`Connecting to database: ${dbUrl.startsWith('libsql') ? dbUrl : 'local SQLite'}`);
+if (dbUrl.startsWith('libsql') && !dbToken) {
+  logger.error('TURSO_AUTH_TOKEN is missing! Remote Turso DB cannot authenticate. Set TURSO_AUTH_TOKEN in your .env or Render environment variables.');
+}
 
 const db = createClient({
   url: dbUrl,
   authToken: dbToken,
 });
+
 
 // Initialize Tables (Schema)
 const initDb = async () => {
