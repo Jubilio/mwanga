@@ -3,8 +3,7 @@ const path = require('path');
 const logger = require('../utils/logger');
 
 // Support both local SQLite file and Turso Cloud
-const isProd = process.env.NODE_ENV === 'production';
-const dbUrl = isProd ? process.env.TURSO_DATABASE_URL : `file:${path.join(__dirname, '../../mwanga_v1.db')}`;
+const dbUrl = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || process.env.DB_URL || `file:${path.join(__dirname, '../../mwanga_v1.db')}`;
 const dbToken = process.env.TURSO_AUTH_TOKEN;
 
 const db = createClient({
