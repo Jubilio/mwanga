@@ -88,8 +88,12 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideInRight {
@@ -104,14 +108,25 @@ body {
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(201, 150, 58, 0.2); }
-  50% { box-shadow: 0 0 20px rgba(201, 150, 58, 0.4); }
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(201, 150, 58, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(201, 150, 58, 0.4);
+  }
 }
 
 .animate-fade-in-up {
@@ -130,10 +145,18 @@ body {
   animation: glow 2s ease-in-out infinite;
 }
 
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
+.stagger-1 {
+  animation-delay: 0.05s;
+}
+.stagger-2 {
+  animation-delay: 0.1s;
+}
+.stagger-3 {
+  animation-delay: 0.15s;
+}
+.stagger-4 {
+  animation-delay: 0.2s;
+}
 
 /* ═══ Glass Card 2.0 ═══ */
 .glass-card {
@@ -142,8 +165,8 @@ body {
   backdrop-filter: blur(12px);
   border-radius: 24px;
   border: 1px solid var(--color-glass-border);
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
     0 10px 15px -3px rgba(0, 0, 0, 0.03);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -157,14 +180,18 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
   pointer-events: none;
 }
 
 .glass-card:hover {
   transform: translateY(-4px);
-  box-shadow: 
-    0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
   border-color: rgba(201, 150, 58, 0.3);
 }
@@ -175,7 +202,11 @@ body {
 
 /* ═══ Premium Badge ═══ */
 .premium-badge {
-  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-deep));
+  background: linear-gradient(
+    135deg,
+    var(--color-gold),
+    var(--color-gold-deep)
+  );
   color: var(--color-dark);
   padding: 0.2rem 0.6rem;
   border-radius: 6px;
@@ -192,13 +223,13 @@ body {
 /* ═══ Progress Bar ═══ */
 .progress-bar-track {
   height: 8px;
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 999px;
   overflow: hidden;
 }
 
 .dark .progress-bar-track {
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .progress-bar-fill {
@@ -500,6 +531,7 @@ body {
 }
 
 /* ═══ Responsive ═══ */
+/* ═══ Responsive Enhancements ═══ */
 @media (max-width: 768px) {
   .hide-mobile {
     display: none !important;
@@ -508,6 +540,16 @@ body {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
+  }
+
+  /* Mobile padding adjustments */
+  main {
+    padding: 1rem !important;
+  }
+
+  .glass-card {
+    padding: 1.25rem !important;
+    border-radius: 18px !important;
   }
 }
 
@@ -519,5 +561,46 @@ body {
   }
   .hide-desktop {
     display: none !important;
+  }
+}
+
+/* Fluid Typography */
+h1 {
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+}
+h2 {
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
+}
+h3 {
+  font-size: clamp(1.1rem, 3vw, 1.45rem);
+}
+
+/* Responsive Table Wrapper */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+}
+
+/* Scrollbar thinner for mobile */
+@media (max-width: 640px) {
+  ::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+}
+
+/* Grid adjustments */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -14,6 +14,7 @@ import NexoVibe from './pages/NexoVibe';
 import SmsImport from './pages/SmsImport';
 import Settings from './pages/Settings';
 import Dividas from './pages/Dividas';
+import Credito from './pages/Credito';
 import Pricing from './pages/Pricing';
 import Insights from './pages/Insights';
 import Login from './pages/Login';
@@ -43,6 +44,7 @@ export default function App() {
             <Route path="xitique" element={<Xitique />} />
             <Route path="metas" element={<Goals />} />
             <Route path="dividas" element={<Dividas />} />
+            <Route path="credito" element={<Credito />} />
             <Route path="simuladores" element={<Simulators />} />
             <Route path="relatorio" element={<Reports />} />
             <Route path="patrimonio" element={<Patrimony />} />

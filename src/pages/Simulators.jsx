@@ -8,6 +8,33 @@ import {
 } from 'recharts';
 import { fmt, calcCompoundInterest } from '../utils/calculations';
 
+// ─── PRO GATE ─────────────────────────────────────────────────────────────
+function ProGate({ children, isPro, title = "Funcionalidade Intelligence", description = "Desbloqueie simuladores avançados com o Plano PRO." }) {
+  if (isPro) return children;
+  return (
+    <div style={{ position: "relative", borderRadius: 24, overflow: "hidden" }}>
+      <div style={{ filter: "blur(8px)", pointerEvents: "none", userSelect: "none", opacity: 0.3 }}>
+        {children}
+      </div>
+      <div style={{
+        position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center", gap: 12, padding: 24,
+        background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)",
+        borderRadius: 24, border: "1px solid var(--color-gold-deep)",
+      }}>
+        <div style={{ fontSize: 40 }}>👑</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: "var(--color-gold-deep)", textAlign: "center" }}>{title}</div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", textAlign: "center", lineHeight: 1.6, maxWidth: 300 }}>{description}</div>
+        <a href="/pricing" className="btn btn-primary" style={{
+          marginTop: 10, padding: "12px 32px", borderRadius: 12,
+          textDecoration: "none", fontWeight: 700, fontSize: 14,
+          background: "var(--color-gold-deep)", color: "#000", border: 'none'
+        }}>Mudar para PRO →</a>
+      </div>
+    </div>
+  );
+}
+
 export default function Simulators() {
   const { state, dispatch } = useFinance();
   const { showToast } = useOutletContext();
@@ -29,6 +56,51 @@ export default function Simulators() {
   const [wantsPct, setWantsPct] = useState(30);
   const [activeModel, setActiveModel] = useState('50/30/20');
   const [actualSpending, setActualSpending] = useState({ needs: 0, wants: 0, savings: 0 });
+
+  // Portfolio Simulator State
+  const [portfolioTier, setPortfolioTier] = useState('Moderado');
+
+  const isPro = state.settings?.plan === 'pro';
+
+  // Portfolio Data
+  const portfolioData = {
+    'Conservador': {
+      data: [
+        { name: 'Ações', value: 20 },
+        { name: 'Obrigações', value: 60 },
+        { name: 'Cash', value: 20 },
+      ],
+      return: '8% aa',
+      risk: 'Baixo',
+      riskPct: 20,
+      returnPct: 40,
+      desc: 'Foco na preservação de capital com baixa volatilidade.'
+    },
+    'Moderado': {
+      data: [
+        { name: 'Ações', value: 50 },
+        { name: 'Obrigações', value: 40 },
+        { name: 'Cash', value: 10 },
+      ],
+      return: '12% aa',
+      risk: 'Média',
+      riskPct: 50,
+      returnPct: 70,
+      desc: 'Equilíbrio entre crescimento global e estabilidade de activos locais.'
+    },
+    'Agressivo': {
+      data: [
+        { name: 'Ações', value: 85 },
+        { name: 'Obrigações', value: 10 },
+        { name: 'Cash', value: 5 },
+      ],
+      return: '18% aa',
+      risk: 'Alta',
+      riskPct: 90,
+      returnPct: 95,
+      desc: 'Foco no crescimento máximo, aceitando fortes oscilações de curto prazo.'
+    }
+  };
 
   // Sync global salary only when settings are loaded or changed externally
   useEffect(() => {
@@ -500,115 +572,126 @@ export default function Simulators() {
           </div>
         </div>
       </div>
-      {/* Retirement Planner (Advanced) */}
-      <div className="glass-card" style={{ padding: '1.5rem', marginTop: '1.5rem' }}>
-        <div className="section-title">
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Target size={18} /> Planejador de Reforma (FIRE)
-          </span>
-        </div>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div>
-            <label className="form-label text-[10px]">Gasto Mensal Desejado (MT)</label>
-            <input type="number" className="form-input" value={monthly} onChange={e => setMonthly(parseFloat(e.target.value) || 0)} />
-          </div>
-          <div>
-            <label className="form-label text-[10px]">Inflação Estimada (% Anual)</label>
-            <input type="number" className="form-input" defaultValue={5} step="0.5" />
-          </div>
-          <div>
-            <label className="form-label text-[10px]">Idade Atual</label>
-            <input type="number" className="form-input" defaultValue={30} />
-          </div>
-          <div>
-            <label className="form-label text-[10px]">Idade de Reforma</label>
-            <input type="number" className="form-input" defaultValue={60} />
-          </div>
-        </div>
 
-        <div style={{ background: 'rgba(201, 150, 58, 0.05)', borderRadius: '16px', padding: '1.5rem', border: '1px solid rgba(201, 150, 58, 0.1)' }}>
-          <div className="text-center mb-6">
-            <div className="text-[10px] uppercase tracking-wider text-muted mb-1">Seu Número de Independência Financeira</div>
-            <div className="text-3xl font-black text-gold-deep">{fmt(monthly * 12 * 25)}</div>
-            <p className="text-[10px] text-muted mt-2">Baseado na Regra dos 4% (25x seu gasto anual)</p>
+      <ProGate isPro={isPro} title="Simuladores de Património PRO" description="Aceda a ferramentas de planeamento de reforma e alocação de activos avançadas.">
+        {/* Retirement Planner (FIRE) */}
+        <div className="glass-card" style={{ padding: '1.5rem', marginTop: '1.5rem' }}>
+          <div className="section-title">
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Target size={18} /> Planejador de Reforma (FIRE)
+            </span>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-              <div className="text-[10px] text-muted mb-1">Património Ajustado (30 anos)</div>
-              <div className="text-sm font-bold text-gray-200">{fmt(monthly * 12 * 25 * Math.pow(1.05, 30))}</div>
-            </div>
-            <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-              <div className="text-[10px] text-muted mb-1">Poupança Mensal Necessária</div>
-              <div className="text-sm font-bold text-ocean">{fmt(25000)}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Portfolio Risk/Return Simulator */}
-      <div className="glass-card" style={{ padding: '1.5rem', marginTop: '1.5rem' }}>
-        <div className="section-title">
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <BarChart3 size={18} /> Simulador de Alocação de Carteira
-          </span>
-        </div>
-        
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {['Conservador', 'Moderado', 'Agressivo'].map((p) => (
-            <button key={p} className={`btn btn-sm ${p === 'Moderado' ? 'btn-primary' : 'btn-ghost'}`}>{p}</button>
-          ))}
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height={192}>
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: 'Ações', value: 60, color: 'var(--color-ocean)' },
-                    { name: 'Obrigações', value: 30, color: 'var(--color-leaf)' },
-                    { name: 'Cash', value: 10, color: 'var(--color-gold)' },
-                  ]}
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  <Cell fill="var(--color-ocean)" />
-                  <Cell fill="var(--color-leaf)" />
-                  <Cell fill="var(--color-gold)" />
-                </Pie>
-                <RTooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="space-y-4">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
             <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted">Retorno Esperado</span>
-                <span className="font-bold text-leaf">~12% aa</span>
-              </div>
-              <div className="h-1 bg-black/10 rounded-full overflow-hidden">
-                <div className="h-full bg-leaf w-[70%]" />
-              </div>
+              <label className="form-label text-[10px]">Gasto Mensal Desejado (MT)</label>
+              <input type="number" className="form-input" value={monthly} onChange={e => setMonthly(parseFloat(e.target.value) || 0)} />
             </div>
             <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted">Risco (Volatilidade)</span>
-                <span className="font-bold text-coral">Média-Alta</span>
+              <label className="form-label text-[10px]">Inflação Estimada (% Anual)</label>
+              <input type="number" className="form-input" defaultValue={5} step="0.5" />
+            </div>
+            <div>
+              <label className="form-label text-[10px]">Idade Atual</label>
+              <input type="number" className="form-input" defaultValue={30} />
+            </div>
+            <div>
+              <label className="form-label text-[10px]">Idade de Reforma</label>
+              <input type="number" className="form-input" defaultValue={60} />
+            </div>
+          </div>
+
+          <div style={{ background: 'rgba(201, 150, 58, 0.05)', borderRadius: '16px', padding: '1.5rem', border: '1px solid rgba(201, 150, 58, 0.1)' }}>
+            <div className="text-center mb-6">
+              <div className="text-[10px] uppercase tracking-wider text-muted mb-1">Seu Número de Independência Financeira</div>
+              <div className="text-3xl font-black text-gold-deep" style={{ color: 'var(--color-gold-deep)' }}>{fmt(monthly * 12 * 25)}</div>
+              <p className="text-[10px] text-muted mt-2">Baseado na Regra dos 4% (25x seu gasto anual)</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+                <div className="text-[10px] text-muted mb-1">Património Ajustado (30 anos)</div>
+                <div className="text-sm font-bold text-gray-200">{fmt(monthly * 12 * 25 * Math.pow(1.05, 30))}</div>
               </div>
-              <div className="h-1 bg-black/10 rounded-full overflow-hidden">
-                <div className="h-full bg-coral w-[40%]" />
+              <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+                <div className="text-[10px] text-muted mb-1">Poupança Mensal Necessária</div>
+                <div className="text-sm font-bold text-ocean" style={{ color: 'var(--color-ocean)' }}>{fmt(25000)}</div>
               </div>
             </div>
-            <p className="text-[10px] text-muted italic">
-              "Uma carteira moderada equilibra o crescimento global com a estabilidade de ativos locais em Moçambique."
-            </p>
           </div>
         </div>
-      </div>
+
+        {/* Portfolio Risk/Return Simulator */}
+        <div className="glass-card" style={{ padding: '1.5rem', marginTop: '1.5rem' }}>
+          <div className="section-title">
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <BarChart3 size={18} /> Simulador de Alocação de Carteira
+            </span>
+          </div>
+          
+          <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+            {['Conservador', 'Moderado', 'Agressivo'].map((p) => (
+              <button 
+                key={p} 
+                onClick={() => setPortfolioTier(p)}
+                className={`btn btn-sm ${p === portfolioTier ? 'btn-primary' : 'btn-ghost'}`}
+              >{p}</button>
+            ))}
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height={192}>
+                <PieChart>
+                  <Pie
+                    data={portfolioData[portfolioTier].data}
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    <Cell fill="var(--color-ocean)" />
+                    <Cell fill="var(--color-leaf)" />
+                    <Cell fill="var(--color-gold-deep)" />
+                  </Pie>
+                  <RTooltip />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex justify-center gap-4 mt-2">
+                {portfolioData[portfolioTier].data.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: [ 'var(--color-ocean)', 'var(--color-leaf)', 'var(--color-gold-deep)' ][idx] }} />
+                    <span className="text-[10px] text-muted">{item.name} {item.value}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-muted">Retorno Esperado</span>
+                  <span className="font-bold text-leaf" style={{ color: 'var(--color-leaf)' }}>~{portfolioData[portfolioTier].return}</span>
+                </div>
+                <div className="h-1 bg-black/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-leaf" style={{ width: `${portfolioData[portfolioTier].returnPct}%`, background: 'var(--color-leaf)' }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-muted">Risco (Volatilidade)</span>
+                  <span className="font-bold text-coral" style={{ color: 'var(--color-gold-deep)' }}>{portfolioData[portfolioTier].risk}</span>
+                </div>
+                <div className="h-1 bg-black/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-gold-deep" style={{ width: `${portfolioData[portfolioTier].riskPct}%`, background: 'var(--color-gold-deep)' }} />
+                </div>
+              </div>
+              <p className="text-[10px] text-muted italic">
+                "{portfolioData[portfolioTier].desc}"
+              </p>
+            </div>
+          </div>
+        </div>
+      </ProGate>
     </div>
   );
 }

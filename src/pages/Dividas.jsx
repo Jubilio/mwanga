@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useFinance } from '../hooks/useFinanceStore';
-import { Wallet, AlertTriangle, CheckCircle, Plus, Trash2, CalendarDays } from 'lucide-react';
+import { Wallet, AlertTriangle, CheckCircle, Plus, Trash2, CalendarDays, CheckCircle2 } from 'lucide-react';
 import { fmt } from '../utils/calculations';
+import BinthContextual from '../components/BinthContextual';
 
 export default function Dividas() {
   const { state, dispatch } = useFinance();
@@ -12,6 +13,8 @@ export default function Dividas() {
   
   const [showPayForm, setShowPayForm] = useState(null); // ID of debt being paid
   const [paymentAmount, setPaymentAmount] = useState('');
+  
+  const [confirmDelete, setConfirmDelete] = useState(null); // ID of debt being confirmed for deletion
 
   const debts = state.dividas || [];
   
@@ -55,9 +58,8 @@ export default function Dividas() {
   };
 
   const handleDelete = (id) => {
-    if (confirm('Tem a certeza que deseja eliminar esta dívida?')) {
-      dispatch({ type: 'DELETE_DEBT', payload: id });
-    }
+    dispatch({ type: 'DELETE_DEBT', payload: id });
+    setConfirmDelete(null);
   };
 
   return (
@@ -73,7 +75,7 @@ export default function Dividas() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="responsive-grid mb-6">
         <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-coral">
           <div className="text-xs uppercase tracking-widest text-muted mb-1">Total em Dívida</div>
           <div className="text-2xl font-bold text-coral">{fmt(totalRemaining, currency)}</div>
@@ -90,6 +92,8 @@ export default function Dividas() {
           <AlertTriangle size={32} className="absolute right-4 bottom-4 text-gold opacity-20" />
         </div>
       </div>
+
+      <BinthContextual page="dividas" />
 
       {/* Add Debt Form */}
       {showAddForm && (
@@ -124,81 +128,84 @@ export default function Dividas() {
           <p>Nenhuma dívida registada. Excelente saúde financeira!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {debts.map(debt => (
-            <div key={debt.id} className={`glass-card p-5 relative overflow-hidden ${debt.status === 'paid' ? 'opacity-70 border border-leaf' : 'border border-gray-200 dark:border-gray-800'}`}>
-              
-              <div className="flex justify-between items-start mb-3">
-                <div className="font-bold text-lg">{debt.creditor_name}</div>
-                {debt.status === 'paid' ? (
-                  <span className="badge badge-renda">Liquidado</span>
-                ) : (
-                  <span className="badge badge-despesa">Activo</span>
-                )}
-              </div>
-
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Total Inicial:</span>
-                  <span className="font-medium">{fmt(debt.total_amount, currency)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Em Falta:</span>
-                  <span className="font-bold text-coral">{fmt(debt.remaining_amount, currency)}</span>
-                </div>
-                {debt.due_date && (
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-gray-500"><CalendarDays size={14} className="inline mr-1"/> Limite:</span>
-                    <span>{debt.due_date}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Progress Bar */}
-              <div className="w-full bg-gray-200 dark:bg-gray-800 h-2 rounded-full mb-4 overflow-hidden">
-                <div 
-                  className={`h-full ${debt.status === 'paid' ? 'bg-leaf' : 'bg-gold'}`} 
-                  style={{ width: `${Math.min(100, Math.max(0, ((debt.total_amount - debt.remaining_amount) / debt.total_amount) * 100))}%` }}
-                ></div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                <button onClick={() => handleDelete(debt.id)} className="p-2 text-gray-400 hover:text-coral hover:bg-coral/10 rounded-lg transition-colors">
-                  <Trash2 size={16} />
-                </button>
-                
-                {debt.status !== 'paid' && (
-                  <button 
-                    onClick={() => setShowPayForm(showPayForm === debt.id ? null : debt.id)} 
-                    className="btn bg-gold text-dark py-1.5 px-3 text-sm font-semibold hover:bg-gold-light"
-                  >
-                    Pagar Parcela
-                  </button>
-                )}
-              </div>
-
-              {/* Pay Form Inline */}
-              {showPayForm === debt.id && (
-                <div className="mt-4 p-3 bg-black/5 dark:bg-white/5 rounded-xl border border-gold/30">
-                  <label className="block text-xs mb-1">Valor a pagar</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="number" 
-                      className="input py-1 px-2 text-sm" 
-                      value={paymentAmount}
-                      max={debt.remaining_amount}
-                      onChange={e => setPaymentAmount(e.target.value)}
-                      placeholder='Ex: 500'
-                    />
-                    <button onClick={() => handlePay(debt.id)} className="btn btn-primary py-1 px-3 text-sm whitespace-nowrap">
-                      Confirmar
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Dívida</th>
+                <th className="hide-mobile">Valor Total</th>
+                <th>Restante</th>
+                <th className="hide-mobile">Vencimento</th>
+                <th>Acções</th>
+              </tr>
+            </thead>
+            <tbody>
+              {debts.map(debt => (
+                <tr key={debt.id} style={{ opacity: debt.status === 'paid' ? 0.6 : 1 }}>
+                  <td>
+                    <div className="font-semibold">{debt.creditor_name}</div>
+                    <div className="text-[10px] text-muted hide-desktop">{debt.due_date || 'Sem data'}</div>
+                  </td>
+                  <td className="hide-mobile text-muted">{fmt(debt.total_amount, currency)}</td>
+                  <td className="font-bold text-coral">{fmt(debt.remaining_amount, currency)}</td>
+                  <td className="hide-mobile">
+                    {debt.due_date ? (
+                      <div className="flex items-center gap-2">
+                        <CalendarDays size={14} className="text-muted" />
+                        {debt.due_date}
+                      </div>
+                    ) : '-'}
+                  </td>
+                  <td>
+                    <div className="flex items-center gap-2">
+                      {debt.status !== 'paid' && (
+                        <button 
+                          onClick={() => setShowPayForm(showPayForm === debt.id ? null : debt.id)} 
+                          className="text-leaf hover:opacity-70 p-1"
+                          title="Pagar parcela"
+                        >
+                          <CheckCircle2 size={18} />
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => setConfirmDelete(debt.id)} 
+                        className="text-coral hover:opacity-70 p-1"
+                        title="Eliminar"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                    {confirmDelete === debt.id && (
+                      <div className="absolute right-0 mt-2 p-3 bg-white dark:bg-black border border-coral/30 rounded-xl shadow-xl z-10 animate-fade-in">
+                        <p className="text-[10px] font-bold text-coral mb-2">Eliminar?</p>
+                        <div className="flex gap-2">
+                          <button onClick={() => handleDelete(debt.id)} className="bg-coral text-white text-[10px] px-2 py-1 rounded">Sim</button>
+                          <button onClick={() => setConfirmDelete(null)} className="bg-gray-200 text-gray-600 text-[10px] px-2 py-1 rounded">Não</button>
+                        </div>
+                      </div>
+                    )}
+                    {showPayForm === debt.id && (
+                      <div className="absolute right-0 mt-2 p-4 bg-white dark:bg-black border border-gold/30 rounded-xl shadow-xl z-10 animate-fade-in w-48">
+                        <label className="block text-[10px] font-bold mb-1">VALOR A PAGAR</label>
+                        <input 
+                          type="number" 
+                          className="form-input text-xs py-1 mb-2" 
+                          value={paymentAmount}
+                          max={debt.remaining_amount}
+                          onChange={e => setPaymentAmount(e.target.value)}
+                          placeholder="Quantia..."
+                        />
+                        <div className="flex gap-2">
+                          <button onClick={() => handlePay(debt.id)} className="btn btn-primary flex-1 py-1 text-[10px]">Pagar</button>
+                          <button onClick={() => setShowPayForm(null)} className="btn bg-gray-100 dark:bg-gray-800 flex-1 py-1 text-[10px]">X</button>
+                        </div>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

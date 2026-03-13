@@ -1,148 +1,327 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Brain, TrendingUp, Target, ShieldCheck, ArrowRight, Lightbulb } from 'lucide-react';
-import { 
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
-  PieChart, Pie, Cell 
-} from 'recharts';
-import api from '../utils/api'; // Assuming an api utility exists or will be created
+import { Send, Sparkles, Brain } from 'lucide-react';
+import api from '../utils/api';
 
-export default function Insights() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const { showToast } = useOutletContext();
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+// Providers are now managed by backend .env variables
 
-  useEffect(() => {
-    const fetchInsights = async () => {
-      try {
-        const response = await api.get('/insights');
-        setData(response.data);
-      } catch (error) {
-        console.error('Error fetching insights:', error);
-        showToast('Erro ao carregar insights da Binth', 'error');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchInsights();
-  }, []);
+const INSIGHT_COLORS = {
+  warning:     { bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.3)',  dot: '#F59E0B' },
+  opportunity: { bg: 'rgba(0,214,143,0.08)',   border: 'rgba(0,214,143,0.3)',   dot: '#00D68F' },
+  celebration: { bg: 'rgba(0,214,143,0.1)',    border: 'rgba(0,214,143,0.4)',   dot: '#00D68F' },
+  action:      { bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.3)', dot: '#6366F1' },
+  info:        { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)', dot: '#8a9ab8' },
+};
 
-  if (loading) return <div className="p-8 text-center animate-pulse">Binth está a analisar os seus dados...</div>;
-  if (!data) return <div className="p-8 text-center">Não foi possível carregar os insights.</div>;
+function renderBold(text) {
+  // Support **bold** markdown
+  return text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={i} style={{ color: '#F59E0B' }}>{part.slice(2, -2)}</strong>
+      : part
+  );
+}
 
-  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#0088FE', '#00C49F', '#FFBB28'];
+// ─── Typing Indicator ─────────────────────────────────────────────────────────
+function TypingDots() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '12px 16px' }}>
+      {[0, 1, 2].map(i => (
+        <div key={i} style={{
+          width: 7, height: 7, borderRadius: '50%',
+          background: '#7C3AED',
+          animation: `binthBounce 1.2s ease-in-out ${i * 0.2}s infinite`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+// ─── Score Bar ────────────────────────────────────────────────────────────────
+function ScoreRing({ score, label }) {
+  const pct = score || 0;
+  const color = pct >= 75 ? '#00D68F' : pct >= 50 ? '#F59E0B' : '#FF4C4C';
+  const r = 28, circ = 2 * Math.PI * r;
+  const dash = (pct / 100) * circ;
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20">
-      {/* Header com Binth */}
-      <div className="glass-card p-6 bg-gradient-to-r from-ocean/20 to-aurora/20 border-aurora/30">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-aurora/20 flex items-center justify-center border-2 border-aurora animate-float">
-            <Brain className="text-aurora w-8 h-8" />
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <svg width={72} height={72} style={{ transform: 'rotate(-90deg)', flexShrink: 0 }}>
+        <circle cx={36} cy={36} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={6} />
+        <circle cx={36} cy={36} r={r} fill="none" stroke={color} strokeWidth={6}
+          strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"
+          style={{ transition: 'stroke-dasharray 1s cubic-bezier(0.4,0,0.2,1)' }}
+        />
+      </svg>
+      <div>
+        <div style={{ fontSize: 26, fontWeight: 900, color, lineHeight: 1 }}>{pct}</div>
+        <div style={{ fontSize: 11, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Page ─────────────────────────────────────────────────────────────────
+export default function Insights() {
+  const { showToast } = useOutletContext();
+
+  // Chat state
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [score, setScore] = useState(null);
+
+  const chatEndRef = useRef(null);
+  const inputRef   = useRef(null);
+
+  // Scroll to bottom on new messages
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
+
+
+  // Load score + welcome message on mount
+  useEffect(() => {
+    api.get('/binth/score')
+      .then(r => setScore(r.data))
+      .catch(() => {});
+
+    // Welcome message from Binth
+    setMessages([{
+      role: 'assistant',
+      content: '**Olá!** Sou a Binth, a tua consultora financeira pessoal. 👋\n\nAnalisei os teus dados e estou pronta para te ajudar. Podes perguntar-me qualquer coisa sobre as tuas finanças, pedir sugestões de poupança, ou até simular cenários futuros.\n\nO que gostarias de saber hoje?',
+      insight_type: 'info',
+      quick_actions: ['Como estão as minhas finanças?', 'Onde estou a gastar mais?', 'Como posso poupar mais?', 'Analisa o meu orçamento'],
+    }]);
+  }, []);
+
+  async function sendMessage(text) {
+    const msg = (text || input).trim();
+    if (!msg || loading) return;
+    setInput('');
+
+    const userMsg = { role: 'user', content: msg };
+    const history = messages.filter(m => m.role !== 'system');
+
+    setMessages(prev => [...prev, userMsg]);
+    setLoading(true);
+
+    try {
+      const res = await api.post('/binth/chat', {
+        message: msg,
+        history: history.map(m => ({ role: m.role, content: m.content || m.message || '' }))
+      });
+
+      const { message: aiMessage, ...rest } = res.data;
+      setMessages(prev => [...prev, { role: 'assistant', content: aiMessage || 'Desculpa, não recebi uma resposta válida.', ...rest }]);
+    } catch (err) {
+      const errMsg = err.response?.data?.message || 'Não consegui processar o teu pedido. Tenta novamente! 😊';
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: errMsg,
+        insight_type: 'info',
+        quick_actions: ['Tentar novamente'],
+      }]);
+      showToast('Erro ao contactar a Binth', 'error');
+    } finally {
+      setLoading(false);
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }
+
+
+  return (
+    <div style={{ maxWidth: 900, margin: '0 auto', fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`
+        @keyframes binthBounce {
+          0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+          30% { transform: translateY(-6px); opacity: 1; }
+        }
+        .binth-input:focus { outline: none; border-color: rgba(124,58,237,0.4) !important; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+        .binth-send:hover:not(:disabled) { background: #6D28D9 !important; transform: scale(1.05); }
+        .binth-send:disabled { opacity: 0.4; cursor: not-allowed; }
+        .binth-qa:hover { background: rgba(124,58,237,0.15) !important; border-color: rgba(124,58,237,0.4) !important; }
+        .cfg-input:focus { outline: none; border-color: rgba(245,158,11,0.4) !important; }
+        .msg-appear { animation: msgIn 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+      `}</style>
+
+      {/* ─── Header ──────────────────────────────────────────────────────── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginBottom: 24, flexWrap: 'wrap', gap: 16,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          {/* Binth Avatar */}
+          <div style={{
+            width: 52, height: 52, borderRadius: 16, flexShrink: 0,
+            background: 'linear-gradient(135deg, #7C3AED, #4F46E5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 0 20px rgba(124,58,237,0.4)',
+          }}>
+            <Brain size={26} color="#fff" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white mb-1">Binth Insights</h1>
-            <p className="text-aurora/80 text-sm">"A sua inteligência financeira, personalizada."</p>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
+              Binth <span style={{ color: '#7C3AED' }}>Insights</span>
+            </h1>
+            <p style={{ fontSize: 12, color: '#5a7a9a', margin: '2px 0 0', letterSpacing: '0.04em' }}>
+              A tua consultora financeira pessoal ✦
+            </p>
           </div>
         </div>
+
+        {/* Score ring (if loaded) */}
+        {score && <ScoreRing score={score.score} label={score.label} />}
       </div>
 
-      {/* Tip da Binth destaque */}
-      <div className="glass-card p-5 border-l-4 border-l-aurora flex gap-4 items-start">
-        <Lightbulb className="text-aurora shrink-0 mt-1" />
-        <div>
-          <h3 className="font-semibold text-white mb-1">Dica da Binth</h3>
-          <p className="text-gray-300 text-sm leading-relaxed">{data.oliviaTip}</p>
-        </div>
-      </div>
+      {/* ─── Chat Window ─────────────────────────────────────────────────── */}
+      <div style={{
+        background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)',
+        borderRadius: 20, overflow: 'hidden',
+      }}>
+        {/* Messages */}
+        <div style={{ height: 480, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {messages.map((msg, i) => {
+            const isUser = msg.role === 'user';
+            const colors = INSIGHT_COLORS[msg.insight_type] || INSIGHT_COLORS.info;
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Gráfico de Tendências */}
-        <div className="glass-card p-6">
-          <div className="flex items-center gap-2 mb-6 text-white font-semibold">
-            <TrendingUp size={20} className="text-aurora" />
-            Tendência Mensal (Receita vs Despesa)
-          </div>
-          <div style={{ width: '100%', height: 250, minHeight: 250 }}>
-            <ResponsiveContainer width="100%" height={250}>
-              <AreaChart data={data.monthlyTrends}>
-                <defs>
-                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3d6b45" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3d6b45" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#e07a5f" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#e07a5f" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="month" tick={{fontSize: 10, fill: '#888'}} />
-                <YAxis tick={{fontSize: 10, fill: '#888'}} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'rgba(23, 23, 23, 0.9)', borderColor: '#333' }}
-                  itemStyle={{ fontSize: '12px' }}
-                />
-                <Area type="monotone" dataKey="income" name="Receita" stroke="#3d6b45" fillOpacity={1} fill="url(#colorIncome)" />
-                <Area type="monotone" dataKey="expenses" name="Despesa" stroke="#e07a5f" fillOpacity={1} fill="url(#colorExpense)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Distribuição por Categoria */}
-        <div className="glass-card p-6">
-          <div className="flex items-center gap-2 mb-6 text-white font-semibold">
-            <Target size={20} className="text-aurora" />
-            Gastos por Categoria (Últimos 30 dias)
-          </div>
-          <div style={{ width: '100%', height: 250, minHeight: 250 }}>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={data.categorySpending}
-                  dataKey="total"
-                  nameKey="category"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label={({name}) => name}
-                >
-                  {data.categorySpending.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            return (
+              <div key={i} className="msg-appear" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: isUser ? 'flex-end' : 'flex-start',
+                gap: 8,
+              }}>
+                {/* Bubble */}
+                <div style={{
+                  maxWidth: '85%',
+                  background: isUser
+                    ? 'linear-gradient(135deg, #7C3AED, #4F46E5)'
+                    : colors.bg,
+                  border: isUser ? 'none' : `1px solid ${colors.border}`,
+                  borderRadius: isUser ? '18px 18px 4px 18px' : '4px 18px 18px 18px',
+                  padding: '12px 16px',
+                  color: '#e2eaf4',
+                  fontSize: 14,
+                  lineHeight: 1.65,
+                  boxShadow: isUser ? '0 4px 20px rgba(124,58,237,0.3)' : 'none',
+                }}>
+                  {!isUser && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, opacity: 0.7 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: colors.dot }} />
+                      <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: colors.dot, fontWeight: 700 }}>Binth</span>
+                    </div>
+                  )}
+                  {(msg.content || '').split('\n').map((line, li) => (
+                    <span key={li}>{renderBold(line)}{li < (msg.content || '').split('\n').length - 1 && <br />}</span>
                   ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+                </div>
+
+                {/* Quick actions */}
+                {!isUser && msg.quick_actions?.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxWidth: '85%' }}>
+                    {msg.quick_actions.map((qa, qi) => (
+                      <button
+                        key={qi}
+                        className="binth-qa"
+                        onClick={() => sendMessage(qa)}
+                        disabled={loading}
+                        style={{
+                          padding: '5px 12px', borderRadius: 20, fontSize: 12,
+                          background: 'rgba(124,58,237,0.08)',
+                          border: '1px solid rgba(124,58,237,0.25)',
+                          color: '#a78bfa', cursor: 'pointer',
+                          transition: 'all 0.15s', fontFamily: "'DM Sans', sans-serif",
+                        }}
+                      >{qa}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Typing indicator */}
+          {loading && (
+            <div className="msg-appear" style={{ display: 'flex', alignItems: 'flex-start' }}>
+              <div style={{
+                background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)',
+                borderRadius: '4px 18px 18px 18px',
+              }}>
+                <TypingDots />
+              </div>
+            </div>
+          )}
+
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.05)' }} />
+
+        {/* Input bar */}
+        <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center' }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <Sparkles size={14} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#5a7a9a', pointerEvents: 'none' }} />
+            <input
+              ref={inputRef}
+              className="binth-input"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+              placeholder="Pergunta algo à Binth…"
+              disabled={loading}
+              style={{
+                width: '100%', background: 'rgba(0,0,0,0.3)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 12, padding: '11px 14px 11px 36px',
+                color: '#e2eaf4', fontSize: 14,
+                fontFamily: "'DM Sans', sans-serif",
+                boxSizing: 'border-box', transition: 'border-color 0.2s, box-shadow 0.2s',
+              }}
+            />
           </div>
+          <button
+            className="binth-send"
+            onClick={() => sendMessage()}
+            disabled={loading || !input.trim()}
+            style={{
+              width: 44, height: 44, borderRadius: 12, border: 'none', flexShrink: 0,
+              background: '#7C3AED', color: '#fff', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.15s', boxShadow: '0 4px 14px rgba(124,58,237,0.35)',
+            }}
+          >
+            <Send size={18} />
+          </button>
         </div>
       </div>
 
-      {/* Projecções Futuras */}
-      <div className="glass-card p-6">
-        <div className="flex items-center gap-2 mb-6 text-white font-semibold">
-          <ShieldCheck size={20} className="text-aurora" />
-          Projecção Patrimonial (Baseado na média actual)
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-          <div className="bg-white/5 rounded-2xl p-4 border border-white/10 text-center">
-            <div className="text-gray-400 text-xs mb-1 uppercase tracking-wider">Poupança Mensal Média</div>
-            <div className={`text-2xl font-bold ${data.projection.avgMonthlySavings >= 0 ? 'text-leaf' : 'text-coral'}`}>
-              {Math.round(data.projection.avgMonthlySavings).toLocaleString()} MT
-            </div>
+      {/* ─── Score breakdown (if loaded) ──────────────────────────────────── */}
+      {score?.factors?.length > 0 && (
+        <div style={{ marginTop: 20, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '18px 20px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#4a5568', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14 }}>
+            Factores do Score Financeiro
           </div>
-          <div className="bg-white/5 rounded-2xl p-4 border border-white/10 text-center">
-            <div className="text-gray-400 text-xs mb-1 uppercase tracking-wider">Projectado a 1 Ano</div>
-            <div className="text-2xl font-bold text-aurora">
-              {Math.round(data.projection.projectedYearlySavings).toLocaleString()} MT
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {score.factors.map((f, i) => {
+              const pct = Math.round((f.pts / f.max) * 100);
+              const col = pct >= 75 ? '#00D68F' : pct >= 40 ? '#F59E0B' : '#FF4C4C';
+              return (
+                <div key={i}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 12, color: '#8a9ab8' }}>{f.name}</span>
+                    <span style={{ fontSize: 12, color: col, fontWeight: 600 }}>{f.pts}/{f.max} · {f.value}</span>
+                  </div>
+                  <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 999, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: col, borderRadius: 999, transition: 'width 1s ease' }} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-        <button className="w-full mt-6 py-3 rounded-xl bg-aurora/10 text-aurora font-semibold flex items-center justify-center gap-2 hover:bg-aurora/20 transition-all group">
-          Explorar Estratégias Avançadas <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-        </button>
-      </div>
+      )}
     </div>
   );
 }

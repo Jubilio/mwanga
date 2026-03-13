@@ -5,7 +5,8 @@ const logger = require('../utils/logger');
 exports.parseSmsMessage = async (req, res, next) => {
   try {
     const { raw_text } = req.body;
-    const householdId = req.user.household_id;
+    // Fallback if req.user is undefined or missing household_id
+    const householdId = req.user?.householdId || null;
 
     if (!raw_text) {
       return res.status(400).json({ success: false, message: 'Message text is required.' });
@@ -20,12 +21,17 @@ exports.parseSmsMessage = async (req, res, next) => {
       VALUES (?, ?, ?, ?, ?)
     `);
 
+    // Ensure we stringify valid data
+    const parsedJsonStr = JSON.stringify(parsedData || {});
+    const sourceDetected = parsedData?.bank_name || 'unknown';
+    const status = parsedData?.is_financial && parsedData?.confidence_score > 0 ? 'parsed' : 'error';
+
     const result = insert.run(
       householdId,
       raw_text,
-      parsedData.bank_name || 'unknown',
-      JSON.stringify(parsedData),
-      parsedData.is_financial && parsedData.confidence_score > 0 ? 'parsed' : 'error'
+      sourceDetected,
+      parsedJsonStr,
+      status
     );
 
     res.status(200).json({

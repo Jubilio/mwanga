@@ -21,6 +21,30 @@ export function getMonthKey(date = new Date()) {
   return date.toISOString().slice(0, 7);
 }
 
+export function getFinancialMonthKey(dateStr, startDay = 1) {
+  if (!dateStr) return '0000-00';
+  const date = new Date(dateStr);
+  
+  // Use UTC to avoid timezone shifts (Feb 26 00:00 UTC -> Feb 25 Local in some zones)
+  const y = date.getUTCFullYear();
+  const m = date.getUTCMonth(); 
+  const d = date.getUTCDate();
+
+  let targetY = y;
+  let targetM = m;
+
+  // If day >= startDay (e.g. 25), it belongs to the next month
+  if (startDay > 1 && d >= startDay) {
+    targetM += 1;
+    if (targetM > 11) {
+      targetM = 0;
+      targetY += 1;
+    }
+  }
+  
+  return `${targetY}-${String(targetM + 1).padStart(2, '0')}`;
+}
+
 export function getMonthLabel(key) {
   const months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   const [y, m] = key.split('-');
@@ -39,8 +63,8 @@ export function daysUntil(dateStr) {
 }
 
 // ═══ Monthly Totals ═══
-export function calcMonthlyTotals(transactions, monthKey = getMonthKey(), rendas = []) {
-  const monthTx = transactions.filter(t => t.data && t.data.startsWith(monthKey));
+export function calcMonthlyTotals(transactions, monthKey = getMonthKey(), rendas = [], startDay = 1) {
+  const monthTx = transactions.filter(t => t.data && getFinancialMonthKey(t.data, startDay) === monthKey);
   const receitas = monthTx.filter(t => t.tipo === 'receita').reduce((s, t) => s + t.valor, 0);
   const despesas = monthTx.filter(t => t.tipo === 'despesa').reduce((s, t) => s + t.valor, 0);
   
@@ -59,9 +83,9 @@ export function calcMonthlyTotals(transactions, monthKey = getMonthKey(), rendas
 }
 
 // ═══ Category Breakdown ═══
-export function calcCategoryBreakdown(transactions, tipo = 'despesa', monthKey = null, rendas = []) {
+export function calcCategoryBreakdown(transactions, tipo = 'despesa', monthKey = null, rendas = [], startDay = 1) {
   let filtered = transactions.filter(t => t.tipo === tipo);
-  if (monthKey) filtered = filtered.filter(t => t.data && t.data.startsWith(monthKey));
+  if (monthKey) filtered = filtered.filter(t => t.data && getFinancialMonthKey(t.data, startDay) === monthKey);
   const map = {};
   filtered.forEach(t => { map[t.cat] = (map[t.cat] || 0) + t.valor; });
   
@@ -82,11 +106,11 @@ export function calcCategoryBreakdown(transactions, tipo = 'despesa', monthKey =
 }
 
 // ═══ Monthly History ═══
-export function calcMonthlyHistory(transactions, rendas = []) {
+export function calcMonthlyHistory(transactions, rendas = [], startDay = 1) {
   const monthly = {};
   transactions.forEach(t => {
-    const m = (t.data || '').slice(0, 7);
-    if (!m) return;
+    const m = getFinancialMonthKey(t.data, startDay);
+    if (!m || m === '0000-00') return;
     if (!monthly[m]) monthly[m] = { receitas: 0, despesas: 0, renda: 0, poupanca: 0 };
     if (t.tipo === 'receita') monthly[m].receitas += t.valor;
     if (t.tipo === 'despesa') monthly[m].despesas += t.valor;
@@ -120,8 +144,8 @@ export function calcSavingsRate(totalIncome, despesas) {
 }
 
 // ═══ Financial Score (0-100) ═══
-export function calcFinancialScore(transactions, budgets = [], monthKey = getMonthKey(), rendas = []) {
-  const tot = calcMonthlyTotals(transactions, monthKey, rendas);
+export function calcFinancialScore(transactions, budgets = [], monthKey = getMonthKey(), rendas = [], startDay = 1) {
+  const tot = calcMonthlyTotals(transactions, monthKey, rendas, startDay);
   let score = 50; // base
 
   // Savings rate component (up to +30)
@@ -138,7 +162,7 @@ export function calcFinancialScore(transactions, budgets = [], monthKey = getMon
 
   // Budget adherence component (up to +10)
   if (budgets.length > 0) {
-    const cats = calcCategoryBreakdown(transactions, 'despesa', monthKey, rendas);
+    const cats = calcCategoryBreakdown(transactions, 'despesa', monthKey, rendas, startDay);
     let withinBudget = 0;
     budgets.forEach(b => {
       const cat = cats.find(c => c.category === b.category);

@@ -1,8 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { MessageSquare, ShieldCheck, Zap, AlertCircle, RefreshCw, CheckCircle2 } from 'lucide-react';
 import api from '../utils/api';
-import { useAuthStore } from '../hooks/useAuthStore';
-import { useToast } from '../hooks/useToast';
+import { useToast } from '../components/Toast';
 
 const SAMPLE_SMS = [
   "A conta 406659018 foi debitada no valor de 20.00 MZN as 23:17 do dia 24/02/26. Millennium bim",
@@ -59,9 +58,7 @@ export default function SmsImport() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [history, setHistory] = useState([]);
   
-  const { token } = useAuthStore();
   const { showToast } = useToast();
   const textareaRef = useRef(null);
 
@@ -75,11 +72,6 @@ export default function SmsImport() {
       
       const parsedData = res.data.data.parsed_data;
       setResult(parsedData);
-      
-      setHistory(h => [
-        { sms: smsText.slice(0, 60) + (smsText.length > 60 ? "…" : ""), result: parsedData, ts: new Date().toLocaleTimeString("pt-MZ") },
-        ...h.slice(0, 4)
-      ]);
       
       showToast('SMS analisado com sucesso!', 'success');
       
@@ -113,7 +105,7 @@ export default function SmsImport() {
         confidence_score: result.confidence_score
       };
 
-      await api.post("/transacoes", payload);
+      await api.post("/transactions", payload);
       
       showToast('Transação guardada com sucesso!', 'success');
       setResult(null); // Clear form to ready for next

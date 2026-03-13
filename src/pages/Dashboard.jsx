@@ -3,6 +3,7 @@ import {
   TrendingUp, TrendingDown, Home as HomeIcon, Wallet,
   AlertTriangle, CheckCircle, Bell, Globe,
 } from 'lucide-react';
+import BinthContextual from '../components/BinthContextual';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
@@ -10,7 +11,7 @@ import {
 import {
   fmt, calcMonthlyTotals, calcCategoryBreakdown,
   calcMonthlyHistory, calcFinancialScore, calcRiskLevel,
-  calcSavingsRate, getMonthKey,
+  calcSavingsRate, getMonthKey, getFinancialMonthKey,
 } from '../utils/calculations';
 
 const COLORS = ['#e07a5f', '#0a4d68', '#c9963a', '#3d6b45', '#1a8fa8', '#9b59b6', '#e74c3c'];
@@ -18,60 +19,18 @@ const COLORS = ['#e07a5f', '#0a4d68', '#c9963a', '#3d6b45', '#1a8fa8', '#9b59b6'
 export default function Dashboard() {
   const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
-  const monthKey = getMonthKey();
-  const tot = calcMonthlyTotals(state.transacoes, monthKey, state.rendas);
-  const categories = calcCategoryBreakdown(state.transacoes, 'despesa', monthKey, state.rendas);
-  const history = calcMonthlyHistory(state.transacoes, state.rendas).slice(0, 6).reverse();
-  const score = calcFinancialScore(state.transacoes, state.budgets, monthKey, state.rendas);
+  const startDay = state.settings.financial_month_start_day || 1;
+  const monthKey = getFinancialMonthKey(new Date(), startDay);
+
+  const tot = calcMonthlyTotals(state.transacoes, monthKey, state.rendas, startDay);
+  const categories = calcCategoryBreakdown(state.transacoes, 'despesa', monthKey, state.rendas, startDay);
+  const history = calcMonthlyHistory(state.transacoes, state.rendas, startDay).slice(0, 6).reverse();
+  const score = calcFinancialScore(state.transacoes, state.budgets, monthKey, state.rendas, startDay);
   const risk = calcRiskLevel(score);
   const savingsRate = calcSavingsRate(tot.totalIncome, tot.despesas + tot.renda);
   const totalContas = state.contas?.reduce((acc, curr) => acc + curr.current_balance, 0) || 0;
   const realBalance = tot.saldo + totalContas;
 
-  // --- BINTH'S AI BRAIN (Proactive Insights) ---
-  const getBinthAdvice = () => {
-    const advice = [];
-    
-    // Savings Rate Logic
-    if (savingsRate < 20) {
-      advice.push({
-        text: `Olá ${state.user?.name?.split(' ')[0]}! Notei que sua taxa de poupança está em ${savingsRate}%. Para uma vida financeira premium, tente atingir os 20%. Que tal rever a categoria "${categories[0]?.category || 'Geral'}"?`,
-        type: 'warn'
-      });
-    } else if (savingsRate >= 30) {
-      advice.push({
-        text: `Incrível! Sua taxa de poupança está em ${savingsRate}%. Você está no topo dos 5% da NEXO VIBE. Já pensou em diversificar seus investimentos?`,
-        type: 'success'
-      });
-    }
-
-    // Rent Logic
-    if (tot.renda === 0) {
-      advice.push({
-        text: "Ainda não registou a renda da casa este mês. Manter os pagamentos em dia é o segredo do investidor de elite.",
-        type: 'info'
-      });
-    }
-
-    // Surplus logic
-    if (tot.saldo > 10000) {
-      advice.push({
-        text: `Tens um excedente de ${fmt(tot.saldo, currency)}. Que tal colocar uma parte disto na tua meta de poupança?`,
-        type: 'action'
-      });
-    }
-
-    if (totalContas === 0) {
-      advice.push({
-        text: "Parece que ainda não registou o saldo das suas contas (M-Pesa, e-Mola, Bancos). Registe os seus saldos iniciais para que possamos monitorar o seu verdadeiro Património Líquido.",
-        type: 'info'
-      });
-    }
-
-    return advice;
-  };
-
-  const binthTips = getBinthAdvice();
 
   const summaryCards = [
     { label: 'Saldos Disponíveis', value: totalContas, icon: Wallet, color: 'var(--color-ocean)', accent: '#e6f0f9', sub: 'M-Pesa, Bancos, etc.' },
@@ -146,67 +105,18 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ─── BINTH'S INSIGHTS (NEW) ─── */}
-      {binthTips.length > 0 && (
-        <div className="glass-card animate-fade-in-up stagger-1" style={{ 
-          padding: '1.5rem', 
-          marginBottom: '2rem', 
-          background: 'linear-gradient(135deg, var(--color-midnight), #1c3545)',
-          color: 'white',
-          border: 'none',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <div style={{ 
-              width: '40px', 
-              height: '40px', 
-              borderRadius: '12px', 
-              background: 'rgba(255,255,255,0.1)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              color: 'var(--color-gold)' 
-            }}>
-              <Bell size={20} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Conselhos da Binth</h3>
-              <p style={{ fontSize: '0.7rem', opacity: 0.6 }}>BASEADO NO TEU COMPORTAMENTO ACTUAL</p>
-            </div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {binthTips.map((tip, idx) => (
-              <div key={idx} style={{ 
-                display: 'flex', 
-                alignItems: 'flex-start', 
-                gap: '0.75rem', 
-                padding: '0.75rem', 
-                background: 'rgba(255,255,255,0.05)', 
-                borderRadius: '12px',
-                fontSize: '0.88rem'
-              }}>
-                <div style={{ marginTop: '0.2rem' }}>
-                  {tip.type === 'warn' ? <AlertTriangle size={16} color="var(--color-gold)" /> : <CheckCircle size={16} color="var(--color-leaf-light)" />}
-                </div>
-                {tip.text}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* ─── BINTH'S CONTEXTUAL INTELLIGENCE ─── */}
+      <div className="mb-6">
+        <BinthContextual page="dashboard" />
+      </div>
 
       {/* Summary Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '1rem',
-        marginBottom: '1.5rem',
-      }}>
+      <div className="responsive-grid mb-6">
         {summaryCards.map((card, i) => (
           <div
             key={card.label}
-            className={`glass-card animate-fade-in-up stagger-${i + 1}`}
-            style={{ padding: '1.25rem', position: 'relative', overflow: 'hidden' }}
+            className={`glass-card animate-fade-in-up stagger-${i + 1} p-5`}
+            style={{ position: 'relative', overflow: 'hidden' }}
           >
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0, height: '4px',
@@ -301,12 +211,7 @@ export default function Dashboard() {
       </div>
 
       {/* Score + Alerts Row */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '1rem',
-        marginBottom: '1.5rem',
-      }}>
+      <div className="responsive-grid mb-6">
         {/* Financial Score */}
         <div className="glass-card animate-fade-in-up stagger-1" style={{ padding: '1.5rem', textAlign: 'center' }}>
           <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1.2px', color: 'var(--color-muted)', marginBottom: '0.75rem' }}>
@@ -371,12 +276,7 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Row */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        gap: '1rem',
-        marginBottom: '1.5rem',
-      }}>
+      <div className="responsive-grid mb-6">
         {/* Cash Flow Chart */}
         {history.length > 0 && (
           <div className="glass-card animate-fade-in-up stagger-3" style={{ padding: '1.25rem' }}>
@@ -429,10 +329,10 @@ export default function Dashboard() {
 
       {/* Latest Transactions */}
       <div className="section-title">Últimas Transações</div>
-      <div className="glass-card" style={{ overflow: 'hidden', borderRadius: '16px' }}>
+      <div className="table-container">
         <table className="data-table">
           <thead>
-            <tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr>
+            <tr><th>Data</th><th>Descrição</th><th className="hide-mobile">Tipo</th><th>Valor</th></tr>
           </thead>
           <tbody>
             {state.transacoes.length === 0 ? (
@@ -442,7 +342,7 @@ export default function Dashboard() {
                 <tr key={t.id}>
                   <td style={{ fontSize: '0.82rem', color: 'var(--color-muted)' }}>{t.data}</td>
                   <td style={{ fontWeight: 500 }}>{t.desc}</td>
-                  <td><span className={`badge badge-${t.tipo}`}>{t.tipo}</span></td>
+                  <td className="hide-mobile"><span className={`badge badge-${t.tipo}`}>{t.tipo}</span></td>
                   <td style={{
                     fontWeight: 600,
                     color: t.tipo === 'despesa' ? 'var(--color-coral)' : 'var(--color-leaf)',

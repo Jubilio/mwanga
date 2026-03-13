@@ -6,6 +6,7 @@ const errorHandler = require('./middleware/error.middleware');
 const authRoutes = require('./routes/auth.routes');
 const financeRoutes = require('./routes/finance.routes');
 const smsRoutes = require('./routes/smsRoutes');
+const creditRoutes = require('./routes/credit.routes');
 const logger = require('./utils/logger');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
@@ -22,10 +23,10 @@ app.use(cors());
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // limit each IP to 1000 requests per windowMs
   message: 'Too many requests from this IP, please try again after 15 minutes',
 });
-app.use('/api/', limiter);
+app.use('/api', limiter);
 
 // Body Parsing
 app.use(express.json({ limit: '10mb' }));
@@ -49,6 +50,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api/auth', authRoutes);
 app.use('/api/sms', smsRoutes);
+app.use('/api/credit', creditRoutes);
 app.use('/api', financeRoutes);
 
 // Error Handling

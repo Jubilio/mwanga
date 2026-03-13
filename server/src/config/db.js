@@ -213,6 +213,22 @@ const initDb = () => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(tenant_id) REFERENCES households(id)
       );
+
+      CREATE TABLE IF NOT EXISTS credit_applications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        amount REAL NOT NULL,
+        months INTEGER NOT NULL,
+        partner TEXT NOT NULL,
+        purpose TEXT NOT NULL,
+        status TEXT DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
+        bi_path TEXT,
+        residencia_path TEXT,
+        renda_path TEXT,
+        selfie_path TEXT,
+        household_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(household_id) REFERENCES households(id)
+      );
     `);
     logger.info('Database tables initialized.');
     

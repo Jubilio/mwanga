@@ -3,7 +3,7 @@ const logger = require('../utils/logger');
 
 exports.getDebts = (req, res) => {
   try {
-    const householdId = req.user.household_id;
+    const householdId = req.user.householdId;
     const debts = db.prepare('SELECT * FROM debts WHERE household_id = ? ORDER BY created_at DESC').all(householdId);
     
     // Attach payments to each debt
@@ -21,7 +21,7 @@ exports.getDebts = (req, res) => {
 exports.addDebt = (req, res) => {
   try {
     const { creditor_name, total_amount, due_date } = req.body;
-    const householdId = req.user.household_id;
+    const householdId = req.user.householdId;
     
     const stmt = db.prepare(`
       INSERT INTO debts (creditor_name, total_amount, remaining_amount, due_date, status, household_id)
@@ -39,7 +39,7 @@ exports.addDebt = (req, res) => {
 exports.deleteDebt = (req, res) => {
   try {
     const { id } = req.params;
-    const householdId = req.user.household_id;
+    const householdId = req.user.householdId;
     
     db.prepare('DELETE FROM debts WHERE id = ? AND household_id = ?').run(id, householdId);
     res.json({ message: 'Debt deleted' });
@@ -53,7 +53,7 @@ exports.addPayment = (req, res) => {
   try {
     const { id } = req.params;
     const { amount, payment_date } = req.body;
-    const householdId = req.user.household_id;
+    const householdId = req.user.householdId;
 
     const debt = db.prepare('SELECT * FROM debts WHERE id = ? AND household_id = ?').get(id, householdId);
     if (!debt) return res.status(404).json({ error: 'Debt not found' });

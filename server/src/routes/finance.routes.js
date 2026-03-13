@@ -10,6 +10,7 @@ const { getOverview: getInsights } = require('../controllers/insights.controller
 const { getNotifications, markAsRead, clearAll } = require('../controllers/notification.controller');
 const { getDebts, addDebt, deleteDebt, addPayment } = require('../controllers/debtController');
 const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require('../controllers/accountController');
+const { chat: binthChat, getScore: binthScore, getPageInsight } = require('../controllers/binth.controller');
 const { authenticate } = require('../middleware/auth.middleware');
 
 const router = express.Router();
@@ -75,5 +76,10 @@ router.get('/accounts', getAccounts);
 router.post('/accounts', addAccount);
 router.put('/accounts/:id/balance', updateAccountBalance);
 router.delete('/accounts/:id', deleteAccount);
+
+// Binth AI
+router.post('/binth/chat', binthChat);
+router.get('/binth/score', binthScore);
+router.get('/binth/insights/:page', getPageInsight);
 
 module.exports = router;

@@ -2,7 +2,7 @@ import { createContext, useContext, useReducer, useEffect } from 'react';
 import { generateDemoData } from '../utils/calculations';
 
 // Define the API Base URL
-const FINANCE_API_URL = 'http://localhost:3001/api';
+const FINANCE_API_URL = import.meta.env.VITE_API_URL;
 
 const defaultState = {
   transacoes: [],
@@ -18,7 +18,8 @@ const defaultState = {
     user_salary: 50000,
     default_rent: 15000,
     landlord_name: '',
-    housing_type: 'renda' // 'renda' or 'propria'
+    housing_type: 'renda', // 'renda' or 'propria'
+    financial_month_start_day: 25
   },
   user: null,
   darkMode: false,
@@ -123,21 +124,45 @@ export function FinanceProvider({ children }) {
 
       const headers = { 'Authorization': `Bearer ${token}` };
 
+      const safeFetch = async (url) => {
+        try {
+          const res = await fetch(url, { headers });
+          if (res.status === 429) {
+            console.warn(`Rate limited: ${url}`);
+            return [];
+          }
+          const contentType = res.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            return [];
+          }
+          return await res.json();
+        } catch (err) {
+          console.warn(`Fetch failed for ${url}:`, err.message);
+          return [];
+        }
+      };
+
       try {
         console.log('Fetching initial data from:', FINANCE_API_URL);
-        const [ts, rendas, metas, budgets, assets, liabs, xitiques, settings, user, debts, accounts] = await Promise.all([
-          fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
-          fetch(`${FINANCE_API_URL}/rentals`, { headers }).then(r => r.json()),
-          fetch(`${FINANCE_API_URL}/goals`, { headers }).then(r => r.json()),
-          fetch(`${FINANCE_API_URL}/budgets`, { headers }).then(r => r.json()),
-          fetch(`${FINANCE_API_URL}/assets`, { headers }).then(r => r.json()),
-          fetch(`${FINANCE_API_URL}/liabilities`, { headers }).then(r => r.json()),
-          fetch(`${FINANCE_API_URL}/xitiques`, { headers }).then(r => r.json()),
-          fetch(`${FINANCE_API_URL}/settings`, { headers }).then(r => r.json()),
-          fetch(`${FINANCE_API_URL}/auth/me`, { headers }).then(r => r.json()),
-          fetch(`${FINANCE_API_URL}/debts`, { headers }).then(r => r.json()),
-          fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json()),
+        const [ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts] = await Promise.all([
+          safeFetch(`${FINANCE_API_URL}/transactions`),
+          safeFetch(`${FINANCE_API_URL}/rentals`),
+          safeFetch(`${FINANCE_API_URL}/goals`),
+          safeFetch(`${FINANCE_API_URL}/budgets`),
+          safeFetch(`${FINANCE_API_URL}/assets`),
+          safeFetch(`${FINANCE_API_URL}/liabilities`),
+          safeFetch(`${FINANCE_API_URL}/xitiques`),
+          safeFetch(`${FINANCE_API_URL}/settings`),
+          safeFetch(`${FINANCE_API_URL}/auth/me`),
+          safeFetch(`${FINANCE_API_URL}/debts`),
+          safeFetch(`${FINANCE_API_URL}/accounts`),
         ]);
+
+        const mergedSettings = {
+          ...defaultState.settings,
+          ...(settingsResp && !Array.isArray(settingsResp) ? settingsResp : {}),
+          financial_month_start_day: Number((settingsResp && !Array.isArray(settingsResp) ? settingsResp.financial_month_start_day : undefined) || defaultState.settings.financial_month_start_day)
+        };
 
         dispatch({
           type: 'SET_DATA',
@@ -180,7 +205,8 @@ export function FinanceProvider({ children }) {
             xitiques: Array.isArray(xitiques) ? xitiques : [],
             dividas: Array.isArray(debts) ? debts : [],
             contas: Array.isArray(accounts) ? accounts : [],
-            settings: settings || defaultState.settings
+            settings: mergedSettings,
+            loading: false
           }
         });
 

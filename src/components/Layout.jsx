@@ -12,18 +12,29 @@ import Toast, { useToast } from './Toast';
 import Sidebar from './layout/Sidebar';
 
 const navItems = [
+  // GESTÃO FINANCEIRA
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/transacoes', icon: ArrowRightLeft, label: 'Transações' },
   { to: '/orcamento', icon: PieChart, label: 'Orçamento' },
+  
+  // FINANCIAMENTO
+  { to: '/credito', icon: CreditCard, label: 'Crédito' },
+  { to: '/dividas', icon: CreditCard, label: 'Dívidas' },
   { to: '/habitacao', icon: Home, label: 'Habitação' },
+  
+  // POUPANÇA & METAS
   { to: '/xitique', icon: Wallet, label: 'Xitique' },
   { to: '/metas', icon: Target, label: 'Metas' },
-  { to: '/dividas', icon: CreditCard, label: 'Dívidas' },
+  { to: '/nexovibe', icon: Globe, label: 'Nexo Vibe' },
+  
+  // INTELIGÊNCIA PRO
   { to: '/insights', icon: Brain, label: 'Binth Insights' },
+  { to: '/sms-import', icon: Globe, label: 'Importar Mensagem' },
   { to: '/patrimonio', icon: Landmark, label: 'Património' },
   { to: '/simuladores', icon: Calculator, label: 'Simuladores' },
-  { to: '/nexovibe', icon: Globe, label: 'NEXO VIBE' },
   { to: '/relatorio', icon: BarChart3, label: 'Relatórios' },
+  
+  // SISTEMA
   { to: '/pricing', icon: Crown, label: 'Mover para Premium', premium: true },
   { to: '/settings', icon: SettingsIcon, label: 'Definições' },
 ];
@@ -42,7 +53,9 @@ export default function Layout() {
         const response = await api.get('/notifications');
         setNotifications(response.data);
       } catch (error) {
-        console.error('Error fetching notifications:', error);
+        if (error.response?.status !== 429) {
+          console.error('Error fetching notifications:', error);
+        }
       }
     };
     fetchNotifications();
@@ -96,7 +109,7 @@ export default function Layout() {
 
       <div style={{ display: 'flex', minHeight: '100vh' }}>
         {/* ═══ SIDEBAR (Desktop) ═══ */}
-        <Sidebar isOpen={isSidebarOpen} />
+        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
         {/* ═══ MOBILE HEADER & CONTENT ═══ */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -137,8 +150,8 @@ export default function Layout() {
       </div>
 
       {/* ═══ MOBILE BOTTOM NAV ═══ */}
-      <nav className="hide-desktop fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-black/5 dark:border-white/5 flex justify-around p-3 z-50">
-        {navItems.slice(0, 4).map(item => (
+      <nav className="hide-desktop fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-t border-black/5 dark:border-white/5 flex justify-around p-2 pt-3 pb-6 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        {navItems.slice(0, 5).map(item => (
           <NavLink
             key={item.to}
             to={item.to}
