@@ -41,6 +41,15 @@ const NAV = [
   },
 ];
 
+const ADMIN_NAV = [
+  {
+    section: 'ADMINISTRAÇÃO',
+    items: [
+      { icon: '⚙', label: 'Painel Admin',      to: '/admin' },
+    ],
+  },
+];
+
 // ─── PRO Badge ───────────────────────────────────────────────────────────────
 function ProBadge() {
   return (
@@ -323,6 +332,33 @@ export default function Sidebar({ isOpen, onClose }) {
                     </NavLink>
                   )
                 )}
+              </div>
+            </div>
+          ))}
+
+          {/* Admin Nav */}
+          {state.user?.role === 'admin' && ADMIN_NAV.map((group, gi) => (
+            <div key={gi}>
+               <div style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: '0.14em',
+                color: '#4a5568', padding: '14px 6px 8px', textTransform: 'uppercase',
+              }}>{group.section}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {group.items.map(item => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={onClose}
+                    className={({ isActive }) => `sb-item ${isActive ? 'sb-active' : ''}`}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <span style={{ fontSize: 17, width: 22, textAlign: 'center', flexShrink: 0, color: isActive ? '#F59E0B' : '#F59E0B' }}>{item.icon}</span>
+                        <span style={{ fontSize: 14.5, flex: 1, color: isActive ? '#F59E0B' : '#F59E0B', fontWeight: isActive ? 600 : 400 }}>{item.label}</span>
+                      </>
+                    )}
+                  </NavLink>
+                ))}
               </div>
             </div>
           ))}

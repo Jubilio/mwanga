@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
     national_id TEXT,
     kyc_status TEXT DEFAULT 'pending',
     credit_score INTEGER DEFAULT 0,
+    role TEXT DEFAULT 'user',
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 

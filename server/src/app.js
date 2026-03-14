@@ -8,6 +8,7 @@ const financeRoutes = require('./routes/finance.routes');
 const smsRoutes = require('./routes/smsRoutes');
 const creditRoutes = require('./routes/credit.routes');
 const kycRoutes = require('./routes/kyc.routes');
+const adminRoutes = require('./routes/admin.routes');
 const logger = require('./utils/logger');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
@@ -62,6 +63,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/sms', smsRoutes);
 app.use('/api/credit', creditRoutes);
 app.use('/api/kyc', kycRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api', financeRoutes);
 
 // Error Handling

@@ -16,8 +16,8 @@ import Settings from './pages/Settings';
 import Dividas from './pages/Dividas';
 import Credito from './pages/Credito';
 import Pricing from './pages/Pricing';
-import Insights from './pages/Insights';
 import Login from './pages/Login';
+import Admin from './pages/Admin';
 import { useFinance } from './hooks/useFinanceStore';
 import { Navigate } from 'react-router-dom';
 
@@ -53,6 +53,7 @@ export default function App() {
             <Route path="settings" element={<Settings />} />
             <Route path="pricing" element={<Pricing />} />
             <Route path="insights" element={<Insights />} />
+            <Route path="admin" element={<Admin />} />
           </Route>
           <Route path="login" element={<Login />} />
         </Routes>
