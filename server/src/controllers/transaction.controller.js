@@ -1,5 +1,6 @@
 const { db } = require('../config/db');
 const { z } = require('zod');
+const { createNotification } = require('./notification.controller');
 
 const transactionSchema = z.object({
   date: z.string(),
@@ -41,8 +42,40 @@ const createTransaction = async (req, res, next) => {
 
     const results = await db.batch(queries, 'write');
     const insertResult = results[0];
+    const txId = Number(insertResult.lastInsertRowid);
     
-    res.status(201).json({ id: Number(insertResult.lastInsertRowid), ...data });
+    // --- Budget Alert Logic ---
+    if (data.type === 'despesa' || data.type === 'renda') {
+      const now = new Date();
+      const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+      
+      // Check if this category is now over budget
+      const budgetRes = await db.execute({
+        sql: `
+          SELECT b.limit_amount, COALESCE(SUM(t.amount), 0) as spent
+          FROM budgets b
+          LEFT JOIN transactions t ON t.category = b.category 
+            AND t.household_id = b.household_id 
+            AND t.type IN ('despesa', 'renda') AND t.date >= ?
+          WHERE b.household_id = ? AND b.category = ?
+          GROUP BY b.limit_amount
+        `,
+        args: [monthStart, req.user.householdId, data.category]
+      });
+
+      if (budgetRes.rows.length > 0) {
+        const { limit_amount, spent } = budgetRes.rows[0];
+        if (spent > limit_amount) {
+          await createNotification(
+            req.user.householdId, 
+            'warning', 
+            `Alerta: Estás fora do orçamento em ${data.category}! Limite: MT ${limit_amount} | Gasto: MT ${spent}`
+          );
+        }
+      }
+    }
+    
+    res.status(201).json({ id: txId, ...data });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     next(error);

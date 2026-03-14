@@ -1,5 +1,6 @@
 const { db } = require('../config/db');
 const { z } = require('zod');
+const { createNotification } = require('./notification.controller');
 
 const goalSchema = z.object({
   name: z.string().min(1),
@@ -34,10 +35,33 @@ const createGoal = async (req, res, next) => {
 
 const updateGoalProgress = async (req, res) => {
   const { savedAmount } = req.body;
-  await db.execute({
-    sql: 'UPDATE goals SET saved_amount = ? WHERE id = ? AND household_id = ?',
-    args: [savedAmount, req.params.id, req.user.householdId]
+  
+  // Get current goal state for milestone logic
+  const goalRes = await db.execute({
+    sql: 'SELECT name, target_amount, saved_amount FROM goals WHERE id = ? AND household_id = ?',
+    args: [req.params.id, req.user.householdId]
   });
+  const goal = goalRes.rows[0];
+
+  if (goal) {
+    const oldPct = (goal.saved_amount / goal.target_amount) * 100;
+    const newPct = (savedAmount / goal.target_amount) * 100;
+
+    await db.execute({
+      sql: 'UPDATE goals SET saved_amount = ? WHERE id = ? AND household_id = ?',
+      args: [savedAmount, req.params.id, req.user.householdId]
+    });
+
+    // Notify for milestones
+    if (oldPct < 50 && newPct >= 50 && newPct < 100) {
+      await createNotification(req.user.householdId, 'info', `Parabéns! Chegaste à metade da tua meta: ${goal.name}! 🚀`);
+    } else if (oldPct < 90 && newPct >= 90 && newPct < 100) {
+      await createNotification(req.user.householdId, 'info', `Quase lá! Estás a 90% de atingir ${goal.name}! 💪`);
+    } else if (oldPct < 100 && newPct >= 100) {
+      await createNotification(req.user.householdId, 'success', `Meta atingida! Parabéns por completares: ${goal.name}! 🎉`);
+    }
+  }
+
   res.json({ success: true });
 };
 

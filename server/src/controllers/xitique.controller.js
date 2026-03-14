@@ -1,5 +1,6 @@
 const { db } = require('../config/db');
 const { z } = require('zod');
+const { createNotification } = require('./notification.controller');
 
 const xitiqueSchema = z.object({
   name: z.string().min(1),
@@ -136,6 +137,12 @@ const payContribution = async (req, res, next) => {
 
     await db.batch(queries, "write");
 
+    await createNotification(
+      req.user.householdId, 
+      'info', 
+      `Pagamento de Xitique (${contribution.xitique_name}) realizado com sucesso. ✅`
+    );
+
     res.json({ success: true });
   } catch (error) {
     next(error);
@@ -189,6 +196,12 @@ const receiveFunds = async (req, res, next) => {
     }
 
     await db.batch(queries, "write");
+
+    await createNotification(
+      req.user.householdId, 
+      'success', 
+      `Recebeste o fundo do Xitique (${receipt.xitique_name})! MT ${receipt.total_received} disponíveis na tua conta. 💰`
+    );
 
     res.json({ success: true });
   } catch (error) {
