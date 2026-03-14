@@ -71,7 +71,7 @@ async function buildUserContext(householdId, userId) {
             AND t.household_id = b.household_id
             AND t.type = 'despesa' AND t.date >= ?
           WHERE b.household_id = ?
-          GROUP BY b.category
+          GROUP BY b.category, b.limit_amount
         `,
         args: [monthStart, householdId]
       }),
