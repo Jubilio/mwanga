@@ -204,7 +204,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId })
         method: 'POST',
         headers: hdrs,
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(20000)
+        signal: AbortSignal.timeout(10000) // Shorter timeout to prevent 502
       });
 
       if (!res.ok) {
@@ -231,7 +231,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId })
           method: 'POST',
           headers: hdrs,
           body: JSON.stringify(config.body(nextMessages, system)),
-          signal: AbortSignal.timeout(20000)
+          signal: AbortSignal.timeout(10000)
         });
 
         if (res2.ok) {
