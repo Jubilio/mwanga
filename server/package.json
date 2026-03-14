@@ -16,6 +16,7 @@
   "dependencies": {
     "@libsql/client": "^0.17.0",
     "@types/pg": "^8.18.0",
+    "@upstash/redis": "^1.37.0",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.6.2",

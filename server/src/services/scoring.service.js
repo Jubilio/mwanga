@@ -1,5 +1,6 @@
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
+const redis = require('../utils/redis');
 
 /**
  * Scoring Service
@@ -15,6 +16,14 @@ class ScoringService {
    */
   async calculateScore(userId, householdId) {
     try {
+      if (redis) {
+        const cached = await redis.get(`score:${userId}`);
+        if (cached) {
+          logger.info(`Score cache hit for user ${userId}`);
+          return typeof cached === 'string' ? JSON.parse(cached) : cached;
+        }
+      }
+
       logger.info(`Calculating score for user ${userId} in household ${householdId}`);
 
       let score = 500; // Base score
@@ -92,7 +101,26 @@ class ScoringService {
       if (score >= 700) riskLevel = 'Low';
       else if (score >= 500) riskLevel = 'Medium';
 
-      return { score, riskLevel, breakdown };
+      const result = { score, riskLevel, breakdown };
+
+      if (redis) {
+        // Cache the score for 24 hours
+        await redis.set(`score:${userId}`, JSON.stringify(result), { ex: 86400 });
+        
+        // --- CREDIT RISK ENGINE PROACTIVE SIGNAL ---
+        // Track the velocity of scoring requests as a risk signal (potential debt cycling)
+        const key = `risk_velocity:${userId}`;
+        const attempts = await redis.incr(key);
+        if (attempts === 1) await redis.expire(key, 3600); // 1 hour window
+
+        if (attempts > 5) {
+          logger.warn(`High risk velocity detected for user ${userId}: ${attempts} scoring attempts in 1h`);
+          result.riskLevel = 'Extreme'; // Override with proactive risk signal
+          result.score = Math.max(0, result.score - 100); 
+        }
+      }
+
+      return result;
     } catch (error) {
       logger.error('Error calculating credit score:', error);
       throw error;
