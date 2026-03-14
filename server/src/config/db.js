@@ -7,7 +7,11 @@ const connectionString = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL
 if (!connectionString) {
   logger.error('DATABASE_URL is missing! PostgreSQL connection cannot be established.');
 } else {
-  logger.info(`Connecting to PostgreSQL database: ${connectionString.split('@')[1] || 'remote host'}`);
+  if (connectionString.startsWith('http')) {
+    logger.warn('⚠️ DATABASE_URL seems to be an HTTPS URL. PostgreSQL requires a string starting with postgres://');
+  }
+  const host = connectionString.split('@')[1] || 'invalid host format';
+  logger.info(`Connecting to PostgreSQL database: ${host.split(':')[0]}`);
 }
 
 const pool = new Pool({
