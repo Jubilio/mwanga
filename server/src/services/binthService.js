@@ -3,42 +3,47 @@ const ToolRegistry = require('./toolRegistry');
 const logger = require('../utils/logger');
 
 // ─── System Prompt ─────────────────────────────────────────────────────────────
+// ─── System Prompt ─────────────────────────────────────────────────────────────
 const BINTH_SYSTEM_PROMPT = `
-És a Binth — a alma e inteligência financeira do Mwanga.
+Esas a Binth — a alma e inteligência financeira do Mwanga.
 
 PERSONA:
 - Género: Feminino.
 - Tom: Empática, pedagógica e extremamente competente.
 - Estilo: Nunca respondas como um bot. Trata o utilizador pelo nome. Usa gírias financeiras de Moçambique quando apropriado (ex: "fazer um xitique", "poupar para o refresco").
-- Proactividade: Não esperes apenas por perguntas. Se vires algo nos dados (ex: orçamento estourado), menciona-o de forma construtiva.
+- Saudações: Começa sempre com uma saudação personalizada (ex: "Olá [Nome]!"). Se vires um progresso positivo (ex: 10% de uma meta), menciona-o logo no início.
 
 CONHECIMENTO (CONTEXTO REAL):
 {user_context}
 
 INSTRUÇÕES DE RACIOCÍNIO:
 1. Analisa sempre o contexto financeiro antes de responder.
-2. Se o utilizador fizer uma saudação (ex: "Olá"), responde calorosamente e faz uma breve observação positiva sobre os dados dele (ex: "Vi que já poupaste 10% da tua meta!").
-3. Se precisares de dados mais precisos, usa as ferramentas (tools) disponíveis.
-4. Responde SEMPRE em JSON puro para que a interface possa processar.
+2. Integra o nome do utilizador de forma natural.
+3. Se o utilizador fizer uma saudação, responde calorosamente e faz uma observação sobre os dados dele.
+4. Responde SEMPRE em JSON puro.
 
 FORMATO DE RESPOSTA:
 {
-  "message": "A tua mensagem aqui (suporta **bold** e \\n)",
+  "message": "A tua mensagem aqui",
   "insight_type": "warning | opportunity | info | celebration | action",
-  "quick_actions": ["Opção 1", "Opção 2"],
+  "quick_actions": ["Verificar orçamento", "Assinar para receber atualizações", "Ver mais"],
   "data": {} 
 }
 `.trim();
 
 // ─── Financial Context Builder ─────────────────────────────────────────────────
-async function buildUserContext(householdId) {
+async function buildUserContext(householdId, userId) {
   try {
     const fmt = (n) => Number(n || 0).toLocaleString('pt-MZ', { minimumFractionDigits: 2 });
     const now = new Date();
     const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
 
     // Fetch all context data in parallel
-    const [summaryRes, recentTxRes, budgetsRes, assetsRes, liabsRes] = await Promise.all([
+    const [userRes, summaryRes, recentTxRes, budgetsRes, assetsRes, liabsRes] = await Promise.all([
+      db.execute({
+        sql: 'SELECT name FROM users WHERE id = ?',
+        args: [userId]
+      }),
       db.execute({
         sql: `
           SELECT 
@@ -80,6 +85,7 @@ async function buildUserContext(householdId) {
       })
     ]);
 
+    const userName = userRes.rows[0]?.name || 'Utilizador';
     const summary = summaryRes.rows[0] || { receitas: 0, despesas: 0 };
     const recentTx = recentTxRes.rows;
     const budgets = budgetsRes.rows;
@@ -87,6 +93,8 @@ async function buildUserContext(householdId) {
     const liabs = liabsRes.rows[0];
 
     return `
+NOME DO UTILIZADOR: ${userName}
+
 === ESTADO FINANCEIRO ACTUAL ===
 TENS NESTE MÊS: Receitas MT ${fmt(summary.receitas)} | Despesas MT ${fmt(summary.despesas)}
 BALANÇO PATRIMONIAL: Activos MT ${fmt(assets?.total)} | Dívidas MT ${fmt(liabs?.total)}
@@ -166,18 +174,35 @@ const PROVIDERS = {
 // ─── Fallback Response ─────────────────────────────────────────────────────────
 function getFallbackResponse(userMessage) {
   const lower = (userMessage || '').toLowerCase();
+  const qActions = ['Verificar orçamento', 'Assinar para receber atualizações', 'Ver mais'];
+
   if (lower.includes('poupan') || lower.includes('poupar')) {
-    return { message: 'Poupar 20% do rendimento mensal é um bom ponto de partida. Com base nos teus dados actuais, consegues identificar uma despesa que poderias reduzir este mês? 💡', insight_type: 'opportunity', quick_actions: ['Ver o meu orçamento', 'Analisar os meus gastos', 'Criar uma meta de poupança'], data: null };
+    return { 
+      message: 'Olá! Reparei no teu interesse em poupança. Poupar 20% do rendimento é um excelente ponto de partida. Queres que eu analise o teu progresso em relação às tuas metas?', 
+      insight_type: 'opportunity', 
+      quick_actions: qActions, 
+      data: null 
+    };
   }
   if (lower.includes('orçamento') || lower.includes('gasto')) {
-    return { message: 'Para manter o controlo, usa a regra 50/30/20: 50% para necessidades, 30% para desejos e 20% para poupança. Queres que eu analise o teu orçamento actual?', insight_type: 'info', quick_actions: ['Ver o meu orçamento', 'Adicionar categoria', 'Ver tendências'], data: null };
+    return { 
+      message: 'Olá! Gerir o orçamento é a chave para o sucesso financeiro. Recomendo a regra 50/30/20. Queres ver como estão as tuas categorias este mês?', 
+      insight_type: 'info', 
+      quick_actions: qActions, 
+      data: null 
+    };
   }
-  return { message: 'Não consegui processar o teu pedido agora, mas estou aqui! Tenta novamente em alguns segundos. Enquanto isso, quiseres podes verificar o teu painel de controlo para teres uma visão geral das tuas finanças. 😊', insight_type: 'info', quick_actions: ['Ver o Dashboard', 'Ver Transações', 'Ver Orçamento'], data: null };
+  return { 
+    message: 'Olá! Estou aqui para ajudar com a tua saúde financeira. Podes perguntar-me sobre o teu saldo, metas ou como poupar mais este mês! 😊', 
+    insight_type: 'info', 
+    quick_actions: qActions, 
+    data: null 
+  };
 }
 
 // ─── Main Caller with Fallback ─────────────────────────────────────────────────
-async function callBinth({ messages, apiKey, provider = 'gemini', householdId }) {
-  const userContext = await buildUserContext(householdId);
+async function callBinth({ messages, apiKey, provider = 'gemini', householdId, userId }) {
+  const userContext = await buildUserContext(householdId, userId);
   const system = BINTH_SYSTEM_PROMPT.replace('{user_context}', userContext);
 
   // Try preferred provider first, then fall back

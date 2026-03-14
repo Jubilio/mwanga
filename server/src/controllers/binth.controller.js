@@ -20,7 +20,8 @@ const chat = async (req, res) => {
       messages,
       apiKey,
       provider,
-      householdId: req.user.householdId
+      householdId: req.user.householdId,
+      userId: req.user.id
     });
 
     res.json(response);
@@ -152,7 +153,8 @@ const getPageInsight = async (req, res) => {
 
     const response = await callBinth({
       messages: [{ role: 'user', content: prompt }],
-      householdId
+      householdId,
+      userId: req.user.id
     });
 
     res.json(response);
