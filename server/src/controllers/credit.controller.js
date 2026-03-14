@@ -105,6 +105,20 @@ const getApplications = async (req, res) => {
   }
 };
 
+const getLoans = async (req, res) => {
+  try {
+    const householdId = req.user.householdId;
+    const result = await db.execute({
+      sql: 'SELECT * FROM loans WHERE household_id = ? ORDER BY created_at DESC',
+      args: [householdId]
+    });
+    res.json(result.rows);
+  } catch (error) {
+    logger.error('Error fetching loans:', error);
+    res.status(500).json({ error: 'Falha ao buscar empréstimos' });
+  }
+};
+
 const disburseLoan = async (req, res) => {
   try {
     const { applicationId } = req.params;
@@ -155,5 +169,6 @@ module.exports = {
   uploadMiddleware,
   submitApplication,
   getApplications,
+  getLoans,
   disburseLoan
 };

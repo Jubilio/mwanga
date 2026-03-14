@@ -8,6 +8,7 @@ const creditController = require('../controllers/credit.controller');
 
 router.post('/apply', authenticate, creditController.uploadMiddleware, creditController.submitApplication);
 router.get('/applications', authenticate, creditController.getApplications);
+router.get('/loans', authenticate, creditController.getLoans);
 router.post('/disburse/:applicationId', authenticate, creditController.disburseLoan);
 
 module.exports = router;
