@@ -186,39 +186,54 @@ export function FinanceProvider({ children }) {
               data: t.date,
               tipo: t.type,
               desc: t.description,
-              valor: t.amount,
+              valor: Number(t.amount || 0),
               cat: t.category,
-              nota: t.note
+              nota: t.note,
+              account_id: t.account_id
             })) : [],
             rendas: Array.isArray(rendas) ? rendas.map(r => ({
               id: r.id,
               mes: r.month,
               proprietario: r.landlord,
-              valor: r.amount,
+              valor: Number(r.amount || 0),
               estado: r.status,
               obs: r.notes
             })) : [],
             metas: Array.isArray(metas) ? metas.map(m => ({
               id: m.id,
               nome: m.name,
-              alvo: m.target_amount,
-              poupado: m.saved_amount,
+              alvo: Number(m.target_amount || 0),
+              poupado: Number(m.saved_amount || 0),
               prazo: m.deadline,
               cat: m.category,
-              mensal: m.monthly_saving
+              mensal: Number(m.monthly_saving || 0)
             })) : [],
-            budgets: Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: b.category, limit: b.limit_amount })) : [],
-            activos: Array.isArray(assets) ? assets.map(a => ({ id: a.id, name: a.name, type: a.type, value: a.value })) : [],
+            budgets: Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: b.category, limit: Number(b.limit_amount || 0) })) : [],
+            activos: Array.isArray(assets) ? assets.map(a => ({ id: a.id, name: a.name, type: a.type, value: Number(a.value || 0) })) : [],
             passivos: Array.isArray(liabs) ? liabs.map(l => ({ 
               id: l.id, 
               name: l.name, 
-              total: l.total_amount, 
-              restante: l.remaining_amount, 
-              interestRate: l.interest_rate 
+              total: Number(l.total_amount || 0), 
+              restante: Number(l.remaining_amount || 0), 
+              interestRate: Number(l.interest_rate || 0) 
             })) : [],
-            xitiques: Array.isArray(xitiques) ? xitiques : [],
-            dividas: Array.isArray(debts) ? debts : [],
-            contas: Array.isArray(accounts) ? accounts : [],
+            xitiques: Array.isArray(xitiques) ? xitiques.map(x => ({
+              ...x,
+              monthly_amount: Number(x.monthly_amount || 0),
+              contributions: x.contributions?.map(c => ({ ...c, amount: Number(c.amount || 0) })) || [],
+              receipts: x.receipts?.map(r => ({ ...r, total_received: Number(r.total_received || 0) })) || []
+            })) : [],
+            dividas: Array.isArray(debts) ? debts.map(d => ({
+              ...d,
+              total_amount: Number(d.total_amount || 0),
+              remaining_amount: Number(d.remaining_amount || 0),
+              payments: d.payments?.map(p => ({ ...p, amount: Number(p.amount || 0) })) || []
+            })) : [],
+            contas: Array.isArray(accounts) ? accounts.map(acc => ({
+              ...acc,
+              initial_balance: Number(acc.initial_balance || 0),
+              current_balance: Number(acc.current_balance || 0)
+            })) : [],
             settings: mergedSettings,
             loading: false
           }

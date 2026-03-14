@@ -89,7 +89,7 @@ const deleteXitique = async (req, res) => {
 };
 
 const payContribution = async (req, res, next) => {
-  const { date } = req.body;
+  const { date, account_id } = req.body;
   const { contributionId } = req.params;
 
   try {
@@ -106,19 +106,35 @@ const payContribution = async (req, res, next) => {
 
     if (!contribution) return res.status(403).json({ error: 'Acesso negado ou contribuição não encontrada' });
 
-    await db.batch([
+    const queries = [
       {
         sql: 'UPDATE xitique_contributions SET paid = 1, payment_date = ? WHERE id = ?',
         args: [date, contributionId]
       },
       {
         sql: `
-          INSERT INTO transactions (date, type, description, amount, category, note, household_id)
-          VALUES (?, 'despesa', ?, ?, 'Xitique', ?, ?) RETURNING id
+          INSERT INTO transactions (date, type, description, amount, category, note, household_id, account_id)
+          VALUES (?, 'despesa', ?, ?, 'Xitique', ?, ?, ?) RETURNING id
         `,
-        args: [date, `Contribuição Xitique: ${contribution.xitique_name}`, contribution.amount, 'Pagamento automático via módulo Xitique', req.user.householdId]
+        args: [
+          date, 
+          `Contribuição Xitique: ${contribution.xitique_name}`, 
+          Number(contribution.amount), 
+          'Pagamento automático via módulo Xitique', 
+          req.user.householdId,
+          account_id || null
+        ]
       }
-    ], "write");
+    ];
+
+    if (account_id) {
+      queries.push({
+        sql: 'UPDATE accounts SET current_balance = current_balance - ? WHERE id = ? AND household_id = ?',
+        args: [Number(contribution.amount), account_id, req.user.householdId]
+      });
+    }
+
+    await db.batch(queries, "write");
 
     res.json({ success: true });
   } catch (error) {
@@ -127,7 +143,7 @@ const payContribution = async (req, res, next) => {
 };
 
 const receiveFunds = async (req, res, next) => {
-  const { date } = req.body;
+  const { date, account_id } = req.body;
   const { receiptId } = req.params;
 
   try {
@@ -144,19 +160,35 @@ const receiveFunds = async (req, res, next) => {
 
     if (!receipt) return res.status(403).json({ error: 'Acesso negado ou recebimento não encontrado' });
 
-    await db.batch([
+    const queries = [
       {
         sql: 'UPDATE xitique_receipts SET received_date = ? WHERE id = ?',
         args: [date, receiptId]
       },
       {
         sql: `
-          INSERT INTO transactions (date, type, description, amount, category, note, household_id)
-          VALUES (?, 'receita', ?, ?, 'Xitique', ?, ?) RETURNING id
+          INSERT INTO transactions (date, type, description, amount, category, note, household_id, account_id)
+          VALUES (?, 'receita', ?, ?, 'Xitique', ?, ?, ?) RETURNING id
         `,
-        args: [date, `Recebimento Xitique: ${receipt.xitique_name}`, receipt.total_received, 'Recebimento automático via módulo Xitique', req.user.householdId]
+        args: [
+          date, 
+          `Recebimento Xitique: ${receipt.xitique_name}`, 
+          Number(receipt.total_received), 
+          'Recebimento automático via módulo Xitique', 
+          req.user.householdId,
+          account_id || null
+        ]
       }
-    ], "write");
+    ];
+
+    if (account_id) {
+      queries.push({
+        sql: 'UPDATE accounts SET current_balance = current_balance + ? WHERE id = ? AND household_id = ?',
+        args: [Number(receipt.total_received), account_id, req.user.householdId]
+      });
+    }
+
+    await db.batch(queries, "write");
 
     res.json({ success: true });
   } catch (error) {

@@ -13,6 +13,7 @@ export default function Dividas() {
   
   const [showPayForm, setShowPayForm] = useState(null); // ID of debt being paid
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentAccount, setPaymentAccount] = useState('');
   
   const [confirmDelete, setConfirmDelete] = useState(null); // ID of debt being confirmed for deletion
 
@@ -49,11 +50,13 @@ export default function Dividas() {
       payload: {
         debtId,
         amount: Number(paymentAmount),
+        account_id: paymentAccount || null,
         payment_date: new Date().toISOString()
       }
     });
     
     setPaymentAmount('');
+    setPaymentAccount('');
     setShowPayForm(null);
   };
 
@@ -185,7 +188,7 @@ export default function Dividas() {
                       </div>
                     )}
                     {showPayForm === debt.id && (
-                      <div className="absolute right-0 mt-2 p-4 bg-white dark:bg-black border border-gold/30 rounded-xl shadow-xl z-10 animate-fade-in w-48">
+                      <div className="absolute right-0 mt-2 p-4 bg-white dark:bg-black border border-gold/30 rounded-xl shadow-xl z-20 animate-fade-in w-56">
                         <label className="block text-[10px] font-bold mb-1">VALOR A PAGAR</label>
                         <input 
                           type="number" 
@@ -195,6 +198,17 @@ export default function Dividas() {
                           onChange={e => setPaymentAmount(e.target.value)}
                           placeholder="Quantia..."
                         />
+                        <label className="block text-[10px] font-bold mb-1">PAGAR COM</label>
+                        <select
+                          className="form-input text-xs py-1 mb-3"
+                          value={paymentAccount}
+                          onChange={e => setPaymentAccount(e.target.value)}
+                        >
+                          <option value="">Nenhuma conta</option>
+                          {state.contas?.map(acc => (
+                            <option key={acc.id} value={acc.id}>{acc.name} ({fmt(acc.current_balance, currency)})</option>
+                          ))}
+                        </select>
                         <div className="flex gap-2">
                           <button onClick={() => handlePay(debt.id)} className="btn btn-primary flex-1 py-1 text-[10px]">Pagar</button>
                           <button onClick={() => setShowPayForm(null)} className="btn bg-gray-100 dark:bg-gray-800 flex-1 py-1 text-[10px]">X</button>

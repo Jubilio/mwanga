@@ -26,7 +26,7 @@ export default function Transactions() {
 
   const today = new Date().toISOString().split('T')[0];
   const [form, setForm] = useState({
-    data: today, tipo: 'despesa', desc: '', valor: '', cat: 'Alimentação', nota: '',
+    data: today, tipo: 'despesa', desc: '', valor: '', cat: 'Alimentação', nota: '', account_id: ''
   });
 
   function handleSubmit(e) {
@@ -37,9 +37,9 @@ export default function Transactions() {
     }
     dispatch({
       type: 'ADD_TRANSACTION',
-      payload: { ...form, valor: parseFloat(form.valor) },
+      payload: { ...form, valor: parseFloat(form.valor), account_id: form.account_id || null },
     });
-    setForm({ ...form, desc: '', valor: '', nota: '' });
+    setForm({ ...form, desc: '', valor: '', nota: '', account_id: '' });
     showToast('✅ Transação adicionada!');
   }
 
@@ -111,6 +111,19 @@ export default function Transactions() {
                 onChange={e => setForm({ ...form, cat: e.target.value })}
               >
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="form-label">Conta (Opcional)</label>
+              <select
+                className="form-input"
+                value={form.account_id}
+                onChange={e => setForm({ ...form, account_id: e.target.value })}
+              >
+                <option value="">Nenhuma</option>
+                {state.contas?.map(acc => (
+                  <option key={acc.id} value={acc.id}>{acc.name} ({fmt(acc.current_balance, currency)})</option>
+                ))}
               </select>
             </div>
             <div>

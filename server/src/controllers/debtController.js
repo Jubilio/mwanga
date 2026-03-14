@@ -65,8 +65,10 @@ exports.deleteDebt = async (req, res) => {
 exports.addPayment = async (req, res) => {
   try {
     const { id } = req.params;
-    const { amount, payment_date } = req.body;
+    const { amount, payment_date, account_id } = req.body;
     const householdId = req.user.householdId;
+
+    const numAmount = Number(amount);
 
     const result = await db.execute({
       sql: 'SELECT * FROM debts WHERE id = ? AND household_id = ?',
@@ -75,19 +77,28 @@ exports.addPayment = async (req, res) => {
     const debt = result.rows[0];
     if (!debt) return res.status(404).json({ error: 'Dívida não encontrada' });
 
-    const newRemaining = Math.max(0, debt.remaining_amount - amount);
+    const newRemaining = Math.max(0, Number(debt.remaining_amount) - numAmount);
     const newStatus = newRemaining === 0 ? 'paid' : 'pending';
 
-    await db.batch([
+    const queries = [
       {
-        sql: 'INSERT INTO debt_payments (debt_id, amount, payment_date, household_id) VALUES (?, ?, ?, ?) RETURNING id',
-        args: [id, amount, payment_date, householdId]
+        sql: 'INSERT INTO debt_payments (debt_id, amount, payment_date, household_id, account_id) VALUES (?, ?, ?, ?, ?) RETURNING id',
+        args: [id, numAmount, payment_date, householdId, account_id || null]
       },
       {
         sql: 'UPDATE debts SET remaining_amount = ?, status = ? WHERE id = ?',
         args: [newRemaining, newStatus, id]
       }
-    ], "write");
+    ];
+
+    if (account_id) {
+      queries.push({
+        sql: 'UPDATE accounts SET current_balance = current_balance - ? WHERE id = ? AND household_id = ?',
+        args: [numAmount, account_id, householdId]
+      });
+    }
+
+    await db.batch(queries, "write");
 
     res.status(201).json({ message: 'Pagamento registado com sucesso' });
   } catch (error) {

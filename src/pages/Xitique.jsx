@@ -7,6 +7,7 @@ export default function Xitique() {
   const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
   const [showAdd, setShowAdd] = useState(false);
+  const [paymentAccount, setPaymentAccount] = useState('');
   const [form, setForm] = useState({
     name: '',
     monthly_amount: '',
@@ -33,12 +34,14 @@ export default function Xitique() {
 
   function handlePay(xitiqueId, contributionId) {
     const date = new Date().toISOString().slice(0, 10);
-    dispatch({ type: 'PAY_XITIQUE', payload: { contributionId, date } });
+    dispatch({ type: 'PAY_XITIQUE', payload: { contributionId, date, account_id: paymentAccount || null } });
+    setPaymentAccount('');
   }
 
   function handleReceive(xitiqueId, receiptId) {
     const date = new Date().toISOString().slice(0, 10);
-    dispatch({ type: 'RECEIVE_XITIQUE', payload: { receiptId, date } });
+    dispatch({ type: 'RECEIVE_XITIQUE', payload: { receiptId, date, account_id: paymentAccount || null } });
+    setPaymentAccount('');
   }
 
   return (
@@ -160,17 +163,32 @@ export default function Xitique() {
                             )}
                           </td>
                           <td>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              {!contribution.paid && (
-                                <button onClick={() => handlePay(x.id, contribution.id)} className="btn btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
-                                  Pagar
-                                </button>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                              {(!contribution.paid || (isYourTurn && !receipt.received_date)) && (
+                                <select 
+                                  className="form-input" 
+                                  style={{ padding: '0.2rem', fontSize: '0.7rem', width: '120px' }}
+                                  value={paymentAccount}
+                                  onChange={e => setPaymentAccount(e.target.value)}
+                                >
+                                  <option value="">Sem conta</option>
+                                  {state.contas?.map(acc => (
+                                    <option key={acc.id} value={acc.id}>{acc.name}</option>
+                                  ))}
+                                </select>
                               )}
-                              {isYourTurn && !receipt.received_date && (
-                                <button onClick={() => handleReceive(x.id, receipt.id)} className="btn btn-leaf" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
-                                   Receber {fmt(receipt.total_received, currency)}
-                                </button>
-                              )}
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                {!contribution.paid && (
+                                  <button onClick={() => handlePay(x.id, contribution.id)} className="btn btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
+                                    Pagar
+                                  </button>
+                                )}
+                                {isYourTurn && !receipt.received_date && (
+                                  <button onClick={() => handleReceive(x.id, receipt.id)} className="btn btn-leaf" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
+                                     Receber {fmt(receipt.total_received, currency)}
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </td>
                         </tr>
