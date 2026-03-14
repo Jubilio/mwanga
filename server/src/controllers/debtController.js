@@ -34,7 +34,7 @@ exports.addDebt = async (req, res) => {
     const result = await db.execute({
       sql: `
         INSERT INTO debts (creditor_name, total_amount, remaining_amount, due_date, status, household_id)
-        VALUES (?, ?, ?, ?, 'pending', ?)
+        VALUES (?, ?, ?, ?, 'pending', ?) RETURNING id
       `,
       args: [creditor_name, total_amount, total_amount, due_date, householdId]
     });
@@ -80,7 +80,7 @@ exports.addPayment = async (req, res) => {
 
     await db.batch([
       {
-        sql: 'INSERT INTO debt_payments (debt_id, amount, payment_date, household_id) VALUES (?, ?, ?, ?)',
+        sql: 'INSERT INTO debt_payments (debt_id, amount, payment_date, household_id) VALUES (?, ?, ?, ?) RETURNING id',
         args: [id, amount, payment_date, householdId]
       },
       {

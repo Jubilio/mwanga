@@ -22,7 +22,7 @@ const createGoal = async (req, res, next) => {
   try {
     const data = goalSchema.parse(req.body);
     const result = await db.execute({
-      sql: 'INSERT INTO goals (name, target_amount, saved_amount, deadline, category, monthly_saving, household_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      sql: 'INSERT INTO goals (name, target_amount, saved_amount, deadline, category, monthly_saving, household_id) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id',
       args: [data.name, data.targetAmount, data.savedAmount, data.deadline, data.category, data.monthlySaving, req.user.householdId]
     });
     res.status(201).json({ id: Number(result.lastInsertRowid), ...data });

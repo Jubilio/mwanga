@@ -28,7 +28,7 @@ const clearAll = async (req, res) => {
 const createNotification = async (householdId, type, message) => {
   try {
     await db.execute({
-      sql: 'INSERT INTO notifications (household_id, type, message) VALUES (?, ?, ?)',
+      sql: 'INSERT INTO notifications (household_id, type, message) VALUES (?, ?, ?) RETURNING id',
       args: [householdId, type, message]
     });
   } catch (error) {

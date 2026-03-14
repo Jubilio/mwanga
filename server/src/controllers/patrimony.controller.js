@@ -27,7 +27,7 @@ const createAsset = async (req, res, next) => {
   try {
     const data = assetSchema.parse(req.body);
     const result = await db.execute({
-      sql: 'INSERT INTO assets (name, type, value, household_id) VALUES (?, ?, ?, ?)',
+      sql: 'INSERT INTO assets (name, type, value, household_id) VALUES (?, ?, ?, ?) RETURNING id',
       args: [data.name, data.type, data.value, req.user.householdId]
     });
     res.status(201).json({ id: Number(result.lastInsertRowid), ...data });
@@ -58,7 +58,7 @@ const createLiability = async (req, res, next) => {
   try {
     const data = liabilitySchema.parse(req.body);
     const result = await db.execute({
-      sql: 'INSERT INTO liabilities (name, total_amount, remaining_amount, interest_rate, household_id) VALUES (?, ?, ?, ?, ?)',
+      sql: 'INSERT INTO liabilities (name, total_amount, remaining_amount, interest_rate, household_id) VALUES (?, ?, ?, ?, ?) RETURNING id',
       args: [data.name, data.totalAmount, data.remainingAmount, data.interestRate, req.user.householdId]
     });
     res.status(201).json({ id: Number(result.lastInsertRowid), ...data });

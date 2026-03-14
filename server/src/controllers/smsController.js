@@ -24,7 +24,7 @@ exports.parseSmsMessage = async (req, res, next) => {
     const result = await db.execute({
       sql: `
         INSERT INTO financial_messages (tenant_id, raw_text, source_detected, parsed_json, status)
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?) RETURNING id
       `,
       args: [
         householdId,

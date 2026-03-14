@@ -24,7 +24,7 @@ const register = async (req, res, next) => {
 
     // Create household
     const hInfo = await db.execute({
-      sql: 'INSERT INTO households (name) VALUES (?)',
+      sql: 'INSERT INTO households (name) VALUES (?) RETURNING id',
       args: [householdName || `${name}'s Home`]
     });
     const householdId = Number(hInfo.lastInsertRowid);
@@ -34,7 +34,7 @@ const register = async (req, res, next) => {
     const hash = bcrypt.hashSync(password, salt);
 
     const uInfo = await db.execute({
-      sql: 'INSERT INTO users (name, email, password_hash, household_id) VALUES (?, ?, ?, ?)',
+      sql: 'INSERT INTO users (name, email, password_hash, household_id) VALUES (?, ?, ?, ?) RETURNING id',
       args: [name, email, hash, householdId]
     });
     

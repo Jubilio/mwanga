@@ -3,7 +3,7 @@ const logger = require('../utils/logger');
 
 exports.getAccounts = async (req, res) => {
   try {
-    const householdId = req.user.household_id;
+    const householdId = req.user.householdId;
     const result = await db.execute({
       sql: 'SELECT * FROM accounts WHERE household_id = ? ORDER BY created_at DESC',
       args: [householdId]
@@ -18,13 +18,13 @@ exports.getAccounts = async (req, res) => {
 exports.addAccount = async (req, res) => {
   try {
     const { name, type, initial_balance } = req.body;
-    const householdId = req.user.household_id;
+    const householdId = req.user.householdId;
     
     // We set current_balance equal to initial_balance on creation
     const result = await db.execute({
       sql: `
         INSERT INTO accounts (name, type, initial_balance, current_balance, household_id)
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?) RETURNING id
       `,
       args: [name, type, initial_balance, initial_balance, householdId]
     });
@@ -40,7 +40,7 @@ exports.updateAccountBalance = async (req, res) => {
   try {
     const { id } = req.params;
     const { current_balance } = req.body;
-    const householdId = req.user.household_id;
+    const householdId = req.user.householdId;
 
     await db.execute({
       sql: `
@@ -61,7 +61,7 @@ exports.updateAccountBalance = async (req, res) => {
 exports.deleteAccount = async (req, res) => {
   try {
     const { id } = req.params;
-    const householdId = req.user.household_id;
+    const householdId = req.user.householdId;
     
     await db.execute({
       sql: 'DELETE FROM accounts WHERE id = ? AND household_id = ?',

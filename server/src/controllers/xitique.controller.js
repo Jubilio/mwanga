@@ -43,7 +43,7 @@ const createXitique = async (req, res, next) => {
     }
 
     const xResult = await db.execute({
-      sql: 'INSERT INTO xitiques (name, monthly_amount, total_participants, start_date, your_position, household_id) VALUES (?, ?, ?, ?, ?, ?)',
+      sql: 'INSERT INTO xitiques (name, monthly_amount, total_participants, start_date, your_position, household_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
       args: [data.name, data.monthlyAmount, data.totalParticipants, data.startDate, data.yourPosition, req.user.householdId]
     });
     const xitiqueId = Number(xResult.lastInsertRowid);
@@ -55,7 +55,7 @@ const createXitique = async (req, res, next) => {
         const dueDate = date.toISOString().slice(0, 7);
         
         const cResult = await db.execute({
-          sql: 'INSERT INTO xitique_cycles (xitique_id, cycle_number, due_date, receiver_position) VALUES (?, ?, ?, ?)',
+          sql: 'INSERT INTO xitique_cycles (xitique_id, cycle_number, due_date, receiver_position) VALUES (?, ?, ?, ?) RETURNING id',
           args: [xitiqueId, i, dueDate, i]
         });
         const cycleId = Number(cResult.lastInsertRowid);
@@ -114,7 +114,7 @@ const payContribution = async (req, res, next) => {
       {
         sql: `
           INSERT INTO transactions (date, type, description, amount, category, note, household_id)
-          VALUES (?, 'despesa', ?, ?, 'Xitique', ?, ?)
+          VALUES (?, 'despesa', ?, ?, 'Xitique', ?, ?) RETURNING id
         `,
         args: [date, `Contribuição Xitique: ${contribution.xitique_name}`, contribution.amount, 'Pagamento automático via módulo Xitique', req.user.householdId]
       }
@@ -152,7 +152,7 @@ const receiveFunds = async (req, res, next) => {
       {
         sql: `
           INSERT INTO transactions (date, type, description, amount, category, note, household_id)
-          VALUES (?, 'receita', ?, ?, 'Xitique', ?, ?)
+          VALUES (?, 'receita', ?, ?, 'Xitique', ?, ?) RETURNING id
         `,
         args: [date, `Recebimento Xitique: ${receipt.xitique_name}`, receipt.total_received, 'Recebimento automático via módulo Xitique', req.user.householdId]
       }

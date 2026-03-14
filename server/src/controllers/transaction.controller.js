@@ -22,7 +22,7 @@ const createTransaction = async (req, res, next) => {
   try {
     const data = transactionSchema.parse(req.body);
     const result = await db.execute({
-      sql: 'INSERT INTO transactions (date, type, description, amount, category, note, household_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      sql: 'INSERT INTO transactions (date, type, description, amount, category, note, household_id) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id',
       args: [data.date, data.type, data.description, data.amount, data.category, data.note, req.user.householdId]
     });
     res.status(201).json({ id: Number(result.lastInsertRowid), ...data });

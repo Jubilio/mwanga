@@ -35,7 +35,7 @@ const uploadMiddleware = upload.fields([
 const submitApplication = async (req, res) => {
   try {
     const { amount, months, partner, purpose } = req.body;
-    const householdId = req.user.household_id;
+    const householdId = req.user.householdId;
 
     if (!amount || !months || !partner || !purpose) {
       return res.status(400).json({ error: 'Faltam campos obrigatórios' });
@@ -53,7 +53,7 @@ const submitApplication = async (req, res) => {
         INSERT INTO credit_applications (
           household_id, amount, months, partner, purpose, status,
           bi_path, residencia_path, renda_path, selfie_path
-        ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?) RETURNING id
       `,
       args: [
         householdId,
@@ -78,7 +78,7 @@ const submitApplication = async (req, res) => {
 
 const getApplications = async (req, res) => {
   try {
-    const householdId = req.user.household_id;
+    const householdId = req.user.householdId;
     const result = await db.execute({
       sql: 'SELECT * FROM credit_applications WHERE household_id = ? ORDER BY created_at DESC',
       args: [householdId]

@@ -25,13 +25,13 @@ const createRental = async (req, res, next) => {
     if (data.status === 'pago') {
       const result = await db.batch([
         {
-          sql: 'INSERT INTO rentals (month, landlord, amount, status, notes, household_id) VALUES (?, ?, ?, ?, ?, ?)',
+          sql: 'INSERT INTO rentals (month, landlord, amount, status, notes, household_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
           args: [data.month, data.landlord, data.amount, data.status, data.notes, req.user.householdId]
         },
         {
           sql: `
             INSERT INTO transactions (date, type, description, amount, category, note, household_id)
-            VALUES (?, 'despesa', ?, ?, 'Renda', ?, ?)
+            VALUES (?, 'despesa', ?, ?, 'Renda', ?, ?) RETURNING id
           `,
           args: [
             new Date().toISOString().slice(0, 10),
@@ -45,7 +45,7 @@ const createRental = async (req, res, next) => {
       lastRowId = result[0].lastInsertRowid;
     } else {
       const result = await db.execute({
-        sql: 'INSERT INTO rentals (month, landlord, amount, status, notes, household_id) VALUES (?, ?, ?, ?, ?, ?)',
+        sql: 'INSERT INTO rentals (month, landlord, amount, status, notes, household_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
         args: [data.month, data.landlord, data.amount, data.status, data.notes, req.user.householdId]
       });
       lastRowId = result.lastInsertRowid;
