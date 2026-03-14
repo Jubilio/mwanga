@@ -1021,6 +1021,12 @@ function TabStrategy({ scoreData, debts }) {
 export default function MwangaCredito() {
   const { state } = useFinance();
   const [tab, setTab] = useState("overview");
+  const salario = state.settings.user_salary || 0;
+  const dividas_parcelas = state.dividas?.reduce((acc, curr) => acc + (curr.monthly_payment || 0), 0) || 0;
+  const comprometimento_atual = salario > 0 ? (dividas_parcelas / salario) * 100 : 0;
+  const margem = Math.max(0, 40 - comprometimento_atual);
+  const maxParcela = (salario * margem) / 100;
+
   const userData = {
     salario,
     dividas_parcelas
@@ -1036,12 +1042,6 @@ export default function MwangaCredito() {
       { name: "Nexos Score Integrado", pts: state.user?.credit_score || 0, max: 1000, icon: "✦" }
     ]
   };
-
-  const salario = state.settings.user_salary || 0;
-  const dividas_parcelas = state.dividas?.reduce((acc, curr) => acc + (curr.monthly_payment || 0), 0) || 0;
-  const comprometimento_atual = salario > 0 ? (dividas_parcelas / salario) * 100 : 0;
-  const margem = Math.max(0, 40 - comprometimento_atual);
-  const maxParcela = (salario * margem) / 100;
 
   const eligData = {
     comprometimento_atual,
