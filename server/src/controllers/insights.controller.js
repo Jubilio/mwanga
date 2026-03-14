@@ -12,7 +12,7 @@ const getOverview = async (req, res) => {
     sql: `
       SELECT category, SUM(amount) as total 
       FROM transactions 
-      WHERE household_id = ? AND date >= ? AND type = 'despesa'
+      WHERE household_id = ? AND date >= ? AND type IN ('despesa', 'renda')
       GROUP BY category
       ORDER BY total DESC
     `,
@@ -25,7 +25,7 @@ const getOverview = async (req, res) => {
     sql: `
       SELECT strftime('%Y-%m', date) as month, 
              SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as income,
-             SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as expenses
+             SUM(CASE WHEN type IN ('despesa', 'renda') THEN amount ELSE 0 END) as expenses
       FROM transactions 
       WHERE household_id = ?
       GROUP BY month

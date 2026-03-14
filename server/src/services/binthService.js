@@ -48,7 +48,7 @@ async function buildUserContext(householdId, userId) {
         sql: `
           SELECT 
             SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as receitas,
-            SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as despesas
+            SUM(CASE WHEN type IN ('despesa', 'renda') THEN amount ELSE 0 END) as despesas
           FROM transactions 
           WHERE household_id = ? AND date >= ?
         `,
@@ -69,7 +69,7 @@ async function buildUserContext(householdId, userId) {
           FROM budgets b
           LEFT JOIN transactions t ON t.category = b.category 
             AND t.household_id = b.household_id
-            AND t.type = 'despesa' AND t.date >= ?
+            AND t.type IN ('despesa', 'renda') AND t.date >= ?
           WHERE b.household_id = ?
           GROUP BY b.category, b.limit_amount
         `,
