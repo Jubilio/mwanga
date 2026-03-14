@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
 import { useFinance } from "../hooks/useFinanceStore";
-import { getFinancialMonthKey, calcMonthlyTotals } from "../utils/calculations";
 import api from "../utils/api";
 import { useToast } from "../components/Toast";
 
@@ -54,65 +53,9 @@ const FinancialEngine = {
     return rows;
   },
   // CET aproximado (anualizado)
-  cet(principal, rateMonthly, months) {
+  cet(principal, rateMonthly) {
     return (Math.pow(1 + rateMonthly, 12) - 1) * 100;
-  },
-  // Score de crédito proprietário
-  creditScore(userData) {
-    let s = 0;
-    const factors = [];
-
-    // 1. Estabilidade de renda (25%)
-    const incomeStab = Math.min(1, userData.monthsEmployed / 24);
-    const incomePts = Math.round(incomeStab * 25);
-    s += incomePts;
-    factors.push({ name: "Estabilidade de renda", pts: incomePts, max: 25, icon: "💼" });
-
-    // 2. Comportamento de poupança (20%)
-    const savRate = userData.excedente / Math.max(1, userData.salario);
-    const savPts = Math.min(20, Math.round(savRate * 80));
-    s += savPts;
-    factors.push({ name: "Taxa de poupança", pts: savPts, max: 20, icon: "🏦" });
-
-    // 3. Rácio dívida/renda (25%) — menor = melhor
-    const debtRatio = userData.dividas_parcelas / Math.max(1, userData.salario);
-    const debtPts = debtRatio > 0.5 ? 0 : Math.round((1 - debtRatio * 2) * 25);
-    s += debtPts;
-    factors.push({ name: "Rácio dívida/renda", pts: debtPts, max: 25, icon: "⚖️" });
-
-    // 4. Histórico Xitique (15%)
-    const xitPts = userData.xitique_cycles_completed >= 3 ? 15
-      : userData.xitique_cycles_completed >= 1 ? 8 : 0;
-    s += xitPts;
-    factors.push({ name: "Reputação Xitique", pts: xitPts, max: 15, icon: "✦" });
-
-    // 5. Consistência de transações (15%)
-    const txPts = Math.min(15, Math.round((userData.avg_monthly_transactions / 20) * 15));
-    s += txPts;
-    factors.push({ name: "Actividade financeira", pts: txPts, max: 15, icon: "↕" });
-
-    return {
-      score: Math.min(100, Math.max(0, s)),
-      factors,
-      label: s >= 85 ? "Excelente" : s >= 70 ? "Bom" : s >= 55 ? "Regular" : s >= 40 ? "Baixo" : "Muito Baixo",
-      color: s >= 85 ? G.green : s >= 70 ? G.credit : s >= 55 ? G.gold : s >= 40 ? G.warn : G.red,
-      eligible: s >= 55,
-      maxAmount: s >= 85 ? 50000 : s >= 70 ? 25000 : s >= 55 ? 10000 : 0,
-    };
-  },
-  // Elegibilidade: máximo que pode pedir
-  eligibility(salario, dividas_parcelas, score) {
-    const comprometimento_atual = dividas_parcelas / salario;
-    const margem = Math.max(0, 0.40 - comprometimento_atual); // máx 40% comprometimento
-    const rendaDisponivel = salario * margem;
-    const maxParcela = rendaDisponivel;
-    return {
-      comprometimento_atual: comprometimento_atual * 100,
-      margem: margem * 100,
-      maxParcela,
-      ok: margem > 0.05 && score >= 55,
-    };
-  },
+  }
 };
 
 /* ═══════════════════════════════════════
@@ -652,7 +595,7 @@ function TabApplication({ scoreData, eligData, onSuccess }) {
       if (docs.rendaDocument) formData.append('rendaDocument', docs.rendaDocument);
       if (docs.selfieDocument) formData.append('selfieDocument', docs.selfieDocument);
 
-      const res = await api.post('/credit/apply', formData, {
+      await api.post('/credit/apply', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -669,14 +612,14 @@ function TabApplication({ scoreData, eligData, onSuccess }) {
     }
   };
 
-  if (!scoreData.eligible) {
+  if (!scoreData?.eligible && step !== 5) {
     return (
       <Card style={{ textAlign: "center", padding: 40 }}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>🔒</div>
         <div style={{ fontSize: 18, fontWeight: 700, color: G.red, marginBottom: 10 }}>Crédito não disponível</div>
         <div style={{ fontSize: 14, color: G.muted, lineHeight: 1.7 }}>
-          O teu score actual ({scoreData.score}/100) não atinge o mínimo de 55 pontos.<br />
-          Consulta os factores do score no separador "Visão Geral" para melhorar.
+          O teu Nexo Score actual ({scoreData?.score}/1000) ainda não atinge o requisito mínimo para crédito (500).<br />
+          Continua a utilizar o Mwanga para gerir as tuas finanças e aumentar o teu score.
         </div>
       </Card>
     );
@@ -1078,29 +1021,36 @@ function TabStrategy({ scoreData, debts }) {
 export default function MwangaCredito() {
   const { state } = useFinance();
   const [tab, setTab] = useState("overview");
-  const [applyDirect, setApplyDirect] = useState(false);
-
-  // Compute dynamic user data for the credit engine
-  const startDay = state.settings.financial_month_start_day || 1;
-  const monthKey = getFinancialMonthKey(new Date(), startDay);
-  const mTotals = calcMonthlyTotals(state.transacoes, monthKey, state.rendas, startDay);
-  
-  // Estimate monthly transactions (last 30 days roughly)
-  const recentTx = state.transacoes.filter(t => new Date(t.data) >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
-
   const userData = {
-    nome: state.user?.name || "Utilizador",
-    salario: mTotals.totalIncome || 1, // Avoid division by zero
-    excedente: Math.max(0, mTotals.totalIncome - mTotals.despesas),
-    dividas_parcelas: state.dividas?.reduce((acc, d) => acc + (d.remaining_amount > 0 ? (d.total_amount / 12) : 0), 0) || 0, // Simplified estimation
-    monthsEmployed: 24, // Placeholder until job history is added
-    xitique_cycles_completed: state.xitiques?.length || 0,
-    avg_monthly_transactions: recentTx.length || 0,
+    salario,
+    dividas_parcelas
   };
 
-  const scoreData = FinancialEngine.creditScore(userData);
-  const eligData = FinancialEngine.eligibility(userData.salario, userData.dividas_parcelas, scoreData.score);
-  const hist = []; // Empty for now, to be fetched from API later
+  const scoreData = {
+    score: state.user?.credit_score || 0,
+    label: (state.user?.credit_score || 0) >= 700 ? "Excelente" : (state.user?.credit_score || 0) >= 500 ? "Regular" : "Baixo",
+    color: (state.user?.credit_score || 0) >= 700 ? G.green : (state.user?.credit_score || 0) >= 500 ? G.gold : G.red,
+    eligible: (state.user?.credit_score || 0) >= 500,
+    maxAmount: (state.user?.credit_score || 0) >= 700 ? 50000 : (state.user?.credit_score || 0) >= 500 ? 15000 : 0,
+    factors: [
+      { name: "Nexos Score Integrado", pts: state.user?.credit_score || 0, max: 1000, icon: "✦" }
+    ]
+  };
+
+  const salario = state.settings.user_salary || 0;
+  const dividas_parcelas = state.dividas?.reduce((acc, curr) => acc + (curr.monthly_payment || 0), 0) || 0;
+  const comprometimento_atual = salario > 0 ? (dividas_parcelas / salario) * 100 : 0;
+  const margem = Math.max(0, 40 - comprometimento_atual);
+  const maxParcela = (salario * margem) / 100;
+
+  const eligData = {
+    comprometimento_atual,
+    margem,
+    maxParcela,
+    ok: scoreData.eligible && margem > 5
+  };
+
+  const hist = state.loans || [];
 
   const isPro = state.settings?.plan === 'pro';
 
@@ -1111,7 +1061,7 @@ export default function MwangaCredito() {
     { id: "strategy",  label: "Estratégia 👑",  icon: "📈" },
   ];
 
-  function handleApply() { setTab("apply"); setApplyDirect(true); }
+  function handleApply() { setTab("apply"); }
 
   return (
     <div style={{ minHeight: "100vh", background: G.bg, fontFamily: "'DM Sans','Segoe UI',sans-serif", color: G.text }}>

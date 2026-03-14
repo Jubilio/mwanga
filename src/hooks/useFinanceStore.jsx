@@ -17,6 +17,8 @@ const defaultState = {
   xitiques: [],
   dividas: [],
   contas: [],
+  loans: [],
+  loanApplications: [],
   settings: {
     user_salary: 50000,
     default_rent: 15000,
@@ -158,7 +160,7 @@ export function FinanceProvider({ children }) {
 
       try {
         console.log('Fetching initial data from:', FINANCE_API_URL);
-        const [ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts] = await Promise.all([
+        const [ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans] = await Promise.all([
           safeFetch(`${FINANCE_API_URL}/transactions`),
           safeFetch(`${FINANCE_API_URL}/rentals`),
           safeFetch(`${FINANCE_API_URL}/goals`),
@@ -170,6 +172,8 @@ export function FinanceProvider({ children }) {
           safeFetch(`${FINANCE_API_URL}/auth/me`),
           safeFetch(`${FINANCE_API_URL}/debts`),
           safeFetch(`${FINANCE_API_URL}/accounts`),
+          safeFetch(`${FINANCE_API_URL}/credit/applications`),
+          safeFetch(`${FINANCE_API_URL}/credit/loans`),
         ]);
 
         const mergedSettings = {
@@ -234,6 +238,8 @@ export function FinanceProvider({ children }) {
               initial_balance: Number(acc.initial_balance || 0),
               current_balance: Number(acc.current_balance || 0)
             })) : [],
+            loanApplications: Array.isArray(loanApplications) ? loanApplications : [],
+            loans: Array.isArray(loans) ? loans : [],
             settings: mergedSettings,
             loading: false
           }

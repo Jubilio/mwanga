@@ -3,6 +3,8 @@ const logger = require('../utils/logger');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const scoringService = require('../services/scoring.service');
+const loanService = require('../services/loan.service');
 
 // Configure Multer for File Uploads
 const uploadDir = path.join(__dirname, '../../uploads/credit');
@@ -35,11 +37,15 @@ const uploadMiddleware = upload.fields([
 const submitApplication = async (req, res) => {
   try {
     const { amount, months, partner, purpose } = req.body;
+    const userId = req.user.id;
     const householdId = req.user.householdId;
 
     if (!amount || !months || !partner || !purpose) {
       return res.status(400).json({ error: 'Faltam campos obrigatórios' });
     }
+
+    // 1. Calculate Credit Score
+    const { score, riskLevel } = await scoringService.calculateScore(userId, householdId);
 
     // Get file paths if uploaded
     const files = req.files || {};
@@ -51,9 +57,9 @@ const submitApplication = async (req, res) => {
     const result = await db.execute({
       sql: `
         INSERT INTO credit_applications (
-          household_id, amount, months, partner, purpose, status,
+          household_id, amount, months, partner, purpose, status, risk_score,
           bi_path, residencia_path, renda_path, selfie_path
-        ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?) RETURNING id
+        ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?) RETURNING id
       `,
       args: [
         householdId,
@@ -61,6 +67,7 @@ const submitApplication = async (req, res) => {
         parseInt(months),
         partner,
         purpose,
+        score,
         biPath,
         residenciaPath,
         rendaPath,
@@ -68,8 +75,16 @@ const submitApplication = async (req, res) => {
       ]
     });
 
-    logger.info(`Credit application ${result.lastInsertRowid} created for household ${householdId}`);
-    res.status(201).json({ message: 'Pedido submetido com sucesso', id: Number(result.lastInsertRowid) });
+    // 2. Proactively update user score
+    await scoringService.updateUserInfo(userId, score);
+
+    logger.info(`Credit application ${result.lastInsertRowid} created for user ${userId} with score ${score}`);
+    res.status(201).json({ 
+      message: 'Pedido submetido com sucesso', 
+      id: Number(result.lastInsertRowid),
+      score,
+      riskLevel
+    });
   } catch (error) {
     logger.error('Error submitting credit application:', error);
     res.status(500).json({ error: 'Falha ao submeter pedido' });
@@ -90,8 +105,55 @@ const getApplications = async (req, res) => {
   }
 };
 
+const disburseLoan = async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+    const { rate } = req.body; // Monthly rate provided by admin
+    
+    // 1. Fetch application details
+    const appResult = await db.execute({
+      sql: 'SELECT * FROM credit_applications WHERE id = ?',
+      args: [applicationId]
+    });
+
+    if (appResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Pedido não encontrado' });
+    }
+
+    const app = appResult.rows[0];
+    if (app.status !== 'pending' && app.status !== 'approved') {
+      return res.status(400).json({ error: 'Pedido já processado ou em estado inválido' });
+    }
+
+    // For now, household_id is used to find the user. 
+    // In a real scenario, we'd have a direct app.user_id or fetch from households table.
+    // Assuming the first user in the household for now, or fetch from auth.
+    const userResult = await db.execute({
+      sql: 'SELECT id FROM users WHERE household_id = ? LIMIT 1',
+      args: [app.household_id]
+    });
+    const userId = userResult.rows[0].id;
+
+    // 2. Disburse
+    const loanId = await loanService.disburseLoan(
+      app.id,
+      userId,
+      app.household_id,
+      app.amount,
+      parseFloat(rate) || 0.30, // Default 30% if not provided
+      app.months
+    );
+
+    res.json({ message: 'Crédito desembolsado com sucesso', loanId });
+  } catch (error) {
+    logger.error('Error disbursing loan:', error);
+    res.status(500).json({ error: 'Falha ao desembolsar crédito' });
+  }
+};
+
 module.exports = {
   uploadMiddleware,
   submitApplication,
-  getApplications
+  getApplications,
+  disburseLoan
 };

@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     household_id BIGINT REFERENCES households(id),
+    national_id TEXT,
+    kyc_status TEXT DEFAULT 'pending',
+    credit_score INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -204,6 +207,16 @@ CREATE TABLE IF NOT EXISTS financial_messages (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
+-- KYC Documents
+CREATE TABLE IF NOT EXISTS kyc_documents (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+    document_type TEXT NOT NULL, -- BI, Selfie, Comprovante Residência, NUIT
+    document_url TEXT NOT NULL,
+    verified BOOLEAN DEFAULT FALSE,
+    uploaded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Credit Applications
 CREATE TABLE IF NOT EXISTS credit_applications (
     id BIGSERIAL PRIMARY KEY,
@@ -216,6 +229,34 @@ CREATE TABLE IF NOT EXISTS credit_applications (
     residencia_path TEXT,
     renda_path TEXT,
     selfie_path TEXT,
+    risk_score INTEGER,
     household_id BIGINT REFERENCES households(id),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Loans (Active Credits)
+CREATE TABLE IF NOT EXISTS loans (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+    household_id BIGINT REFERENCES households(id),
+    application_id BIGINT REFERENCES credit_applications(id),
+    principal DECIMAL(15,2) NOT NULL,
+    interest_rate DECIMAL(5,2) NOT NULL,
+    term_months INTEGER NOT NULL,
+    monthly_payment DECIMAL(15,2) NOT NULL,
+    disbursement_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    status TEXT DEFAULT 'disbursed', -- disbursed, active, paid, defaulted
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Loan Payments (Installments)
+CREATE TABLE IF NOT EXISTS loan_payments (
+    id BIGSERIAL PRIMARY KEY,
+    loan_id BIGINT REFERENCES loans(id) ON DELETE CASCADE,
+    amount_due DECIMAL(15,2) NOT NULL,
+    amount_paid DECIMAL(15,2) DEFAULT 0,
+    due_date TEXT NOT NULL,
+    payment_date TEXT,
+    status TEXT DEFAULT 'pending', -- pending, paid, late
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
