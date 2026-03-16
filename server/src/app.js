@@ -23,6 +23,7 @@ app.use(helmet());
 app.use(cors({
   origin: [
     'https://mwanga-opal.vercel.app',
+    'https://mwanga-qdsmbf6ck-jubilio-projects.vercel.app',
     'http://localhost:5173',
     'http://localhost:3000'
   ],
