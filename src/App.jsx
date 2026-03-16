@@ -18,6 +18,7 @@ import Credito from './pages/Credito';
 import Pricing from './pages/Pricing';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
+import Insights from './pages/Insights';
 import { useFinance } from './hooks/useFinanceStore';
 import { Navigate } from 'react-router-dom';
 

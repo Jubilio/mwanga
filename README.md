@@ -1,17 +1,24 @@
 # 🌊 Mwanga ✦ — Gestão Familiar & Crescimento Patrimonial
 
-![Mwanga Banner](public/favicon.svg)
+![Mwanga PWA Icon](public/icon-512.png)
 
-O **Mwanga** é uma plataforma SaaS de elite para gestão financeira familiar, desenhada para transformar o controle de gastos em **Crescimento Patrimonial**. Sob o selo de qualidade **NEXO VIBE**, o Mwanga alia a sofisticação do design **Glassmorphism 2.0** à inteligência proactiva da assistente virtual **Olivia**.
+O **Mwanga** é uma plataforma SaaS de elite para gestão financeira familiar, desenhada para transformar o controle de gastos em **Crescimento Patrimonial**. Sob o selo de qualidade **NEXO VIBE**, o Mwanga alia a sofisticação do design **Glassmorphism 2.0** à inteligência proactiva da assistente virtual **Binth**.
 
 ---
 
 ## ✨ Funcionalidades Premium
 
-### 🤖 Olivia AI (Assistente Proactiva)
+### 🤖 Binth Insights (IA Financeira)
 
-- **Conselhos em Tempo Real**: A Olivia analisa os seus dados reais (salário, poupança, excedentes) e sugere acções imediatas para optimizar o seu capital.
+- **Conselhos em Tempo Real**: A Binth analisa os seus dados reais (salário, poupança, excedentes) e sugere acções imediatas para optimizar o seu capital.
 - **Score Financeiro Dinâmico**: Avaliação constante da sua saúde financeira com base no seu comportamento.
+- **Chat Interactivo**: Tire dúvidas e peça sugestões directamente através do chat da Binth.
+
+### 📱 PWA & Suporte Offline
+
+- **Instalação Mobile/Desktop**: Instale o Mwanga directamente no seu dispositivo como um app nativo.
+- **Funcionamento Offline**: Aceda aos seus dados essenciais mesmo sem ligação à internet, graças ao suporte de Service Workers.
+- **Carregamento Ultra-rápido**: Caching inteligente de assets para uma experiência instantânea.
 
 ### 💳 Modelo de Monetização SaaS
 
@@ -20,19 +27,6 @@ O **Mwanga** é uma plataforma SaaS de elite para gestão financeira familiar, d
   - **Crescimento (Plus)**: Simuladores inteligentes e score avançado para profissionais urbanos.
   - **Património (Premium)**: Planeamento de reforma, BI avançado e suporte prioritário.
 
-- **Toggle de Facturação**: Suporte para pagamentos mensais e anuais (com desconto).
-
-### 💰 Gestão Financeira 360º
-
-- **Xitique (Fintech Social)**: Módulo exclusivo para gestão de poupança rotativa comunitária, formalizando uma tradição local com tecnologia moderna.
-- **Património Líquido**: Monitorização detalhada de Activos e Passivos com visualização Glassmorphism.
-- **Simuladores Inteligentes**: Planeamento de reformas, compra de casa própria e juros compostos.
-
-### 🎨 Design Glassmorphism 2.0
-
-- **Estética "Midnight Gold"**: Um sistema visual luxuoso com transparências ultra-suaves, desfoques de fundo e micro-animações fluidas.
-- **Interface NEXO VIBE**: Totalmente responsiva e optimizada para uma experiência de utilizador superior.
-
 ---
 
 ## 🚀 Tecnologias
@@ -40,14 +34,15 @@ O **Mwanga** é uma plataforma SaaS de elite para gestão financeira familiar, d
 ### **Frontend**
 
 - **React + Vite**: Performance e rapidez de carregamento.
+- **Vite PWA**: Transformação em Progressive Web App com Service Workers.
 - **Lucide React**: Ícones premium e consistentes.
 - **Recharts**: Gráficos de fluxo de caixa e BI.
-- **Vanilla CSS (Glassmorphism 2.0)**: Sistema de design proprietário com mesh gradients e filtros de fundo.
+- **Vanilla CSS (Glassmorphism 2.0)**: Sistema de design proprietário com mesh gradients.
 
 ### **Backend**
 
-- **Node.js + Express**: API de alta performance (limites de payload optimizados para 10MB).
-- **SQLite (better-sqlite3)**: Base de dados relacional com isolamento total por Agregado Familiar (Multi-tenancy).
+- **Node.js + Express**: API de alta performance com gestão dinâmica de CORS.
+- **SQLite (better-sqlite3)**: Base de dados relacional multi-tenant.
 - **JWT (JSON Web Tokens)**: Segurança bancária e gestão de sessões.
 
 ---
@@ -71,29 +66,26 @@ O **Mwanga** é uma plataforma SaaS de elite para gestão financeira familiar, d
 2. **Instale as dependências**
 
    ```bash
-   # Frontend
    npm install
-
-   # Backend
    cd server && npm install
    ```
 
 3. **Configuração**
-
    Crie um ficheiro `.env` na pasta `server/` com:
 
    ```env
    JWT_SECRET=sua_chave_secreta_aqui
-   PORT=3001
+   PORT=10000
+   ALLOWED_ORIGINS=https://seu-frontend.vercel.app,http://localhost:5173
    ```
 
 4. **Execução**
 
    ```bash
-   # Terminal 1 (server)
+   # Backend
    cd server && npm start
 
-   # Terminal 2 (root)
+   # Frontend
    npm run dev
    ```
 
