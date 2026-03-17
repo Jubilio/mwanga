@@ -66,13 +66,14 @@ const login = async (req, res, next) => {
       args: [email]
     });
     const user = result.rows[0];
+    const userRole = user?.role || 'user'; // Fallback if column missing or null
 
     if (!user || !bcrypt.compareSync(password, user.password_hash)) {
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
-    const token = jwt.sign({ id: user.id, householdId: user.household_id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-    const userData = { id: user.id, name: user.name, email: user.email, householdId: user.household_id, role: user.role };
+    const token = jwt.sign({ id: user.id, householdId: user.household_id, role: userRole }, JWT_SECRET, { expiresIn: '7d' });
+    const userData = { id: user.id, name: user.name, email: user.email, householdId: user.household_id, role: userRole };
     
     await logAction(user.id, 'LOGIN', 'USER', user.id);
     res.json({ user: userData, token });
@@ -87,10 +88,16 @@ const login = async (req, res, next) => {
 
 const getMe = async (req, res) => {
   const result = await db.execute({
-    sql: 'SELECT id, name, email, role, household_id as householdId FROM users WHERE id = ?',
+    sql: 'SELECT * FROM users WHERE id = ?',
     args: [req.user.id]
   });
-  res.json(result.rows[0]);
+  const user = result.rows[0];
+  if (user) {
+    const { password_hash, household_id, ...data } = user;
+    res.json({ ...data, householdId: household_id, role: user.role || 'user' });
+  } else {
+    res.status(404).json({ error: 'User not found' });
+  }
 };
 
 const updateProfile = async (req, res) => {

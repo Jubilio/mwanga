@@ -47,10 +47,14 @@ const uploadDocument = async (req, res) => {
     });
 
     // Update user kyc_status to 'in_review' if it was 'pending'
-    await db.execute({
-        sql: "UPDATE users SET kyc_status = 'in_review' WHERE id = ? AND kyc_status = 'pending'",
-        args: [userId]
-    });
+    try {
+      await db.execute({
+          sql: "UPDATE users SET kyc_status = 'in_review' WHERE id = ? AND kyc_status = 'pending'",
+          args: [userId]
+      });
+    } catch (e) {
+      logger.warn('kyc_status column might be missing in users table:', e.message);
+    }
 
     logger.info(`Document ${documentType} uploaded for user ${userId}`);
     res.status(201).json({ message: 'Documento enviado com sucesso', documentUrl });
