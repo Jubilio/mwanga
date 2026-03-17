@@ -12,14 +12,22 @@ const getUsers = async (req, res) => {
       args: []
     });
     // Map data to ensure no crashes if columns are missing
-    const users = result.rows.map(u => ({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      kyc_status: u.kyc_status || 'pending',
-      credit_score: u.credit_score || 0,
-      role: u.role || 'user',
-      created_at: u.created_at
+    const users = await Promise.all(result.rows.map(async u => {
+      // Fetch documents for each user
+      const docs = await db.execute({
+        sql: 'SELECT * FROM kyc_documents WHERE user_id = ?',
+        args: [u.id]
+      });
+      return {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        kyc_status: u.kyc_status || 'pending',
+        credit_score: u.credit_score || 0,
+        role: u.role || 'user',
+        created_at: u.created_at,
+        documents: docs.rows
+      };
     }));
     res.json(users);
   } catch (error) {
@@ -41,7 +49,7 @@ const getPlatformStats = async (req, res) => {
     try {
       loanStats = await db.execute(`
         SELECT 
-          SUM(amount) as total_disbursed,
+          SUM(principal) as total_disbursed,
           COUNT(*) as total_loans,
           AVG(interest_rate) as avg_rate
         FROM loans

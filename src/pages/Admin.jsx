@@ -89,8 +89,9 @@ export default function Admin() {
                 <tr style={{ color: G.muted, fontSize: '12px', textAlign: 'left', borderBottom: `1px solid ${G.border}` }}>
                   <th style={{ padding: '12px' }}>NOME</th>
                   <th style={{ padding: '12px' }}>KYC</th>
-                  <th style={{ padding: '12px' }}>SCORE</th>
-                  <th style={{ padding: '12px' }}>ACÇÕES</th>
+                   <th style={{ padding: '12px' }}>SCORE</th>
+                   <th style={{ padding: '12px' }}>DOCS</th>
+                   <th style={{ padding: '12px' }}>ACÇÕES</th>
                 </tr>
               </thead>
               <tbody>
@@ -103,9 +104,30 @@ export default function Admin() {
                     <td style={{ padding: '16px 12px' }}>
                       <KycBadge status={user.kyc_status} />
                     </td>
-                    <td style={{ padding: '16px 12px' }}>
-                      <span style={{ fontWeight: 800, color: user.credit_score > 600 ? G.green : G.gold }}>{user.credit_score}</span>
-                    </td>
+                     <td style={{ padding: '16px 12px' }}>
+                       <span style={{ fontWeight: 800, color: user.credit_score > 600 ? G.green : G.gold }}>{user.credit_score}</span>
+                     </td>
+                     <td style={{ padding: '16px 12px' }}>
+                       <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                         {user.documents?.map(doc => (
+                           <a 
+                             key={doc.id} 
+                             href={`${api.defaults.baseURL.replace('/api', '')}/uploads/kyc/${doc.document_url}`} 
+                             target="_blank" 
+                             rel="noopener noreferrer"
+                             style={{ 
+                               fontSize: '10px', padding: '2px 6px', borderRadius: '4px', 
+                               background: G.card, border: `1px solid ${G.border}`, color: G.muted,
+                               textDecoration: 'none'
+                             }}
+                            title={doc.document_type}
+                           >
+                             📄 {doc.document_type.split('_')[0].toUpperCase()}
+                           </a>
+                         ))}
+                         {(!user.documents || user.documents.length === 0) && <span style={{ color: G.muted, fontSize: '11px' }}>Nenhum</span>}
+                       </div>
+                     </td>
                     <td style={{ padding: '16px 12px' }}>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button onClick={() => handleKycUpdate(user.id, 'approved')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: G.green }} title="Aprovar KYC"><CheckCircle size={18} /></button>

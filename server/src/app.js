@@ -21,7 +21,20 @@ const swaggerDocument = YAML.load(path.join(__dirname, 'config', 'swagger.yaml')
 const app = express();
 
 // Security Middlewares
-app.use(helmet());
+app.use(helmet({
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "script-src": ["'self'", "https://accounts.google.com", "https://mwanga-opal.vercel.app"],
+      "frame-src": ["'self'", "https://accounts.google.com"],
+      "connect-src": ["'self'", "https://accounts.google.com", "https://mwanga-opal.vercel.app", "https://topical-jaguar-71639.upstash.io"],
+    },
+  },
+}));
+
+// Serve KYC Uploads
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use(cors({
   origin: [
     'https://mwanga-opal.vercel.app',
