@@ -1,5 +1,16 @@
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
+const { z } = require('zod');
+
+const addAccountSchema = z.object({
+  name: z.string().min(1).max(50).trim(),
+  type: z.enum(['corrente', 'poupanca', 'investimento', 'outro']),
+  initial_balance: z.coerce.number(),
+}).strict();
+
+const updateBalanceSchema = z.object({
+  current_balance: z.coerce.number(),
+}).strict();
 
 exports.getAccounts = async (req, res) => {
   try {
@@ -15,9 +26,9 @@ exports.getAccounts = async (req, res) => {
   }
 };
 
-exports.addAccount = async (req, res) => {
+exports.addAccount = async (req, res, next) => {
   try {
-    const { name, type, initial_balance } = req.body;
+    const { name, type, initial_balance } = addAccountSchema.parse(req.body);
     const householdId = req.user.householdId;
     
     // We set current_balance equal to initial_balance on creation
@@ -31,15 +42,16 @@ exports.addAccount = async (req, res) => {
     
     res.status(201).json({ id: Number(result.lastInsertRowid), message: 'Account added successfully' });
   } catch (error) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     logger.error('Error adding account:', error);
-    res.status(500).json({ error: 'Failed to add account' });
+    next(error);
   }
 };
 
-exports.updateAccountBalance = async (req, res) => {
+exports.updateAccountBalance = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { current_balance } = req.body;
+    const { current_balance } = updateBalanceSchema.parse(req.body);
     const householdId = req.user.householdId;
 
     await db.execute({
@@ -53,8 +65,9 @@ exports.updateAccountBalance = async (req, res) => {
 
     res.json({ message: 'Account balance updated' });
   } catch (error) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     logger.error('Error updating account balance:', error);
-    res.status(500).json({ error: 'Failed to update balance' });
+    next(error);
   }
 };
 

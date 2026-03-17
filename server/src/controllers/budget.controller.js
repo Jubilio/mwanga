@@ -2,9 +2,9 @@ const { db } = require('../config/db');
 const { z } = require('zod');
 
 const budgetSchema = z.object({
-  category: z.string(),
+  category: z.string().min(1).max(50).trim(),
   limit: z.number().nonnegative(),
-});
+}).strict();
 
 const getBudgets = async (req, res) => {
   const result = await db.execute({

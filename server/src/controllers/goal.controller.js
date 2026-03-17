@@ -3,13 +3,13 @@ const { z } = require('zod');
 const { createNotification } = require('./notification.controller');
 
 const goalSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().min(1).max(100).trim(),
   targetAmount: z.number().positive(),
   savedAmount: z.number().nonnegative().optional().default(0),
   deadline: z.string().optional(),
-  category: z.string().optional(),
+  category: z.string().max(50).trim().optional(),
   monthlySaving: z.number().nonnegative().optional().default(0),
-});
+}).strict();
 
 const getGoals = async (req, res) => {
   const result = await db.execute({

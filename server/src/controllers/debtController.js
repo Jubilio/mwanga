@@ -1,5 +1,18 @@
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
+const { z } = require('zod');
+
+const addDebtSchema = z.object({
+  creditor_name: z.string().min(1).max(100).trim(),
+  total_amount: z.coerce.number().positive(),
+  due_date: z.string(),
+}).strict();
+
+const addPaymentSchema = z.object({
+  amount: z.coerce.number().positive(),
+  payment_date: z.string(),
+  account_id: z.coerce.number().optional(),
+}).strict();
 
 exports.getDebts = async (req, res) => {
   try {
@@ -26,9 +39,9 @@ exports.getDebts = async (req, res) => {
   }
 };
 
-exports.addDebt = async (req, res) => {
+exports.addDebt = async (req, res, next) => {
   try {
-    const { creditor_name, total_amount, due_date } = req.body;
+    const { creditor_name, total_amount, due_date } = addDebtSchema.parse(req.body);
     const householdId = req.user.householdId;
     
     const result = await db.execute({
@@ -41,8 +54,9 @@ exports.addDebt = async (req, res) => {
     
     res.status(201).json({ id: Number(result.lastInsertRowid), message: 'Dívida adicionada com sucesso' });
   } catch (error) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     logger.error('Error adding debt:', error);
-    res.status(500).json({ error: 'Failed to add debt' });
+    next(error);
   }
 };
 
@@ -62,10 +76,10 @@ exports.deleteDebt = async (req, res) => {
   }
 };
 
-exports.addPayment = async (req, res) => {
+exports.addPayment = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { amount, payment_date, account_id } = req.body;
+    const { amount, payment_date, account_id } = addPaymentSchema.parse(req.body);
     const householdId = req.user.householdId;
 
     const numAmount = Number(amount);
@@ -102,7 +116,8 @@ exports.addPayment = async (req, res) => {
 
     res.status(201).json({ message: 'Pagamento registado com sucesso' });
   } catch (error) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     logger.error('Error registering debt payment:', error);
-    res.status(500).json({ error: 'Failed to register payment' });
+    next(error);
   }
 };

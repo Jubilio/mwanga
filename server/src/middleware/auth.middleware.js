@@ -1,7 +1,12 @@
 const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'mwanga-premium-secret-88';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  logger.error('CRITICAL: JWT_SECRET is not defined in environment variables!');
+  // In production, we should probably crash or use a very secure fallback
+}
 
 const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -12,7 +17,7 @@ const authenticate = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET || 'mwanga-temp-fallback-secret-change-me');
     req.user = decoded;
     next();
   } catch (error) {
@@ -21,4 +26,13 @@ const authenticate = (req, res, next) => {
   }
 };
 
-module.exports = { authenticate, JWT_SECRET };
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    logger.warn(`Unauthorized admin access attempt by user: ${req.user?.id}`);
+    res.status(403).json({ error: 'Acesso negado: Requer privilégios de administrador' });
+  }
+};
+
+module.exports = { authenticate, isAdmin, JWT_SECRET: JWT_SECRET || 'mwanga-temp-fallback-secret-change-me' };

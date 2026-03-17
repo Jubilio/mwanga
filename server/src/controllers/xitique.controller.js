@@ -3,12 +3,17 @@ const { z } = require('zod');
 const { createNotification } = require('./notification.controller');
 
 const xitiqueSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().min(1).max(100).trim(),
   monthlyAmount: z.number().positive(),
-  totalParticipants: z.number().int().min(2),
-  startDate: z.string(),
+  totalParticipants: z.number().int().min(2).max(50),
+  startDate: z.string().min(10).max(10), // YYYY-MM-DD
   yourPosition: z.number().int().positive(),
-});
+}).strict();
+
+const xitiquePaymentSchema = z.object({
+  date: z.string().min(10).max(10),
+  account_id: z.coerce.number().optional(),
+}).strict();
 
 const getXitiques = async (req, res) => {
   const result = await db.execute({
@@ -90,10 +95,9 @@ const deleteXitique = async (req, res) => {
 };
 
 const payContribution = async (req, res, next) => {
-  const { date, account_id } = req.body;
-  const { contributionId } = req.params;
-
   try {
+    const { date, account_id } = xitiquePaymentSchema.parse(req.body);
+    const { contributionId } = req.params;
     const result = await db.execute({
       sql: `
         SELECT c.*, x.name as xitique_name
@@ -145,15 +149,15 @@ const payContribution = async (req, res, next) => {
 
     res.json({ success: true });
   } catch (error) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     next(error);
   }
 };
 
 const receiveFunds = async (req, res, next) => {
-  const { date, account_id } = req.body;
-  const { receiptId } = req.params;
-
   try {
+    const { date, account_id } = xitiquePaymentSchema.parse(req.body);
+    const { receiptId } = req.params;
     const result = await db.execute({
       sql: `
         SELECT r.*, x.name as xitique_name
@@ -205,6 +209,7 @@ const receiveFunds = async (req, res, next) => {
 
     res.json({ success: true });
   } catch (error) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     next(error);
   }
 };

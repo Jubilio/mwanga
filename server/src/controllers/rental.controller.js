@@ -2,12 +2,12 @@ const { db } = require('../config/db');
 const { z } = require('zod');
 
 const rentalSchema = z.object({
-  month: z.string(),
-  landlord: z.string(),
+  month: z.string().min(7).max(7).trim(), // e.g., "2024-03"
+  landlord: z.string().min(2).max(100).trim(),
   amount: z.number().positive(),
   status: z.enum(['pendente', 'pago']),
-  notes: z.string().optional(),
-});
+  notes: z.string().max(500).trim().optional(),
+}).strict();
 
 const getRentals = async (req, res) => {
   const result = await db.execute({

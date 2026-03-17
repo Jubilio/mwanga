@@ -1,14 +1,25 @@
 const { callBinth } = require('../services/binthService');
 const { db } = require('../config/db');
+const { z } = require('zod');
+
+const chatSchema = z.object({
+  message: z.string().min(1).max(2000).trim(),
+  history: z.array(z.object({
+    role: z.enum(['user', 'assistant', 'system']),
+    content: z.string(),
+  })).optional().default([]),
+  provider: z.enum(['gemini', 'groq', 'openrouter']).optional().default('gemini'),
+  apiKey: z.string().optional(),
+}).strict();
+
+const insightSchema = z.object({
+  page: z.enum(['dashboard', 'dividas', 'metas', 'xitique']),
+}).strict();
 
 // ─── POST /api/binth/chat ─────────────────────────────────────────────────────
-const chat = async (req, res) => {
+const chat = async (req, res, next) => {
   try {
-    const { message, history = [], provider = 'gemini', apiKey } = req.body;
-
-    if (!message || !message.trim()) {
-      return res.status(400).json({ error: 'Mensagem não pode estar vazia.' });
-    }
+    const { message, history, provider, apiKey } = chatSchema.parse(req.body);
 
     // Build message history in provider format
     const messages = [
@@ -25,8 +36,8 @@ const chat = async (req, res) => {
     });
 
     res.json(response);
-
   } catch (err) {
+    if (err instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: err.errors });
     console.error('[Binth Chat Error]', err.message);
     res.status(500).json({
       message: 'Tive um problema a processar o teu pedido. Tenta novamente! 😊',
@@ -137,9 +148,9 @@ const getScore = async (req, res) => {
 };
 
 // ─── GET /api/binth/insights/:page ───────────────────────────────────────────
-const getPageInsight = async (req, res) => {
+const getPageInsight = async (req, res, next) => {
   try {
-    const { page } = req.params;
+    const { page } = insightSchema.parse(req.params);
     const { householdId } = req.user;
 
     const pagePrompts = {
@@ -159,6 +170,7 @@ const getPageInsight = async (req, res) => {
 
     res.json(response);
   } catch (err) {
+    if (err instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: err.errors });
     console.error('[Binth Insights Error]', err.message);
     res.status(500).json({
       message: 'Não consegui gerar um insight agora. Mas continua o bom trabalho! 💪',

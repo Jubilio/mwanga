@@ -5,6 +5,18 @@ const path = require('path');
 const fs = require('fs');
 const scoringService = require('../services/scoring.service');
 const loanService = require('../services/loan.service');
+const { z } = require('zod');
+
+const submitApplicationSchema = z.object({
+  amount: z.string().or(z.number()).transform(v => parseFloat(v)).pipe(z.number().positive()),
+  months: z.string().or(z.number()).transform(v => parseInt(v)).pipe(z.number().int().positive()),
+  partner: z.string().min(2).max(100).trim(),
+  purpose: z.string().min(2).max(500).trim(),
+}).strict();
+
+const disburseLoanSchema = z.object({
+  rate: z.string().or(z.number()).transform(v => parseFloat(v)).pipe(z.number().min(0).max(1)),
+}).strict();
 
 // Configure Multer for File Uploads
 const uploadDir = path.join(__dirname, '../../uploads/credit');
@@ -34,15 +46,11 @@ const uploadMiddleware = upload.fields([
   { name: 'selfieDocument', maxCount: 1 }
 ]);
 
-const submitApplication = async (req, res) => {
+const submitApplication = async (req, res, next) => {
   try {
-    const { amount, months, partner, purpose } = req.body;
+    const { amount, months, partner, purpose } = submitApplicationSchema.parse(req.body);
     const userId = req.user.id;
     const householdId = req.user.householdId;
-
-    if (!amount || !months || !partner || !purpose) {
-      return res.status(400).json({ error: 'Faltam campos obrigatórios' });
-    }
 
     // 1. Calculate Credit Score
     const { score, riskLevel } = await scoringService.calculateScore(userId, householdId);
@@ -86,8 +94,11 @@ const submitApplication = async (req, res) => {
       riskLevel
     });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
     logger.error('Error submitting credit application:', error);
-    res.status(500).json({ error: 'Falha ao submeter pedido' });
+    next(error);
   }
 };
 
@@ -119,10 +130,10 @@ const getLoans = async (req, res) => {
   }
 };
 
-const disburseLoan = async (req, res) => {
+const disburseLoan = async (req, res, next) => {
   try {
     const { applicationId } = req.params;
-    const { rate } = req.body; // Monthly rate provided by admin
+    const { rate } = disburseLoanSchema.parse(req.body); // Monthly rate provided by admin
     
     // 1. Fetch application details
     const appResult = await db.execute({
@@ -160,8 +171,11 @@ const disburseLoan = async (req, res) => {
 
     res.json({ message: 'Crédito desembolsado com sucesso', loanId });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
     logger.error('Error disbursing loan:', error);
-    res.status(500).json({ error: 'Falha ao desembolsar crédito' });
+    next(error);
   }
 };
 

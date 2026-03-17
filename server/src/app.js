@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const hpp = require('hpp');
+const xss = require('xss');
 const errorHandler = require('./middleware/error.middleware');
 const authRoutes = require('./routes/auth.routes');
 const financeRoutes = require('./routes/finance.routes');
@@ -32,13 +34,37 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Rate Limiting
+// Rate Limiting - General API
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 1000 requests per windowMs
+  max: 1000, 
   message: 'Too many requests from this IP, please try again after 15 minutes',
 });
 app.use('/api', limiter);
+
+// Stricter Rate Limiting for Auth/Sensitive routes
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 20, // 20 attempts per hour
+  message: 'Too many login attempts from this IP, please try again after an hour',
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+
+// Parameter Pollution Protection
+app.use(hpp());
+
+// Basic XSS Sanitization Middleware
+app.use((req, res, next) => {
+  if (req.body) {
+    for (const key in req.body) {
+      if (typeof req.body[key] === 'string') {
+        req.body[key] = xss(req.body[key]);
+      }
+    }
+  }
+  next();
+});
 
 // Body Parsing
 app.use(express.json({ limit: '10mb' }));

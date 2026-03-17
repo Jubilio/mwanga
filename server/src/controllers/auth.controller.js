@@ -7,16 +7,20 @@ const { z } = require('zod');
 
 // Validation Schemas
 const registerSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(6),
-  householdName: z.string().optional(),
-});
+  name: z.string().min(2).max(100).trim(),
+  email: z.string().email().lowercase().trim(),
+  password: z.string().min(8).max(100),
+  householdName: z.string().max(100).trim().optional(),
+}).strict();
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
-});
+  email: z.string().email().lowercase().trim(),
+  password: z.string().min(1),
+}).strict();
+
+const updateProfileSchema = z.object({
+  name: z.string().min(2).max(100).trim(),
+}).strict();
 
 const register = async (req, res, next) => {
   try {
@@ -100,14 +104,21 @@ const getMe = async (req, res) => {
   }
 };
 
-const updateProfile = async (req, res) => {
-  const { name } = req.body;
-  await db.execute({
-    sql: 'UPDATE users SET name = ? WHERE id = ?',
-    args: [name, req.user.id]
-  });
-  await logAction(req.user.id, 'UPDATE_PROFILE', 'USER', req.user.id);
-  res.json({ success: true, name });
+const updateProfile = async (req, res, next) => {
+  try {
+    const { name } = updateProfileSchema.parse(req.body);
+    await db.execute({
+      sql: 'UPDATE users SET name = ? WHERE id = ?',
+      args: [name, req.user.id]
+    });
+    await logAction(req.user.id, 'UPDATE_PROFILE', 'USER', req.user.id);
+    res.json({ success: true, name });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
+    next(error);
+  }
 };
 
 module.exports = { register, login, getMe, updateProfile };

@@ -3,14 +3,14 @@ const { z } = require('zod');
 const { createNotification } = require('./notification.controller');
 
 const transactionSchema = z.object({
-  date: z.string(),
+  date: z.string().min(10).max(10), // Expecting YYYY-MM-DD
   type: z.enum(['receita', 'despesa', 'renda', 'poupanca']),
-  description: z.string().optional(),
+  description: z.string().max(255).trim().optional(),
   amount: z.coerce.number().positive(),
-  category: z.string().optional(),
-  note: z.string().optional(),
+  category: z.string().max(100).trim().optional(),
+  note: z.string().max(1000).trim().optional(),
   account_id: z.coerce.number().optional(),
-});
+}).strict();
 
 const getTransactions = async (req, res) => {
   const result = await db.execute({

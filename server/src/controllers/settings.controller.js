@@ -1,5 +1,15 @@
 const { db } = require('../config/db');
 const { logAction } = require('../utils/audit');
+const { z } = require('zod');
+
+const upsertSettingSchema = z.object({
+  key: z.string().min(1).max(50).trim(),
+  value: z.any(),
+}).strict();
+
+const updateHouseholdSchema = z.object({
+  name: z.string().min(1).max(100).trim(),
+}).strict();
 
 const getSettings = async (req, res) => {
   const result = await db.execute({
@@ -13,11 +23,9 @@ const getSettings = async (req, res) => {
   res.json(settings);
 };
 
-const upsertSetting = async (req, res) => {
+const upsertSetting = async (req, res, next) => {
   try {
-    const { key, value } = req.body;
-    if (!key) return res.status(400).json({ error: 'Key is required' });
-    
+    const { key, value } = upsertSettingSchema.parse(req.body);
     const safeValue = value === null || value === undefined ? '' : value.toString();
     const householdId = req.user.householdId;
 
@@ -28,18 +36,24 @@ const upsertSetting = async (req, res) => {
     
     res.json({ success: true, key, value: safeValue });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    next(error);
   }
 };
 
-const updateHousehold = async (req, res) => {
-  const { name } = req.body;
-  await db.execute({
-    sql: 'UPDATE households SET name = ? WHERE id = ?',
-    args: [name, req.user.householdId]
-  });
-  await logAction(req.user.id, 'UPDATE_HOUSEHOLD', 'HOUSEHOLD', req.user.householdId);
-  res.json({ success: true, name });
+const updateHousehold = async (req, res, next) => {
+  try {
+    const { name } = updateHouseholdSchema.parse(req.body);
+    await db.execute({
+      sql: 'UPDATE households SET name = ? WHERE id = ?',
+      args: [name, req.user.householdId]
+    });
+    await logAction(req.user.id, 'UPDATE_HOUSEHOLD', 'HOUSEHOLD', req.user.householdId);
+    res.json({ success: true, name });
+  } catch (error) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    next(error);
+  }
 };
 
 module.exports = { getSettings, upsertSetting, updateHousehold };

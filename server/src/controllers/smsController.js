@@ -1,16 +1,16 @@
 const { db } = require('../config/db');
 const smsParserService = require('../services/smsParserService');
 const logger = require('../utils/logger');
+const { z } = require('zod');
+
+const parseSmsSchema = z.object({
+  raw_text: z.string().min(1).max(5000).trim(),
+}).strict();
 
 exports.parseSmsMessage = async (req, res, next) => {
   try {
-    const { raw_text } = req.body;
-    // Fallback if req.user is undefined or missing household_id
+    const { raw_text } = parseSmsSchema.parse(req.body);
     const householdId = req.user?.householdId || null;
-
-    if (!raw_text) {
-      return res.status(400).json({ success: false, message: 'Texto da mensagem é obrigatório.' });
-    }
 
     // 1. Process with the Parser Engine (Regex + Fallback)
     const parsedData = await smsParserService.parseSMS(raw_text);
@@ -44,7 +44,8 @@ exports.parseSmsMessage = async (req, res, next) => {
     });
 
   } catch (error) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     logger.error('Error in parseSmsMessage:', error);
-    res.status(500).json({ success: false, message: 'Falha durante o parsing da mensagem SMS. Tente novamente mais tarde.' });
+    next(error);
   }
 };

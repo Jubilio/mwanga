@@ -3,6 +3,11 @@ const logger = require('../utils/logger');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { z } = require('zod');
+
+const uploadDocumentSchema = z.object({
+  documentType: z.enum(['bi_frente', 'bi_verso', 'selfie', 'comprovativo_residencia', 'comprovativo_rendimento', 'other']),
+}).strict();
 
 // Configure Multer for KYC Uploads
 const uploadDir = path.join(__dirname, '../../uploads/kyc');
@@ -27,13 +32,13 @@ const upload = multer({
 
 const uploadMiddleware = upload.single('document');
 
-const uploadDocument = async (req, res) => {
+const uploadDocument = async (req, res, next) => {
   try {
-    const { documentType } = req.body;
+    const { documentType } = uploadDocumentSchema.parse(req.body);
     const userId = req.user.id;
 
-    if (!req.file || !documentType) {
-      return res.status(400).json({ error: 'Arquivo ou tipo de documento ausente' });
+    if (!req.file) {
+      return res.status(400).json({ error: 'Arquivo ausente' });
     }
 
     const documentUrl = req.file.filename;
@@ -59,8 +64,11 @@ const uploadDocument = async (req, res) => {
     logger.info(`Document ${documentType} uploaded for user ${userId}`);
     res.status(201).json({ message: 'Documento enviado com sucesso', documentUrl });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
     logger.error('Error uploading KYC document:', error);
-    res.status(500).json({ error: 'Falha ao enviar documento' });
+    next(error);
   }
 };
 
