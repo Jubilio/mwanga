@@ -26,7 +26,15 @@ function RequireAuth({ children }) {
   const { state } = useFinance();
   const token = localStorage.getItem('mwanga-token');
   
-  if (state.loading) return <div className="loading-screen">Carregando...</div>;
+  if (state.loading) return (
+    <div className="loading-screen">
+      <div className="loading-logo">M</div>
+      <div className="loading-text">Mwanga ✦</div>
+      <div style={{ marginTop: '20px', fontSize: '12px', color: '#4a5568', fontFamily: 'var(--font-body)' }}>
+        Sincronizando dados financeiros...
+      </div>
+    </div>
+  );
   if (!token) return <Navigate to="/login" replace />;
   
   return children;
