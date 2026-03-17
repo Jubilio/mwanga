@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useFinance } from '../hooks/useFinanceStore';
 import { useOutletContext } from 'react-router-dom';
 import { Wallet, LogIn, UserPlus, Lock, Mail, User } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -40,6 +41,35 @@ export default function Login() {
       dispatch({ type: 'SET_USER', payload: data.user });
       
       showToast(isLogin ? '👋 Bem-vindo de volta!' : '🎉 Conta criada com sucesso!');
+      navigate('/');
+    } catch (err) {
+      showToast(`❌ ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogleSuccess(credentialResponse) {
+    setLoading(true);
+    let apiUrl = import.meta.env.VITE_API_URL || '';
+    if (!apiUrl.endsWith('/api')) {
+      apiUrl = `${apiUrl.replace(/\/$/, '')}/api`;
+    }
+
+    try {
+      const resp = await fetch(`${apiUrl}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: credentialResponse.credential })
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Autenticação com Google falhou');
+
+      localStorage.setItem('mwanga-token', data.token);
+      dispatch({ type: 'SET_USER', payload: data.user });
+      
+      showToast('👋 Bem-vindo via Google!');
       navigate('/');
     } catch (err) {
       showToast(`❌ ${err.message}`);
@@ -154,6 +184,26 @@ export default function Login() {
             {loading ? 'Processando...' : isLogin ? <><LogIn size={18} /> Entrar</> : <><UserPlus size={18} /> Criar Conta</>}
           </button>
         </form>
+
+        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
+            <span style={{ fontSize: '0.8rem', color: 'var(--color-muted)' }}>OU</span>
+            <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => showToast('❌ Erro no Login com Google')}
+              useOneTap
+              theme="outline"
+              size="large"
+              shape="pill"
+              locale="pt_BR"
+            />
+          </div>
+        </div>
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--color-muted)' }}>
           {isLogin ? (

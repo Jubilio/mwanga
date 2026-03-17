@@ -14,12 +14,18 @@ if (!connectionString) {
   logger.info(`Connecting to PostgreSQL database: ${host.split(':')[0]}`);
 }
 
-const pool = new Pool({
+const poolConfig = {
   connectionString,
-  ssl: {
+};
+
+// Only enable SSL if not explicitly disabled in the connection string
+if (connectionString && !connectionString.includes('sslmode=disable')) {
+  poolConfig.ssl = {
     rejectUnauthorized: false // Required for Supabase/Render connections
-  }
-});
+  };
+}
+
+const pool = new Pool(poolConfig);
 
 // Wrapper to maintain compatibility with existing code that used .execute({sql, args})
 const db = {
