@@ -41,8 +41,9 @@ const register = async (req, res, next) => {
     const userId = Number(uInfo.lastInsertRowid);
     await logAction(userId, 'REGISTER', 'USER', userId);
     
-    const user = { id: userId, name, email, householdId };
-    const token = jwt.sign({ id: user.id, householdId: user.householdId }, JWT_SECRET, { expiresIn: '7d' });
+    const userRole = 'user'; // Default for new users
+    const user = { id: userId, name, email, householdId, role: userRole };
+    const token = jwt.sign({ id: user.id, householdId: user.householdId, role: userRole }, JWT_SECRET, { expiresIn: '7d' });
     
     res.status(201).json({ user, token });
 
@@ -70,8 +71,8 @@ const login = async (req, res, next) => {
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
-    const token = jwt.sign({ id: user.id, householdId: user.household_id }, JWT_SECRET, { expiresIn: '7d' });
-    const userData = { id: user.id, name: user.name, email: user.email, householdId: user.household_id };
+    const token = jwt.sign({ id: user.id, householdId: user.household_id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    const userData = { id: user.id, name: user.name, email: user.email, householdId: user.household_id, role: user.role };
     
     await logAction(user.id, 'LOGIN', 'USER', user.id);
     res.json({ user: userData, token });
@@ -86,7 +87,7 @@ const login = async (req, res, next) => {
 
 const getMe = async (req, res) => {
   const result = await db.execute({
-    sql: 'SELECT id, name, email, household_id as householdId FROM users WHERE id = ?',
+    sql: 'SELECT id, name, email, role, household_id as householdId FROM users WHERE id = ?',
     args: [req.user.id]
   });
   res.json(result.rows[0]);
