@@ -31,6 +31,30 @@ const defaultState = {
   loading: true,
 };
 
+function mapTransaction(t) {
+  return {
+    id: t.id,
+    data: t.date,
+    tipo: t.type,
+    desc: t.description,
+    valor: Number(t.amount || 0),
+    cat: t.category,
+    nota: t.note,
+    account_id: t.account_id
+  };
+}
+
+function mapRental(r) {
+  return {
+    id: r.id,
+    mes: r.month,
+    proprietario: r.landlord,
+    valor: Number(r.amount || 0),
+    estado: r.status,
+    obs: r.notes
+  };
+}
+
 function reducer(state, action) {
   switch (action.type) {
     case 'SET_DATA':
@@ -189,24 +213,8 @@ export function FinanceProvider({ children }) {
         dispatch({
           type: 'SET_DATA',
           payload: {
-            transacoes: Array.isArray(ts) ? ts.map(t => ({
-              id: t.id,
-              data: t.date,
-              tipo: t.type,
-              desc: t.description,
-              valor: Number(t.amount || 0),
-              cat: t.category,
-              nota: t.note,
-              account_id: t.account_id
-            })) : [],
-            rendas: Array.isArray(rendas) ? rendas.map(r => ({
-              id: r.id,
-              mes: r.month,
-              proprietario: r.landlord,
-              valor: Number(r.amount || 0),
-              estado: r.status,
-              obs: r.notes
-            })) : [],
+            transacoes: Array.isArray(ts) ? ts.map(mapTransaction) : [],
+            rendas: Array.isArray(rendas) ? rendas.map(mapRental) : [],
             metas: Array.isArray(metas) ? metas.map(m => ({
               id: m.id,
               nome: m.name,
@@ -315,15 +323,37 @@ export function FinanceProvider({ children }) {
           });
           if (!resp.ok) throw new Error('Failed to add rental');
           const data = await resp.json();
-          payload = { ...action.payload, id: data.id };
-          break;
+          const [refreshRentals, refreshTransactions] = await Promise.all([
+            fetch(`${FINANCE_API_URL}/rentals`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json())
+          ]);
+          dispatch({
+            type: 'SET_DATA',
+            payload: {
+              rendas: Array.isArray(refreshRentals) ? refreshRentals.map(mapRental) : [],
+              transacoes: Array.isArray(refreshTransactions) ? refreshTransactions.map(mapTransaction) : []
+            }
+          });
+          return data;
         }
-        case 'DELETE_RENDA':
+        case 'DELETE_RENDA': {
           await fetch(`${FINANCE_API_URL}/rentals/${action.payload}`, { 
             method: 'DELETE',
             headers
           });
-          break;
+          const [refreshRentals, refreshTransactions] = await Promise.all([
+            fetch(`${FINANCE_API_URL}/rentals`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json())
+          ]);
+          dispatch({
+            type: 'SET_DATA',
+            payload: {
+              rendas: Array.isArray(refreshRentals) ? refreshRentals.map(mapRental) : [],
+              transacoes: Array.isArray(refreshTransactions) ? refreshTransactions.map(mapTransaction) : []
+            }
+          });
+          return;
+        }
         case 'ADD_META': {
           const metaBody = {
             name: action.payload.nome,
@@ -437,9 +467,7 @@ export function FinanceProvider({ children }) {
           const refreshT = await fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json());
           dispatch({ type: 'SET_XITIQUES', payload: refreshX });
           dispatch({ type: 'SET_DATA', payload: { 
-            transacoes: refreshT.map(t => ({
-              id: t.id, data: t.date, tipo: t.type, desc: t.description, valor: t.amount, cat: t.category, nota: t.note
-            }))
+            transacoes: refreshT.map(mapTransaction)
           }});
           return;
         }
@@ -453,9 +481,7 @@ export function FinanceProvider({ children }) {
           const refreshT2 = await fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json());
           dispatch({ type: 'SET_XITIQUES', payload: refreshX2 });
           dispatch({ type: 'SET_DATA', payload: { 
-            transacoes: refreshT2.map(t => ({
-              id: t.id, data: t.date, tipo: t.type, desc: t.description, valor: t.amount, cat: t.category, nota: t.note
-            }))
+            transacoes: refreshT2.map(mapTransaction)
           }});
           return;
         }

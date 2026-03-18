@@ -1,14 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { Building2, CalendarClock, Home, Key, Wallet } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
-import { Key, Home, Wallet, CalendarClock, Building2 } from 'lucide-react';
-import { getMonthKey, fmt } from '../utils/calculations';
+import { fmt, getMonthKey } from '../utils/calculations';
 
-import HousingSummaryCard from '../components/housing/HousingSummaryCard';
-import HousingInsights from '../components/housing/HousingInsights';
 import HousingChart from '../components/housing/HousingChart';
 import HousingForm from '../components/housing/HousingForm';
 import HousingHistoryTable from '../components/housing/HousingHistoryTable';
+import HousingInsights from '../components/housing/HousingInsights';
+import HousingSummaryCard from '../components/housing/HousingSummaryCard';
 
 export default function Habitacao() {
   const { state, dispatch } = useFinance();
@@ -23,7 +23,7 @@ export default function Habitacao() {
     proprietario: state.settings.landlord_name || '',
     valor: state.settings.default_rent || '',
     estado: 'pago',
-    obs: '',
+    obs: ''
   });
 
   function saveDefaults() {
@@ -59,41 +59,27 @@ export default function Habitacao() {
       }
     });
 
-    if (form.estado === 'pago') {
-      dispatch({
-        type: 'ADD_TRANSACTION',
-        payload: {
-          data: `${form.mes}-01`,
-          tipo: 'renda',
-          desc: `${type === 'renda' ? 'Aluguer' : 'Prestação'}: ${type === 'propria' ? 'Casa Própria' : form.proprietario}`,
-          valor: parseFloat(form.valor),
-          cat: 'Habitação',
-          nota: form.obs
-        }
-      });
-    }
-
     setForm({ ...form, proprietario: '', valor: '', obs: '' });
     showToast(type === 'renda' ? 'Aluguer registado' : 'Manutenção registada');
   }
 
-  const handleDelete = (id) => {
+  function handleDelete(id) {
     dispatch({ type: 'DELETE_RENDA', payload: id });
-  };
+  }
 
-  const toggleType = (newType) => {
+  function toggleType(newType) {
     dispatch({ type: 'UPDATE_SETTING', payload: { key: 'housing_type', value: newType } });
     showToast(`Perfil alterado para: ${newType === 'renda' ? 'Arrendamento' : 'Casa Própria'}`);
-  };
+  }
 
-  const totalPago = state.rendas.filter((r) => r.estado === 'pago').reduce((s, r) => s + r.valor, 0);
-  const totalMesAtual = state.rendas.filter((r) => r.mes === monthKey).reduce((s, r) => s + r.valor, 0);
-  const registosPendentes = state.rendas.filter((r) => r.estado === 'pendente').length;
+  const totalPago = state.rendas.filter(r => r.estado === 'pago').reduce((sum, r) => sum + r.valor, 0);
+  const totalMesAtual = state.rendas.filter(r => r.mes === monthKey).reduce((sum, r) => sum + r.valor, 0);
+  const registosPendentes = state.rendas.filter(r => r.estado === 'pendente').length;
   const latestRecord = [...state.rendas].sort((a, b) => b.mes.localeCompare(a.mes))[0];
 
   const chartData = useMemo(() => {
-    const monthlyMap = state.rendas.reduce((acc, r) => {
-      acc[r.mes] = (acc[r.mes] || 0) + r.valor;
+    const monthlyMap = state.rendas.reduce((acc, rental) => {
+      acc[rental.mes] = (acc[rental.mes] || 0) + rental.valor;
       return acc;
     }, {});
 
@@ -103,12 +89,12 @@ export default function Habitacao() {
   }, [state.rendas]);
 
   const committedIncome = useMemo(() => {
-    const rendasMes = state.rendas.filter((r) => r.mes === monthKey).reduce((s, r) => s + r.valor, 0);
+    const rendasMes = state.rendas.filter(r => r.mes === monthKey).reduce((sum, r) => sum + r.valor, 0);
     const receitasMes = state.transacoes
-      .filter((t) => t.tipo === 'receita' && t.data.startsWith(monthKey))
-      .reduce((s, t) => s + t.valor, 0);
+      .filter(t => t.tipo === 'receita' && t.data.startsWith(monthKey))
+      .reduce((sum, t) => sum + t.valor, 0);
 
-    if (!receitasMes || receitasMes === 0) {
+    if (!receitasMes) {
       return rendasMes > 0 ? 100 : 0;
     }
 
@@ -116,13 +102,12 @@ export default function Habitacao() {
   }, [state.rendas, state.transacoes, monthKey]);
 
   const momComparison = useMemo(() => {
-    const curMonth = monthKey;
     const [y, m] = monthKey.split('-');
     const lastMonthDate = new Date(y, m - 2);
-    const lastMonthStr = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
+    const lastMonthKey = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
 
-    const curVal = state.rendas.filter((r) => r.mes === curMonth).reduce((s, r) => s + r.valor, 0);
-    const lastVal = state.rendas.filter((r) => r.mes === lastMonthStr).reduce((s, r) => s + r.valor, 0);
+    const curVal = state.rendas.filter(r => r.mes === monthKey).reduce((sum, r) => sum + r.valor, 0);
+    const lastVal = state.rendas.filter(r => r.mes === lastMonthKey).reduce((sum, r) => sum + r.valor, 0);
 
     if (lastVal === 0) {
       return curVal > 0 ? 100 : 0;
@@ -138,21 +123,21 @@ export default function Habitacao() {
         <div className="absolute bottom-0 right-1/4 h-24 w-24 rounded-full bg-gold/10 blur-2xl" />
 
         <div className="relative flex flex-col gap-6">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
-              <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Habitação</div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Gestão de Habitação</h2>
+              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Habitação</div>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white md:text-3xl">Gestão de Habitação</h2>
               <p className="mt-2 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
                 Centralize renda, prestação ou manutenção num só fluxo e acompanhe rapidamente o peso da casa no seu orçamento mensal.
               </p>
             </div>
 
-            <div className="bg-black/5 dark:bg-white/5 p-1 rounded-xl flex items-center border border-black/5 dark:border-white/5 shadow-inner self-start">
+            <div className="self-start rounded-xl border border-black/5 bg-black/5 p-1 shadow-inner dark:border-white/5 dark:bg-white/5">
               <button
                 onClick={() => toggleType('renda')}
-                className={`flex flex-1 md:flex-none items-center justify-center gap-2 px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                className={`flex items-center justify-center gap-2 rounded-lg px-6 py-2 text-sm font-semibold transition-all duration-300 ${
                   type === 'renda'
-                    ? 'bg-white dark:bg-[#2a2a2a] text-ocean shadow-sm border border-black/5 dark:border-white/10'
+                    ? 'border border-black/5 bg-white text-ocean shadow-sm dark:border-white/10 dark:bg-[#2a2a2a]'
                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
@@ -160,9 +145,9 @@ export default function Habitacao() {
               </button>
               <button
                 onClick={() => toggleType('propria')}
-                className={`flex flex-1 md:flex-none items-center justify-center gap-2 px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                className={`flex items-center justify-center gap-2 rounded-lg px-6 py-2 text-sm font-semibold transition-all duration-300 ${
                   type === 'propria'
-                    ? 'bg-white dark:bg-[#2a2a2a] text-ocean shadow-sm border border-black/5 dark:border-white/10'
+                    ? 'border border-black/5 bg-white text-ocean shadow-sm dark:border-white/10 dark:bg-[#2a2a2a]'
                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
@@ -171,7 +156,7 @@ export default function Habitacao() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <MiniStat icon={<Wallet size={16} />} label="Mês atual" value={fmt(totalMesAtual, currency)} tone="ocean" />
             <MiniStat icon={<CalendarClock size={16} />} label="Registos pendentes" value={String(registosPendentes)} tone={registosPendentes > 0 ? 'gold' : 'leaf'} />
             <MiniStat icon={<Building2 size={16} />} label="Último registo" value={latestRecord?.mes || 'Sem histórico'} tone="slate" />
