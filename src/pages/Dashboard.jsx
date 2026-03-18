@@ -1,4 +1,4 @@
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 import {
   TrendingUp, TrendingDown, Home as HomeIcon, Wallet,
   AlertTriangle, CheckCircle, Bell, Globe,
@@ -13,6 +13,7 @@ import {
   calcMonthlyHistory, calcFinancialScore, calcRiskLevel,
   calcSavingsRate, getMonthKey, getFinancialMonthKey,
 } from '../utils/calculations';
+import { getPaymentMethodLabel } from '../utils/paymentMethods';
 
 const COLORS = ['#e07a5f', '#0a4d68', '#c9963a', '#3d6b45', '#1a8fa8', '#9b59b6', '#e74c3c'];
 
@@ -158,13 +159,13 @@ export default function Dashboard() {
       </div>
 
       {/* ─── WALLETS & ACCOUNTS MANAGEMENT ─── */}
-      <div className="section-title mt-2">Suas Contas (Saldos Iniciais)</div>
+      <div className="section-title mt-2">Seus Meios de Pagamento</div>
       <div className="glass-card p-6 mb-6 animate-fade-in-up stagger-1">
-        <p className="text-sm text-gray-500 mb-4">Adicione as suas contas (banco, M-Pesa, numerário) para refletir o seu património inicial real.</p>
+        <p className="text-sm text-gray-500 mb-4">Adicione espécie, M-Pesa, eMola, mKesh ou banco para refletir melhor como faz e recebe pagamentos no dia a dia.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           {state.contas?.map(conta => (
             <div key={conta.id} className="p-4 border border-gray-200 dark:border-gray-800 rounded-xl relative">
-              <div className="text-xs uppercase tracking-widest text-muted">{conta.type}</div>
+              <div className="text-xs uppercase tracking-widest text-muted">{getPaymentMethodLabel(conta.type)}</div>
               <div className="font-bold text-lg">{conta.name}</div>
               <div className="text-ocean font-bold mt-1">{fmt(conta.current_balance, currency)}</div>
               <button onClick={() => {
@@ -195,15 +196,18 @@ export default function Dashboard() {
           }}
         >
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-semibold mb-1">NOME DA CONTA</label>
-            <input name="name" type="text" className="input py-2 text-sm" placeholder="Ex: M-Pesa, BCI, Millennium..." required />
+            <label className="block text-xs font-semibold mb-1">NOME</label>
+            <input name="name" type="text" className="input py-2 text-sm" placeholder="Ex: Espécie, M-Pesa Pessoal, BIM..." required />
           </div>
           <div className="w-1/4 min-w-[120px]">
-            <label className="block text-xs font-semibold mb-1">TIPO</label>
+            <label className="block text-xs font-semibold mb-1">MEIO</label>
             <select name="type" className="input py-2 text-sm" required>
-              <option value="mobile">Carteira Móvel</option>
-              <option value="bank">Banco</option>
-              <option value="cash">Numerário</option>
+              <option value="dinheiro">Dinheiro</option>
+              <option value="mpesa">M-Pesa</option>
+              <option value="emola">eMola</option>
+              <option value="mkesh">mKesh</option>
+              <option value="banco">Banco</option>
+              <option value="outro">Outro</option>
             </select>
           </div>
           <div className="w-1/4 min-w-[120px]">
@@ -211,7 +215,7 @@ export default function Dashboard() {
             <input name="balance" type="number" step="any" className="input py-2 text-sm" placeholder="Ex: 5000" required />
           </div>
           <button type="submit" className="btn btn-primary py-2 text-sm font-semibold whitespace-nowrap">
-            Adicionar Conta
+            Adicionar Meio
           </button>
         </form>
       </div>

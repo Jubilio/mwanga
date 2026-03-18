@@ -1,5 +1,5 @@
 import { useOutletContext } from 'react-router-dom';
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 import { Download } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,

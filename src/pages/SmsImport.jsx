@@ -122,7 +122,7 @@ export default function SmsImport() {
   const typeInfo = result?.transaction_type ? TYPE_COLORS[result.transaction_type] || TYPE_COLORS.unknown : null;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto font-mono">
+    <div className="p-6 w-full max-w-none font-mono">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <Zap className="text-gold" />

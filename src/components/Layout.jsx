@@ -5,11 +5,12 @@ import {
   PieChart, Calculator, Moon, Sun, Menu, X, Wallet, Globe, Settings as SettingsIcon,
   Landmark, BarChart3, Crown, Brain, Bell, CreditCard
 } from 'lucide-react';
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 import { getCurrentMonthLabel } from '../utils/calculations';
 import api from '../utils/api';
 import Toast, { useToast } from './Toast';
 import Sidebar from './layout/Sidebar';
+import CustomCursor from './CustomCursor';
 
 const navItems = [
   // GESTÃO FINANCEIRA
@@ -64,6 +65,7 @@ export default function Layout() {
   }, []);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+  const currentTitle = navItems.find(i => i.to === location.pathname)?.label || 'Dashboard';
 
   const handleMarkRead = async (id) => {
     try {
@@ -73,7 +75,8 @@ export default function Layout() {
   };
 
   return (
-    <div className={`app-container ${state.settings.darkMode ? 'dark transition-colors' : 'transition-colors'}`}>
+    <div className={`app-container ${state.darkMode ? 'dark transition-colors' : 'transition-colors'}`}>
+      <CustomCursor />
       {/* Notifications Drawer */}
       <div className={`fixed inset-0 z-100 transition-opacity duration-300 ${isNotificationsOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsNotificationsOpen(false)} />
@@ -113,20 +116,21 @@ export default function Layout() {
 
         {/* ═══ MOBILE HEADER & CONTENT ═══ */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
-          <header className="sticky top-0 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-md border-bottom p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <header className="sticky top-0 z-40 bg-white/75 dark:bg-black/75 backdrop-blur-xl border-bottom px-4 py-4 md:px-6 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <button className="hide-desktop p-2" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
                 <Menu size={24} />
               </button>
-              <div>
-                <h1 className="text-lg font-bold text-gray-800 dark:text-white truncate max-w-[150px] sm:max-w-xs">
-                  {navItems.find(i => i.to === location.pathname)?.label || 'Dashboard'}
+              <div className="min-w-0">
+                <div className="text-[10px] text-gray-500 uppercase tracking-[0.22em] mb-1">Mwanga Workspace</div>
+                <h1 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white leading-tight break-words">
+                  {currentTitle}
                 </h1>
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest">{getCurrentMonthLabel()}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <button 
                 className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 relative"
                 onClick={() => setIsNotificationsOpen(true)}
@@ -138,7 +142,7 @@ export default function Layout() {
                 className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5"
                 onClick={() => dispatch({ type: 'TOGGLE_DARK_MODE' })}
               >
-                {state.settings.darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                {state.darkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
             </div>
           </header>

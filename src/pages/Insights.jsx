@@ -79,19 +79,30 @@ export default function Insights() {
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
 
-  // Load score + welcome message on mount
+  // Load score + personalized welcome message on mount
   useEffect(() => {
     api.get('/binth/score')
       .then(r => setScore(r.data))
       .catch(() => {});
 
-    // Welcome message from Binth
-    setMessages([{
-      role: 'assistant',
-      content: '**Olá!** Sou a Binth, a tua consultora financeira pessoal. 👋\n\nAnalisei os teus dados e estou pronta para te ajudar. Podes perguntar-me qualquer coisa sobre as tuas finanças, pedir sugestões de poupança, ou até simular cenários futuros.\n\nO que gostarias de saber hoje?',
-      insight_type: 'info',
-      quick_actions: ['Como estão as minhas finanças?', 'Onde estou a gastar mais?', 'Como posso poupar mais?', 'Analisa o meu orçamento'],
-    }]);
+    api.get('/binth/insights/dashboard')
+      .then((r) => {
+        const { message, insight_type, quick_actions } = r.data || {};
+        setMessages([{
+          role: 'assistant',
+          content: message || 'Olá! Já li o teu contexto financeiro e estou pronta para te ajudar.',
+          insight_type: insight_type || 'info',
+          quick_actions: quick_actions || ['Como estão as minhas finanças?', 'Onde estou a gastar mais?', 'Como posso poupar mais?', 'Analisa o meu orçamento'],
+        }]);
+      })
+      .catch(() => {
+        setMessages([{
+          role: 'assistant',
+          content: 'Olá! Já li o teu contexto financeiro e estou pronta para te ajudar a partir do teu estado real de hoje.',
+          insight_type: 'info',
+          quick_actions: ['Como estão as minhas finanças?', 'Onde estou a gastar mais?', 'Como posso poupar mais?', 'Analisa o meu orçamento'],
+        }]);
+      });
   }, []);
 
   async function sendMessage(text) {

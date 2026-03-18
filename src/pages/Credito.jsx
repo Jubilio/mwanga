@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useFinance } from "../hooks/useFinanceStore";
+import { useFinance } from "../hooks/useFinance";
 import api from "../utils/api";
 import { useToast } from "../components/Toast";
 

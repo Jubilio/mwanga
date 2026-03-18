@@ -2,9 +2,20 @@ const { db } = require('../config/db');
 const logger = require('../utils/logger');
 const { z } = require('zod');
 
+const ACCOUNT_TYPE_ALIASES = {
+  cash: 'dinheiro',
+  bank: 'banco',
+  mobile: 'outro',
+  corrente: 'banco',
+  poupanca: 'banco',
+  investimento: 'outro'
+};
+
+const normalizeAccountType = (type) => ACCOUNT_TYPE_ALIASES[type] || type;
+
 const addAccountSchema = z.object({
   name: z.string().min(1).max(50).trim(),
-  type: z.enum(['corrente', 'poupanca', 'investimento', 'outro']),
+  type: z.enum(['dinheiro', 'mpesa', 'emola', 'mkesh', 'banco', 'outro', 'cash', 'bank', 'mobile', 'corrente', 'poupanca', 'investimento']),
   initial_balance: z.coerce.number(),
 }).strict();
 
@@ -30,6 +41,7 @@ exports.addAccount = async (req, res, next) => {
   try {
     const { name, type, initial_balance } = addAccountSchema.parse(req.body);
     const householdId = req.user.householdId;
+    const normalizedType = normalizeAccountType(type);
     
     // We set current_balance equal to initial_balance on creation
     const result = await db.execute({
@@ -37,7 +49,7 @@ exports.addAccount = async (req, res, next) => {
         INSERT INTO accounts (name, type, initial_balance, current_balance, household_id)
         VALUES (?, ?, ?, ?, ?) RETURNING id
       `,
-      args: [name, type, initial_balance, initial_balance, householdId]
+      args: [name, normalizedType, initial_balance, initial_balance, householdId]
     });
     
     res.status(201).json({ id: Number(result.lastInsertRowid), message: 'Account added successfully' });

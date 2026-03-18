@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Settings, LogOut } from 'lucide-react';
-import { useFinance } from '../../hooks/useFinanceStore';
+import { useFinance } from '../../hooks/useFinance';
 
 // ─── Nav structure ───────────────────────────────────────────────────────────
 const NAV = [

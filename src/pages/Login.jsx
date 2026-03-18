@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 import { useOutletContext } from 'react-router-dom';
 import { Wallet, LogIn, UserPlus, Lock, Mail, User } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';

@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
+import { createContext, useReducer, useEffect } from 'react';
 import { generateDemoData } from '../utils/calculations';
 
 // Define the API Base URL
@@ -27,7 +27,7 @@ const defaultState = {
     financial_month_start_day: 25
   },
   user: null,
-  darkMode: false,
+  darkMode: true,
   loading: true,
 };
 
@@ -113,10 +113,14 @@ function reducer(state, action) {
   }
 }
 
-const FinanceContext = createContext(null);
+export const FinanceContext = createContext(null);
 
 export function FinanceProvider({ children }) {
-  const [state, dispatch] = useReducer(reducer, { ...defaultState, darkMode: localStorage.getItem('mwanga-dark') === 'true' });
+  const storedDarkMode = localStorage.getItem('mwanga-dark');
+  const [state, dispatch] = useReducer(reducer, {
+    ...defaultState,
+    darkMode: storedDarkMode === null ? true : storedDarkMode === 'true'
+  });
 
   // Initial Fetch from API
   useEffect(() => {
@@ -503,10 +507,15 @@ export function FinanceProvider({ children }) {
           break;
         }
         case 'ADD_DEBT': {
+          const debtBody = {
+            creditor_name: action.payload.creditor_name,
+            total_amount: action.payload.total_amount,
+            due_date: action.payload.due_date || null
+          };
           const debtRet = await fetch(`${FINANCE_API_URL}/debts`, {
             method: 'POST',
             headers,
-            body: JSON.stringify(action.payload)
+            body: JSON.stringify(debtBody)
           }).then(r => r.json());
           payload = { ...action.payload, id: debtRet.id, payments: [] };
           break;
@@ -566,8 +575,3 @@ export function FinanceProvider({ children }) {
   );
 }
 
-export function useFinance() {
-  const context = useContext(FinanceContext);
-  if (!context) throw new Error('useFinance must be used within FinanceProvider');
-  return context;
-}

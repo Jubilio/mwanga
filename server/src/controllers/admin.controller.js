@@ -8,27 +8,53 @@ const logger = require('../utils/logger');
 const getUsers = async (req, res) => {
   try {
     const result = await db.execute({
-      sql: 'SELECT * FROM users ORDER BY created_at DESC',
+      sql: `
+        SELECT
+          u.id,
+          u.name,
+          u.email,
+          u.kyc_status,
+          u.credit_score,
+          u.role,
+          u.created_at,
+          d.id as document_id,
+          d.document_type,
+          d.document_url,
+          d.created_at as document_created_at
+        FROM users u
+        LEFT JOIN kyc_documents d ON d.user_id = u.id
+        ORDER BY u.created_at DESC, d.created_at DESC
+      `,
       args: []
     });
-    // Map data to ensure no crashes if columns are missing
-    const users = await Promise.all(result.rows.map(async u => {
-      // Fetch documents for each user
-      const docs = await db.execute({
-        sql: 'SELECT * FROM kyc_documents WHERE user_id = ?',
-        args: [u.id]
-      });
-      return {
-        id: u.id,
-        name: u.name,
-        email: u.email,
-        kyc_status: u.kyc_status || 'pending',
-        credit_score: u.credit_score || 0,
-        role: u.role || 'user',
-        created_at: u.created_at,
-        documents: docs.rows
-      };
-    }));
+
+    const userMap = new Map();
+
+    for (const row of result.rows) {
+      if (!userMap.has(row.id)) {
+        userMap.set(row.id, {
+          id: row.id,
+          name: row.name,
+          email: row.email,
+          kyc_status: row.kyc_status || 'pending',
+          credit_score: row.credit_score || 0,
+          role: row.role || 'user',
+          created_at: row.created_at,
+          documents: []
+        });
+      }
+
+      if (row.document_id) {
+        userMap.get(row.id).documents.push({
+          id: row.document_id,
+          document_type: row.document_type,
+          document_url: row.document_url,
+          created_at: row.document_created_at
+        });
+      }
+    }
+
+    const users = Array.from(userMap.values());
     res.json(users);
   } catch (error) {
     logger.error('Error fetching users for admin:', error);
@@ -74,7 +100,12 @@ const getPlatformStats = async (req, res) => {
         totalCount: Number(loanStats.rows[0].total_loans || 0),
         avgRate: Number(loanStats.rows[0].avg_rate || 0)
       },
-      pendingApplications: Number(pendingApps.rows[0].count)
+      pendingApplications: Number(pendingApps.rows[0].count),
+      kycSummary: {
+        approved: Number(kycStats.rows.find((row) => row.kyc_status === 'approved')?.count || 0),
+        pending: Number(kycStats.rows.find((row) => row.kyc_status === 'pending')?.count || 0),
+        rejected: Number(kycStats.rows.find((row) => row.kyc_status === 'rejected')?.count || 0)
+      }
     });
   } catch (error) {
     logger.error('Error fetching platform stats:', error);

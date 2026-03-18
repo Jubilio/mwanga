@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 const xss = require('xss');
+const compression = require('compression');
 const errorHandler = require('./middleware/error.middleware');
 const authRoutes = require('./routes/auth.routes');
 const financeRoutes = require('./routes/finance.routes');
@@ -33,6 +34,9 @@ app.use(helmet({
   },
 }));
 
+// Compression Middleware
+app.use(compression());
+
 // Serve KYC Uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use(cors({
@@ -50,7 +54,7 @@ app.use(cors({
 // Rate Limiting - General API
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, 
+  max: 1000,
   message: 'Too many requests from this IP, please try again after 15 minutes',
 });
 app.use('/api', limiter);
@@ -94,8 +98,70 @@ app.get('/', (req, res) => {
   res.send('Mwanga ✦ Backend API is running.');
 });
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', branding: 'Mwanga ✦', timestamp: new Date() });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Check database connection
+    const { db } = require('./config/db');
+    await db.execute({ sql: 'SELECT 1', args: [] });
+
+    // Check Redis connection
+    const redis = require('./utils/redis');
+    await redis.ping();
+
+    res.json({
+      status: 'healthy',
+      branding: 'Mwanga ✦',
+      timestamp: new Date(),
+      services: {
+        database: 'connected',
+        redis: 'connected'
+      }
+    });
+  } catch (error) {
+    logger.error('Health check failed:', error);
+    res.status(503).json({
+      status: 'unhealthy',
+      branding: 'Mwanga ✦',
+      timestamp: new Date(),
+      error: error.message
+    });
+  }
+});
+
+// Metrics endpoint for monitoring
+app.get('/api/metrics', async (req, res) => {
+  try {
+    const { db } = require('./config/db');
+
+    // Get basic database stats
+    const stats = await db.execute({
+      sql: `
+        SELECT
+          (SELECT COUNT(*) FROM transactions) as total_transactions,
+          (SELECT COUNT(*) FROM users) as total_users,
+          (SELECT COUNT(*) FROM households) as total_households,
+          (SELECT COUNT(*) FROM notifications WHERE read = 0) as unread_notifications
+      `,
+      args: []
+    });
+
+    const row = stats.rows[0];
+
+    res.json({
+      timestamp: new Date(),
+      database: {
+        total_transactions: row.total_transactions,
+        total_users: row.total_users,
+        total_households: row.total_households,
+        unread_notifications: row.unread_notifications
+      },
+      memory: process.memoryUsage(),
+      uptime: process.uptime()
+    });
+  } catch (error) {
+    logger.error('Metrics collection failed:', error);
+    res.status(500).json({ error: 'Failed to collect metrics' });
+  }
 });
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

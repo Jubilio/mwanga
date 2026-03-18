@@ -1,24 +1,25 @@
 import { useState } from 'react';
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 import { Wallet, AlertTriangle, CheckCircle, Plus, Trash2, CalendarDays, CheckCircle2 } from 'lucide-react';
 import { fmt } from '../utils/calculations';
+import { getPaymentMethodLabel } from '../utils/paymentMethods';
 import BinthContextual from '../components/BinthContextual';
 
 export default function Dividas() {
   const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
-  
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [newDebt, setNewDebt] = useState({ creditor_name: '', total_amount: '', due_date: '' });
-  
+
   const [showPayForm, setShowPayForm] = useState(null); // ID of debt being paid
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentAccount, setPaymentAccount] = useState('');
-  
+
   const [confirmDelete, setConfirmDelete] = useState(null); // ID of debt being confirmed for deletion
 
   const debts = state.dividas || [];
-  
+
   const totalDebt = debts.reduce((sum, d) => sum + d.total_amount, 0);
   const totalRemaining = debts.reduce((sum, d) => sum + d.remaining_amount, 0);
   const totalPaid = totalDebt - totalRemaining;
@@ -26,7 +27,7 @@ export default function Dividas() {
   const handleAddDebt = (e) => {
     e.preventDefault();
     if (!newDebt.creditor_name || !newDebt.total_amount) return;
-    
+
     dispatch({
       type: 'ADD_DEBT',
       payload: {
@@ -37,14 +38,14 @@ export default function Dividas() {
         status: 'pending'
       }
     });
-    
+
     setNewDebt({ creditor_name: '', total_amount: '', due_date: '' });
     setShowAddForm(false);
   };
 
   const handlePay = (debtId) => {
     if (!paymentAmount) return;
-    
+
     dispatch({
       type: 'PAY_DEBT',
       payload: {
@@ -54,7 +55,7 @@ export default function Dividas() {
         payment_date: new Date().toISOString()
       }
     });
-    
+
     setPaymentAmount('');
     setPaymentAccount('');
     setShowPayForm(null);
@@ -105,15 +106,15 @@ export default function Dividas() {
           <form onSubmit={handleAddDebt} className="grid grid-cols-1 md:grid-cols-3 gap-4 border-l-4 border-l-gold pl-4">
             <div>
               <label className="block text-xs font-semibold mb-1 uppercase tracking-wide">Credor / Nome</label>
-              <input type="text" className="input" required value={newDebt.creditor_name} onChange={e => setNewDebt({...newDebt, creditor_name: e.target.value})} placeholder="Ex: Banco A, Familiar..." />
+              <input type="text" className="input" required value={newDebt.creditor_name} onChange={e => setNewDebt({ ...newDebt, creditor_name: e.target.value })} placeholder="Ex: Banco A, Familiar..." />
             </div>
             <div>
               <label className="block text-xs font-semibold mb-1 uppercase tracking-wide">Valor Total</label>
-              <input type="number" className="input" required min="1" step="any" value={newDebt.total_amount} onChange={e => setNewDebt({...newDebt, total_amount: e.target.value})} placeholder="Valor da dívida" />
+              <input type="number" className="input" required min="1" step="any" value={newDebt.total_amount} onChange={e => setNewDebt({ ...newDebt, total_amount: e.target.value })} placeholder="Valor da dívida" />
             </div>
             <div>
               <label className="block text-xs font-semibold mb-1 uppercase tracking-wide">Data Limite (Opcional)</label>
-              <input type="date" className="input" value={newDebt.due_date} onChange={e => setNewDebt({...newDebt, due_date: e.target.value})} />
+              <input type="date" className="input" value={newDebt.due_date} onChange={e => setNewDebt({ ...newDebt, due_date: e.target.value })} />
             </div>
             <div className="md:col-span-3 flex justify-end gap-3 mt-2">
               <button type="button" className="btn bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300" onClick={() => setShowAddForm(false)}>Cancelar</button>
@@ -144,7 +145,7 @@ export default function Dividas() {
             </thead>
             <tbody>
               {debts.map(debt => (
-                <tr key={debt.id} style={{ opacity: debt.status === 'paid' ? 0.6 : 1 }}>
+                <tr key={`debt-${debt.id}`} style={{ opacity: debt.status === 'paid' ? 0.6 : 1 }}>
                   <td>
                     <div className="font-semibold">{debt.creditor_name}</div>
                     <div className="text-[10px] text-muted hide-desktop">{debt.due_date || 'Sem data'}</div>
@@ -162,16 +163,16 @@ export default function Dividas() {
                   <td>
                     <div className="flex items-center gap-2">
                       {debt.status !== 'paid' && (
-                        <button 
-                          onClick={() => setShowPayForm(showPayForm === debt.id ? null : debt.id)} 
+                        <button
+                          onClick={() => setShowPayForm(showPayForm === debt.id ? null : debt.id)}
                           className="text-leaf hover:opacity-70 p-1"
                           title="Pagar parcela"
                         >
                           <CheckCircle2 size={18} />
                         </button>
                       )}
-                      <button 
-                        onClick={() => setConfirmDelete(debt.id)} 
+                      <button
+                        onClick={() => setConfirmDelete(debt.id)}
                         className="text-coral hover:opacity-70 p-1"
                         title="Eliminar"
                       >
@@ -190,23 +191,23 @@ export default function Dividas() {
                     {showPayForm === debt.id && (
                       <div className="absolute right-0 mt-2 p-4 bg-white dark:bg-black border border-gold/30 rounded-xl shadow-xl z-20 animate-fade-in w-56">
                         <label className="block text-[10px] font-bold mb-1">VALOR A PAGAR</label>
-                        <input 
-                          type="number" 
-                          className="form-input text-xs py-1 mb-2" 
+                        <input
+                          type="number"
+                          className="form-input text-xs py-1 mb-2"
                           value={paymentAmount}
                           max={debt.remaining_amount}
                           onChange={e => setPaymentAmount(e.target.value)}
                           placeholder="Quantia..."
                         />
-                        <label className="block text-[10px] font-bold mb-1">PAGAR COM</label>
+                        <label className="block text-[10px] font-bold mb-1">MEIO DE PAGAMENTO</label>
                         <select
                           className="form-input text-xs py-1 mb-3"
                           value={paymentAccount}
                           onChange={e => setPaymentAccount(e.target.value)}
                         >
-                          <option value="">Nenhuma conta</option>
+                          <option value="">Não descontar de saldo</option>
                           {state.contas?.map(acc => (
-                            <option key={acc.id} value={acc.id}>{acc.name} ({fmt(acc.current_balance, currency)})</option>
+                            <option key={acc.id} value={acc.id}>{acc.name} • {getPaymentMethodLabel(acc.type)} ({fmt(acc.current_balance, currency)})</option>
                           ))}
                         </select>
                         <div className="flex gap-2">

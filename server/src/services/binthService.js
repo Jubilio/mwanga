@@ -20,6 +20,10 @@ INSTRUÇÕES DE RACIOCÍNIO:
 1. Analisa sempre o contexto financeiro antes de responder.
 2. Integra o nome do utilizador de forma natural.
 3. Se o utilizador fizer uma saudação, responde calorosamente e faz uma observação sobre os dados dele.
+4. Nunca dês conselhos genéricos quando o contexto mostrar um problema concreto. Prioriza sempre o maior risco ou a melhor oportunidade do utilizador neste momento.
+5. Quando houver pressão financeira, diz claramente qual é a prioridade número um e qual a próxima ação prática nas próximas 24-72 horas.
+6. Quando estiver tudo estável, reconhece o progresso com base em números reais e sugere o próximo avanço realista.
+7. Sempre que fizer sentido, referencia categorias, metas, dívidas, meios de pagamento ou tendências recentes do próprio utilizador.
 4. Responde SEMPRE em JSON puro.
 
 FORMATO DE RESPOSTA:
@@ -32,14 +36,116 @@ FORMATO DE RESPOSTA:
 `.trim();
 
 // ─── Financial Context Builder ─────────────────────────────────────────────────
+function buildPrioritySummary({
+  monthlyIncome,
+  monthlyExpenses,
+  debtTotal,
+  overdueBudgets,
+  goals,
+  cashAvailable,
+  pendingHousing,
+  unreadNotifications
+}) {
+  const liquidityGap = monthlyIncome - monthlyExpenses;
+  const topGoal = goals.find((goal) => goal.progress < 100);
+
+  if (monthlyIncome > 0 && monthlyExpenses > monthlyIncome) {
+    return {
+      priority: 'controlar saída de dinheiro',
+      reason: `as despesas mensais estão ${Math.round((monthlyExpenses / monthlyIncome) * 100)}% do rendimento`,
+      nextAction: overdueBudgets[0]
+        ? `reduzir já a categoria ${overdueBudgets[0].category}`
+        : 'cortar uma despesa não essencial ainda esta semana'
+    };
+  }
+
+  if (debtTotal > monthlyIncome * 2 && monthlyIncome > 0) {
+    return {
+      priority: 'reduzir pressão da dívida',
+      reason: `a dívida pendente está em MT ${debtTotal.toLocaleString('pt-MZ')}`,
+      nextAction: 'definir uma amortização prioritária e proteger o caixa antes de novas despesas'
+    };
+  }
+
+  if (cashAvailable <= 0 && monthlyExpenses > 0) {
+    return {
+      priority: 'recuperar liquidez',
+      reason: 'os saldos disponíveis estão muito baixos para o ritmo atual',
+      nextAction: 'segurar saídas opcionais e concentrar pagamentos no essencial'
+    };
+  }
+
+  if (pendingHousing > 0) {
+    return {
+      priority: 'regularizar habitação',
+      reason: `há ${pendingHousing} registo(s) de habitação pendente(s)`,
+      nextAction: 'fechar primeiro os custos de casa para estabilizar o mês'
+    };
+  }
+
+  if (topGoal) {
+    return {
+      priority: 'acelerar meta financeira',
+      reason: `${topGoal.name} está em ${topGoal.progress}%`,
+      nextAction: 'canalizar o próximo excedente diretamente para essa meta'
+    };
+  }
+
+  if (unreadNotifications > 0) {
+    return {
+      priority: 'rever alertas recentes',
+      reason: `existem ${unreadNotifications} notificação(ões) não lida(s)`,
+      nextAction: 'validar agora os alertas para não perder sinais importantes'
+    };
+  }
+
+  return {
+    priority: 'consolidar progresso',
+    reason: 'o contexto financeiro está relativamente estável',
+    nextAction: 'subir ligeiramente a poupança ou reforçar a meta mais próxima'
+  };
+}
+
+function formatUserContextText(context) {
+  return `
+NOME DO UTILIZADOR: ${context.userName}
+
+=== ESTADO FINANCEIRO ACTUAL ===
+RECEITAS DO MÊS: MT ${context.format(context.monthlyIncome)}
+DESPESAS DO MÊS: MT ${context.format(context.monthlyExpenses)}
+SALDO LÍQUIDO DO MÊS: MT ${context.format(context.netMonth)}
+SALDOS DISPONÍVEIS: MT ${context.format(context.cashAvailable)}
+BALANÇO PATRIMONIAL: Activos MT ${context.format(context.assetsTotal)} | Dívidas MT ${context.format(context.debtTotal)}
+HABITAÇÃO EM ABERTO: ${context.pendingHousing}
+NOTIFICAÇÕES NÃO LIDAS: ${context.unreadNotifications}
+
+=== PRIORIDADE ATUAL ===
+PRIORIDADE: ${context.priority.priority}
+PORQUÊ: ${context.priority.reason}
+PRÓXIMA AÇÃO: ${context.priority.nextAction}
+
+ÚLTIMAS TRANSAÇÕES:
+${context.recentTx.map(t => `- [${t.date}] ${t.description}: MT ${context.format(t.amount)} (${t.type === 'receita' ? '+' : '-'}) [${t.category}]`).join('\n') || '- Nenhuma transação recente.'}
+
+ORÇAMENTOS ACTIVOS:
+${context.budgets.length > 0 ? context.budgets.map(b => `- ${b.category}: MT ${context.format(b.spent)} / MT ${context.format(b.limit_amount)}`).join('\n') : '- Nenhum orçamento.'}
+
+CATEGORIAS ACIMA DO ORÇAMENTO:
+${context.overdueBudgets.length > 0 ? context.overdueBudgets.map(b => `- ${b.category}: excesso de MT ${context.format(b.spent - b.limit_amount)}`).join('\n') : '- Nenhuma categoria acima do limite.'}
+
+METAS DE POUPANÇA:
+${context.goals.length > 0 ? context.goals.map(g => `- ${g.name}: ${g.progress}% concluída (MT ${context.format(g.saved_amount)} de MT ${context.format(g.target_amount)})`).join('\n') : '- Nenhuma meta activa.'}
+  `.trim();
+}
+
 async function buildUserContext(householdId, userId) {
   try {
-    const fmt = (n) => Number(n || 0).toLocaleString('pt-MZ', { minimumFractionDigits: 2 });
+    const format = (n) => Number(n || 0).toLocaleString('pt-MZ', { minimumFractionDigits: 2 });
     const now = new Date();
     const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
 
     // Fetch all context data in parallel
-    const [userRes, summaryRes, recentTxRes, budgetsRes, assetsRes, liabsRes] = await Promise.all([
+    const [userRes, summaryRes, recentTxRes, budgetsRes, assetsRes, liabsRes, goalsRes, accountsRes, housingRes, notificationsRes] = await Promise.all([
       db.execute({
         sql: 'SELECT name FROM users WHERE id = ?',
         args: [userId]
@@ -82,6 +188,22 @@ async function buildUserContext(householdId, userId) {
       db.execute({
         sql: `SELECT SUM(remaining_amount) as total FROM debts WHERE household_id = ? AND status = 'pending'`,
         args: [householdId]
+      }),
+      db.execute({
+        sql: `SELECT name, target_amount, saved_amount FROM goals WHERE household_id = ? ORDER BY created_at DESC LIMIT 5`,
+        args: [householdId]
+      }),
+      db.execute({
+        sql: `SELECT name, type, current_balance FROM accounts WHERE household_id = ? ORDER BY current_balance DESC LIMIT 5`,
+        args: [householdId]
+      }),
+      db.execute({
+        sql: `SELECT COUNT(*) as pending_housing FROM rentals WHERE household_id = ? AND status = 'pendente'`,
+        args: [householdId]
+      }),
+      db.execute({
+        sql: `SELECT COUNT(*) as unread_count FROM notifications WHERE household_id = ? AND read = false`,
+        args: [householdId]
       })
     ]);
 
@@ -91,23 +213,88 @@ async function buildUserContext(householdId, userId) {
     const budgets = budgetsRes.rows;
     const assets = assetsRes.rows[0];
     const liabs = liabsRes.rows[0];
+    const goals = goalsRes.rows.map((goal) => ({
+      ...goal,
+      progress: Math.min(100, Math.round((Number(goal.saved_amount || 0) / Math.max(1, Number(goal.target_amount || 1))) * 100))
+    }));
+    const accounts = accountsRes.rows;
+    const overdueBudgets = budgets.filter((budget) => Number(budget.spent) > Number(budget.limit_amount));
+    const monthlyIncome = Number(summary.receitas || 0);
+    const monthlyExpenses = Number(summary.despesas || 0);
+    const debtTotal = Number(liabs?.total || 0);
+    const assetsTotal = Number(assets?.total || 0);
+    const cashAvailable = accounts.reduce((sum, account) => sum + Number(account.current_balance || 0), 0);
+    const pendingHousing = Number(housingRes.rows[0]?.pending_housing || 0);
+    const unreadNotifications = Number(notificationsRes.rows[0]?.unread_count || 0);
+    const priority = buildPrioritySummary({
+      monthlyIncome,
+      monthlyExpenses,
+      debtTotal,
+      overdueBudgets,
+      goals,
+      cashAvailable,
+      pendingHousing,
+      unreadNotifications
+    });
 
-    return `
-NOME DO UTILIZADOR: ${userName}
-
-=== ESTADO FINANCEIRO ACTUAL ===
-TENS NESTE MÊS: Receitas MT ${fmt(summary.receitas)} | Despesas MT ${fmt(summary.despesas)}
-BALANÇO PATRIMONIAL: Activos MT ${fmt(assets?.total)} | Dívidas MT ${fmt(liabs?.total)}
-
-ÚLTIMAS TRANSAÇÕES:
-${recentTx.map(t => `- [${t.date}] ${t.description}: MT ${fmt(t.amount)} (${t.type === 'receita' ? '+' : '-'}) [${t.category}]`).join('\n') || '- Nenhuma transação recente.'}
-
-ORÇAMENTOS ACTIVOS:
-${budgets.length > 0 ? budgets.map(b => `- ${b.category}: MT ${fmt(b.spent)} / MT ${fmt(b.limit_amount)}`).join('\n') : '- Nenhum orçamento.'}
-    `.trim();
+    return {
+      text: formatUserContextText({
+        userName,
+        monthlyIncome,
+        monthlyExpenses,
+        netMonth: monthlyIncome - monthlyExpenses,
+        debtTotal,
+        assetsTotal,
+        cashAvailable,
+        pendingHousing,
+        unreadNotifications,
+        priority,
+        recentTx,
+        budgets,
+        overdueBudgets,
+        goals,
+        format
+      }),
+      summary: {
+        userName,
+        monthlyIncome,
+        monthlyExpenses,
+        debtTotal,
+        assetsTotal,
+        cashAvailable,
+        pendingHousing,
+        unreadNotifications,
+        overdueBudgetCount: overdueBudgets.length,
+        topOverBudgetCategory: overdueBudgets[0]?.category || null,
+        goalCount: goals.length,
+        topGoalName: goals.find((goal) => goal.progress < 100)?.name || null,
+        priority
+      }
+    };
   } catch (err) {
     console.error('[buildUserContext] Error:', err);
-    return 'Dados financeiros não disponíveis de momento.';
+    return {
+      text: 'Dados financeiros não disponíveis de momento.',
+      summary: {
+        userName: 'Utilizador',
+        monthlyIncome: 0,
+        monthlyExpenses: 0,
+        debtTotal: 0,
+        assetsTotal: 0,
+        cashAvailable: 0,
+        pendingHousing: 0,
+        unreadNotifications: 0,
+        overdueBudgetCount: 0,
+        topOverBudgetCategory: null,
+        goalCount: 0,
+        topGoalName: null,
+        priority: {
+          priority: 'entender melhor a situação actual',
+          reason: 'faltam dados suficientes',
+          nextAction: 'pedir uma leitura geral da tua situação financeira'
+        }
+      }
+    };
   }
 }
 
@@ -171,14 +358,43 @@ const PROVIDERS = {
   }
 };
 
+const disabledProviders = new Map();
+
+function isProviderTemporarilyDisabled(provider) {
+  const disabledUntil = disabledProviders.get(provider);
+
+  if (!disabledUntil) {
+    return false;
+  }
+
+  if (disabledUntil <= Date.now()) {
+    disabledProviders.delete(provider);
+    return false;
+  }
+
+  return true;
+}
+
+function disableProviderTemporarily(provider, minutes = 15) {
+  disabledProviders.set(provider, Date.now() + (minutes * 60 * 1000));
+}
+
+function isAuthFailure(errorMessage) {
+  const text = (errorMessage || '').toLowerCase();
+  return text.includes('http 401') || text.includes('user not found') || text.includes('invalid api key');
+}
+
 // ─── Fallback Response ─────────────────────────────────────────────────────────
-function getFallbackResponse(userMessage) {
+function getFallbackResponse(userMessage, contextSummary = {}) {
   const lower = (userMessage || '').toLowerCase();
-  const qActions = ['Verificar orçamento', 'Assinar para receber atualizações', 'Ver mais'];
+  const qActions = ['Verificar orçamento', 'Analisar dívidas', 'Ver metas'];
+  const name = contextSummary.userName || 'Olá';
+  const priorityLine = contextSummary.priority?.nextAction ? `A prioridade agora é ${contextSummary.priority.priority}: ${contextSummary.priority.nextAction}.` : '';
+  const budgetLine = contextSummary.topOverBudgetCategory ? `A categoria que mais merece atenção é ${contextSummary.topOverBudgetCategory}.` : '';
 
   if (lower.includes('poupan') || lower.includes('poupar')) {
     return { 
-      message: 'Olá! Reparei no teu interesse em poupança. Poupar 20% do rendimento é um excelente ponto de partida. Queres que eu analise o teu progresso em relação às tuas metas?', 
+      message: `Olá ${name}! Vejo interesse em poupança. ${contextSummary.topGoalName ? `A meta mais viva agora é ${contextSummary.topGoalName}. ` : ''}${priorityLine}`.trim(), 
       insight_type: 'opportunity', 
       quick_actions: qActions, 
       data: null 
@@ -186,14 +402,14 @@ function getFallbackResponse(userMessage) {
   }
   if (lower.includes('orçamento') || lower.includes('gasto')) {
     return { 
-      message: 'Olá! Gerir o orçamento é a chave para o sucesso financeiro. Recomendo a regra 50/30/20. Queres ver como estão as tuas categorias este mês?', 
-      insight_type: 'info', 
+      message: `Olá ${name}! ${budgetLine || 'Posso ajudar-te a ver onde o orçamento está mais apertado este mês.'} ${priorityLine}`.trim(), 
+      insight_type: contextSummary.overdueBudgetCount > 0 ? 'warning' : 'info', 
       quick_actions: qActions, 
       data: null 
     };
   }
   return { 
-    message: 'Olá! Estou aqui para ajudar com a tua saúde financeira. Podes perguntar-me sobre o teu saldo, metas ou como poupar mais este mês! 😊', 
+    message: `Olá ${name}! ${priorityLine || 'Estou pronta para te ajudar com base no teu estado financeiro real.'} ${budgetLine}`.trim(), 
     insight_type: 'info', 
     quick_actions: qActions, 
     data: null 
@@ -203,12 +419,16 @@ function getFallbackResponse(userMessage) {
 // ─── Main Caller with Fallback ─────────────────────────────────────────────────
 async function callBinth({ messages, apiKey, provider = 'gemini', householdId, userId }) {
   const userContext = await buildUserContext(householdId, userId);
-  const system = BINTH_SYSTEM_PROMPT.replace('{user_context}', userContext);
+  const system = BINTH_SYSTEM_PROMPT.replace('{user_context}', userContext.text);
 
   // Try preferred provider first, then fall back
   const order = [provider, ...Object.keys(PROVIDERS).filter(p => p !== provider)];
 
   for (const p of order) {
+    if (!apiKey && isProviderTemporarilyDisabled(p)) {
+      continue;
+    }
+
     // Resolve which key to use for the provider
     let activeKey = apiKey;
     if (!activeKey) {
@@ -217,7 +437,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
       if (p === 'groq') activeKey = process.env.GROQ_API_KEY;
     }
 
-    if (!activeKey && p !== 'openrouter') continue;
+    if (!activeKey) continue;
 
     const config = PROVIDERS[p];
     try {
@@ -268,12 +488,18 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
       return parseBinthResponse(raw);
 
     } catch (err) {
+      if (!apiKey && isAuthFailure(err.message)) {
+        disableProviderTemporarily(p);
+        logger.warn({ provider: p }, 'Binth provider temporarily disabled after auth failure');
+        continue;
+      }
+
       logger.warn({ provider: p, error: err.message }, 'Binth provider call failed');
     }
   }
 
   logger.warn('All Binth providers failed. Using fallback response.');
-  return getFallbackResponse(messages[messages.length - 1]?.content || '');
+  return getFallbackResponse(messages[messages.length - 1]?.content || '', userContext.summary);
 }
 
 /**

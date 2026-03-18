@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 import { fmt, getMonthKey } from '../utils/calculations';
+import { getPaymentMethodLabel } from '../utils/paymentMethods';
 import { Plus, Trash2, CheckCircle2, AlertCircle, RefreshCcw, Wallet } from 'lucide-react';
 
 export default function Xitique() {
@@ -171,9 +172,9 @@ export default function Xitique() {
                                   value={paymentAccount}
                                   onChange={e => setPaymentAccount(e.target.value)}
                                 >
-                                  <option value="">Sem conta</option>
+                                  <option value="">Sem meio associado</option>
                                   {state.contas?.map(acc => (
-                                    <option key={acc.id} value={acc.id}>{acc.name}</option>
+                                    <option key={acc.id} value={acc.id}>{acc.name} • {getPaymentMethodLabel(acc.type)}</option>
                                   ))}
                                 </select>
                               )}

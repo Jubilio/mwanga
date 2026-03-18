@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Check, Star, Zap, Crown, Globe, Shield, Rocket, ArrowRight } from 'lucide-react';
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 
 export default function Pricing() {
   const { } = useFinance();

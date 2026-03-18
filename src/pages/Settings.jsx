@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 import { 
   Settings as SettingsIcon, Save, User, Building, 
   Wallet, Palette, Bell, Shield, LogOut, Camera,

@@ -1,5 +1,5 @@
 import { Settings, LogOut } from 'lucide-react';
-import { useFinance } from '../../hooks/useFinanceStore';
+import { useFinance } from '../../hooks/useFinance';
 import { Link } from 'react-router-dom';
 
 export default function UserCard() {

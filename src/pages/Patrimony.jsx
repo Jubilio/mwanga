@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 import { useOutletContext } from 'react-router-dom';
 import { TrendingUp, TrendingDown, Medal, Plus, Trash2, Home, Car, Smartphone, Briefcase, Star, Shield, Zap, Flame, Target, Info, ArrowRight, ShieldAlert } from 'lucide-react';
 import { fmt } from '../utils/calculations';

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 import { Plus, Search, Trash2, Download } from 'lucide-react';
 import { fmt, exportToCSV } from '../utils/calculations';
+import { getPaymentMethodLabel } from '../utils/paymentMethods';
 
 const CATEGORIES = [
   'Salário', 'Renda Casa', 'Alimentação', 'Transporte', 'Saúde',
@@ -114,15 +115,15 @@ export default function Transactions() {
               </select>
             </div>
             <div>
-              <label className="form-label">Conta (Opcional)</label>
+                <label className="form-label">Meio de Pagamento (Opcional)</label>
               <select
                 className="form-input"
                 value={form.account_id}
                 onChange={e => setForm({ ...form, account_id: e.target.value })}
               >
-                <option value="">Nenhuma</option>
+                <option value="">Nenhum</option>
                 {state.contas?.map(acc => (
-                  <option key={acc.id} value={acc.id}>{acc.name} ({fmt(acc.current_balance, currency)})</option>
+                  <option key={acc.id} value={acc.id}>{acc.name} • {getPaymentMethodLabel(acc.type)} ({fmt(acc.current_balance, currency)})</option>
                 ))}
               </select>
             </div>

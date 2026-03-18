@@ -19,7 +19,7 @@ import Pricing from './pages/Pricing';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
 import Insights from './pages/Insights';
-import { useFinance } from './hooks/useFinanceStore';
+import { useFinance } from './hooks/useFinance';
 import { Navigate } from 'react-router-dom';
 
 function RequireAuth({ children }) {

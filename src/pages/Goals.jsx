@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 import { Plus, Trash2, Clock, TrendingUp } from 'lucide-react';
 import { fmt, daysUntil, calcMonthlySavingsNeeded } from '../utils/calculations';
 import BinthContextual from '../components/BinthContextual';

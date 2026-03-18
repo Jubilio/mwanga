@@ -5,7 +5,7 @@ const { z } = require('zod');
 const addDebtSchema = z.object({
   creditor_name: z.string().min(1).max(100).trim(),
   total_amount: z.coerce.number().positive(),
-  due_date: z.string(),
+  due_date: z.string().optional().nullable(),
 }).strict();
 
 const addPaymentSchema = z.object({
@@ -21,17 +21,21 @@ exports.getDebts = async (req, res) => {
       sql: 'SELECT * FROM debts WHERE household_id = ? ORDER BY created_at DESC',
       args: [householdId]
     });
-    const debts = result.rows;
-    
-    // Attach payments to each debt in parallel
-    await Promise.all(debts.map(async (d) => {
-      const pResult = await db.execute({
-        sql: 'SELECT * FROM debt_payments WHERE debt_id = ? ORDER BY payment_date DESC',
-        args: [d.id]
-      });
-      d.payments = pResult.rows;
-    }));
-    
+
+    const debts = await Promise.all(
+      result.rows.map(async (debt) => {
+        const paymentResult = await db.execute({
+          sql: 'SELECT * FROM debt_payments WHERE debt_id = ? ORDER BY payment_date DESC',
+          args: [debt.id]
+        });
+
+        return {
+          ...debt,
+          payments: paymentResult.rows
+        };
+      })
+    );
+
     res.json(debts);
   } catch (error) {
     logger.error('Error fetching debts:', error);
@@ -43,7 +47,7 @@ exports.addDebt = async (req, res, next) => {
   try {
     const { creditor_name, total_amount, due_date } = addDebtSchema.parse(req.body);
     const householdId = req.user.householdId;
-    
+
     const result = await db.execute({
       sql: `
         INSERT INTO debts (creditor_name, total_amount, remaining_amount, due_date, status, household_id)
@@ -51,10 +55,16 @@ exports.addDebt = async (req, res, next) => {
       `,
       args: [creditor_name, total_amount, total_amount, due_date, householdId]
     });
-    
-    res.status(201).json({ id: Number(result.lastInsertRowid), message: 'Dívida adicionada com sucesso' });
+
+    res.status(201).json({
+      id: Number(result.lastInsertRowid),
+      message: 'Dívida adicionada com sucesso'
+    });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
+
     logger.error('Error adding debt:', error);
     next(error);
   }
@@ -64,11 +74,12 @@ exports.deleteDebt = async (req, res) => {
   try {
     const { id } = req.params;
     const householdId = req.user.householdId;
-    
+
     await db.execute({
       sql: 'DELETE FROM debts WHERE id = ? AND household_id = ?',
       args: [id, householdId]
     });
+
     res.json({ message: 'Dívida eliminada' });
   } catch (error) {
     logger.error('Error deleting debt:', error);
@@ -89,7 +100,10 @@ exports.addPayment = async (req, res, next) => {
       args: [id, householdId]
     });
     const debt = result.rows[0];
-    if (!debt) return res.status(404).json({ error: 'Dívida não encontrada' });
+
+    if (!debt) {
+      return res.status(404).json({ error: 'Dívida não encontrada' });
+    }
 
     const newRemaining = Math.max(0, Number(debt.remaining_amount) - numAmount);
     const newStatus = newRemaining === 0 ? 'paid' : 'pending';
@@ -112,11 +126,14 @@ exports.addPayment = async (req, res, next) => {
       });
     }
 
-    await db.batch(queries, "write");
+    await db.batch(queries, 'write');
 
     res.status(201).json({ message: 'Pagamento registado com sucesso' });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
+
     logger.error('Error registering debt payment:', error);
     next(error);
   }

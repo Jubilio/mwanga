@@ -9,7 +9,7 @@ const sparklineData = [
 
 export default function HousingSummaryCard({ totalInvested, currency, type }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-ocean-deep via-ocean to-ocean-light border border-white/10 shadow-xl group">
+    <div className="relative min-w-0 overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-ocean-deep via-ocean to-ocean-light border border-white/10 shadow-xl group">
       {/* Decorative background flair */}
       <div className="absolute -right-20 -top-20 w-64 h-64 bg-gold/10 rounded-full blur-3xl group-hover:bg-gold/20 transition-all duration-700"></div>
       
@@ -38,7 +38,7 @@ export default function HousingSummaryCard({ totalInvested, currency, type }) {
         </div>
 
         {/* Sparkline & Call to Action side */}
-        <div className="w-full md:w-48 flex flex-col items-end gap-4">
+        <div className="w-full min-w-0 md:w-48 flex flex-col items-end gap-4">
           <div className="w-full h-16 opacity-80 group-hover:opacity-100 transition-opacity">
              <ResponsiveContainer width="100%" height={64}>
               <AreaChart data={sparklineData}>

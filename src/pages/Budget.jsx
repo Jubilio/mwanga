@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 import { Plus, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { fmt, calcCategoryBreakdown, getMonthKey } from '../utils/calculations';
 

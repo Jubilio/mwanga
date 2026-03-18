@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useFinance } from '../hooks/useFinanceStore';
+import { useFinance } from '../hooks/useFinance';
 import { useOutletContext } from 'react-router-dom';
 import { Calculator, TrendingUp, RefreshCcw, Wallet, Banknote, BarChart3, Check, Target } from 'lucide-react';
 import {
