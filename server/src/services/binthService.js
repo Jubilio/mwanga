@@ -481,11 +481,11 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
 
         if (res2.ok) {
           const data2 = await res2.json();
-          return parseBinthResponse(config.extract(data2) || '');
+          return parseBinthResponse(config.extract(data2) || '', userContext.summary);
         }
       }
       
-      return parseBinthResponse(raw);
+      return parseBinthResponse(raw, userContext.summary);
 
     } catch (err) {
       if (!apiKey && isAuthFailure(err.message)) {
@@ -505,7 +505,44 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
 /**
  * Helper para limpar e converter a resposta bruta do LLM no formato JSON esperado.
  */
-function parseBinthResponse(raw) {
+function getSafeUserName(name) {
+  const trimmed = String(name || '').trim();
+
+  if (!trimmed) return '';
+  if (/^\[(nome|name)\]$/i.test(trimmed)) return '';
+  if (/^[<{[](nome|name)[>}]\s*$/i.test(trimmed)) return '';
+
+  return trimmed;
+}
+
+function buildGreeting(name) {
+  return name ? `Olá ${name}!` : 'Olá!';
+}
+
+function personalizeBinthPayload(payload, contextSummary = {}) {
+  const safeName = getSafeUserName(contextSummary.userName);
+  const greeting = buildGreeting(safeName);
+  const placeholderPattern = /\[(nome|name)\]|\{(nome|name)\}|<(nome|name)>/gi;
+
+  if (!payload || typeof payload !== 'object') {
+    return payload;
+  }
+
+  if (typeof payload.message === 'string') {
+    let nextMessage = payload.message.replace(placeholderPattern, safeName || '');
+    nextMessage = nextMessage.replace(/\s{2,}/g, ' ').trim();
+
+    if (safeName && /\b(?:olá|ola)\s*!/i.test(nextMessage)) {
+      nextMessage = nextMessage.replace(/\b(?:olá|ola)\s*!/i, greeting);
+    }
+
+    payload.message = nextMessage || greeting;
+  }
+
+  return payload;
+}
+
+function parseBinthResponse(raw, contextSummary = {}) {
   let clean = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
   const jsonStart = clean.indexOf('{');
   const jsonEnd = clean.lastIndexOf('}');
@@ -513,18 +550,18 @@ function parseBinthResponse(raw) {
   if (jsonStart !== -1 && jsonEnd !== -1) {
     const potentialJson = clean.slice(jsonStart, jsonEnd + 1);
     try {
-      return JSON.parse(potentialJson);
+      return personalizeBinthPayload(JSON.parse(potentialJson), contextSummary);
     } catch(e) {
       logger.debug({ error: e.message, raw: clean }, 'Binth JSON parse error');
     }
   }
 
-  return {
+  return personalizeBinthPayload({
     message: clean.length > 5 ? clean : "Estou a processar os teus dados...",
     insight_type: "info",
     quick_actions: [],
     data: null
-  };
+  }, contextSummary);
 }
 
 module.exports = { callBinth, buildUserContext };

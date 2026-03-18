@@ -34,6 +34,11 @@ export default function Settings() {
     currency: state.settings.currency || 'MT',
     cycle_start: state.settings.cycle_start || '1',
     profile_pic: state.settings.profile_pic || AVATARS[0],
+    daily_entry_reminder_enabled: state.settings.daily_entry_reminder_enabled ?? true,
+    daily_entry_reminder_time: state.settings.daily_entry_reminder_time || '20:00',
+    monthly_due_reminder_enabled: state.settings.monthly_due_reminder_enabled ?? true,
+    monthly_due_reminder_time: state.settings.monthly_due_reminder_time || '08:00',
+    monthly_due_reminder_period: state.settings.monthly_due_reminder_period || 'inicio',
   });
 
   const saveTimeoutRef = useRef(null);
@@ -102,6 +107,11 @@ export default function Settings() {
       currency: state.settings.currency || 'MT',
       cycle_start: state.settings.cycle_start || '1',
       profile_pic: state.settings.profile_pic || AVATARS[0],
+      daily_entry_reminder_enabled: state.settings.daily_entry_reminder_enabled ?? true,
+      daily_entry_reminder_time: state.settings.daily_entry_reminder_time || '20:00',
+      monthly_due_reminder_enabled: state.settings.monthly_due_reminder_enabled ?? true,
+      monthly_due_reminder_time: state.settings.monthly_due_reminder_time || '08:00',
+      monthly_due_reminder_period: state.settings.monthly_due_reminder_period || 'inicio',
     });
 
     if (hasChanged) {
@@ -479,6 +489,80 @@ export default function Settings() {
                           </div>
                           <div className={`w-10 h-5 rounded-full p-1 relative transition-colors ${state.darkMode ? 'bg-teal-500' : 'bg-slate-300'}`}>
                             <div className={`w-3 h-3 rounded-full bg-white transition-all ${state.darkMode ? 'translate-x-5' : 'translate-x-0'}`} />
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-5">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
+                              <Bell size={18} />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Lembretes</h4>
+                              <p className="text-[11px] text-slate-500">Define quando queres receber alertas para registo e pagamentos.</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            <label className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 cursor-pointer">
+                              <div>
+                                <div className="text-sm font-bold text-slate-800">Lembrete diário de registo</div>
+                                <div className="text-[11px] text-slate-500">Ajuda-te a lançar gastos e entradas do dia.</div>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={Boolean(form.daily_entry_reminder_enabled)}
+                                onChange={(e) => setForm({ ...form, daily_entry_reminder_enabled: e.target.checked })}
+                                className="h-4 w-4 accent-teal-600"
+                              />
+                            </label>
+
+                            <div>
+                              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Hora do lembrete diário</label>
+                              <input
+                                type="time"
+                                value={form.daily_entry_reminder_time}
+                                onChange={(e) => setForm({ ...form, daily_entry_reminder_time: e.target.value })}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-amber-500/40 transition-all font-medium"
+                              />
+                            </div>
+
+                            <label className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 cursor-pointer">
+                              <div>
+                                <div className="text-sm font-bold text-slate-800">Lembrete mensal de compromissos</div>
+                                <div className="text-[11px] text-slate-500">Avisa sobre renda, xitique e dívidas perto do início ou fim do mês.</div>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={Boolean(form.monthly_due_reminder_enabled)}
+                                onChange={(e) => setForm({ ...form, monthly_due_reminder_enabled: e.target.checked })}
+                                className="h-4 w-4 accent-amber-600"
+                              />
+                            </label>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Quando lembrar</label>
+                                <select
+                                  value={form.monthly_due_reminder_period}
+                                  onChange={(e) => setForm({ ...form, monthly_due_reminder_period: e.target.value })}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-amber-500/40 transition-all appearance-none cursor-pointer font-medium"
+                                >
+                                  <option value="inicio">No início do mês</option>
+                                  <option value="fim">No fim do mês</option>
+                                </select>
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Hora do lembrete mensal</label>
+                                <input
+                                  type="time"
+                                  value={form.monthly_due_reminder_time}
+                                  onChange={(e) => setForm({ ...form, monthly_due_reminder_time: e.target.value })}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-amber-500/40 transition-all font-medium"
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

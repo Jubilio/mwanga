@@ -1,6 +1,9 @@
 const { db } = require('../config/db');
+const { ensureReminderNotifications } = require('../services/reminder.service');
+const { createNotification } = require('../services/notification.service');
 
 const getNotifications = async (req, res) => {
+  await ensureReminderNotifications(req.user.householdId);
   const result = await db.execute({
     sql: 'SELECT * FROM notifications WHERE household_id = ? ORDER BY created_at DESC LIMIT 50',
     args: [req.user.householdId]
@@ -22,18 +25,6 @@ const clearAll = async (req, res) => {
     args: [req.user.householdId]
   });
   res.json({ success: true });
-};
-
-// Helper for other controllers to create notifications
-const createNotification = async (householdId, type, message) => {
-  try {
-    await db.execute({
-      sql: 'INSERT INTO notifications (household_id, type, message) VALUES (?, ?, ?) RETURNING id',
-      args: [householdId, type, message]
-    });
-  } catch (error) {
-    console.error('Failed to create notification:', error);
-  }
 };
 
 module.exports = { getNotifications, markAsRead, clearAll, createNotification };

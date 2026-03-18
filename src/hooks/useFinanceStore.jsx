@@ -24,12 +24,44 @@ const defaultState = {
     default_rent: 15000,
     landlord_name: '',
     housing_type: 'renda', // 'renda' or 'propria'
-    financial_month_start_day: 25
+    financial_month_start_day: 25,
+    daily_entry_reminder_enabled: true,
+    daily_entry_reminder_time: '20:00',
+    monthly_due_reminder_enabled: true,
+    monthly_due_reminder_time: '08:00',
+    monthly_due_reminder_period: 'inicio'
   },
   user: null,
   darkMode: true,
   loading: true,
 };
+
+function parseBooleanSetting(value, fallback) {
+  if (typeof value === 'boolean') return value;
+  if (value === 'true' || value === '1') return true;
+  if (value === 'false' || value === '0') return false;
+  return fallback;
+}
+
+function normalizeSettings(rawSettings = {}) {
+  return {
+    ...defaultState.settings,
+    ...rawSettings,
+    financial_month_start_day: Number(rawSettings.financial_month_start_day || defaultState.settings.financial_month_start_day),
+    daily_entry_reminder_enabled: parseBooleanSetting(
+      rawSettings.daily_entry_reminder_enabled,
+      defaultState.settings.daily_entry_reminder_enabled
+    ),
+    daily_entry_reminder_time: rawSettings.daily_entry_reminder_time || defaultState.settings.daily_entry_reminder_time,
+    monthly_due_reminder_enabled: parseBooleanSetting(
+      rawSettings.monthly_due_reminder_enabled,
+      defaultState.settings.monthly_due_reminder_enabled
+    ),
+    monthly_due_reminder_time: rawSettings.monthly_due_reminder_time || defaultState.settings.monthly_due_reminder_time,
+    monthly_due_reminder_period:
+      rawSettings.monthly_due_reminder_period === 'fim' ? 'fim' : defaultState.settings.monthly_due_reminder_period
+  };
+}
 
 function mapTransaction(t) {
   return {
@@ -204,11 +236,9 @@ export function FinanceProvider({ children }) {
           safeFetch(`${FINANCE_API_URL}/credit/loans`),
         ]);
 
-        const mergedSettings = {
-          ...defaultState.settings,
-          ...(settingsResp && !Array.isArray(settingsResp) ? settingsResp : {}),
-          financial_month_start_day: Number((settingsResp && !Array.isArray(settingsResp) ? settingsResp.financial_month_start_day : undefined) || defaultState.settings.financial_month_start_day)
-        };
+        const mergedSettings = normalizeSettings(
+          settingsResp && !Array.isArray(settingsResp) ? settingsResp : {}
+        );
 
         dispatch({
           type: 'SET_DATA',
