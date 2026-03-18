@@ -13,7 +13,11 @@ const chatSchema = z.object({
 }).strict();
 
 const insightSchema = z.object({
-  page: z.enum(['dashboard', 'dividas', 'metas', 'xitique']),
+  page: z.enum([
+    'dashboard', 'dividas', 'metas', 'xitique', 'transacoes', 'orcamento',
+    'habitacao', 'credito', 'patrimonio', 'simuladores', 'relatorio',
+    'sms-import', 'nexovibe', 'insights', 'settings', 'pricing', 'admin'
+  ]),
 }).strict();
 
 // ─── POST /api/binth/chat ─────────────────────────────────────────────────────
@@ -153,14 +157,44 @@ const getPageInsight = async (req, res, next) => {
     const { page } = insightSchema.parse(req.params);
     const { householdId } = req.user;
 
+    // Comprehensive prompts for all pages
     const pagePrompts = {
-      dashboard: "Dá-me um resumo executivo da minha saúde financeira hoje. Sê breve (2 frases).",
-      dividas: "Analisa as minhas dívidas e sugere qual amortizar primeiro ou como negociar. Sê muito encorajadora.",
-      metas: "Vê o progresso das minhas metas e dá-me uma dica de como acelerar o alcance de uma delas.",
-      xitique: "Dá-me um conselho sobre como usar melhor o meu grupo de Xitique para poupança."
+      // CORE PAGES
+      dashboard: "Dá-me um resumo executivo rápido da minha saúde financeira hoje (máx 2 frases). Inclui o que está bem e o que precisa atenção.",
+
+      // TRANSACTIONS & BUDGET
+      transacoes: "Analisa os meus padrões de gasto do mês. Qual é a categoria com mais despesa? Há alguma tendência preocupante? Dá uma dica de otimização.",
+      orcamento: "Vê como está o meu orçamento. Há categorias que estão sempre acima do limite? Ajuda-me a reajustar os limites de forma realista.",
+
+      // DEBT & FINANCING
+      dividas: "Analisa as minhas dívidas e sugere qual amortizar primeiro ou como negociar. Sê muito encorajadora e prático.",
+      credito: "Avalia o meu histórico de crédito e simula como um novo empréstimo afetaria a minha situação. Dá conselhos sobre o timing ideal.",
+      habitacao: "Analisa os meus gastos com habitação (renda/hipoteca). Está dentro de parâmetros saudáveis? Há espaço para renegociar?",
+
+      // SAVINGS & GOALS
+      metas: "Vê o progresso das minhas metas de poupança. Qual está mais perto? Como posso acelerar o alcance de uma delas?",
+      xitique: "Dá-me um conselho estratégico sobre como usar melhor o meu grupo de Xitique. Quando devo receber? Como gerir o fundo?",
+      patrimonio: "Analisa o crescimento do meu património. Quais são os meus maiores ativos? Para onde devo focar para crescer mais rápido?",
+
+      // PLANNING & ANALYSIS
+      simuladores: "Com base nos meus dados, que simulação seria mais útil para você agora? Empréstimo? Investimento? Reformulação orçamental?",
+      relatorio: "Gera insights chave para o meu relatório mensal. Destaques, desafios e oportunidades em 3 pontos principais.",
+
+      // DATA & INSIGHTS
+      intentos: "Dá-me os principais insights financeiros derivados do meu SMS Import. Há padrões interessantes nas transações detectadas?",
+      'sms-import': "Analisa as transações que importei via SMS. A IA detectou corretamente? Há gastos inesperados para investigar?",
+      nexovibe: "O que está a acontecer na comunidade NEXO? Há tendências financeiras que toda a gente está a fazer que tu sugerias?",
+      insights: "Dá-me um resumo das análises que já fiz. Qual foi o insight mais impactante? No que devo focar a seguir?",
+
+      // SETTINGS & ACCOUNT
+      settings: "Baseado no teu perfil, há configurações que eu sugeriria mudar para melhor acompanhar os teus objetivos?",
+      pricing: "Qual seria o melhor plano para você? Startup, Crescimento ou Premium? Vou calcular o ROI de cada um.",
+
+      // ADMIN & SYSTEM
+      admin: "Relatório de saúde do sistema. Quantos utilizadores? Transações? Há Data Integrity issues a considerar?"
     };
 
-    const prompt = pagePrompts[page] || "Dá-me um conselho financeiro aleatório baseado nos meus dados.";
+    const prompt = pagePrompts[page] || "Dá-me um conselho financeiro valioso baseado nos meus dados pessoais.";
 
     const response = await callBinth({
       messages: [{ role: 'user', content: prompt }],

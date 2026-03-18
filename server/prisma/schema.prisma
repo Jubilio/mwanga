@@ -7,6 +7,159 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model Test {
-  id Int @id @default(autoincrement())
+model Household {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  users     User[]
+  transactions Transaction[]
+  budgets   Budget[]
+  goals     Goal[]
+  rentals   Rental[]
+  assets    Asset[]
+  liabilities Liability[]
+  xitiques  Xitique[]
+  credits   Credit[]
+  debts     Debt[]
+  notifications Notification[]
+  smsImports SmsImport[]
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  householdId   Int
+  household     Household @relation(fields: [householdId], references: [id])
+  nationalId    String?
+  kycStatus     String   @default("pending")
+  creditScore   Int      @default(0)
+  role          String   @default("user")
+  createdAt     DateTime @default(now())
+  notifications Notification[]
+  smsImports    SmsImport[]
+}
+
+model Transaction {
+  id                Int      @id @default(autoincrement())
+  date              String
+  type              String
+  description       String?
+  amount            Float
+  category          String?
+  note              String?
+  sourceType        String   @default("manual")
+  externalReference String?
+  feeAmount         Float    @default(0)
+  confidenceScore   Float?
+  householdId       Int
+  household         Household @relation(fields: [householdId], references: [id])
+  createdAt         DateTime @default(now())
+}
+
+model Budget {
+  id          Int      @id @default(autoincrement())
+  category    String
+  limitAmount Float
+  householdId Int
+  household   Household @relation(fields: [householdId], references: [id])
+  @@unique([category, householdId])
+}
+
+model Goal {
+  id            Int      @id @default(autoincrement())
+  name          String
+  targetAmount  Float
+  savedAmount   Float    @default(0)
+  deadline      String?
+  category      String?
+  monthlySaving Float    @default(0)
+  householdId   Int
+  household     Household @relation(fields: [householdId], references: [id])
+  createdAt     DateTime @default(now())
+}
+
+model Rental {
+  id          Int      @id @default(autoincrement())
+  month       String
+  landlord    String
+  amount      Float
+  status      String
+  notes       String?
+  householdId Int
+  household   Household @relation(fields: [householdId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Asset {
+  id          Int      @id @default(autoincrement())
+  name        String
+  type        String
+  value       Float
+  householdId Int
+  household   Household @relation(fields: [householdId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Liability {
+  id              Int      @id @default(autoincrement())
+  name            String
+  totalAmount     Float
+  remainingAmount Float
+  interestRate    Float    @default(0)
+  householdId     Int
+  household       Household @relation(fields: [householdId], references: [id])
+  createdAt       DateTime @default(now())
+}
+
+model Xitique {
+  id             Int      @id @default(autoincrement())
+  name           String
+  monthlyAmount  Float
+  householdId    Int
+  household      Household @relation(fields: [householdId], references: [id])
+  createdAt      DateTime @default(now())
+}
+
+model Credit {
+  id          Int      @id @default(autoincrement())
+  type        String
+  amount      Float
+  interestRate Float
+  termMonths  Int
+  householdId Int
+  household   Household @relation(fields: [householdId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Debt {
+  id          Int      @id @default(autoincrement())
+  name        String
+  amount      Float
+  householdId Int
+  household   Household @relation(fields: [householdId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  type        String
+  message     String
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  householdId Int
+  household   Household @relation(fields: [householdId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model SmsImport {
+  id          Int      @id @default(autoincrement())
+  content     String
+  parsedData  String?
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  householdId Int
+  household   Household @relation(fields: [householdId], references: [id])
+  createdAt   DateTime @default(now())
 }
