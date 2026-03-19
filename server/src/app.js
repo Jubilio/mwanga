@@ -12,6 +12,7 @@ const smsRoutes = require('./routes/smsRoutes');
 const creditRoutes = require('./routes/credit.routes');
 const kycRoutes = require('./routes/kyc.routes');
 const adminRoutes = require('./routes/admin.routes');
+const { getNotificationReadValue } = require('./services/notificationRead.service');
 const logger = require('./utils/logger');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
@@ -132,6 +133,7 @@ app.get('/api/health', async (req, res) => {
 app.get('/api/metrics', async (req, res) => {
   try {
     const { db } = require('./config/db');
+    const unreadValue = await getNotificationReadValue(false);
 
     // Get basic database stats
     const stats = await db.execute({
@@ -140,9 +142,9 @@ app.get('/api/metrics', async (req, res) => {
           (SELECT COUNT(*) FROM transactions) as total_transactions,
           (SELECT COUNT(*) FROM users) as total_users,
           (SELECT COUNT(*) FROM households) as total_households,
-          (SELECT COUNT(*) FROM notifications WHERE read = 0) as unread_notifications
+          (SELECT COUNT(*) FROM notifications WHERE read = ?) as unread_notifications
       `,
-      args: []
+      args: [unreadValue]
     });
 
     const row = stats.rows[0];

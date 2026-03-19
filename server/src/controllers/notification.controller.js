@@ -1,5 +1,6 @@
 const { db } = require('../config/db');
 const { ensureReminderNotifications } = require('../services/reminder.service');
+const { getNotificationReadValue } = require('../services/notificationRead.service');
 const { createNotification } = require('../services/notification.service');
 const logger = require('../utils/logger');
 
@@ -23,9 +24,11 @@ const getNotifications = async (req, res) => {
 };
 
 const markAsRead = async (req, res) => {
+  const readValue = await getNotificationReadValue(true);
+
   await db.execute({
-    sql: 'UPDATE notifications SET read = 1 WHERE id = ? AND household_id = ?',
-    args: [req.params.id, req.user.householdId]
+    sql: 'UPDATE notifications SET read = ? WHERE id = ? AND household_id = ?',
+    args: [readValue, req.params.id, req.user.householdId]
   });
   res.json({ success: true });
 };

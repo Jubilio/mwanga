@@ -1,5 +1,6 @@
 const { db } = require('../config/db');
 const ToolRegistry = require('./toolRegistry');
+const { getNotificationReadValue } = require('./notificationRead.service');
 const logger = require('../utils/logger');
 
 // ─── System Prompt ─────────────────────────────────────────────────────────────
@@ -143,6 +144,7 @@ async function buildUserContext(householdId, userId) {
     const format = (n) => Number(n || 0).toLocaleString('pt-MZ', { minimumFractionDigits: 2 });
     const now = new Date();
     const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const unreadValue = await getNotificationReadValue(false);
 
     // Fetch all context data in parallel
     const [userRes, summaryRes, recentTxRes, budgetsRes, assetsRes, liabsRes, goalsRes, accountsRes, housingRes, notificationsRes] = await Promise.all([
@@ -202,8 +204,8 @@ async function buildUserContext(householdId, userId) {
         args: [householdId]
       }),
       db.execute({
-        sql: `SELECT COUNT(*) as unread_count FROM notifications WHERE household_id = ? AND read = 0`,
-        args: [householdId]
+        sql: `SELECT COUNT(*) as unread_count FROM notifications WHERE household_id = ? AND read = ?`,
+        args: [householdId, unreadValue]
       })
     ]);
 
