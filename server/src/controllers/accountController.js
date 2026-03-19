@@ -6,18 +6,30 @@ const ACCOUNT_TYPE_ALIASES = {
   cash: 'dinheiro',
   bank: 'banco',
   mobile: 'outro',
+  mobile_money: 'outro',
+  'm-pesa': 'mpesa',
+  mpesa: 'mpesa',
+  'e-mola': 'emola',
+  emola: 'emola',
+  'm-kesh': 'mkesh',
+  mkesh: 'mkesh',
   corrente: 'banco',
   poupanca: 'banco',
   investimento: 'outro'
 };
 
 const normalizeAccountType = (type) => ACCOUNT_TYPE_ALIASES[type] || type;
+const ALLOWED_ACCOUNT_TYPES = ['dinheiro', 'mpesa', 'emola', 'mkesh', 'banco', 'outro'];
 
 const addAccountSchema = z.object({
-  name: z.string().min(1).max(50).trim(),
-  type: z.enum(['dinheiro', 'mpesa', 'emola', 'mkesh', 'banco', 'outro', 'cash', 'bank', 'mobile', 'corrente', 'poupanca', 'investimento']),
-  initial_balance: z.coerce.number(),
-}).strict();
+  name: z.coerce.string().trim().min(1).max(50),
+  type: z.coerce.string()
+    .trim()
+    .toLowerCase()
+    .transform(normalizeAccountType)
+    .refine((value) => ALLOWED_ACCOUNT_TYPES.includes(value), { message: 'Tipo de conta invÃ¡lido' }),
+  initial_balance: z.coerce.number().finite(),
+});
 
 const updateBalanceSchema = z.object({
   current_balance: z.coerce.number(),
@@ -27,7 +39,7 @@ exports.getAccounts = async (req, res) => {
   try {
     const householdId = req.user.householdId;
     const result = await db.execute({
-      sql: 'SELECT * FROM accounts WHERE household_id = ? ORDER BY created_at DESC',
+      sql: 'SELECT * FROM accounts WHERE household_id = $1 ORDER BY created_at DESC',
       args: [householdId]
     });
     res.json(result.rows);
@@ -39,22 +51,24 @@ exports.getAccounts = async (req, res) => {
 
 exports.addAccount = async (req, res, next) => {
   try {
+    logger.info({ body: req.body }, 'POST /api/accounts payload');
     const { name, type, initial_balance } = addAccountSchema.parse(req.body);
     const householdId = req.user.householdId;
-    const normalizedType = normalizeAccountType(type);
-    
     // We set current_balance equal to initial_balance on creation
     const result = await db.execute({
       sql: `
         INSERT INTO accounts (name, type, initial_balance, current_balance, household_id)
-        VALUES (?, ?, ?, ?, ?) RETURNING id
+        VALUES ($1, $2, $3, $4, $5) RETURNING id
       `,
-      args: [name, normalizedType, initial_balance, initial_balance, householdId]
+      args: [name, type, initial_balance, initial_balance, householdId]
     });
-    
-    res.status(201).json({ id: Number(result.lastInsertRowid), message: 'Account added successfully' });
+
+    res.status(201).json({ id: result.rows[0]?.id, message: 'Account added successfully' });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) {
+      logger.warn({ issues: error.issues, body: req.body }, 'Account validation failed');
+      return res.status(400).json({ error: 'Validation failed', details: error.issues || error.errors || [] });
+    }
     logger.error('Error adding account:', error);
     next(error);
   }
@@ -69,8 +83,8 @@ exports.updateAccountBalance = async (req, res, next) => {
     await db.execute({
       sql: `
         UPDATE accounts 
-        SET current_balance = ? 
-        WHERE id = ? AND household_id = ?
+        SET current_balance = $1 
+        WHERE id = $2 AND household_id = $3
       `,
       args: [current_balance, id, householdId]
     });
@@ -87,7 +101,7 @@ exports.deleteAccount = async (req, res) => {
   try {
     const { id } = req.params;
     const householdId = req.user.householdId;
-    
+
     await db.execute({
       sql: 'DELETE FROM accounts WHERE id = ? AND household_id = ?',
       args: [id, householdId]

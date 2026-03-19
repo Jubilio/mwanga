@@ -202,7 +202,7 @@ async function buildUserContext(householdId, userId) {
         args: [householdId]
       }),
       db.execute({
-        sql: `SELECT COUNT(*) as unread_count FROM notifications WHERE household_id = ? AND read = false`,
+        sql: `SELECT COUNT(*) as unread_count FROM notifications WHERE household_id = ? AND read = 0`,
         args: [householdId]
       })
     ]);

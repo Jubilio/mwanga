@@ -65,7 +65,7 @@ export default function Dashboard() {
       icon: Wallet,
       color: 'var(--color-ocean)',
       accent: '#e6f0f9',
-      sub: 'M-Pesa, Bancos, eMola e mais'
+      sub: 'M-Pesa, Bancos, Emola e mais'
     },
     {
       label: 'Receitas do Mês',
@@ -248,11 +248,11 @@ export default function Dashboard() {
       <div className="section-title mt-2">Seus Meios de Pagamento</div>
       <div className="glass-card mb-6 p-6 animate-fade-in-up stagger-1">
         <p className="mb-4 text-sm text-gray-500">
-          Adicione espécie, M-Pesa, eMola, mKesh ou banco para refletir melhor como faz e recebe pagamentos no dia a dia.
+          Adicione Dinheiro, M-Pesa, Emola, mKesh ou Banco para refletir melhor como faz e recebe pagamentos no dia a dia.
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {state.contas?.map(conta => (
-            <div key={conta.id} className="relative rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+          {state.contas?.map((conta, index) => (
+            <div key={conta.id ?? `${conta.name || 'conta'}-${index}`} className="relative rounded-xl border border-gray-200 p-4 dark:border-gray-800">
               <div className="text-xs uppercase tracking-widest text-muted">{getPaymentMethodLabel(conta.type)}</div>
               <div className="text-lg font-bold">{conta.name}</div>
               <div className="mt-1 font-bold text-ocean">{fmt(conta.current_balance, currency)}</div>
@@ -293,12 +293,11 @@ export default function Dashboard() {
           <div className="w-1/4 min-w-[120px]">
             <label className="mb-1 block text-xs font-semibold">MEIO</label>
             <select name="type" className="input py-2 text-sm" required>
-              <option value="dinheiro">Dinheiro</option>
               <option value="mpesa">M-Pesa</option>
-              <option value="emola">eMola</option>
+              <option value="emola">Emola</option>
               <option value="mkesh">mKesh</option>
               <option value="banco">Banco</option>
-              <option value="outro">Outro</option>
+              <option value="dinheiro">Dinheiro</option>
             </select>
           </div>
           <div className="w-1/4 min-w-[120px]">

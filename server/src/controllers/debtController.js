@@ -18,14 +18,14 @@ exports.getDebts = async (req, res) => {
   try {
     const householdId = req.user.householdId;
     const result = await db.execute({
-      sql: 'SELECT * FROM debts WHERE household_id = ? ORDER BY created_at DESC',
+      sql: 'SELECT * FROM debts WHERE household_id = $1 ORDER BY created_at DESC',
       args: [householdId]
     });
 
     const debts = await Promise.all(
       result.rows.map(async (debt) => {
         const paymentResult = await db.execute({
-          sql: 'SELECT * FROM debt_payments WHERE debt_id = ? ORDER BY payment_date DESC',
+          sql: 'SELECT * FROM debt_payments WHERE debt_id = $1 ORDER BY payment_date DESC',
           args: [debt.id]
         });
 
@@ -51,13 +51,13 @@ exports.addDebt = async (req, res, next) => {
     const result = await db.execute({
       sql: `
         INSERT INTO debts (creditor_name, total_amount, remaining_amount, due_date, status, household_id)
-        VALUES (?, ?, ?, ?, 'pending', ?) RETURNING id
+        VALUES ($1, $2, $3, $4, 'pending', $5) RETURNING id
       `,
-      args: [creditor_name, total_amount, total_amount, due_date, householdId]
+      args: [creditor_name, total_amount, total_amount, due_date || null, householdId]
     });
 
     res.status(201).json({
-      id: Number(result.lastInsertRowid),
+      id: result.rows?.[0]?.id,
       message: 'Dívida adicionada com sucesso'
     });
   } catch (error) {
@@ -76,7 +76,7 @@ exports.deleteDebt = async (req, res) => {
     const householdId = req.user.householdId;
 
     await db.execute({
-      sql: 'DELETE FROM debts WHERE id = ? AND household_id = ?',
+      sql: 'DELETE FROM debts WHERE id = $1 AND household_id = $2',
       args: [id, householdId]
     });
 
@@ -96,7 +96,7 @@ exports.addPayment = async (req, res, next) => {
     const numAmount = Number(amount);
 
     const result = await db.execute({
-      sql: 'SELECT * FROM debts WHERE id = ? AND household_id = ?',
+      sql: 'SELECT * FROM debts WHERE id = $1 AND household_id = $2',
       args: [id, householdId]
     });
     const debt = result.rows[0];
@@ -110,18 +110,18 @@ exports.addPayment = async (req, res, next) => {
 
     const queries = [
       {
-        sql: 'INSERT INTO debt_payments (debt_id, amount, payment_date, household_id, account_id) VALUES (?, ?, ?, ?, ?) RETURNING id',
-        args: [id, numAmount, payment_date, householdId, account_id || null]
+        sql: 'INSERT INTO debt_payments (debt_id, amount, payment_date, household_id) VALUES ($1, $2, $3, $4) RETURNING id',
+        args: [id, numAmount, payment_date, householdId]
       },
       {
-        sql: 'UPDATE debts SET remaining_amount = ?, status = ? WHERE id = ?',
+        sql: 'UPDATE debts SET remaining_amount = $1, status = $2 WHERE id = $3',
         args: [newRemaining, newStatus, id]
       }
     ];
 
     if (account_id) {
       queries.push({
-        sql: 'UPDATE accounts SET current_balance = current_balance - ? WHERE id = ? AND household_id = ?',
+        sql: 'UPDATE accounts SET current_balance = current_balance - $1 WHERE id = $2 AND household_id = $3',
         args: [numAmount, account_id, householdId]
       });
     }

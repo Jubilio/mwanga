@@ -1,10 +1,9 @@
 export const PAYMENT_METHOD_LABELS = {
   dinheiro: 'Dinheiro',
   mpesa: 'M-Pesa',
-  emola: 'eMola',
+  emola: 'Emola',
   mkesh: 'mKesh',
   banco: 'Banco',
-  outro: 'Outro',
   cash: 'Dinheiro',
   mobile: 'Carteira Móvel',
   bank: 'Banco',

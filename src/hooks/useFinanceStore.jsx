@@ -584,22 +584,57 @@ export function FinanceProvider({ children }) {
           break;
         }
         case 'PAY_DEBT': {
+          const paymentBody = {
+            amount: action.payload.amount,
+            payment_date: action.payload.payment_date,
+            account_id: action.payload.account_id || undefined
+          };
           await fetch(`${FINANCE_API_URL}/debts/${action.payload.debtId}/pay`, {
             method: 'POST',
             headers,
-            body: JSON.stringify(action.payload)
+            body: JSON.stringify(paymentBody)
           });
           const refreshD = await fetch(`${FINANCE_API_URL}/debts`, { headers }).then(r => r.json());
           dispatch({ type: 'SET_DEBTS', payload: refreshD });
           return;
         }
         case 'ADD_ACCOUNT': {
-          const accRet = await fetch(`${FINANCE_API_URL}/accounts`, {
+          const accountBody = {
+            name: String(action.payload.name || '').trim(),
+            type: action.payload.type,
+            initial_balance: Number(action.payload.initial_balance || 0)
+          };
+          console.log('Sending account payload:', accountBody);
+          const accResp = await fetch(`${FINANCE_API_URL}/accounts`, {
             method: 'POST',
             headers,
-            body: JSON.stringify(action.payload)
-          }).then(r => r.json());
-          payload = { ...action.payload, id: accRet.id, current_balance: action.payload.initial_balance };
+            body: JSON.stringify(accountBody)
+          });
+          if (!accResp.ok) {
+            let errorMessage = `Failed to add account (${accResp.status})`;
+            try {
+              const errorData = await accResp.json();
+              const detailText = Array.isArray(errorData?.details)
+                ? errorData.details
+                    .map((item) => {
+                      const path = Array.isArray(item?.path) ? item.path.join('.') : '';
+                      return [path, item?.message].filter(Boolean).join(': ');
+                    })
+                    .filter(Boolean)
+                    .join(', ')
+                : '';
+              errorMessage = detailText || errorData?.message || errorData?.error || errorMessage;
+            } catch {
+              // Ignore invalid error payloads and keep fallback message
+            }
+            throw new Error(errorMessage);
+          }
+          const accRet = await accResp.json();
+          payload = {
+            ...accountBody,
+            id: accRet.id,
+            current_balance: accountBody.initial_balance
+          };
           break;
         }
         case 'UPDATE_ACCOUNT_BALANCE': {

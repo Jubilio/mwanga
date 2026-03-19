@@ -43,31 +43,32 @@ const getTransactions = async (req, res) => {
       return res.json(typeof cached === 'string' ? JSON.parse(cached) : cached);
     }
 
-    // Build query with filters
-    let sql = 'SELECT * FROM transactions WHERE household_id = ?';
+    // Build query with filters (PostgreSQL parameter-style)
+    let sql = 'SELECT * FROM transactions WHERE household_id = $1';
     let args = [householdId];
+    let paramIndex = 2;
 
     if (category) {
-      sql += ' AND category = ?';
+      sql += ` AND category = $${paramIndex++}`;
       args.push(category);
     }
 
     if (type) {
-      sql += ' AND type = ?';
+      sql += ` AND type = $${paramIndex++}`;
       args.push(type);
     }
 
     if (startDate) {
-      sql += ' AND date >= ?';
+      sql += ` AND date >= $${paramIndex++}`;
       args.push(startDate);
     }
 
     if (endDate) {
-      sql += ' AND date <= ?';
+      sql += ` AND date <= $${paramIndex++}`;
       args.push(endDate);
     }
 
-    sql += ' ORDER BY date DESC LIMIT ? OFFSET ?';
+    sql += ` ORDER BY date DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
     args.push(limitNumber, offset);
 
     const result = await db.execute({ sql, args });
@@ -97,22 +98,22 @@ const createTransaction = async (req, res, next) => {
     // Use transaction for both insert and balance update
     const queries = [
       {
-        sql: 'INSERT INTO transactions (date, type, description, amount, category, note, household_id, account_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id',
-        args: [data.date, data.type, data.description, data.amount, data.category, data.note, householdId, data.account_id || null]
+        sql: 'INSERT INTO transactions (date, type, description, amount, category, note, household_id, account_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
+        args: [data.date, data.type, data.description || null, data.amount, data.category || null, data.note || null, householdId, data.account_id || null]
       }
     ];
 
     if (data.account_id) {
       const balanceChange = (data.type === 'receita' || data.type === 'poupanca') ? data.amount : -data.amount;
       queries.push({
-        sql: 'UPDATE accounts SET current_balance = current_balance + ? WHERE id = ? AND household_id = ?',
+        sql: 'UPDATE accounts SET current_balance = current_balance + $1 WHERE id = $2 AND household_id = $3',
         args: [balanceChange, data.account_id, householdId]
       });
     }
 
     const results = await db.batch(queries, 'write');
     const insertResult = results[0];
-    const txId = Number(insertResult.lastInsertRowid);
+    const txId = Number(insertResult.rows?.[0]?.id || insertResult.lastInsertRowid || 0);
 
     // --- Budget Alert Logic (Optimized) ---
     if (data.type === 'despesa' || data.type === 'renda') {
@@ -156,14 +157,14 @@ const deleteTransaction = async (req, res) => {
     const txId = req.params.id;
 
     const result = await db.execute({
-      sql: 'SELECT * FROM transactions WHERE id = ? AND household_id = ?',
+      sql: 'SELECT * FROM transactions WHERE id = $1 AND household_id = $2',
       args: [txId, householdId]
     });
     const tx = result.rows[0];
     if (!tx) return res.status(403).json({ error: 'Acesso negado ou não encontrado' });
 
     await db.execute({
-      sql: 'DELETE FROM transactions WHERE id = ?',
+      sql: 'DELETE FROM transactions WHERE id = $1',
       args: [txId]
     });
 
