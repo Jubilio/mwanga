@@ -7,7 +7,7 @@ const { getAssets, createAsset, deleteAsset, getLiabilities, createLiability, de
 const { getXitiques, createXitique, deleteXitique, payContribution, receiveFunds } = require('../controllers/xitique.controller');
 const { getSettings, upsertSetting, updateHousehold } = require('../controllers/settings.controller');
 const { getOverview: getInsights } = require('../controllers/insights.controller');
-const { getNotifications, markAsRead, clearAll } = require('../controllers/notification.controller');
+const { getNotifications, markAsRead, clearAll, deleteNotification } = require('../controllers/notification.controller');
 const { getDebts, addDebt, deleteDebt, addPayment } = require('../controllers/debtController');
 const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require('../controllers/accountController');
 const { chat: binthChat, getScore: binthScore, getPageInsight } = require('../controllers/binth.controller');
@@ -58,6 +58,7 @@ router.get('/insights', getInsights);
 // Notifications
 router.get('/notifications', getNotifications);
 router.put('/notifications/:id/read', markAsRead);
+router.delete('/notifications/:id', deleteNotification);
 router.delete('/notifications', clearAll);
 
 // Settings & Household

@@ -8,9 +8,20 @@ const logger = require('./utils/logger');
 const PORT = process.env.PORT || 3001;
 
 // Initialize Database & Start Server
-initDb()
-  .then(async () => {
-    await checkRedis();
+async function startServer() {
+  try {
+    logger.info('Starting Mwanga ✦ Server initialization...');
+    
+    await initDb();
+    logger.info('Database connection verified.');
+
+    try {
+      await checkRedis();
+      logger.info('Redis connection verified.');
+    } catch (redisErr) {
+      logger.warn(`Redis initialization failed: ${redisErr.message}. Continuing without Redis...`);
+    }
+
     const server = app.listen(PORT, () => {
       logger.info(`Mwanga ✦ Server running in ${process.env.NODE_ENV || 'development'} mode on http://localhost:${PORT}`);
     });
@@ -22,8 +33,12 @@ initDb()
         logger.info('HTTP server closed');
       });
     });
-  })
-  .catch((err) => {
-    logger.error('Failed to initialize database:', err);
+
+  } catch (err) {
+    logger.error('CRITICAL: Failed to initialize database:');
+    logger.error(err);
     process.exit(1);
-  });
+  }
+}
+
+startServer();

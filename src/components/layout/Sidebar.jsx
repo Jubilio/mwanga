@@ -214,6 +214,7 @@ export default function Sidebar({ isOpen, onClose }) {
           .sb-shell {
             position: fixed !important; left: -280px; top: 0; height: 100vh;
             transition: left 0.28s cubic-bezier(0.4,0,0.2,1); z-index: 90;
+            will-change: left;
           }
           .sb-shell.sb-open { left: 0; }
           .sb-backdrop { display: block; position: fixed; inset: 0; z-index: 89;

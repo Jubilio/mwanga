@@ -16,6 +16,9 @@ if (!connectionString) {
 
 const poolConfig = {
   connectionString,
+  max: 5, // Limit pool size for better stability with Supabase
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
 };
 
 // Only enable SSL if not explicitly disabled in the connection string
@@ -25,7 +28,12 @@ if (connectionString && !connectionString.includes('sslmode=disable')) {
   };
 }
 
+logger.info(`Database Config: Pool Max=5, SSL=${!!poolConfig.ssl}`);
 const pool = new Pool(poolConfig);
+
+pool.on('error', (err) => {
+  logger.error('Unexpected error on idle database client', err);
+});
 
 // Wrapper to maintain compatibility with existing code that used .execute({sql, args})
 const db = {
@@ -89,19 +97,16 @@ const db = {
 
 const initDb = async () => {
   try {
+    logger.info('Verifying database connection...');
+    if (!connectionString) {
+      throw new Error('DATABASE_URL is missing from environment variables!');
+    }
     // Tables are expected to be created via the provided supabase_schema.sql manually or via the app
     // For safety, we can run a simple health check query
     await db.execute('SELECT NOW()');
-    logger.info('Database connection verified.');
   } catch (error) {
-    logger.error('Database connection failed:', error);
-    // In production, we might not want to exit immediately if DB is temporarily down,
-    // but for migration phase it's better to be explicit.
-    if (process.env.NODE_ENV === 'production') {
-       console.error('CRITICAL: Database connection failed.');
-    } else {
-       // process.exit(1); 
-    }
+    logger.error('Database connection failed:', error.message);
+    throw error; // Let server.js handle the crash
   }
 };
 

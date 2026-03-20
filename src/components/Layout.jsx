@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, ArrowRightLeft, Home, Target, 
   PieChart, Calculator, Moon, Sun, Menu, X, Wallet, Globe, Settings as SettingsIcon,
-  Landmark, BarChart3, Crown, Brain, Bell, CreditCard
+  Landmark, BarChart3, Crown, Brain, Bell, CreditCard, Sparkles, Info
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import { getCurrentMonthLabel } from '../utils/calculations';
@@ -74,18 +74,55 @@ export default function Layout() {
     } catch (error) { console.error(error); }
   };
 
+  const handleClearAll = async () => {
+    try {
+      if (window.confirm('Tens a certeza que queres eliminar todas as notificações?')) {
+        await api.delete('/notifications');
+        setNotifications([]);
+        showToast('Notificações limpas!', 'success');
+      }
+    } catch (error) { console.error(error); }
+  };
+
+  const handleDeleteOne = async (e, id) => {
+    e.stopPropagation();
+    try {
+      await api.delete(`/notifications/${id}`);
+      setNotifications(notifications.filter(n => n.id !== id));
+    } catch (error) { console.error(error); }
+  };
+
+  const getNotificationIcon = (type) => {
+    if (type.includes('renda')) return <Home size={14} className="text-blue-500" />;
+    if (type.includes('meta')) return <Target size={14} className="text-green-500" />;
+    if (type.includes('divida')) return <CreditCard size={14} className="text-red-500" />;
+    if (type === 'warning') return <Bell size={14} className="text-amber-500" />;
+    if (type === 'success') return <Sparkles size={14} className="text-emerald-500" />;
+    return <Info size={14} className="text-ocean dark:text-aurora" />;
+  };
+
   return (
     <div className={`app-container ${state.darkMode ? 'dark transition-colors' : 'transition-colors'}`}>
       <CustomCursor />
       {/* Notifications Drawer */}
       <div className={`fixed inset-0 z-100 transition-opacity duration-300 ${isNotificationsOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsNotificationsOpen(false)} />
-        <div className={`absolute right-0 top-0 h-full w-80 bg-white dark:bg-[#1a1a1a] border-l border-white/10 p-6 transform transition-transform duration-300 shadow-2xl ${isNotificationsOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[4px]" onClick={() => setIsNotificationsOpen(false)} />
+        <div className={`absolute right-0 top-0 h-full w-80 bg-white dark:bg-[#1a1a1a] border-l border-white/10 p-6 transform transition-transform duration-300 shadow-2xl ${isNotificationsOpen ? 'translate-x-0' : 'translate-x-full'}`} style={{ willChange: 'transform' }}>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
               <Bell size={20} className="text-ocean dark:text-aurora" /> Notificações
             </h3>
-            <button onClick={() => setIsNotificationsOpen(false)} className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-full"><X size={20} /></button>
+            <div className="flex items-center gap-2">
+              {notifications.length > 0 && (
+                <button 
+                  onClick={handleClearAll}
+                  className="text-[10px] uppercase tracking-wider font-bold text-gray-400 hover:text-red-500 transition-colors mr-2"
+                >
+                  Limpar Tudo
+                </button>
+              )}
+              <button onClick={() => setIsNotificationsOpen(false)} className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-full"><X size={20} /></button>
+            </div>
           </div>
           <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-150px)] pr-2 custom-scrollbar">
             {notifications.length === 0 ? (
@@ -95,13 +132,22 @@ export default function Layout() {
                 <div 
                   key={n.id} 
                   onClick={() => !n.read && handleMarkRead(n.id)}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer ${n.read ? 'bg-black/2 dark:bg-white/2 border-black/5 dark:border-white/5 opacity-60' : 'bg-ocean/5 dark:bg-aurora/5 border-ocean/30 dark:border-aurora/30 shadow-lg'}`}
+                  className={`group p-4 rounded-xl border transition-all cursor-pointer relative ${n.read ? 'bg-black/2 dark:bg-white/2 border-black/5 dark:border-white/5 opacity-60' : 'bg-ocean/5 dark:bg-aurora/5 border-ocean/30 dark:border-aurora/30 shadow-lg'}`}
                 >
+                  <button 
+                    onClick={(e) => handleDeleteOne(e, n.id)}
+                    className="absolute top-2 right-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/10 rounded-full"
+                  >
+                    <X size={12} className="text-gray-400 hover:text-red-500" />
+                  </button>
                   <div className="flex justify-between items-start gap-2 mb-1">
-                    <span className="text-[10px] uppercase tracking-widest text-ocean dark:text-aurora font-bold">{n.type}</span>
-                    {!n.read && <div className="w-2 h-2 rounded-full bg-ocean dark:bg-aurora animate-pulse" />}
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {getNotificationIcon(n.type)}
+                      <span className="text-[10px] uppercase tracking-widest text-ocean dark:text-aurora font-bold truncate">{n.type.replace('lembrete-', '')}</span>
+                    </div>
+                    {!n.read && <div className="w-2 h-2 rounded-full bg-ocean dark:bg-aurora animate-pulse shrink-0" />}
                   </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-200">{n.message}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-200 pr-4">{n.message}</p>
                   <span className="text-[10px] text-gray-500 mt-2 block">{new Date(n.created_at).toLocaleString()}</span>
                 </div>
               ))

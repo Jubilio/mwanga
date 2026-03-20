@@ -92,7 +92,7 @@ export default function Insights() {
           role: 'assistant',
           content: message || 'Olá! Já li o teu contexto financeiro e estou pronta para te ajudar.',
           insight_type: insight_type || 'info',
-          quick_actions: quick_actions || ['Como estão as minhas finanças?', 'Onde estou a gastar mais?', 'Como posso poupar mais?', 'Analisa o meu orçamento'],
+          quick_actions: quick_actions || ['Como canalizar o meu salário?', 'Onde estou a gastar mais?', 'Como posso poupar mais?', 'Analisa o meu orçamento'],
         }]);
       })
       .catch(() => {

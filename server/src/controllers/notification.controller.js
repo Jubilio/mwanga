@@ -12,6 +12,12 @@ const getNotifications = async (req, res) => {
       logger.warn(`Reminder generation skipped: ${error.message}`);
     }
 
+    // Auto-cleanup: Delete notifications older than 30 days
+    await db.execute({
+      sql: `DELETE FROM notifications WHERE household_id = $1 AND created_at < NOW() - INTERVAL '30 days'`,
+      args: [req.user.householdId]
+    });
+
     const result = await db.execute({
       sql: 'SELECT * FROM notifications WHERE household_id = ? ORDER BY created_at DESC LIMIT 50',
       args: [req.user.householdId]
@@ -41,4 +47,12 @@ const clearAll = async (req, res) => {
   res.json({ success: true });
 };
 
-module.exports = { getNotifications, markAsRead, clearAll, createNotification };
+const deleteNotification = async (req, res) => {
+  await db.execute({
+    sql: 'DELETE FROM notifications WHERE id = ? AND household_id = ?',
+    args: [req.params.id, req.user.householdId]
+  });
+  res.json({ success: true });
+};
+
+module.exports = { getNotifications, markAsRead, clearAll, deleteNotification, createNotification };

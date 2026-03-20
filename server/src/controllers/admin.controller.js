@@ -20,10 +20,10 @@ const getUsers = async (req, res) => {
           d.id as document_id,
           d.document_type,
           d.document_url,
-          d.created_at as document_created_at
-        FROM users u
-        LEFT JOIN kyc_documents d ON d.user_id = u.id
-        ORDER BY u.created_at DESC, d.created_at DESC
+          d.uploaded_at as document_created_at
+        FROM public.users u
+        LEFT JOIN public.kyc_documents d ON d.user_id = u.id
+        ORDER BY u.created_at DESC, d.uploaded_at DESC
       `,
       args: []
     });
@@ -65,10 +65,10 @@ const getUsers = async (req, res) => {
 const getPlatformStats = async (req, res) => {
   try {
     // 1. Total Users
-    const usersCount = await db.execute('SELECT COUNT(*) as count FROM users');
+    const usersCount = await db.execute('SELECT COUNT(*) as count FROM public.users');
     
     // 2. KYC Stats
-    const kycStats = await db.execute('SELECT kyc_status, COUNT(*) as count FROM users GROUP BY kyc_status');
+    const kycStats = await db.execute('SELECT kyc_status, COUNT(*) as count FROM public.users GROUP BY kyc_status');
     
     // 3. Loan Stats - Check if table exists implicitly by catching error
     let loanStats = { rows: [{ total_disbursed: 0, total_loans: 0, avg_rate: 0 }] };
@@ -78,7 +78,7 @@ const getPlatformStats = async (req, res) => {
           SUM(principal) as total_disbursed,
           COUNT(*) as total_loans,
           AVG(interest_rate) as avg_rate
-        FROM loans
+        FROM public.loans
       `);
     } catch (e) {
       logger.warn('Loans table might not exist yet:', e.message);
@@ -87,7 +87,7 @@ const getPlatformStats = async (req, res) => {
     // 4. Pending Applications
     let pendingApps = { rows: [{ count: 0 }] };
     try {
-      pendingApps = await db.execute("SELECT COUNT(*) as count FROM credit_applications WHERE status = 'pending'");
+      pendingApps = await db.execute("SELECT COUNT(*) as count FROM public.credit_applications WHERE status = 'pending'");
     } catch (e) {
       logger.warn('Credit Applications table might not exist yet:', e.message);
     }
@@ -121,7 +121,7 @@ const updateKycStatus = async (req, res) => {
     }
 
     await db.execute({
-      sql: 'UPDATE users SET kyc_status = ? WHERE id = ?',
+      sql: 'UPDATE public.users SET kyc_status = ? WHERE id = ?',
       args: [status, userId]
     });
 
