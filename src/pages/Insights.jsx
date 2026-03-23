@@ -38,8 +38,8 @@ function TypingDots() {
   );
 }
 
-// ─── Score Bar ────────────────────────────────────────────────────────────────
-function ScoreRing({ score, label }) {
+// ─── Score Ring ───────────────────────────────────────────────────────────────
+function ScoreRing({ score, label, biblicalLabel }) {
   const pct = score || 0;
   const color = pct >= 75 ? '#00D68F' : pct >= 50 ? '#F59E0B' : '#FF4C4C';
   const r = 28, circ = 2 * Math.PI * r;
@@ -57,6 +57,9 @@ function ScoreRing({ score, label }) {
       <div>
         <div style={{ fontSize: 26, fontWeight: 900, color, lineHeight: 1 }}>{pct}</div>
         <div style={{ fontSize: 11, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
+        {biblicalLabel && (
+          <div style={{ fontSize: 11, color, fontWeight: 700, marginTop: 3 }}>{biblicalLabel}</div>
+        )}
       </div>
     </div>
   );
@@ -87,12 +90,14 @@ export default function Insights() {
 
     api.get('/binth/insights/dashboard')
       .then((r) => {
-        const { message, insight_type, quick_actions } = r.data || {};
+        const { message, insight_type, quick_actions, biblical_insight, alerta } = r.data || {};
         setMessages([{
           role: 'assistant',
           content: message || 'Olá! Já li o teu contexto financeiro e estou pronta para te ajudar.',
           insight_type: insight_type || 'info',
           quick_actions: quick_actions || ['Como canalizar o meu salário?', 'Onde estou a gastar mais?', 'Como posso poupar mais?', 'Analisa o meu orçamento'],
+          biblical_insight,
+          alerta,
         }]);
       })
       .catch(() => {
@@ -176,13 +181,13 @@ export default function Insights() {
               Binth <span style={{ color: '#7C3AED' }}>Insights</span>
             </h1>
             <p style={{ fontSize: 12, color: '#5a7a9a', margin: '2px 0 0', letterSpacing: '0.04em' }}>
-              A tua consultora financeira pessoal ✦
+              A tua mentora financeira pessoal ✦
             </p>
           </div>
         </div>
 
         {/* Score ring (if loaded) */}
-        {score && <ScoreRing score={score.score} label={score.label} />}
+        {score && <ScoreRing score={score.score} label={score.label} biblicalLabel={score.biblical_label} />}
       </div>
 
       {/* ─── Chat Window ─────────────────────────────────────────────────── */}
@@ -226,6 +231,31 @@ export default function Insights() {
                   {(msg.content || '').split('\n').map((line, li) => (
                     <span key={li}>{renderBold(line)}{li < (msg.content || '').split('\n').length - 1 && <br />}</span>
                   ))}
+
+                  {/* ─ Biblical Insight ─ */}
+                  {!isUser && msg.biblical_insight && (
+                    <div style={{
+                      marginTop: 10, paddingTop: 8,
+                      borderTop: '1px solid rgba(255,255,255,0.08)',
+                      display: 'flex', gap: 6, alignItems: 'flex-start',
+                      fontSize: 11, color: '#c8a84b', lineHeight: 1.5,
+                    }}>
+                      <span style={{ flexShrink: 0 }}>&#128214;</span>
+                      <em>{msg.biblical_insight}</em>
+                    </div>
+                  )}
+
+                  {/* ─ Alerta ─ */}
+                  {!isUser && msg.alerta && (
+                    <div style={{
+                      marginTop: 8, padding: '6px 10px', borderRadius: 8,
+                      background: 'rgba(245,158,11,0.12)',
+                      border: '1px solid rgba(245,158,11,0.25)',
+                      fontSize: 11, fontWeight: 600, color: '#F59E0B',
+                    }}>
+                      {msg.alerta}
+                    </div>
+                  )}
                 </div>
 
                 {/* Quick actions */}
@@ -311,17 +341,34 @@ export default function Insights() {
       {/* ─── Score breakdown (if loaded) ──────────────────────────────────── */}
       {score?.factors?.length > 0 && (
         <div style={{ marginTop: 20, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '18px 20px' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#4a5568', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14 }}>
-            Factores do Score Financeiro
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#4a5568', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+              Score Financeiro Bíblico
+            </div>
+            {score.biblical_label && (
+              <div style={{
+                fontSize: 11, fontWeight: 700,
+                color: score.score >= 75 ? '#00D68F' : score.score >= 50 ? '#F59E0B' : '#FF4C4C',
+                background: 'rgba(255,255,255,0.05)', borderRadius: 20,
+                padding: '3px 10px', border: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                {score.biblical_label}
+              </div>
+            )}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {score.factors.map((f, i) => {
               const pct = Math.round((f.pts / f.max) * 100);
               const col = pct >= 75 ? '#00D68F' : pct >= 40 ? '#F59E0B' : '#FF4C4C';
               return (
                 <div key={i}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontSize: 12, color: '#8a9ab8' }}>{f.name}</span>
+                    <div>
+                      <span style={{ fontSize: 12, color: '#8a9ab8' }}>{f.name}</span>
+                      {f.biblical_principle && (
+                        <span style={{ fontSize: 10, color: '#c8a84b', marginLeft: 8, opacity: 0.8 }}>&#128214; {f.biblical_principle}</span>
+                      )}
+                    </div>
                     <span style={{ fontSize: 12, color: col, fontWeight: 600 }}>{f.pts}/{f.max} · {f.value}</span>
                   </div>
                   <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 999, overflow: 'hidden' }}>

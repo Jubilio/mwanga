@@ -67,6 +67,16 @@ export default function Budget() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+
+          {/* Biblical Principle Banner — Contentamento */}
+          <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-700/30 text-indigo-700 dark:text-indigo-400">
+            <span className="text-base flex-shrink-0">📖</span>
+            <div className="text-[12px] leading-relaxed">
+              <span className="font-bold">Contentamento: </span>
+              A riqueza real começa por saber o que é suficiente. Cada limite de orçamento que defines é uma escolha sábia de quem governa o seu dinheiro com intencionalidade.
+            </div>
+          </div>
+
           {state.budgets.map(budget => {
             const spent = categories.find(c => c.category === budget.category)?.amount || 0;
             const pct = Math.min(100, Math.round((spent / budget.limit) * 100));
@@ -116,6 +126,14 @@ export default function Budget() {
                   <span>{pct}% utilizado</span>
                   <span>Restam: {fmt(Math.max(0, budget.limit - spent))}</span>
                 </div>
+
+                {/* Biblical micro-tip when over budget */}
+                {isOver && (
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.68rem', color: 'var(--color-coral)', display: 'flex', gap: 5, alignItems: 'flex-start', opacity: 0.9 }}>
+                    <span>📖</span>
+                    <em>Princípio do Contentamento: reveja o que é essencial nesta categoria antes do próximo gasto.</em>
+                  </div>
+                )}
               </div>
             );
           })}

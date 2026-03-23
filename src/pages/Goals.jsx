@@ -73,6 +73,17 @@ export default function Goals() {
 
       <BinthContextual page="metas" />
 
+      {/* Biblical Principle Banner — Poupança e Proteção */}
+      {state.metas?.length > 0 && (
+        <div className="mt-4 flex items-start gap-2 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-700/30 text-amber-700 dark:text-amber-400">
+          <span className="text-base flex-shrink-0">📖</span>
+          <div className="text-[12px] leading-relaxed">
+            <span className="font-bold">Poupança e Proteção: </span>
+            O pé de meia de hoje é a liberdade de amanhã. Cada contribuição à tua meta é um passo para os teus sonhos. Não esperes a perfeita altura — começa agora com o que tens.
+          </div>
+        </div>
+      )}
+
       {/* Goals Grid */}
       <div className="section-title mt-8">O Seu Progresso</div>
       

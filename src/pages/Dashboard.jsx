@@ -353,6 +353,16 @@ export default function Dashboard() {
           <div style={{ fontSize: '0.75rem', color: 'var(--color-muted)', marginTop: '0.2rem' }}>
             Taxa poupança: {savingsRate}%
           </div>
+          <div style={{
+            fontSize: '0.7rem', fontWeight: 700, marginTop: '0.35rem',
+            color: score >= 75 ? 'var(--color-leaf)' : score >= 50 ? 'var(--color-gold)' : 'var(--color-coral)'
+          }}>
+            {score >= 90 ? 'Fiel Mordomo 🏆' :
+             score >= 75 ? 'Sábio Gestor 🌟' :
+             score >= 60 ? 'Em Progresso 📈' :
+             score >= 40 ? 'Precisa Atenção ⚠️' :
+                           'Momento de Reflexão 🙏'}
+          </div>
         </div>
 
         <div className="animate-fade-in-up stagger-2" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

@@ -12,11 +12,11 @@ export default function Dividas() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newDebt, setNewDebt] = useState({ creditor_name: '', total_amount: '', due_date: '' });
 
-  const [showPayForm, setShowPayForm] = useState(null); // ID of debt being paid
+  const [showPayForm, setShowPayForm] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentAccount, setPaymentAccount] = useState('');
 
-  const [confirmDelete, setConfirmDelete] = useState(null); // ID of debt being confirmed for deletion
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const debts = state.dividas || [];
 
@@ -98,6 +98,17 @@ export default function Dividas() {
       </div>
 
       <BinthContextual page="dividas" />
+
+      {/* Biblical Principle Banner — Evitar Dívidas Excessivas */}
+      {debts.filter(d => d.status !== 'paid').length > 0 && (
+        <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-700/30 text-red-700 dark:text-red-400">
+          <span className="text-base flex-shrink-0">📖</span>
+          <div className="text-[12px] leading-relaxed">
+            <span className="font-bold">Evitar Dívidas Excessivas: </span>
+            A dívida é um peso que limita a tua liberdade. O objetivo é reduzir, não acumular. Prioriza a dívida com maior juro e põe um bocado extra nela cada mês.
+          </div>
+        </div>
+      )}
 
       {/* Add Debt Form */}
       {showAddForm && (

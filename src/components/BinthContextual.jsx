@@ -35,8 +35,17 @@ export default function BinthContextual({ page }) {
 
   if (!loading && !insight) return null;
 
+  const INSIGHT_BORDER = {
+    warning:     'rgba(245,158,11,0.4)',
+    opportunity: 'rgba(0,214,143,0.4)',
+    celebration: 'rgba(0,214,143,0.5)',
+    action:      'rgba(99,102,241,0.4)',
+    info:        'rgba(255,255,255,0.12)',
+  };
+  const borderColor = INSIGHT_BORDER[insight?.insight_type] || INSIGHT_BORDER.info;
+
   return (
-    <div className="glass-card p-4 border border-gold/20 relative overflow-hidden group">
+    <div className="glass-card p-4 relative overflow-hidden group" style={{ borderLeft: `3px solid ${borderColor}` }}>
       {/* Background Sparkle Effect */}
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
         <Sparkles size={48} className="text-gold" />
@@ -65,6 +74,21 @@ export default function BinthContextual({ page }) {
               <p className="text-sm dark:text-gray-200 leading-relaxed italic">
                 "{insight.message}"
               </p>
+
+              {/* ─ Biblical Insight ─ */}
+              {insight.biblical_insight && (
+                <div className="mt-2 flex items-start gap-1.5 text-[11px] text-amber-600 dark:text-amber-400">
+                  <span className="mt-px flex-shrink-0">&#128214;</span>
+                  <em className="opacity-90">{insight.biblical_insight}</em>
+                </div>
+              )}
+
+              {/* ─ Alert banner ─ */}
+              {insight.alerta && (
+                <div className="mt-2 text-[11px] font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 rounded-lg px-2.5 py-1.5">
+                  {insight.alerta}
+                </div>
+              )}
               
               <div className="mt-3 flex flex-wrap gap-2">
                 {insight.quick_actions?.map((action, i) => (
