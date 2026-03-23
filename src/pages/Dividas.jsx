@@ -10,7 +10,13 @@ export default function Dividas() {
   const currency = state.settings.currency || 'MT';
 
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newDebt, setNewDebt] = useState({ creditor_name: '', total_amount: '', due_date: '' });
+  const [newDebt, setNewDebt] = useState({ 
+    creditor_name: '', 
+    principal_amount: '', 
+    interest_rate: '', 
+    months: '', 
+    due_date: '' 
+  });
 
   const [showPayForm, setShowPayForm] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -26,20 +32,40 @@ export default function Dividas() {
 
   const handleAddDebt = (e) => {
     e.preventDefault();
-    if (!newDebt.creditor_name || !newDebt.total_amount) return;
+    if (!newDebt.creditor_name || !newDebt.principal_amount) return;
+
+    const principal = Number(newDebt.principal_amount);
+    const rate = Number(newDebt.interest_rate) / 100; // Transform from 20 to 0.20
+    const months = Number(newDebt.months);
+
+    // Calculate actual total using Price Table 
+    // M = P * i * (1+i)^n / ((1+i)^n - 1)
+    let parcela = 0;
+    let total = principal;
+
+    if (rate > 0 && months > 0) {
+      parcela = (principal * rate * Math.pow(1 + rate, months)) / (Math.pow(1 + rate, months) - 1);
+      total = parcela * months;
+    } else if (months > 0) {
+      parcela = principal / months;
+    }
 
     dispatch({
       type: 'ADD_DEBT',
       payload: {
         creditor_name: newDebt.creditor_name,
-        total_amount: Number(newDebt.total_amount),
-        remaining_amount: Number(newDebt.total_amount),
+        principal_amount: principal,
+        interest_rate: rate,
+        months_duration: months,
+        monthly_payment: parcela,
+        total_amount: Number(total.toFixed(2)),
+        remaining_amount: Number(total.toFixed(2)),
         due_date: newDebt.due_date,
         status: 'pending'
       }
     });
 
-    setNewDebt({ creditor_name: '', total_amount: '', due_date: '' });
+    setNewDebt({ creditor_name: '', principal_amount: '', interest_rate: '', months: '', due_date: '' });
     setShowAddForm(false);
   };
 
@@ -112,24 +138,62 @@ export default function Dividas() {
 
       {/* Add Debt Form */}
       {showAddForm && (
-        <div className="glass-card p-6 border border-gold/30 animate-fade-in-up">
-          <h3 className="font-semibold mb-4 text-lg">Registar Nova Dívida</h3>
-          <form onSubmit={handleAddDebt} className="grid grid-cols-1 md:grid-cols-3 gap-4 border-l-4 border-l-gold pl-4">
-            <div>
-              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide">Credor / Nome</label>
-              <input type="text" className="input" required value={newDebt.creditor_name} onChange={e => setNewDebt({ ...newDebt, creditor_name: e.target.value })} placeholder="Ex: Banco A, Familiar..." />
+        <div className="glass-card p-6 border border-gold/30 animate-fade-in-up mb-8 shadow-xl">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-semibold text-lg flex items-center gap-2"><span className="text-gold">✦</span> Registar Dívida / Empréstimo</h3>
+            <span className="text-xs px-2 py-1 bg-gold/10 text-gold rounded-full border border-gold/20 font-medium">BETA Calculator</span>
+          </div>
+          <form onSubmit={handleAddDebt} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 border-l-4 border-l-gold pl-4">
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">Credor / Banco / Familiar</label>
+              <input type="text" className="input bg-gray-50 dark:bg-[#0c1018]" required value={newDebt.creditor_name} onChange={e => setNewDebt({ ...newDebt, creditor_name: e.target.value })} placeholder="Ex: Millennium BIM, Amigo..." />
             </div>
+            
             <div>
-              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide">Valor Total</label>
-              <input type="number" className="input" required min="1" step="any" value={newDebt.total_amount} onChange={e => setNewDebt({ ...newDebt, total_amount: e.target.value })} placeholder="Valor da dívida" />
+              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">Valor Desembolsado (MT)</label>
+              <input type="number" className="input bg-gray-50 dark:bg-[#0c1018]" required min="1" step="any" value={newDebt.principal_amount} onChange={e => setNewDebt({ ...newDebt, principal_amount: e.target.value })} placeholder="Capital principal recebido" />
             </div>
+
             <div>
-              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide">Data Limite (Opcional)</label>
-              <input type="date" className="input" value={newDebt.due_date} onChange={e => setNewDebt({ ...newDebt, due_date: e.target.value })} />
+              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">Data Limite ou Início</label>
+              <input type="date" className="input bg-gray-50 dark:bg-[#0c1018]" value={newDebt.due_date} onChange={e => setNewDebt({ ...newDebt, due_date: e.target.value })} />
             </div>
-            <div className="md:col-span-3 flex justify-end gap-3 mt-2">
-              <button type="button" className="btn bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300" onClick={() => setShowAddForm(false)}>Cancelar</button>
-              <button type="submit" className="btn btn-primary">Adicionar Dívida</button>
+
+            {/* Smart Credit Fields */}
+            <div>
+              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">Taxa Juro Mensal (%)</label>
+              <input type="number" className="input bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 focus:border-blue-500" step="any" min="0" value={newDebt.interest_rate} onChange={e => setNewDebt({ ...newDebt, interest_rate: e.target.value })} placeholder="Ex: 18 para 18%" />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">Prazo / Duração (Meses)</label>
+              <input type="number" className="input bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 focus:border-blue-500" step="1" min="0" value={newDebt.months} onChange={e => setNewDebt({ ...newDebt, months: e.target.value })} placeholder="Número de parcelas" />
+            </div>
+
+            {/* Live Calculation Preview */}
+            {(newDebt.principal_amount && newDebt.interest_rate > 0 && newDebt.months > 0) && (
+              <div className="md:col-span-2 mt-2 p-4 rounded-xl bg-gray-50 dark:bg-[#101620] border border-gray-200 dark:border-white/10">
+                <div className="text-xs text-muted font-bold tracking-widest uppercase mb-3">Simulação do Empréstimo</div>
+                <div className="flex gap-6">
+                  <div>
+                    <div className="text-[10px] text-gray-500">Parcela Price Estimada</div>
+                    <div className="font-bold text-lg text-blue-600 dark:text-blue-400">
+                      MT {fmt( (Number(newDebt.principal_amount) * (Number(newDebt.interest_rate)/100) * Math.pow(1+(Number(newDebt.interest_rate)/100), Number(newDebt.months))) / (Math.pow(1+(Number(newDebt.interest_rate)/100), Number(newDebt.months)) - 1) )} <span className="text-xs font-normal text-muted">/mês</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-gray-500">Custo Total (Dívida Global)</div>
+                    <div className="font-bold text-lg text-red-500">
+                      MT {fmt( ((Number(newDebt.principal_amount) * (Number(newDebt.interest_rate)/100) * Math.pow(1+(Number(newDebt.interest_rate)/100), Number(newDebt.months))) / (Math.pow(1+(Number(newDebt.interest_rate)/100), Number(newDebt.months)) - 1)) * Number(newDebt.months) )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="md:col-span-2 flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-white/5">
+              <button type="button" className="btn bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-6" onClick={() => setShowAddForm(false)}>Cancelar</button>
+              <button type="submit" className="btn bg-gradient-to-r from-gold to-yellow-600 border-none text-black font-bold px-8 shadow-lg shadow-gold/20">Gravar Dívida</button>
             </div>
           </form>
         </div>
