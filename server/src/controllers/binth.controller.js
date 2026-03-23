@@ -108,42 +108,78 @@ const getScore = async (req, res) => {
     let score = 0;
     const factors = [];
 
-    // 1. Savings rate (max 25 pts)
+    // 1. Savings rate (max 25 pts) — Poupança e Proteção
     const savingsRate = receitas > 0 ? excedente / receitas : 0;
     const savingsPts = Math.min(25, Math.round(savingsRate * 125));
     score += Math.max(0, savingsPts);
-    factors.push({ name: 'Taxa de poupança', pts: Math.max(0, savingsPts), max: 25, value: `${Math.round(savingsRate * 100)}%` });
+    factors.push({
+      name: 'Taxa de poupança',
+      pts: Math.max(0, savingsPts),
+      max: 25,
+      value: `${Math.round(savingsRate * 100)}%`,
+      biblical_principle: 'Poupança e Proteção'
+    });
 
-    // 2. Budget control (max 25 pts)
+    // 2. Budget control (max 25 pts) — Planeamento e Sabedoria
     const overBudget = budgets.filter(b => b.spent > b.limit_amount).length;
     const budgetPts = Math.max(0, 25 - overBudget * 8);
     score += budgetPts;
-    factors.push({ name: 'Controlo de orçamento', pts: budgetPts, max: 25, value: overBudget > 0 ? `${overBudget} categorias excedidas` : 'Tudo dentro do orçamento' });
+    factors.push({
+      name: 'Controlo de orçamento',
+      pts: budgetPts,
+      max: 25,
+      value: overBudget > 0 ? `${overBudget} categorias excedidas` : 'Tudo dentro do orçamento',
+      biblical_principle: 'Planeamento e Sabedoria'
+    });
 
-    // 3. Goals progress (max 20 pts)
+    // 3. Goals progress (max 20 pts) — Fidelidade no Pouco
     const avgGoalPct = goals.length > 0
       ? goals.reduce((s, g) => s + ((g.saved_amount || 0) / (g.target_amount || 1)), 0) / goals.length
       : 0;
     const goalPts = Math.round(avgGoalPct * 20);
     score += goalPts;
-    factors.push({ name: 'Progresso nas metas', pts: goalPts, max: 20, value: `${Math.round(avgGoalPct * 100)}% em média` });
+    factors.push({
+      name: 'Progresso nas metas',
+      pts: goalPts,
+      max: 20,
+      value: `${Math.round(avgGoalPct * 100)}% em média`,
+      biblical_principle: 'Fidelidade no Pouco'
+    });
 
-    // 4. Debt to income (max 20 pts)
+    // 4. Debt to income (max 20 pts) — Evitar Dívidas Excessivas
     const annualIncome = receitas * 12;
     const debtToIncome = annualIncome > 0 ? totalDebts / annualIncome : 0;
     const debtPts = debtToIncome > 3 ? 0 : debtToIncome > 1.5 ? 10 : Math.round(20 - debtToIncome * 6);
     score += Math.max(0, debtPts);
-    factors.push({ name: 'Rácio dívida/rendimento', pts: Math.max(0, debtPts), max: 20, value: `${debtToIncome.toFixed(1)}x rendimento anual` });
+    factors.push({
+      name: 'Rácio dívida/rendimento',
+      pts: Math.max(0, debtPts),
+      max: 20,
+      value: `${debtToIncome.toFixed(1)}x rendimento anual`,
+      biblical_principle: 'Evitar Dívidas Excessivas'
+    });
 
-    // 5. Xitique / community (max 10 pts)
+    // 5. Xitique / community (max 10 pts) — Generosidade
     const xitiquePts = xitique ? 10 : 0;
     score += xitiquePts;
-    factors.push({ name: 'Poupança comunitária', pts: xitiquePts, max: 10, value: xitique ? 'Xitique activo ✦' : 'Sem grupo activo' });
+    factors.push({
+      name: 'Poupança comunitária',
+      pts: xitiquePts,
+      max: 10,
+      value: xitique ? 'Xitique activo ✦' : 'Sem grupo activo',
+      biblical_principle: 'Generosidade'
+    });
 
     const finalScore = Math.min(100, Math.max(0, score));
     const label = finalScore >= 90 ? 'Perfeito' : finalScore >= 75 ? 'Excelente' : finalScore >= 60 ? 'Bom' : finalScore >= 40 ? 'A melhorar' : 'Crítico';
+    const biblical_label =
+      finalScore >= 90 ? 'Fiel Mordomo 🏆' :
+      finalScore >= 75 ? 'Sábio Gestor 🌟' :
+      finalScore >= 60 ? 'Em Progresso 📈' :
+      finalScore >= 40 ? 'Precisa Atenção ⚠️' :
+                         'Momento de Reflexão 🙏';
 
-    res.json({ score: finalScore, label, factors });
+    res.json({ score: finalScore, label, biblical_label, factors });
 
   } catch (err) {
     console.error('[Binth Score Error]', err.message);

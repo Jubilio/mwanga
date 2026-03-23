@@ -5,35 +5,66 @@ const logger = require('../utils/logger');
 
 // ─── System Prompt ─────────────────────────────────────────────────────────────
 const BINTH_SYSTEM_PROMPT = `
-Esas a Binth — a alma e inteligência financeira do Mwanga.
+És a Binth — a mentora inteligente de gestão financeira do Mwanga (NEXO VIBE).
 
 PERSONA:
 - Género: Feminino.
-- Tom: Empática, pedagógica e extremamente competente.
-- Estilo: Nunca respondas como um bot. Trata o utilizador pelo nome. Usa gírias financeiras de Moçambique quando apropriado (ex: "fazer um xitique", "poupar para o refresco").
-- Saudações: Começa sempre com uma saudação personalizada (ex: "Olá [Nome]!"). Se vires um progresso positivo (ex: 10% de uma meta), menciona-o logo no início.
+- Tom: Mentora sábia, empática, prática e humana. Estilo fintech premium.
+- Estilo: Nunca respondas como um bot. Trata o utilizador pelo nome. Usa expressões financeiras moçambicanas quando adequado (ex: "xitique", "pé de meia", "refresco").
+- Saudações: Começa sempre com uma saudação personalizada. Se houver progresso positivo nos dados (ex: meta em crescimento), menciona-o logo no início.
 
-CONHECIMENTO (CONTEXTO REAL):
+CONHECIMENTO (CONTEXTO REAL DO UTILIZADOR):
 {user_context}
 
+PRINCÍPIOS BÍBLICOS DE GESTÃO FINANCEIRA (a tua base de sabedoria):
+Usa estes princípios para interpretar os dados e gerar insights. Aplica-os de forma natural, prática e sem pregação:
+
+1. MORDOMIA (Stewardship) — O utilizador é gestor dos recursos, não dono. Usa os recursos com responsabilidade.
+2. PLANEAMENTO E SABEDORIA — Decisões financeiras devem ser intencionais, planeadas e baseadas em dados reais.
+3. POUPANÇA E PROTEÇÃO — Guardar recursos para o futuro é prudente e necessário ("O sábio guarda para o amanhã").
+4. EVITAR DÍVIDAS EXCESSIVAS — Dívidas devem ser controladas e estratégicas; dependência de crédito é um risco.
+5. GENEROSIDADE — Dar e partilhar (Xitique, comunidade) faz parte de uma vida financeira equilibrada e saudável.
+6. CONTENTAMENTO — Evitar consumismo e comparação; focar no que é essencial e suficiente.
+7. FIDELIDADE NO POUCO — Pequenas decisões e hábitos diários impactam profundamente o futuro financeiro.
+
 INSTRUÇÕES DE RACIOCÍNIO:
-1. Analisa sempre o contexto financeiro antes de responder.
+1. Analisa o contexto financeiro real antes de responder.
 2. Integra o nome do utilizador de forma natural.
-3. Se o utilizador fizer uma saudação, responde calorosamente e faz uma observação sobre os dados dele.
-4. Nunca dês conselhos genéricos quando o contexto mostrar um problema concreto. Prioriza sempre o maior risco ou a melhor oportunidade do utilizador neste momento.
-5. Quando houver pressão financeira, diz claramente qual é a prioridade número um e qual a próxima ação prática nas próximas 24-72 horas.
-6. Quando estiver tudo estável, reconhece o progresso com base em números reais e sugere o próximo avanço realista.
-7. Sempre que fizer sentido, referencia categorias, metas, dívidas, meios de pagamento ou tendências recentes do próprio utilizador.
+3. Se o utilizador fizer uma saudação, responde calorosamente e faz uma observação concreta sobre os seus dados.
+4. Nunca dês conselhos genéricos quando existir um problema específico nos dados. Prioriza sempre o maior risco ou a melhor oportunidade neste momento.
+5. Quando houver pressão financeira, identifica claramente a prioridade número um e uma ação prática para as próximas 24-72 horas.
+6. Quando estiver tudo estável, reconhece o progresso com números reais e sugere o próximo avanço realista.
+7. Aplica o princípio bíblico mais relevante para a situação — mencionando-o de forma sutil e inspiradora, nunca religiosa.
 8. Responde SEMPRE em JSON puro.
 
-FORMATO DE RESPOSTA:
+FORMATO DE RESPOSTA (JSON obrigatório):
 {
-  "message": "A tua mensagem aqui",
+  "message": "A tua mensagem principal — clara, empática, prática",
   "insight_type": "warning | opportunity | info | celebration | action",
-  "quick_actions": ["Verificar orçamento", "Assinar para receber atualizações", "Ver mais"],
-  "data": {} 
+  "biblical_insight": "Princípio aplicado: [nome do princípio] — [1 frase inspiradora e prática]",
+  "alerta": "⚠️ Mensagem de alerta SE existir risco real, senão null",
+  "quick_actions": ["Ação 1", "Ação 2", "Ação 3"],
+  "data": {}
 }
+
+REGRAS IMPORTANTES:
+- NÃO pregues — orientas e aconselhes
+- NÃO uses linguagem religiosa excessiva
+- Foca sempre no impacto prático real
+- Sê direta, clara e humana
+- Tom: mentor financeiro sábio numa fintech premium
 `.trim();
+
+// ─── Biblical Principles Map ────────────────────────────────────────────────────
+const BIBLICAL_PRINCIPLES = {
+  mordomia:      { name: 'Mordomia',              insight: 'Somos gestores dos recursos que temos — usá-los bem é honrar o que nos foi confiado.' },
+  planeamento:   { name: 'Planeamento e Sabedoria', insight: 'O sábio planeia antes de agir. Decisões financeiras intencionais constroem o futuro.' },
+  poupanca:      { name: 'Poupança e Proteção',    insight: 'Guardar para o amanhã é sabedoria. O pé de meia de hoje é a liberdade do futuro.' },
+  divida:        { name: 'Evitar Dívidas Excessivas', insight: 'A dívida é um peso — reduzí-la é reconquistar a tua liberdade financeira.' },
+  generosidade:  { name: 'Generosidade',            insight: 'Quem partilha (Xitique, família, comunidade) cultiva uma vida financeira mais rica e equilibrada.' },
+  contentamento: { name: 'Contentamento',           insight: 'A riqueza real começa por saber o que é suficiente. Evita comparações — foca no teu caminho.' },
+  fidelidade:    { name: 'Fidelidade no Pouco',     insight: 'As pequenas decisões de hoje moldam o grande impacto de amanhã. Cada MT conta.' }
+};
 
 // ─── Financial Context Builder ─────────────────────────────────────────────────
 function buildPrioritySummary({
@@ -58,7 +89,8 @@ function buildPrioritySummary({
       priority: 'recuperar liquidez imediata',
       reason: `o teu saldo disponível (MT ${cashAvailable.toLocaleString('pt-MZ')}) é crítico para o teu ritmo de gastos`,
       nextAction: 'segurar todas as saídas não essenciais hoje e focar no básico (comida/água/renda)',
-      insight_type: 'warning'
+      insight_type: 'warning',
+      biblical_principle: BIBLICAL_PRINCIPLES.fidelidade
     };
   }
 
@@ -69,7 +101,8 @@ function buildPrioritySummary({
       priority: 'travar hemorragia financeira',
       reason: `estás a gastar ${Math.round((monthlyExpenses / monthlyIncome) * 100)}% do que ganhas — isto é insustentável`,
       nextAction: 'identificar a categoria principal do excesso e cortar 20% do orçamento nela já',
-      insight_type: 'warning'
+      insight_type: 'warning',
+      biblical_principle: BIBLICAL_PRINCIPLES.planeamento
     };
   }
 
@@ -80,7 +113,8 @@ function buildPrioritySummary({
       priority: 'desenhar plano de saída de dívida',
       reason: `a tua dívida total equivale a ${(debtToIncomeRatio).toFixed(1)} anos de rendimento líquido`,
       nextAction: 'não contrair novos créditos e focar na amortização extra da dívida com maior juro',
-      insight_type: 'warning'
+      insight_type: 'warning',
+      biblical_principle: BIBLICAL_PRINCIPLES.divida
     };
   }
 
@@ -91,7 +125,8 @@ function buildPrioritySummary({
       priority: 'regularizar habitação',
       reason: `tens ${pendingHousing} pendência(s) de habitação que podem gerar multas`,
       nextAction: 'priorizar o pagamento do aluguer/prestação antes de qualquer outra conta',
-      insight_type: 'warning'
+      insight_type: 'warning',
+      biblical_principle: BIBLICAL_PRINCIPLES.mordomia
     };
   }
 
@@ -102,7 +137,8 @@ function buildPrioritySummary({
       priority: 'corrigir orçamentos excedidos',
       reason: `${overdueBudgets.length} categoria(s) já ultrapassaram o limite definido`,
       nextAction: `rever gastos em ${overdueBudgets[0].category} e compensar noutra categoria`,
-      insight_type: 'warning'
+      insight_type: 'warning',
+      biblical_principle: BIBLICAL_PRINCIPLES.contentamento
     };
   }
 
@@ -113,7 +149,8 @@ function buildPrioritySummary({
       priority: 'acelerar a meta ' + topGoal.name,
       reason: `tens liquidez estável e a meta ${topGoal.name} está em ${topGoal.progress}%`,
       nextAction: `transferir MT ${Math.round(cashAvailable * 0.1).toLocaleString('pt-MZ')} extra para esta meta agora`,
-      insight_type: 'opportunity'
+      insight_type: 'opportunity',
+      biblical_principle: BIBLICAL_PRINCIPLES.poupanca
     };
   }
 
@@ -124,7 +161,8 @@ function buildPrioritySummary({
       priority: 'rever sinais do sistema',
       reason: `existem ${unreadNotifications} notificações por ler que podem conter alertas importantes`,
       nextAction: 'abrir o painel de notificações para garantir que não perdemos prazos',
-      insight_type: 'info'
+      insight_type: 'info',
+      biblical_principle: BIBLICAL_PRINCIPLES.planeamento
     };
   }
 
@@ -136,7 +174,8 @@ function buildPrioritySummary({
       priority: isWealthy ? 'expandir património' : 'construir património a longo prazo',
       reason: isWealthy ? 'tens um balanço patrimonial muito forte' : 'estás com um excedente saudável e reserva de emergência sólida',
       nextAction: isWealthy ? 'considerar diversificar investimentos em novos activos' : 'explorar novos activos ou reforçar o teu pé de meia para o futuro',
-      insight_type: isWealthy ? 'celebration' : 'opportunity'
+      insight_type: isWealthy ? 'celebration' : 'opportunity',
+      biblical_principle: BIBLICAL_PRINCIPLES.generosidade
     };
   }
 
@@ -145,11 +184,22 @@ function buildPrioritySummary({
     priority: 'manter o registo disciplinado',
     reason: 'os teus dados mostram uma operação regular sob controlo',
     nextAction: 'garantir que todas as pequenas transações do dia estão no Mwanga',
-    insight_type: 'info'
+    insight_type: 'info',
+    biblical_principle: BIBLICAL_PRINCIPLES.mordomia
   };
 }
 
 function formatUserContextText(context) {
+  const savingsRate = context.monthlyIncome > 0
+    ? Math.round(((context.monthlyIncome - context.monthlyExpenses) / context.monthlyIncome) * 100)
+    : 0;
+  const debtToIncomeRatio = context.monthlyIncome > 0
+    ? (context.debtTotal / (context.monthlyIncome * 12)).toFixed(1)
+    : 'N/A';
+  const biblicalPrinciple = context.priority.biblical_principle
+    ? `${context.priority.biblical_principle.name}: ${context.priority.biblical_principle.insight}`
+    : 'Mordomia: Usa os recursos com sabedoria e responsabilidade.';
+
   return `
 NOME DO UTILIZADOR: ${context.userName}
 
@@ -157,8 +207,10 @@ NOME DO UTILIZADOR: ${context.userName}
 RECEITAS DO MÊS: MT ${context.format(context.monthlyIncome)}
 DESPESAS DO MÊS: MT ${context.format(context.monthlyExpenses)}
 SALDO LÍQUIDO DO MÊS: MT ${context.format(context.netMonth)}
+TAXA DE POUPANÇA DO MÊS: ${savingsRate}%
 SALDOS DISPONÍVEIS: MT ${context.format(context.cashAvailable)}
 BALANÇO PATRIMONIAL: Activos MT ${context.format(context.assetsTotal)} | Dívidas MT ${context.format(context.debtTotal)}
+RÁCIO DÍVIDA/RENDIMENTO ANUAL: ${debtToIncomeRatio}x
 HABITAÇÃO EM ABERTO: ${context.pendingHousing}
 NOTIFICAÇÕES NÃO LIDAS: ${context.unreadNotifications}
 
@@ -166,6 +218,7 @@ NOTIFICAÇÕES NÃO LIDAS: ${context.unreadNotifications}
 PRIORIDADE: ${context.priority.priority}
 PORQUÊ: ${context.priority.reason}
 PRÓXIMA AÇÃO: ${context.priority.nextAction}
+PRINCÍPIO BÍBLICO APLICADO: ${biblicalPrinciple}
 
 ÚLTIMAS TRANSAÇÕES:
 ${context.recentTx.map(t => `- [${t.date}] ${t.description}: MT ${context.format(t.amount)} (${t.type === 'receita' ? '+' : '-'}) [${t.category}]`).join('\n') || '- Nenhuma transação recente.'}
@@ -493,39 +546,57 @@ const BINTH_INTENT_RULES = {
 
 const BINTH_EXPERT_RULES = {
   emergency_liquidity: {
-    message: "Olá {name}, detectei que o teu caixa disponível está muito baixo (MT {cash}) para o teu nível de despesas. A minha prioridade número 1 para ti hoje é proteger a tua liquidez imediata. Precisamos de 'fechar o xitique' em gastos supérfluos até o saldo recuperar.",
+    message: "Olá {name}, o teu caixa disponível (MT {cash}) está num nível crítico para o teu ritmo de despesas. A prioridade número 1 agora é proteger a tua liquidez — fecha os gastos não essenciais até o saldo recuperar. Lembra: gerir bem o pouco que tens hoje é o que vai abrir mais espaço amanhã.",
+    biblical_insight: "Fidelidade no Pouco: As pequenas decisões de hoje moldam o grande impacto de amanhã. Cada MT conta.",
+    alerta: "⚠️ Saldo crítico — risco de não cobrir despesas essenciais nos próximos dias.",
     actions: ["Verificar contas", "Analisar gastos", "Pôr meta de poupança"]
   },
   severe_overbudget: {
-    message: "Atenção {name}! Este mês os teus gastos já chegaram a {pct}% do teu rendimento. Estamos a entrar em terreno de risco. Sugiro que revejas imediatamente os teus orçamentos mais pesados hoje.",
+    message: "Atenção {name}! Este mês os teus gastos estão em {pct}% do teu rendimento — estamos em terreno de risco real. Antes de qualquer nova saída, precisa de rever os orçamentos mais pesados e fazer cortes imediatos. Planear é o que separa quem sobrevive do mês de quem o domina.",
+    biblical_insight: "Planeamento e Sabedoria: Decisões financeiras intencionais constroem o futuro. O sábio revê o plano antes que o problema aumente.",
+    alerta: "⚠️ Despesas acima de 120% do rendimento — risco de dependência de crédito em breve.",
     actions: ["Ver Orçamentos", "Categorias Críticas", "Dicas de Corte"]
   },
   debt_pressure: {
-    message: "Olá {name}. Notei que o teu rácio de dívida está elevado em relação ao que ganhas (MT {debts} no total). Vamos respirar fundo e focar num plano de amortização acelerada para aliviar esta pressão.",
+    message: "Olá {name}. O teu rácio de dívida está elevado — MT {debts} no total, o que representa uma pressão real sobre o teu rendimento mensal. Vamos criar um plano de amortização acelerada para sair deste ciclo. A liberdade financeira começa por reduzir aquilo que te prende.",
+    biblical_insight: "Evitar Dívidas Excessivas: A dívida é um peso — reduzi-la é reconquistar a tua liberdade financeira, passo a passo.",
+    alerta: "⚠️ Risco de dependência de crédito — evita contrair novos empréstimos neste momento.",
     actions: ["Plano de Dívida", "Amortizar Agora", "Ver Simuladores"]
   },
   housing_pending: {
-    message: "Manter o tecto seguro é sagrado, {name}. Tens pendências na habitação que precisam de ser fechadas para evitar juros ou problemas maiores. Vamos tratar disso primeiro?",
+    message: "{name}, tens pendências na habitação que precisam de ser resolvidas com urgência. O tecto sobre a tua cabeça é a base de tudo — protegê-lo é uma responsabilidade de boa gestão. Vamos tratar disso primeiro, antes de qualquer outra conta.",
+    biblical_insight: "Mordomia: Somos gestores dos recursos que temos. Garantir o essencial primeiro é honrar essa responsabilidade.",
+    alerta: "⚠️ Habitação em atraso — risco de multas ou problemas legais se não regularizado.",
     actions: ["Pagar Renda/Prestação", "Ver Habitação", "Calcular Atrasos"]
   },
   budget_leaks: {
-    message: "{name}, alguns dos teus orçamentos ('{cat}') furaram as metas este mês. Ainda vamos a tempo de equilibrar o barco se fizermos ajustes noutras áreas nos próximos dias.",
+    message: "{name}, a categoria '{cat}' ultrapassou o limite definido este mês. Ainda estamos a tempo de equilibrar — pequenos ajustes noutras áreas nos próximos dias podem fazer toda a diferença. O contentamento é escolher o essencial em vez de ceder a todos os impulsos.",
+    biblical_insight: "Contentamento: A riqueza real começa por saber o que é suficiente. Cada limite de orçamento é uma escolha consciente.",
+    alerta: null,
     actions: ["Ver Categoria {cat}", "Ajustar Limites", "Resumo do Mês"]
   },
   goal_accelerator: {
-    message: "Grandes notícias, {name}! As tuas finanças estão estáveis e o teu objectivo '{goal}' já vai em {pct}%. Tens espaço para dar um empurrão extra hoje e chegar lá mais cedo.",
+    message: "Excelente, {name}! As tuas finanças estão estáveis e o objectivo '{goal}' já vai em {pct}%. Este é o momento certo para dar um empurrão extra e chegar lá mais depressa. Guardar para o amanhã enquanto tens margem hoje — esse é o habito dos que alcançam os seus sonhos.",
+    biblical_insight: "Poupança e Proteção: O pé de meia de hoje é a liberdade do futuro. Aproveita a estabilidade para reforçar as tuas metas.",
+    alerta: null,
     actions: ["Reforçar {goal}", "Ver Progresso", "Novas Metas"]
   },
   unread_alerts: {
-    message: "Olá {name}! Tens notificações importantes por ler que podem mudar a tua estratégia para hoje. Dá uma olhadela rápida para estarmos sintonizados.",
+    message: "Olá {name}! Tens notificações importantes por ler que podem mudar a tua estratégia financeira. Quem está informado toma melhores decisões — dá uma olhadela rápida para estarmos alinhados.",
+    biblical_insight: "Planeamento e Sabedoria: O sábio mantém-se informado antes de agir. Ignorar alertas é perder oportunidade de corrigir a tempo.",
+    alerta: null,
     actions: ["Ler Notificações", "Dashboard", "Ajuda"]
   },
   stability_celebration: {
-    message: "Parabéns, {name}! Estás numa fase de excelente equilíbrio financeiro com MT {cash} de base disponível. Este é o momento ideal para pensar em investimentos ou aumentar o teu património.",
+    message: "Parabéns, {name}! Estás numa fase de excelente equilíbrio financeiro — MT {cash} disponível, despesas controladas, activos a crescer. Este é o momento perfeito para pensar em investimentos ou em como partilhar o teu excedente de forma significativa.",
+    biblical_insight: "Generosidade: Quem alcança o equilíbrio tem a oportunidade única de impactar a sua comunidade — Xitique, família, e além.",
+    alerta: null,
     actions: ["Simular Investimento", "Ver Património", "Consultar Estratégia"]
   },
   generic_maintenance: {
-    message: "Olá {name}, tudo parece estar em ordem. Para mantermos esta clareza, tenta garantir que todos os teus últimos movimentos estão registados. O que queres analisar agora?",
+    message: "Olá {name}, os teus dados mostram uma operação regular e controlada — isso é bom! Para manter esta clareza, garante que todos os movimentos do dia estão registados. Ser fiel no registo do que tens é o primeiro passo para crescer.",
+    biblical_insight: "Mordomia: Gerir bem o que temos — registando, acompanhando, decidindo — é a base de qualquer crescimento financeiro.",
+    alerta: null,
     actions: ["Registar Transação", "Ver Relatórios", "Falar com Binth"]
   }
 };
@@ -589,9 +660,14 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
     .replace(/{debt_priority_msg}/g, debtPriorityMsg)
     .replace(/{debt_msg}/g, debtPriorityMsg);
 
+  const biblicalPrinciple = priority.biblical_principle || null;
+
   return {
     message: finalMessage.trim(),
     insight_type: intentMatched ? "action" : (priority.insight_type || "info"),
+    biblical_insight: selectedRule.biblical_insight
+      || (biblicalPrinciple ? `${biblicalPrinciple.name}: ${biblicalPrinciple.insight}` : null),
+    alerta: selectedRule.alerta || null,
     quick_actions: (selectedRule.actions || []).map(a => 
       a.replace(/{goal}/g, topGoal)
        .replace(/{top_goal}/g, topGoal)
@@ -600,6 +676,7 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
     data: {
       priority: priority.priority,
       reason: priority.reason,
+      biblical_principle: biblicalPrinciple?.name || null,
       intent_matched: intentMatched,
       local_intelligence: true
     }
