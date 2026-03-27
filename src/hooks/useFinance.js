@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { FinanceContext } from './useFinanceStore';
+import { FinanceContext } from './FinanceContext';
 
 export function useFinance() {
   const context = useContext(FinanceContext);

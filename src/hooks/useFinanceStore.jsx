@@ -1,4 +1,5 @@
-import { createContext, useReducer, useEffect } from 'react';
+import { useReducer, useEffect } from 'react';
+import { FinanceContext } from './FinanceContext';
 import { generateDemoData } from '../utils/calculations';
 
 // Define the API Base URL
@@ -169,7 +170,6 @@ function reducer(state, action) {
   }
 }
 
-export const FinanceContext = createContext(null);
 
 export function FinanceProvider({ children }) {
   const storedDarkMode = localStorage.getItem('mwanga-dark');
