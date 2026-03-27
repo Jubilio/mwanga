@@ -28,15 +28,18 @@
 
   --font-display: "Playfair Display", Georgia, serif;
   --font-body: "DM Sans", system-ui, sans-serif;
+
+  /* Custom Breakpoints */
+  --breakpoint-xs: 375px;
 }
 
 .dark {
-  --color-glass-border: rgba(255, 255, 255, 0.08);
-  --color-glass-bg: rgba(26, 39, 53, 0.7);
-  --color-surface: #1a2735;
+  --color-glass-border: rgba(255, 255, 255, 0.05); /* Softer borders */
+  --color-glass-bg: rgba(16, 28, 42, 0.65); /* Deeper glass background */
+  --color-surface: #121c26; /* Premium surface */
   --color-border: rgba(255, 255, 255, 0.08);
-  --color-cream: #0c1821;
-  --color-text: #e2e8f0;
+  --color-cream: #0a1926; /* Deep Navy/Black background */
+  --color-text: #f8fafc; /* Sharper white for high contrast readablity */
   --color-muted: #94a3b8;
 }
 
@@ -280,6 +283,105 @@ textarea {
 
 .dark .glass-card:hover {
   border-color: rgba(201, 150, 58, 0.2);
+}
+
+/* ═══ Global Design Utilities ═══ */
+
+/* Glassmorphism Variations */
+.glass-sm {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid var(--color-glass-border);
+}
+
+.glass-md {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--color-glass-border);
+}
+
+.glass-lg {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-glass-border);
+}
+
+.glass-dark {
+  background: rgba(10, 25, 38, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-light {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Subtle Interactions */
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+.active-press {
+  transition: transform 0.1s ease;
+}
+
+.active-press:active {
+  transform: scale(0.96);
+}
+
+.click-feedback {
+  position: relative;
+  overflow: hidden;
+}
+
+.click-feedback::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.5s ease, opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.click-feedback:active::after {
+  transform: translate(-50%, -50%) scale(2);
+  opacity: 1;
+  transition: 0s;
+}
+
+.tap-highlight-none {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Premium Gradients */
+.bg-premium-gradient {
+  background: linear-gradient(135deg, var(--color-midnight) 0%, #12232e 100%);
+}
+
+.bg-premium-gold {
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-deep) 100%);
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-deep) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* ═══ Premium Badge ═══ */

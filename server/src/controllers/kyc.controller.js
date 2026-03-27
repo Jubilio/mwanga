@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { z } = require('zod');
+const { logAction } = require('../utils/audit');
 
 const uploadDocumentSchema = z.object({
   documentType: z.enum(['bi_frente', 'bi_verso', 'selfie', 'comprovativo_residencia', 'comprovativo_rendimento', 'other']),
@@ -62,6 +63,9 @@ const uploadDocument = async (req, res, next) => {
     }
 
     logger.info(`Document ${documentType} uploaded for user ${userId}`);
+
+    await logAction(userId, 'KYC_UPLOAD', 'KYC_DOCUMENT', documentType);
+
     res.status(201).json({ message: 'Documento enviado com sucesso', documentUrl });
   } catch (error) {
     if (error instanceof z.ZodError) {

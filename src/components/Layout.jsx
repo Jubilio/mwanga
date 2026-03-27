@@ -6,11 +6,20 @@ import {
   Landmark, BarChart3, Crown, Brain, Bell, CreditCard, Sparkles, Info
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
-import { getCurrentMonthLabel } from '../utils/calculations';
 import api from '../utils/api';
 import Toast, { useToast } from './Toast';
 import Sidebar from './layout/Sidebar';
 import CustomCursor from './CustomCursor';
+import { AnimatePresence, motion } from 'framer-motion';
+
+
+const bottomNavItems = [
+  { to: '/', icon: LayoutDashboard, label: 'Home' },
+  { to: '/transacoes', icon: ArrowRightLeft, label: 'Transações' },
+  { to: '/xitique', icon: Wallet, label: 'Xitique' },
+  { to: '/credito', icon: CreditCard, label: 'Crédito' },
+  { to: '/insights', icon: Brain, label: 'Binth' },
+];
 
 const navItems = [
   // GESTÃO FINANCEIRA
@@ -162,17 +171,19 @@ export default function Layout() {
 
         {/* ═══ MOBILE HEADER & CONTENT ═══ */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
-          <header className="sticky top-0 z-40 bg-white/75 dark:bg-black/75 backdrop-blur-xl border-bottom px-4 py-4 md:px-6 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <button className="hide-desktop p-2" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-                <Menu size={24} />
+          <header className="sticky top-0 z-40 bg-white/70 dark:bg-midnight/80 backdrop-blur-3xl border-b border-white/10 py-3 px-5 flex items-center justify-between transition-all">
+            <div className="flex items-center gap-3 min-w-0">
+              <button 
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="w-10 h-10 rounded-2xl bg-gradient-to-br from-ocean to-sky flex items-center justify-center shadow-lg shadow-ocean/20 text-white font-bold shrink-0 hover:scale-105 active:scale-95 transition-transform"
+              >
+                {state.user?.name?.charAt(0) || 'M'}
               </button>
-              <div className="min-w-0">
-                <div className="text-[10px] text-gray-500 uppercase tracking-[0.22em] mb-1">Mwanga Workspace</div>
-                <h1 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white leading-tight break-words">
+              <div className="min-w-0 flex flex-col justify-center">
+                <span className="text-[9px] uppercase tracking-[0.2em] text-gray-400 font-black">Mwanga Finance</span>
+                <span className="text-midnight dark:text-white font-extrabold text-base truncate leading-tight">
                   {currentTitle}
-                </h1>
-                <p className="text-[10px] text-gray-500 uppercase tracking-widest">{getCurrentMonthLabel()}</p>
+                </span>
               </div>
             </div>
 
@@ -193,30 +204,43 @@ export default function Layout() {
             </div>
           </header>
 
-          <main className="p-4 md:p-8 w-full flex-1 pb-24 md:pb-8 flex flex-col pt-6 max-w-full overflow-hidden">
-            <Outlet context={{ showToast }} />
+          <main className="w-full flex-1 pb-24 md:pb-8 flex flex-col max-w-full overflow-hidden bg-cream dark:bg-[#0a1926]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                className="w-full flex-1 flex flex-col p-4 md:p-8 pt-6"
+              >
+                <Outlet context={{ showToast }} />
+              </motion.div>
+            </AnimatePresence>
           </main>
         </div>
       </div>
 
       {/* ═══ MOBILE BOTTOM NAV ═══ */}
-      <nav className="hide-desktop fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-t border-black/5 dark:border-white/5 flex justify-around p-2 pt-3 pb-6 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        {navItems.slice(0, 5).map(item => (
+      <nav className="hide-desktop fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-[#0a1926]/90 backdrop-blur-2xl border-t border-black/5 dark:border-white/5 flex justify-around p-2 pt-3 pb-6 z-50">
+        {bottomNavItems.map(item => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.to === '/'}
-            className={({ isActive }) => `flex flex-col items-center gap-1 ${isActive ? 'text-ocean' : 'text-gray-400'}`}
+            className={({ isActive }) => `flex flex-col items-center gap-1 transition-all ${isActive ? 'text-ocean dark:text-sky scale-110' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
           >
-            <item.icon size={20} />
-            <span className="text-[10px] font-medium">{item.label}</span>
+            {({ isActive }) => (
+              <>
+                <div className={`relative p-2 rounded-2xl ${isActive ? 'bg-ocean/10 dark:bg-sky/10' : ''}`}>
+                  <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                  {item.to === '/insights' && <span className="absolute top-1 right-1 w-2 h-2 bg-gold rounded-full" />}
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider">{item.label}</span>
+              </>
+            )}
           </NavLink>
         ))}
-        <button onClick={() => setIsNotificationsOpen(true)} className="flex flex-col items-center gap-1 text-gray-400 relative">
-          <Bell size={20} />
-          {unreadCount > 0 && <span className="absolute -top-1 right-0 w-2 h-2 bg-coral rounded-full" />}
-          <span className="text-[10px] font-medium">Alertas</span>
-        </button>
       </nav>
 
       <Toast message={toast.message} visible={toast.visible} />

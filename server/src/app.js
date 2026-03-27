@@ -22,6 +22,8 @@ const swaggerDocument = YAML.load(path.join(__dirname, 'config', 'swagger.yaml')
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // Security Middlewares
 app.use(helmet({
   crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
@@ -130,7 +132,9 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Metrics endpoint for monitoring
-app.get('/api/metrics', async (req, res) => {
+const { authenticate, isAdmin } = require('./middleware/auth.middleware');
+
+app.get('/api/metrics', authenticate, isAdmin, async (req, res) => {
   try {
     const { db } = require('./config/db');
     const unreadValue = await getNotificationReadValue(false);

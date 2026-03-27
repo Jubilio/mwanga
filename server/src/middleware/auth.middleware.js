@@ -4,8 +4,8 @@ const logger = require('../utils/logger');
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
-  logger.error('CRITICAL: JWT_SECRET is not defined in environment variables!');
-  // In production, we should probably crash or use a very secure fallback
+  logger.error('CRITICAL ERROR: JWT_SECRET is not defined in environment variables!');
+  process.exit(1); // Stop server immediately if secret is missing for safety
 }
 
 const authenticate = (req, res, next) => {
@@ -17,7 +17,7 @@ const authenticate = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET || 'mwanga-temp-fallback-secret-change-me');
+    const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
   } catch (error) {
@@ -35,4 +35,4 @@ const isAdmin = (req, res, next) => {
   }
 };
 
-module.exports = { authenticate, isAdmin, JWT_SECRET: JWT_SECRET || 'mwanga-temp-fallback-secret-change-me' };
+module.exports = { authenticate, isAdmin };

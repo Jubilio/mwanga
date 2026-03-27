@@ -322,22 +322,40 @@ export function FinanceProvider({ children }) {
             description: action.payload.desc,
             amount: action.payload.valor,
             category: action.payload.cat,
-            note: action.payload.nota
+            note: action.payload.nota,
+            account_id: action.payload.account_id
           };
-          payload = await fetch(`${FINANCE_API_URL}/transactions`, {
+          const resp = await fetch(`${FINANCE_API_URL}/transactions`, {
             method: 'POST',
             headers,
             body: JSON.stringify(txBody)
-          }).then(r => r.json());
-          payload = { ...action.payload, id: payload.id };
-          break;
+          });
+          if (!resp.ok) throw new Error('Failed to add transaction');
+          
+          // Re-fetch transactions to ensure perfect sync
+          const refreshT = await fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json());
+          dispatch({
+            type: 'SET_DATA',
+            payload: {
+              transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : []
+            }
+          });
+          return;
         }
-        case 'DELETE_TRANSACTION':
+        case 'DELETE_TRANSACTION': {
           await fetch(`${FINANCE_API_URL}/transactions/${action.payload}`, { 
             method: 'DELETE',
             headers
           });
-          break;
+          const refreshT2 = await fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json());
+          dispatch({
+            type: 'SET_DATA',
+            payload: {
+              transacoes: Array.isArray(refreshT2) ? refreshT2.map(mapTransaction) : []
+            }
+          });
+          return;
+        }
         case 'ADD_RENDA': {
           const rentalBody = {
             month: action.payload.mes,
@@ -461,7 +479,7 @@ export function FinanceProvider({ children }) {
           });
           break;
         
-        case 'ADD_XITIQUE': {
+        case 'ADD_XITIQUES': {
           const xBody = {
             name: action.payload.name,
             monthlyAmount: action.payload.monthly_amount,
@@ -665,4 +683,3 @@ export function FinanceProvider({ children }) {
     </FinanceContext.Provider>
   );
 }
-

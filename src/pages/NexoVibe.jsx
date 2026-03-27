@@ -79,9 +79,9 @@ export default function NexoVibe() {
         </p>
 
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <button className="btn btn-primary" style={{ padding: '0.8rem 2rem' }}>
+          <a href="https://nexovibe.netlify.app/" target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ padding: '0.8rem 2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Explorar Serviços <ArrowRight size={18} />
-          </button>
+          </a>
           <a href="#contact" className="btn btn-ghost" style={{ color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}>
             Falar com Jubílio
           </a>

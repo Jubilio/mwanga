@@ -1,6 +1,7 @@
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
 const { z } = require('zod');
+const { logAction } = require('../utils/audit');
 
 const ACCOUNT_TYPE_ALIASES = {
   cash: 'dinheiro',
@@ -27,7 +28,7 @@ const addAccountSchema = z.object({
     .trim()
     .toLowerCase()
     .transform(normalizeAccountType)
-    .refine((value) => ALLOWED_ACCOUNT_TYPES.includes(value), { message: 'Tipo de conta invÃ¡lido' }),
+    .refine((value) => ALLOWED_ACCOUNT_TYPES.includes(value), { message: 'Tipo de conta inválido' }),
   initial_balance: z.coerce.number().finite(),
 });
 
@@ -39,7 +40,7 @@ exports.getAccounts = async (req, res) => {
   try {
     const householdId = req.user.householdId;
     const result = await db.execute({
-      sql: 'SELECT * FROM accounts WHERE household_id = $1 ORDER BY created_at DESC',
+      sql: 'SELECT * FROM accounts WHERE household_id = ? ORDER BY created_at DESC',
       args: [householdId]
     });
     res.json(result.rows);
@@ -51,22 +52,24 @@ exports.getAccounts = async (req, res) => {
 
 exports.addAccount = async (req, res, next) => {
   try {
-    logger.info({ body: req.body }, 'POST /api/accounts payload');
     const { name, type, initial_balance } = addAccountSchema.parse(req.body);
     const householdId = req.user.householdId;
-    // We set current_balance equal to initial_balance on creation
+    
+    // Create account with initial balance
     const result = await db.execute({
       sql: `
         INSERT INTO accounts (name, type, initial_balance, current_balance, household_id)
-        VALUES ($1, $2, $3, $4, $5) RETURNING id
+        VALUES (?, ?, ?, ?, ?) RETURNING id
       `,
       args: [name, type, initial_balance, initial_balance, householdId]
     });
 
-    res.status(201).json({ id: result.rows[0]?.id, message: 'Account added successfully' });
+    const accountId = result.rows[0]?.id;
+    await logAction(householdId, 'ACCOUNT_CREATE', 'ACCOUNT', accountId);
+
+    res.status(201).json({ id: accountId, message: 'Account added successfully' });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      logger.warn({ issues: error.issues, body: req.body }, 'Account validation failed');
       return res.status(400).json({ error: 'Validation failed', details: error.issues || error.errors || [] });
     }
     logger.error('Error adding account:', error);
@@ -83,11 +86,13 @@ exports.updateAccountBalance = async (req, res, next) => {
     await db.execute({
       sql: `
         UPDATE accounts 
-        SET current_balance = $1 
-        WHERE id = $2 AND household_id = $3
+        SET current_balance = ? 
+        WHERE id = ? AND household_id = ?
       `,
       args: [current_balance, id, householdId]
     });
+
+    await logAction(householdId, 'ACCOUNT_BALANCE_UPDATE', 'ACCOUNT', id);
 
     res.json({ message: 'Account balance updated' });
   } catch (error) {
@@ -106,6 +111,9 @@ exports.deleteAccount = async (req, res) => {
       sql: 'DELETE FROM accounts WHERE id = ? AND household_id = ?',
       args: [id, householdId]
     });
+    
+    await logAction(householdId, 'ACCOUNT_DELETE', 'ACCOUNT', id);
+    
     res.json({ message: 'Account deleted' });
   } catch (error) {
     logger.error('Error deleting account:', error);

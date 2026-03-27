@@ -2,6 +2,7 @@ const { db } = require('../config/db');
 const { z } = require('zod');
 const { createNotification } = require('./notification.controller');
 const redis = require('../utils/redis');
+const { logAction } = require('../utils/audit');
 
 const transactionSchema = z.object({
   date: z.string().min(10).max(10), // Expecting YYYY-MM-DD
@@ -15,7 +16,6 @@ const transactionSchema = z.object({
 
 const getTransactions = async (req, res) => {
   try {
-    console.log('getTransactions called, req.user:', req.user);
     const { page = 1, limit = 50, category, type, startDate, endDate } = req.query;
     const pageNumber = Math.max(1, Number.parseInt(page, 10) || 1);
     const limitNumber = Math.max(1, Number.parseInt(limit, 10) || 50);
@@ -43,33 +43,33 @@ const getTransactions = async (req, res) => {
       return res.json(typeof cached === 'string' ? JSON.parse(cached) : cached);
     }
 
-    // Build query with filters (PostgreSQL parameter-style)
-    let sql = 'SELECT * FROM transactions WHERE household_id = $1';
+    // Build query with filters (Helper handles PostgreSQL conversion)
+    let sql = 'SELECT * FROM transactions WHERE household_id = ?';
     let args = [householdId];
-    let paramIndex = 2;
 
     if (category) {
-      sql += ` AND category = $${paramIndex++}`;
+      sql += ' AND category = ?';
       args.push(category);
     }
 
     if (type) {
-      sql += ` AND type = $${paramIndex++}`;
+      sql += ' AND type = ?';
       args.push(type);
     }
 
     if (startDate) {
-      sql += ` AND date >= $${paramIndex++}`;
+      sql += ' AND date >= ?';
       args.push(startDate);
     }
 
     if (endDate) {
-      sql += ` AND date <= $${paramIndex++}`;
+      sql += ' AND date <= ?';
       args.push(endDate);
     }
 
-    sql += ` ORDER BY date DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+    sql += ' ORDER BY date DESC LIMIT ? OFFSET ?';
     args.push(limitNumber, offset);
+
 
     const result = await db.execute({ sql, args });
     const response = result.rows;
@@ -106,10 +106,11 @@ const createTransaction = async (req, res, next) => {
     if (data.account_id) {
       const balanceChange = (data.type === 'receita' || data.type === 'poupanca') ? data.amount : -data.amount;
       queries.push({
-        sql: 'UPDATE accounts SET current_balance = current_balance + $1 WHERE id = $2 AND household_id = $3',
+        sql: 'UPDATE accounts SET current_balance = current_balance + ? WHERE id = ? AND household_id = ?',
         args: [balanceChange, data.account_id, householdId]
       });
     }
+
 
     const results = await db.batch(queries, 'write');
     const insertResult = results[0];
@@ -144,6 +145,8 @@ const createTransaction = async (req, res, next) => {
       }
     }
 
+    await logAction(householdId, 'TX_CREATE', 'TRANSACTION', txId);
+
     res.status(201).json({ id: txId, ...data });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
@@ -157,16 +160,17 @@ const deleteTransaction = async (req, res) => {
     const txId = req.params.id;
 
     const result = await db.execute({
-      sql: 'SELECT * FROM transactions WHERE id = $1 AND household_id = $2',
+      sql: 'SELECT * FROM transactions WHERE id = ? AND household_id = ?',
       args: [txId, householdId]
     });
     const tx = result.rows[0];
     if (!tx) return res.status(403).json({ error: 'Acesso negado ou não encontrado' });
 
     await db.execute({
-      sql: 'DELETE FROM transactions WHERE id = $1',
+      sql: 'DELETE FROM transactions WHERE id = ?',
       args: [txId]
     });
+
 
     // Invalidate cache for this household (if Redis is available)
     if (redis) {
@@ -176,6 +180,8 @@ const deleteTransaction = async (req, res) => {
         console.warn('Redis cache invalidation failed:', redisError.message);
       }
     }
+
+    await logAction(householdId, 'TX_DELETE', 'TRANSACTION', txId);
 
     res.json({ success: true });
   } catch (error) {

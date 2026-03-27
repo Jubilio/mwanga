@@ -1,53 +1,46 @@
+/* eslint-disable no-unused-vars */
 import {
-  AlertTriangle,
   Bell,
-  CheckCircle,
-  Globe,
-  TrendingDown,
+  Wallet,
+  Eye,
+  EyeOff,
+  Plus,
+  ArrowUpRight,
+  ArrowDownToLine,
+  Coins,
+  CreditCard,
+  ShieldCheck,
+  ArrowRightLeft,
   TrendingUp,
-  Wallet
+  TrendingDown
 } from 'lucide-react';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip as RTooltip,
-  XAxis,
-  YAxis
-} from 'recharts';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import BinthContextual from '../components/BinthContextual';
 import { useFinance } from '../hooks/useFinance';
 import {
-  calcCategoryBreakdown,
   calcFinancialScore,
-  calcHousingMonthlyTotal,
-  calcMonthlyHistory,
   calcMonthlyTotals,
   calcRiskLevel,
   calcSavingsRate,
   fmt,
   getFinancialMonthKey
 } from '../utils/calculations';
-import { getPaymentMethodLabel } from '../utils/paymentMethods';
 
-const COLORS = ['#e07a5f', '#0a4d68', '#c9963a', '#3d6b45', '#1a8fa8', '#9b59b6', '#e74c3c'];
+const COLORS = ['#e07a5f', '#0a4d68', '#c9963a', '#3d6b45', '#1a8fa8', '#9b59b6', '#e74c3c', '#000000'];
 
 export default function Dashboard() {
-  const { state, dispatch } = useFinance();
+  const { state } = useFinance();
+  const navigate = useNavigate();
+  const [showBalance, setShowBalance] = useState(true);
+
   const currency = state.settings.currency || 'MT';
   const startDay = state.settings.financial_month_start_day || 1;
   const monthKey = getFinancialMonthKey(new Date(), startDay);
 
   const totals = calcMonthlyTotals(state.transacoes, monthKey, state.rendas, startDay);
-  const categories = calcCategoryBreakdown(state.transacoes, 'despesa', monthKey, state.rendas, startDay);
-  const history = calcMonthlyHistory(state.transacoes, state.rendas, startDay).slice(0, 6).reverse();
   const score = calcFinancialScore(state.transacoes, state.budgets, monthKey, state.rendas, startDay);
-  const housingSpent = calcHousingMonthlyTotal(state.transacoes, monthKey, state.rendas, startDay);
   const risk = calcRiskLevel(score);
   const savingsRate = calcSavingsRate(totals.totalIncome, totals.totalExpenses);
   const totalContas = state.contas?.reduce((acc, curr) => acc + Number(curr.current_balance || 0), 0) || 0;
@@ -56,446 +49,192 @@ export default function Dashboard() {
   const pendingDebts = state.dividas.filter(d => Number(d.remaining_amount || 0) > 0).length;
   const latestTransactions = [...state.transacoes]
     .sort((a, b) => `${b.data || ''}`.localeCompare(`${a.data || ''}`) || Number(b.id || 0) - Number(a.id || 0))
-    .slice(0, 7);
-
-  const summaryCards = [
-    {
-      label: 'Saldos Disponíveis',
-      value: totalContas,
-      icon: Wallet,
-      color: 'var(--color-ocean)',
-      accent: '#e6f0f9',
-      sub: 'M-Pesa, Bancos, Emola e mais'
-    },
-    {
-      label: 'Receitas do Mês',
-      value: totals.receitas,
-      icon: TrendingUp,
-      color: 'var(--color-leaf)',
-      accent: '#e8f5e9',
-      sub: 'Tudo o que entrou neste ciclo'
-    },
-    {
-      label: 'Despesas do Mês',
-      value: totals.totalExpenses,
-      icon: TrendingDown,
-      color: 'var(--color-coral)',
-      accent: '#fde8e4',
-      sub: housingSpent > 0 ? `Inclui habitação: ${fmt(housingSpent, currency)}` : 'Tudo o que saiu neste ciclo'
-    },
-    {
-      label: 'Balanço Real',
-      value: realBalance,
-      icon: TrendingUp,
-      color: realBalance >= 0 ? 'var(--color-leaf)' : 'var(--color-coral)',
-      accent: realBalance >= 0 ? '#e8f5e9' : '#fde8e4',
-      sub: 'Saldos disponíveis + fluxo do mês'
-    }
-  ];
-
-  const pieData = categories.map(category => ({ name: category.category, value: category.amount }));
+    .slice(0, 5);
 
   return (
-    <div className="animate-fade-in" style={{ paddingBottom: '5rem' }}>
-      <div
-        style={{
-          marginBottom: '2.5rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          flexWrap: 'wrap',
-          gap: '1rem'
-        }}
+    <div className="flex flex-col gap-6" style={{ paddingBottom: '7rem' }}>
+      
+      {/* 1. BALANCE - LARGE AND PROMINENT */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="flex flex-col items-center justify-center pt-8 pb-4 text-center relative"
       >
-        <div>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.3rem 0.6rem',
-              background: 'var(--color-gold)20',
-              borderRadius: '8px',
-              color: 'var(--color-gold)',
-              fontSize: '0.65rem',
-              fontWeight: 800,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              marginBottom: '0.5rem'
-            }}
-          >
-            <Globe size={12} /> Cockpit Financeiro NEXO
-          </div>
-          <h1
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '2.4rem',
-              fontWeight: 900,
-              color: 'var(--color-dark)',
-              lineHeight: 1
-            }}
-          >
-            Olá, {state.user?.name?.split(' ')[0] || 'Explorador'} <span style={{ color: 'var(--color-gold)' }}>✦</span>
-          </h1>
-          <div className="mt-2 flex items-center gap-2">
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${score > 70 ? 'bg-leaf/10 text-leaf' : 'bg-gold/10 text-gold-deep'}`}>
-              Saúde Financeira: {score > 70 ? 'Excelente' : 'Estável'}
-            </span>
-            <span className="rounded-full bg-ocean/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ocean">
-              Nexo Score: {score}/100
-            </span>
-          </div>
-        </div>
-
-        <div
-          className="glass-card animate-float"
-          style={{
-            padding: '0.5rem 1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            border: '1px solid var(--color-gold)30'
-          }}
-        >
-          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--color-ocean), var(--color-gold))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '0.8rem' }}>B</div>
-          <div>
-            <div style={{ fontSize: '0.6rem', color: 'var(--color-muted)', fontWeight: 600 }}>ASSISTENTE VIRTUAL</div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-dark)' }}>Binth ✨</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-6">
-        <BinthContextual page="dashboard" />
-      </div>
-
-      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr,1fr]">
-        <div className="glass-card p-6 animate-fade-in-up stagger-1" style={{ borderTop: '2px solid var(--color-ocean)' }}>
-          <div className="section-title" style={{ borderBottom: 'none', marginBottom: '0.4rem', fontSize: '0.95rem' }}>
-            Painel de Controlo
-          </div>
-          <p className="mb-5 text-sm text-gray-500 dark:text-gray-400">
-            O dashboard consolida transações e habitação no mesmo fluxo. Se um registo pago for removido em Habitação, os totais e o gráfico deixam de o contar.
-          </p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <InsightCard label="Habitação no mês" value={fmt(housingSpent, currency)} note="Valor consolidado com o módulo Habitação." tone="text-ocean" />
-            <InsightCard label="Pendências de casa" value={String(pendingHousing)} note="Registos por pagar ou por confirmar." tone="text-gold" />
-            <InsightCard label="Dívidas activas" value={String(pendingDebts)} note="Contas ainda em aberto para acompanhar." tone="text-coral" />
-          </div>
-        </div>
-
-        <div className="glass-card p-6 animate-fade-in-up stagger-2" style={{ borderTop: '2px solid var(--color-gold)' }}>
-          <div className="section-title" style={{ borderBottom: 'none', marginBottom: '0.4rem', fontSize: '0.95rem' }}>
-            Leitura do Mês
-          </div>
-          <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-            <ReadingBlock title="Fluxo consolidado">
-              Receitas: {fmt(totals.totalIncome, currency)} | Saídas: {fmt(totals.totalExpenses, currency)}
-            </ReadingBlock>
-            <ReadingBlock title="Maior pressão">
-              {categories[0] ? `${categories[0].category}: ${fmt(categories[0].amount, currency)}` : 'Ainda sem categoria dominante neste mês.'}
-            </ReadingBlock>
-            <ReadingBlock title="Estado geral">
-              {realBalance >= 0 ? 'A tesouraria continua respirável.' : 'O balanço real está pressionado e pede revisão imediata.'}
-            </ReadingBlock>
-          </div>
-        </div>
-      </div>
-
-      <div className="responsive-grid mb-6">
-        {summaryCards.map((card, i) => (
-          <div
-            key={card.label}
-            className={`glass-card animate-fade-in-up stagger-${i + 1} p-5`}
-            style={{
-              position: 'relative',
-              overflow: 'hidden',
-              borderTop: `2px solid ${card.color}80`,
-              boxShadow: `0 8px 30px ${card.color}15, 0 1px 3px rgba(0,0,0,0.1)`
-            }}
-          >
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '100px',
-                background: `linear-gradient(to bottom, ${card.color}15, transparent)`,
-                pointerEvents: 'none'
-              }}
-            />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
-              <div>
-                <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1.2px', color: 'var(--color-muted)', marginBottom: '0.4rem' }}>
-                  {card.label}
-                </div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, color: card.color }}>
-                  {fmt(card.value, currency)}
-                </div>
-                <div style={{ fontSize: '0.73rem', color: 'var(--color-muted)', marginTop: '0.15rem' }}>
-                  {card.sub}
-                </div>
-              </div>
-              <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: card.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <card.icon size={20} style={{ color: card.color }} />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="section-title mt-2">Seus Meios de Pagamento</div>
-      <div className="glass-card mb-6 p-6 animate-fade-in-up stagger-1">
-        <p className="mb-4 text-sm text-gray-500">
-          Adicione Dinheiro, M-Pesa, Emola, mKesh ou Banco para refletir melhor como faz e recebe pagamentos no dia a dia.
-        </p>
-        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {state.contas?.map((conta, index) => (
-            <div key={conta.id ?? `${conta.name || 'conta'}-${index}`} className="relative rounded-xl border border-gray-200 p-4 dark:border-gray-800">
-              <div className="text-xs uppercase tracking-widest text-muted">{getPaymentMethodLabel(conta.type)}</div>
-              <div className="text-lg font-bold">{conta.name}</div>
-              <div className="mt-1 font-bold text-ocean">{fmt(conta.current_balance, currency)}</div>
-              <button
-                onClick={() => {
-                  if (confirm('Remover esta conta?')) {
-                    dispatch({ type: 'DELETE_ACCOUNT', payload: conta.id });
-                  }
-                }}
-                className="absolute right-4 top-4 text-gray-400 hover:text-coral"
-              >
-                <AlertTriangle size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <form
-          className="flex flex-wrap items-end gap-3 rounded-xl border border-gray-100 bg-black/5 p-4 dark:border-gray-800 dark:bg-white/5"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            dispatch({
-              type: 'ADD_ACCOUNT',
-              payload: {
-                name: fd.get('name'),
-                type: fd.get('type'),
-                initial_balance: Number(fd.get('balance'))
-              }
-            });
-            e.target.reset();
-          }}
-        >
-          <div className="min-w-[200px] flex-1">
-            <label className="mb-1 block text-xs font-semibold">NOME</label>
-            <input name="name" type="text" className="input py-2 text-sm" placeholder="Ex: Espécie, M-Pesa Pessoal, BIM..." required />
-          </div>
-          <div className="w-1/4 min-w-[120px]">
-            <label className="mb-1 block text-xs font-semibold">MEIO</label>
-            <select name="type" className="input py-2 text-sm" required>
-              <option value="mpesa">M-Pesa</option>
-              <option value="emola">Emola</option>
-              <option value="mkesh">mKesh</option>
-              <option value="banco">Banco</option>
-              <option value="dinheiro">Dinheiro</option>
-            </select>
-          </div>
-          <div className="w-1/4 min-w-[120px]">
-            <label className="mb-1 block text-xs font-semibold">SALDO ACTUAL</label>
-            <input name="balance" type="number" step="any" className="input py-2 text-sm" placeholder="Ex: 5000" required />
-          </div>
-          <button type="submit" className="btn btn-primary whitespace-nowrap py-2 text-sm font-semibold">
-            Adicionar Meio
+        <div className="absolute top-2 right-2">
+          <button onClick={() => setShowBalance(!showBalance)} className="p-3 rounded-full bg-black/5 dark:bg-white/5 text-gray-500 hover:text-ocean dark:hover:text-sky transition-colors active:scale-95">
+            {showBalance ? <Eye size={18} /> : <EyeOff size={18} />}
           </button>
-        </form>
-      </div>
+        </div>
+        <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 dark:text-gray-400 mb-2">Balanço Disponível</span>
+        <div className="text-4xl xs:text-5xl font-extrabold text-midnight dark:text-white tracking-tight flex items-center justify-center h-16 w-full px-2">
+          {showBalance ? (
+            <span>{fmt(realBalance, currency)}</span>
+          ) : (
+            <span className="tracking-[0.5em] mt-2">••••••</span>
+          )}
+        </div>
+        <div className={`mt-5 flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full ${totals.saldo >= 0 ? 'bg-leaf/10 text-leaf dark:text-leaf-light' : 'bg-coral/10 text-coral'}`}>
+          {totals.saldo >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+          {totals.saldo >= 0 ? '+' : '-'}{fmt(Math.abs(totals.saldo), currency)} fluxo mensal
+        </div>
+      </motion.div>
 
-      <div className="responsive-grid mb-6">
-        <div className="glass-card animate-fade-in-up stagger-1" style={{ padding: '1.5rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1.2px', color: 'var(--color-muted)', marginBottom: '0.75rem' }}>
-            Score Financeiro
-          </div>
-          <div
-            style={{
-              width: '100px',
-              height: '100px',
-              borderRadius: '50%',
-              border: `6px solid ${risk.color}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 0.75rem',
-              background: `conic-gradient(${risk.color} ${score * 3.6}deg, #ebebeb ${score * 3.6}deg)`,
-              position: 'relative'
-            }}
+      {/* 2. QUICK ACTIONS (Horizontal Scroll) */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4 }}
+        className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0"
+        style={{ scrollSnapType: 'x mandatory' }}
+      >
+        <QuickActionButton 
+          icon={ArrowUpRight} label="Enviar" 
+          color="bg-ocean hover:bg-ocean-light dark:bg-sky dark:hover:bg-sky-light text-white" 
+          onClick={() => navigate('/transacoes')}
+        />
+        <QuickActionButton 
+          icon={Plus} label="Despesa" 
+          color="bg-coral hover:bg-coral-light text-white" 
+          onClick={() => navigate('/transacoes')}
+        />
+        <QuickActionButton 
+          icon={ArrowDownToLine} label="Receber" 
+          color="bg-black/10 hover:bg-black/15 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white" 
+          onClick={() => navigate('/transacoes')}
+        />
+        <QuickActionButton 
+          icon={Coins} label="Xitique" 
+          color="bg-gold hover:bg-gold-light text-white" 
+          onClick={() => navigate('/xitique')}
+        />
+        <QuickActionButton 
+          icon={CreditCard} label="Crédito" 
+          color="bg-[#0a1926] hover:bg-[#12232e] text-white" 
+          onClick={() => navigate('/credito')}
+        />
+      </motion.div>
+
+      {/* 3. AI INSIGHTS (BINTH) */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.4 }}>
+        <BinthContextual page="dashboard" />
+      </motion.div>
+
+      {/* 4. CARDS (Vertical Scrollable) */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }} 
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
+        {/* Cashflow Card */}
+        <DashboardCard 
+          title="Fluxo de Caixa" icon={ArrowRightLeft}
+          value={fmt(totals.totalIncome, currency)} label="Receitas" valueTone="text-leaf dark:text-leaf-light"
+          subValue={fmt(totals.totalExpenses, currency)} subLabel="Despesas" subTone="text-coral dark:text-coral-light"
+          onClick={() => navigate('/transacoes')}
+        />
+        {/* Active Accounts Card */}
+        <DashboardCard 
+          title="Contas Activas" icon={Wallet}
+          value={fmt(totalContas, currency)} label="Saldos" valueTone="text-ocean dark:text-sky"
+          subValue={`${state.contas?.length || 0} contas`} subLabel="M-Pesa, Bancos..." subTone="text-gray-500"
+          onClick={() => navigate('/patrimonio')}
+        />
+        {/* Financial Health Score */}
+        <DashboardCard 
+          title="Saúde Financeira" icon={ShieldCheck}
+          value={`${score}/100`} label={`Risco ${risk.level}`} valueTone={score > 70 ? 'text-leaf' : 'text-gold'}
+          subValue={`${savingsRate}%`} subLabel="Taxa Poupança" subTone="text-gray-500"
+          onClick={() => navigate('/insights')}
+        />
+        {/* Pending Alerts Card */}
+        <DashboardCard 
+          title="Alertas & Pendências" icon={Bell}
+          value={String(pendingDebts + pendingHousing)} label="Ações urgentes" valueTone="text-coral"
+          subValue={pendingDebts > 0 ? 'Dívidas atrasadas' : 'Habitação pendente'} subLabel="Ver detalhes" subTone="text-gray-500"
+          onClick={() => navigate('/transacoes')}
+        />
+      </motion.div>
+
+      {/* 5. LATEST TRANSACTIONS */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.4 }}>
+        <div className="flex items-center justify-between mb-4 mt-2">
+          <h2 className="text-lg font-bold dark:text-white">Últimas Transações</h2>
+          <button 
+            onClick={() => navigate('/transacoes')}
+            className="text-xs font-bold text-ocean dark:text-sky uppercase tracking-wide hover:underline"
           >
-            <div
-              style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: '50%',
-                background: 'var(--color-surface)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: 'var(--font-display)',
-                fontSize: '1.8rem',
-                fontWeight: 700,
-                color: risk.color
-              }}
-            >
-              {score}
-            </div>
-          </div>
-          <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-            {risk.emoji} Risco {risk.level}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--color-muted)', marginTop: '0.2rem' }}>
-            Taxa poupança: {savingsRate}%
-          </div>
-          <div style={{
-            fontSize: '0.7rem', fontWeight: 700, marginTop: '0.35rem',
-            color: score >= 75 ? 'var(--color-leaf)' : score >= 50 ? 'var(--color-gold)' : 'var(--color-coral)'
-          }}>
-            {score >= 90 ? 'Fiel Mordomo 🏆' :
-             score >= 75 ? 'Sábio Gestor 🌟' :
-             score >= 60 ? 'Em Progresso 📈' :
-             score >= 40 ? 'Precisa Atenção ⚠️' :
-                           'Momento de Reflexão 🙏'}
-          </div>
+            Ver Todas
+          </button>
         </div>
-
-        <div className="animate-fade-in-up stagger-2" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {totals.saldo < 0 && (
-            <div className="alert alert-danger" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <AlertTriangle size={18} /> As despesas consolidadas estão a superar as receitas neste mês. Reveja os gastos.
-            </div>
-          )}
-          {housingSpent === 0 && (
-            <div className="alert alert-warn" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <Bell size={18} /> Nenhum custo de habitação consolidado neste mês.
-            </div>
-          )}
-          {totals.saldo > 0 && totals.receitas > 0 && (
-            <div className="alert alert-ok" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <CheckCircle size={18} /> Saldo positivo. Considere poupar parte do excedente.
-            </div>
-          )}
-          {savingsRate >= 20 && (
-            <div className="alert alert-ok" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <CheckCircle size={18} /> Taxa de poupança excelente ({savingsRate}%). Continue assim.
-            </div>
-          )}
-          {savingsRate > 0 && savingsRate < 20 && (
-            <div className="alert alert-warn" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <AlertTriangle size={18} /> Taxa de poupança abaixo de 20%. Tente reduzir despesas não essenciais.
+        <div className="glass-card overflow-hidden">
+          {latestTransactions.length === 0 ? (
+            <div className="p-8 text-center text-gray-400">Sem transações recentes</div>
+          ) : (
+            <div className="divide-y divide-black/5 dark:divide-white/5">
+              {latestTransactions.map(t => (
+                <div key={t.id} className="p-4 flex items-center justify-between hover:bg-black/2 dark:hover:bg-white/2 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.tipo === 'despesa' ? 'bg-coral/10 text-coral' : 'bg-leaf/10 text-leaf'}`}>
+                      {t.tipo === 'despesa' ? <ArrowDownToLine size={16} /> : <ArrowUpRight size={16} />}
+                    </div>
+                    <div>
+                      <div className="font-bold text-sm dark:text-gray-200">{t.desc}</div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider">{t.data}</div>
+                    </div>
+                  </div>
+                  <div className={`font-bold ${t.tipo === 'despesa' ? 'text-gray-900 dark:text-white' : 'text-leaf dark:text-leaf-light'}`}>
+                    {t.tipo === 'despesa' ? '-' : '+'}{fmt(t.valor, currency)}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
-      <div className="responsive-grid mb-6">
-        {history.length > 0 && (
-          <div className="glass-card animate-fade-in-up stagger-3" style={{ padding: '1.25rem' }}>
-            <div className="section-title" style={{ borderBottom: 'none', marginBottom: '0.5rem', fontSize: '0.95rem' }}>
-              Fluxo Consolidado
-            </div>
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={history}>
-                <defs>
-                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3d6b45" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#3d6b45" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#e07a5f" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#e07a5f" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                <XAxis dataKey="label" tick={{ fontSize: 11 }} tickFormatter={v => v.split(' ')[0].slice(0, 3)} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                <RTooltip formatter={(value) => fmt(value, currency)} labelStyle={{ fontWeight: 600 }} />
-                <Area type="monotone" dataKey="totalIncome" name="Receitas" stroke="#3d6b45" fill="url(#colorIncome)" strokeWidth={2} />
-                <Area type="monotone" dataKey="totalExpenses" name="Despesas Consolidadas" stroke="#e07a5f" fill="url(#colorExpense)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-
-        {pieData.length > 0 && (
-          <div className="glass-card animate-fade-in-up stagger-4" style={{ padding: '1.25rem' }}>
-            <div className="section-title" style={{ borderBottom: 'none', marginBottom: '0.5rem', fontSize: '0.95rem' }}>
-              Despesas por Categoria
-            </div>
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
-                  {pieData.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <RTooltip formatter={value => fmt(value, currency)} />
-                <Legend iconSize={10} wrapperStyle={{ fontSize: '0.72rem' }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </div>
-
-      <div className="section-title">Últimas Transações</div>
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Descrição</th>
-              <th className="hide-mobile">Tipo</th>
-              <th>Valor</th>
-            </tr>
-          </thead>
-          <tbody>
-            {latestTransactions.length === 0 ? (
-              <tr><td colSpan={4} className="empty-state">Sem transações registadas</td></tr>
-            ) : (
-              latestTransactions.map(transaction => (
-                <tr key={transaction.id}>
-                  <td style={{ fontSize: '0.82rem', color: 'var(--color-muted)' }}>{transaction.data}</td>
-                  <td style={{ fontWeight: 500 }}>{transaction.desc}</td>
-                  <td className="hide-mobile"><span className={`badge badge-${transaction.tipo}`}>{transaction.tipo}</span></td>
-                  <td
-                    style={{
-                      fontWeight: 600,
-                      color: transaction.tipo === 'despesa' ? 'var(--color-coral)' : 'var(--color-leaf)'
-                    }}
-                  >
-                    {transaction.tipo === 'despesa' ? '−' : '+'}{fmt(transaction.valor, currency)}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }
 
-function InsightCard({ label, value, note, tone }) {
+/* eslint-disable no-unused-vars */
+function QuickActionButton({ icon: Icon, label, color, onClick }) {
   return (
-    <div className="rounded-2xl border border-black/5 bg-black/5 p-4 dark:border-white/10 dark:bg-white/5">
-      <div className="text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{label}</div>
-      <div className={`mt-2 text-2xl font-bold ${tone}`}>{value}</div>
-      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">{note}</div>
-    </div>
+    <button 
+      onClick={onClick}
+      className="flex flex-col items-center gap-2 shrink-0 snap-center w-[72px] hover-lift active-press group"
+    >
+      <div className={`w-[60px] h-[60px] rounded-[24px] flex items-center justify-center transition-all duration-300 shadow-md ${color}`}>
+        <Icon size={24} />
+      </div>
+      <span className="text-[10px] font-bold text-gray-700 dark:text-gray-400 tracking-wide text-center">{label}</span>
+    </button>
   );
 }
 
-function ReadingBlock({ title, children }) {
+/* eslint-disable no-unused-vars */
+function DashboardCard({ title, icon: Icon, value, label, valueTone, subValue, subLabel, subTone, onClick }) {
   return (
-    <div className="rounded-2xl bg-black/5 p-4 dark:bg-white/5">
-      <div className="font-semibold text-gray-800 dark:text-white">{title}</div>
-      <div className="mt-1">{children}</div>
+    <div 
+      onClick={onClick}
+      className={`glass-card p-5 relative overflow-hidden group hover:border-ocean/30 dark:hover:border-sky/30 transition-all hover-lift ${onClick ? 'cursor-pointer active:scale-95' : ''}`}
+    >
+      <div className="flex items-center justify-between mb-4 relative z-10">
+        <span className="text-xs uppercase tracking-widest font-bold text-gray-500">{title}</span>
+        <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-ocean dark:text-sky">
+          <Icon size={14} />
+        </div>
+      </div>
+      <div className="relative z-10">
+        <div className={`text-2xl font-black ${valueTone}`}>{value}</div>
+        <div className="text-[10px] uppercase font-bold text-gray-400 mt-1">{label}</div>
+      </div>
+      
+      {subValue && (
+        <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/5 flex items-end justify-between relative z-10">
+          <div>
+            <div className={`text-sm font-bold ${subTone}`}>{subValue}</div>
+            <div className="text-[9px] uppercase font-bold text-gray-400">{subLabel}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
