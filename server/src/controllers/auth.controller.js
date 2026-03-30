@@ -4,6 +4,8 @@ const { db } = require('../config/db');
 const { logAction } = require('../utils/audit');
 const { JWT_SECRET } = require('../middleware/auth.middleware');
 const { z } = require('zod');
+const crypto = require('crypto');
+const emailService = require('../services/email.service');
 
 // Validation Schemas
 const registerSchema = z.object({
@@ -20,6 +22,15 @@ const loginSchema = z.object({
 
 const updateProfileSchema = z.object({
   name: z.string().min(2).max(100).trim(),
+}).strict();
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email().lowercase().trim(),
+}).strict();
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8).max(100),
 }).strict();
 
 const register = async (req, res, next) => {
@@ -187,4 +198,65 @@ const googleLogin = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, getMe, updateProfile, googleLogin };
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = forgotPasswordSchema.parse(req.body);
+    
+    const result = await db.execute({
+      sql: 'SELECT * FROM users WHERE email = ?',
+      args: [email]
+    });
+    const user = result.rows[0];
+
+    if (!user) {
+      return res.json({ message: 'Se o email existir, receberás um link de recuperação em breve.' });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 3600000); // 1 hour
+
+    await db.execute({
+      sql: 'UPDATE users SET reset_password_token = ?, reset_password_expires = ? WHERE id = ?',
+      args: [token, expires.toISOString(), user.id]
+    });
+
+    await emailService.sendPasswordReset(email, token, user.name);
+
+    res.json({ message: 'Link de recuperação enviado com sucesso.' });
+  } catch (error) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    next(error);
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token, password } = resetPasswordSchema.parse(req.body);
+
+    const result = await db.execute({
+      sql: 'SELECT * FROM users WHERE reset_password_token = ? AND reset_password_expires > NOW()',
+      args: [token]
+    });
+    const user = result.rows[0];
+
+    if (!user) {
+      return res.status(400).json({ error: 'Token inválido ou expirado' });
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+
+    await db.execute({
+      sql: 'UPDATE users SET password_hash = ?, reset_password_token = NULL, reset_password_expires = NULL WHERE id = ?',
+      args: [hash, user.id]
+    });
+
+    await logAction(user.id, 'RESET_PASSWORD', 'USER', user.id);
+    res.json({ message: 'Senha redefinida com sucesso. Já podes fazer login!' });
+  } catch (error) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    next(error);
+  }
+};
+
+module.exports = { register, login, getMe, updateProfile, googleLogin, forgotPassword, resetPassword };

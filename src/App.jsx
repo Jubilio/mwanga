@@ -19,6 +19,8 @@ import Pricing from './pages/Pricing';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
 import Insights from './pages/Insights';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import { useFinance } from './hooks/useFinance';
 import { Navigate } from 'react-router-dom';
 
@@ -65,6 +67,8 @@ export default function App() {
             <Route path="admin" element={<Admin />} />
           </Route>
           <Route path="login" element={<Login />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
         </Routes>
       </BrowserRouter>
     </FinanceProvider>

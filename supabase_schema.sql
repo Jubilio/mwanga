@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS users (
     kyc_status TEXT DEFAULT 'pending',
     credit_score INTEGER DEFAULT 0,
     role TEXT DEFAULT 'user',
+    reset_password_token TEXT,
+    reset_password_expires TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 

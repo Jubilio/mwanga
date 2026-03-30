@@ -153,6 +153,17 @@ export default function Login() {
               placeholder="••••••••"
               value={form.password} onChange={e => setForm({...form, password: e.target.value})}
             />
+            {isLogin && (
+              <div style={{ textAlign: 'right', marginTop: '0.4rem' }}>
+                <button 
+                  type="button"
+                  onClick={() => navigate('/forgot-password')}
+                  style={{ color: 'var(--color-ocean)', fontSize: '0.85rem', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  Esqueci-me da senha?
+                </button>
+              </div>
+            )}
           </div>
 
           {!isLogin && (

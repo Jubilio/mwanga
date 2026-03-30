@@ -28,12 +28,11 @@ const FinancialEngine = {
     return principal * Math.pow(1 + rateMonthly, months);
   },
   // Parcela Price (anuidade)
-  // isAnnual: se a taxa for anual (bancos), convertemos para mensal
   installment(principal, rate, months, isAnnual = false) {
     let i = isAnnual ? (Math.pow(1 + rate, 1/12) - 1) : rate;
     if (i === 0) return principal / months;
-    return (principal * i * Math.pow(1 + i, months))
-      / (Math.pow(1 + i, months) - 1);
+    const pow = Math.pow(1 + i, months);
+    return (principal * i * pow) / (pow - 1);
   },
   // Imposto de Selo (Moz) - Aprox 0.5% do capital
   stampDuty(principal) {
@@ -41,15 +40,16 @@ const FinancialEngine = {
   },
   // Tabela de amortização completa
   amortizationTable(principal, rateMonthly, months) {
-    const parc = this.installment(principal, rateMonthly, months);
+    const i = rateMonthly;
+    const parc = this.installment(principal, i, months, false);
     let saldo = principal;
     const rows = [];
-    for (let i = 1; i <= months; i++) {
-      const juros = saldo * rateMonthly;
+    for (let current = 1; current <= months; current++) {
+      const juros = saldo * i;
       const amort = parc - juros;
       saldo -= amort;
       rows.push({
-        n: i,
+        n: current,
         parcela: parc,
         juros,
         amortizacao: amort,
@@ -423,9 +423,20 @@ function TabSimulator({ eligData, userData, isPro }) {
 
         {/* Valor */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontSize: 13, color: G.text, fontWeight: 600 }}>Valor solicitado</span>
-            <span style={{ fontSize: 20, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif" }}>MT {fmtShort(amount)}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 11, color: G.muted }}>MT</span>
+              <input 
+                type="number" 
+                value={amount} 
+                onChange={e => setAmount(+e.target.value)}
+                style={{ 
+                  width: 100, background: G.muted3, border: `1px solid ${G.border}`, 
+                  borderRadius: 8, padding: '4px 8px', color: G.credit, fontWeight: 900, fontSize: 14, outline: 'none' 
+                }}
+              />
+            </div>
           </div>
           <input type="range" min={1000} max={3000000} step={1000} value={amount}
             onChange={e => setAmount(+e.target.value)}
@@ -438,9 +449,20 @@ function TabSimulator({ eligData, userData, isPro }) {
 
         {/* Prazo */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <span style={{ fontSize: 13, color: G.text, fontWeight: 600 }}>Prazo</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: G.gold }}>{months} {months === 1 ? "mês" : "meses"}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+               <input 
+                type="number" 
+                value={months} 
+                onChange={e => setMonths(+e.target.value)}
+                style={{ 
+                  width: 60, background: G.muted3, border: `1px solid ${G.border}`, 
+                  borderRadius: 8, padding: '4px 8px', color: G.gold, fontWeight: 900, fontSize: 14, outline: 'none', textAlign: 'center' 
+                }}
+              />
+              <span style={{ fontSize: 12, fontWeight: 700, color: G.gold }}>{months === 1 ? "mês" : "meses"}</span>
+            </div>
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {[3, 6, 12, 24, 36, 48, 60].map(m => (
@@ -628,8 +650,20 @@ function TabCompare({ userData }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'flex-end', marginBottom: 24 }}>
           <div style={{ flex: 1, minWidth: 200 }}>
             <label style={{ fontSize: 13, color: G.text, fontWeight: 600, display: 'block', marginBottom: 8 }}>Valor pretendido</label>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-               <span style={{ fontSize: 20, fontWeight: 900, color: G.credit, fontFamily: 'Sora,sans-serif' }}>MT {fmtShort(amount)}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 11, color: G.muted }}>MT</span>
+                  <input 
+                    type="number" 
+                    value={amount} 
+                    onChange={e => setAmount(+e.target.value)}
+                    style={{ 
+                      width: 100, background: G.muted3, border: `1px solid ${G.border}`, 
+                      borderRadius: 8, padding: '4px 8px', color: G.credit, fontWeight: 900, fontSize: 14, outline: 'none' 
+                    }}
+                  />
+                </div>
+                <span style={{ fontSize: 11, color: G.muted }}>{fmtShort(amount)}</span>
             </div>
             <input type='range' min={1000} max={3000000} step={1000} value={amount}
               onChange={e => setAmount(+e.target.value)}
@@ -637,6 +671,18 @@ function TabCompare({ userData }) {
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>
             <label style={{ fontSize: 13, color: G.text, fontWeight: 600, display: 'block', marginBottom: 8 }}>Prazo (Meses)</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+               <input 
+                type="number" 
+                value={months} 
+                onChange={e => setMonths(+e.target.value)}
+                style={{ 
+                  width: 60, background: G.muted3, border: `1px solid ${G.border}`, 
+                  borderRadius: 8, padding: '4px 8px', color: G.gold, fontWeight: 900, fontSize: 14, outline: 'none', textAlign: 'center' 
+                }}
+              />
+              <span style={{ fontSize: 12, fontWeight: 700, color: G.gold }}>{months === 1 ? "mês" : "meses"}</span>
+            </div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {[3, 6, 12, 24, 36].map(m => (
                 <button key={m} onClick={() => setMonths(m)} style={{
@@ -765,14 +811,25 @@ function TabConsolidate({ debts, userData }) {
             </div>
             <div style={{ flex: 1, minWidth: 200 }}>
               <label style={{ fontSize: 12, fontWeight: 600, color: G.text, marginBottom: 8, display: 'block' }}>Novo Prazo Desejado</label>
-              <select style={{ width: '100%', padding: 12, borderRadius: 10, background: G.bg2, border: `1px solid ${G.border}`, color: G.text, outline: 'none' }}
-                value={months} onChange={e => setMonths(parseInt(e.target.value))}>
-                <option value={6}>6 Meses</option>
-                <option value={12}>12 Meses</option>
-                <option value={24}>24 Meses</option>
-                <option value={36}>36 Meses</option>
-                <option value={48}>48 Meses</option>
-              </select>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <select style={{ flex: 1, padding: 12, borderRadius: 10, background: G.bg2, border: `1px solid ${G.border}`, color: G.text, outline: 'none' }}
+                  value={months} onChange={e => setMonths(parseInt(e.target.value))}>
+                  <option value={6}>6 Meses</option>
+                  <option value={12}>12 Meses</option>
+                  <option value={24}>24 Meses</option>
+                  <option value={36}>36 Meses</option>
+                  <option value={48}>48 Meses</option>
+                </select>
+                <input 
+                  type="number" 
+                  value={months} 
+                  onChange={e => setMonths(+e.target.value)}
+                  style={{ 
+                    width: 65, background: G.bg2, border: `1px solid ${G.border}`, 
+                    borderRadius: 10, padding: '0 8px', color: G.gold, fontWeight: 800, fontSize: 14, outline: 'none', textAlign: 'center' 
+                  }}
+                />
+              </div>
             </div>
           </div>
           
