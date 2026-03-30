@@ -16,28 +16,35 @@ if (!connectionString) {
 
 const poolConfig = {
   connectionString,
-  max: 5, // Limit pool size for better stability with Supabase
+  max: 10, // Increased slightly for better concurrency
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
 };
 
 // Only enable SSL if not explicitly disabled in the connection string
 if (connectionString && !connectionString.includes('sslmode=disable')) {
   poolConfig.ssl = {
-    rejectUnauthorized: false // Required for Supabase/Render connections
+    rejectUnauthorized: false
   };
 }
 
-logger.info(`Database Config: Pool Max=5, SSL=${!!poolConfig.ssl}`);
+logger.info(`Database Config: Pool Max=${poolConfig.max}, SSL=${!!poolConfig.ssl}, KeepAlive=true`);
 const pool = new Pool(poolConfig);
 
 pool.on('error', (err) => {
-  logger.error('Unexpected error on idle database client', err);
+  // Common error with PgBouncer/Supabase, we log it but the pool recovers
+  if (err.message.includes('terminated unexpectedly')) {
+    logger.warn('A database connection was terminated unexpectedly in the background.');
+  } else {
+    logger.error('Unexpected error on idle database client', err);
+  }
 });
 
 // Wrapper to maintain compatibility with existing code that used .execute({sql, args})
 const db = {
-  execute: async (params) => {
+  execute: async (params, retry = true) => {
     let query, values;
     
     if (typeof params === 'string') {
@@ -56,11 +63,16 @@ const db = {
       const result = await pool.query(pgSql, values);
       return {
         rows: result.rows,
-        // Mocking lastInsertRowid for compatibility, though it needs careful use in controllers
         lastInsertRowid: result.rows[0]?.id || null,
         rowCount: result.rowCount
       };
     } catch (error) {
+      // If connection was terminated, try one more time before giving up
+      if (retry && error.message.includes('terminated unexpectedly')) {
+        logger.warn('Database connection lost. Retrying query once...');
+        return db.execute(params, false);
+      }
+
       logger.error(`Database Query Error: ${error.message} \nSQL: ${pgSql}`);
       throw error;
     }

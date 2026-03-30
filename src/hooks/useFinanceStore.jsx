@@ -88,6 +88,26 @@ function mapRental(r) {
   };
 }
 
+function mapGoal(m) {
+  return {
+    id: m.id,
+    nome: m.name,
+    alvo: Number(m.target_amount || 0),
+    poupado: Number(m.saved_amount || 0),
+    prazo: m.deadline,
+    cat: m.category,
+    mensal: Number(m.monthly_saving || 0)
+  };
+}
+
+function mapAccount(acc) {
+  return {
+    ...acc,
+    initial_balance: Number(acc.initial_balance || 0),
+    current_balance: Number(acc.current_balance || 0)
+  };
+}
+
 function reducer(state, action) {
   switch (action.type) {
     case 'SET_DATA':
@@ -245,15 +265,7 @@ export function FinanceProvider({ children }) {
           payload: {
             transacoes: Array.isArray(ts) ? ts.map(mapTransaction) : [],
             rendas: Array.isArray(rendas) ? rendas.map(mapRental) : [],
-            metas: Array.isArray(metas) ? metas.map(m => ({
-              id: m.id,
-              nome: m.name,
-              alvo: Number(m.target_amount || 0),
-              poupado: Number(m.saved_amount || 0),
-              prazo: m.deadline,
-              cat: m.category,
-              mensal: Number(m.monthly_saving || 0)
-            })) : [],
+            metas: Array.isArray(metas) ? metas.map(mapGoal) : [],
             budgets: Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: b.category, limit: Number(b.limit_amount || 0) })) : [],
             activos: Array.isArray(assets) ? assets.map(a => ({ id: a.id, name: a.name, type: a.type, value: Number(a.value || 0) })) : [],
             passivos: Array.isArray(liabs) ? liabs.map(l => ({ 
@@ -332,12 +344,20 @@ export function FinanceProvider({ children }) {
           });
           if (!resp.ok) throw new Error('Failed to add transaction');
           
-          // Re-fetch transactions to ensure perfect sync
-          const refreshT = await fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json());
+          // Re-fetch transactions AND accounts to ensure perfect sync
+          const [refreshT, refreshAccounts] = await Promise.all([
+            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
+          ]);
           dispatch({
             type: 'SET_DATA',
             payload: {
-              transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : []
+              transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : [],
+              contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(acc => ({
+                ...acc,
+                initial_balance: Number(acc.initial_balance || 0),
+                current_balance: Number(acc.current_balance || 0)
+              })) : []
             }
           });
           return;
@@ -347,11 +367,20 @@ export function FinanceProvider({ children }) {
             method: 'DELETE',
             headers
           });
-          const refreshT2 = await fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json());
+          // Re-fetch transactions AND accounts (delete now reverses balance)
+          const [refreshT2, refreshAccounts2] = await Promise.all([
+            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
+          ]);
           dispatch({
             type: 'SET_DATA',
             payload: {
-              transacoes: Array.isArray(refreshT2) ? refreshT2.map(mapTransaction) : []
+              transacoes: Array.isArray(refreshT2) ? refreshT2.map(mapTransaction) : [],
+              contas: Array.isArray(refreshAccounts2) ? refreshAccounts2.map(acc => ({
+                ...acc,
+                initial_balance: Number(acc.initial_balance || 0),
+                current_balance: Number(acc.current_balance || 0)
+              })) : []
             }
           });
           return;
@@ -419,13 +448,33 @@ export function FinanceProvider({ children }) {
           payload = { ...action.payload, id: savedMeta.id };
           break;
         }
-        case 'UPDATE_META':
+        case 'UPDATE_META': {
+          const updateBody = {
+            savedAmount: action.payload.poupado,
+            account_id: action.payload.account_id,
+            increment: action.payload.increment
+          };
           await fetch(`${FINANCE_API_URL}/goals/${action.payload.id}`, {
             method: 'PUT',
             headers,
-            body: JSON.stringify({ savedAmount: action.payload.poupado })
+            body: JSON.stringify(updateBody)
           });
-          break;
+          
+          // Re-fetch everything to ensure perfect sync
+          const [refreshGoals, refreshAccs] = await Promise.all([
+            fetch(`${FINANCE_API_URL}/goals`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
+          ]);
+          
+          dispatch({
+            type: 'SET_DATA',
+            payload: {
+              metas: Array.isArray(refreshGoals) ? refreshGoals.map(mapGoal) : [],
+              contas: Array.isArray(refreshAccs) ? refreshAccs.map(mapAccount) : []
+            }
+          });
+          return;
+        }
         case 'DELETE_META':
           await fetch(`${FINANCE_API_URL}/goals/${action.payload}`, { 
             method: 'DELETE',

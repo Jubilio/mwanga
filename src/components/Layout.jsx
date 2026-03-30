@@ -10,6 +10,7 @@ import api from '../utils/api';
 import Toast, { useToast } from './Toast';
 import Sidebar from './layout/Sidebar';
 import CustomCursor from './CustomCursor';
+import ConfirmModal from './ConfirmModal';
 import { AnimatePresence, motion } from 'framer-motion';
 
 
@@ -54,6 +55,7 @@ export default function Layout() {
   const { toast, showToast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isConfirmClearOpen, setIsConfirmClearOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const location = useLocation();
 
@@ -85,12 +87,14 @@ export default function Layout() {
 
   const handleClearAll = async () => {
     try {
-      if (window.confirm('Tens a certeza que queres eliminar todas as notificações?')) {
-        await api.delete('/notifications');
-        setNotifications([]);
-        showToast('Notificações limpas!', 'success');
-      }
-    } catch (error) { console.error(error); }
+      await api.delete('/notifications');
+      setNotifications([]);
+      showToast('Notificações limpas!', 'success');
+      setIsConfirmClearOpen(false);
+    } catch (error) { 
+      console.error(error);
+      showToast('Erro ao limpar notificações', 'error');
+    }
   };
 
   const handleDeleteOne = async (e, id) => {
@@ -124,8 +128,8 @@ export default function Layout() {
             <div className="flex items-center gap-2">
               {notifications.length > 0 && (
                 <button 
-                  onClick={handleClearAll}
-                  className="text-[10px] uppercase tracking-wider font-bold text-gray-400 hover:text-red-500 transition-colors mr-2"
+                  onClick={() => setIsConfirmClearOpen(true)}
+                  className="text-[10px] uppercase tracking-wider font-bold text-gray-400 hover:text-coral transition-colors mr-2"
                 >
                   Limpar Tudo
                 </button>
@@ -243,7 +247,18 @@ export default function Layout() {
         ))}
       </nav>
 
-      <Toast message={toast.message} visible={toast.visible} />
+      <Toast message={toast.message} visible={toast.visible} variant={toast.variant} />
+
+      {/* Global Confirmation Modal for Notifications */}
+      <ConfirmModal 
+        isOpen={isConfirmClearOpen}
+        title="Limpar Notificações?"
+        message="Esta acção irá eliminar permanentemente todos os teus lembretes e alertas. Tens a certeza?"
+        confirmText="Sim, Limpar Tudo"
+        cancelText="Não, Manter"
+        onConfirm={handleClearAll}
+        onCancel={() => setIsConfirmClearOpen(false)}
+      />
     </div>
   );
 }

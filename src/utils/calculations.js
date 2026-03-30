@@ -136,7 +136,13 @@ export function calcMonthlyTotals(transactions, monthKey = getMonthKey(), rendas
   const totalExpenses = despesas + renda;
   const saldo = totalIncome - totalExpenses;
 
-  return { receitas, despesas, renda, poupanca, totalIncome, saldo, totalExpenses };
+  // Unlinked saldo: only transactions NOT linked to any account (avoids double-counting with totalContas)
+  const unlinkedTx = monthTx.filter(t => !t.account_id);
+  const unlinkedIncome = unlinkedTx.filter(t => t.tipo === 'receita').reduce((sum, t) => sum + Number(t.valor || 0), 0);
+  const unlinkedExpenses = unlinkedTx.filter(t => t.tipo === 'despesa' || t.tipo === 'renda').reduce((sum, t) => sum + Number(t.valor || 0), 0);
+  const unlinkedSaldo = unlinkedIncome - unlinkedExpenses;
+
+  return { receitas, despesas, renda, poupanca, totalIncome, saldo, totalExpenses, unlinkedSaldo };
 }
 
 export function calcCategoryBreakdown(transactions, tipo = 'despesa', monthKey = null, rendas = [], startDay = 1) {

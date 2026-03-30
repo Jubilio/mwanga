@@ -7,16 +7,23 @@ const logger = require('../utils/logger');
  */
 class LoanService {
   /**
-   * Calculates loan details based on the blueprint.
+   * Calculates loan details based on the Price System (Annuity).
    * @param {number} principal 
-   * @param {number} rate (monthly rate as decimal, e.g., 0.30 for 30%)
+   * @param {number} rate (monthly or annual decimal)
    * @param {number} months 
+   * @param {boolean} isAnnual (true for bank loans like BIM/BCI)
    * @returns {Object} { interest, total, monthlyPayment }
    */
-  calculateLoan(principal, rate, months) {
-    const interest = principal * rate * months;
-    const total = principal + interest;
-    const monthlyPayment = total / months;
+  calculateLoan(principal, rate, months, isAnnual = false) {
+    const r = isAnnual ? (Math.pow(1 + rate, 1/12) - 1) : rate;
+    
+    if (r <= 0) {
+      return { interest: 0, total: principal, monthlyPayment: principal / months };
+    }
+
+    const monthlyPayment = (principal * r) / (1 - Math.pow(1 + r, -months));
+    const total = monthlyPayment * months;
+    const interest = total - principal;
 
     return {
       interest,
@@ -28,8 +35,8 @@ class LoanService {
   /**
    * Disburses a loan: creates the loan record and the payment schedule.
    */
-  async disburseLoan(applicationId, userId, householdId, principal, rate, months) {
-    const { monthlyPayment } = this.calculateLoan(principal, rate, months);
+  async disburseLoan(applicationId, userId, householdId, principal, rate, months, isAnnual = false) {
+    const { monthlyPayment } = this.calculateLoan(principal, rate, months, isAnnual);
 
     return await db.batch([
       // 1. Create the Loan record

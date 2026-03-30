@@ -166,11 +166,21 @@ const deleteTransaction = async (req, res) => {
     const tx = result.rows[0];
     if (!tx) return res.status(403).json({ error: 'Acesso negado ou não encontrado' });
 
-    await db.execute({
-      sql: 'DELETE FROM transactions WHERE id = ?',
-      args: [txId]
-    });
+    const queries = [
+      { sql: 'DELETE FROM transactions WHERE id = ?', args: [txId] }
+    ];
 
+    // Reverse the balance change if this transaction was linked to an account
+    if (tx.account_id) {
+      const originalChange = (tx.type === 'receita' || tx.type === 'poupanca') ? Number(tx.amount) : -Number(tx.amount);
+      const reversal = -originalChange;
+      queries.push({
+        sql: 'UPDATE accounts SET current_balance = current_balance + ? WHERE id = ? AND household_id = ?',
+        args: [reversal, tx.account_id, householdId]
+      });
+    }
+
+    await db.batch(queries, 'write');
 
     // Invalidate cache for this household (if Redis is available)
     if (redis) {

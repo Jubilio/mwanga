@@ -35,4 +35,4 @@ const isAdmin = (req, res, next) => {
   }
 };
 
-module.exports = { authenticate, isAdmin };
+module.exports = { authenticate, isAdmin, JWT_SECRET };

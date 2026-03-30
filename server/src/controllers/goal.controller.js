@@ -34,35 +34,55 @@ const createGoal = async (req, res, next) => {
 };
 
 const updateGoalProgress = async (req, res) => {
-  const { savedAmount } = req.body;
+  const { savedAmount, account_id, increment } = req.body;
+  const householdId = req.user.householdId;
+  const goalId = req.params.id;
   
-  // Get current goal state for milestone logic
+  // 1. Get current goal state for validation and notifications
   const goalRes = await db.execute({
     sql: 'SELECT name, target_amount, saved_amount FROM goals WHERE id = ? AND household_id = ?',
-    args: [req.params.id, req.user.householdId]
+    args: [goalId, householdId]
   });
   const goal = goalRes.rows[0];
+  if (!goal) return res.status(404).json({ error: 'Meta não encontrada' });
 
-  if (goal) {
-    const oldPct = (goal.saved_amount / goal.target_amount) * 100;
-    const newPct = (savedAmount / goal.target_amount) * 100;
+  const numIncrement = Number(increment || 0);
+  const finalSavedAmount = increment ? Number(goal.saved_amount) + numIncrement : Number(savedAmount);
 
-    await db.execute({
+  // 2. Prepare atomic updates
+  const queries = [
+    {
       sql: 'UPDATE goals SET saved_amount = ? WHERE id = ? AND household_id = ?',
-      args: [savedAmount, req.params.id, req.user.householdId]
-    });
-
-    // Notify for milestones
-    if (oldPct < 50 && newPct >= 50 && newPct < 100) {
-      await createNotification(req.user.householdId, 'info', `Parabéns! Chegaste à metade da tua meta: ${goal.name}! 🚀`);
-    } else if (oldPct < 90 && newPct >= 90 && newPct < 100) {
-      await createNotification(req.user.householdId, 'info', `Quase lá! Estás a 90% de atingir ${goal.name}! 💪`);
-    } else if (oldPct < 100 && newPct >= 100) {
-      await createNotification(req.user.householdId, 'success', `Meta atingida! Parabéns por completares: ${goal.name}! 🎉`);
+      args: [finalSavedAmount, goalId, householdId]
     }
+  ];
+
+  // If incrementing from an account, subtract from account balance
+  if (account_id && numIncrement > 0) {
+    queries.push({
+      sql: 'UPDATE accounts SET current_balance = current_balance - ? WHERE id = ? AND household_id = ?',
+      args: [numIncrement, account_id, householdId]
+    });
+    
+    // Optional: Log a virtual transaction for history if needed
+    // For now, we focus on balance consistency.
   }
 
-  res.json({ success: true });
+  await db.batch(queries, 'write');
+
+  // 3. Notify for milestones (using finalSavedAmount)
+  const oldPct = (Number(goal.saved_amount) / Number(goal.target_amount)) * 100;
+  const newPct = (finalSavedAmount / Number(goal.target_amount)) * 100;
+
+  if (oldPct < 50 && newPct >= 50 && newPct < 100) {
+    await createNotification(householdId, 'info', `Parabéns! Chegaste à metade da tua meta: ${goal.name}! 🚀`);
+  } else if (oldPct < 90 && newPct >= 90 && newPct < 100) {
+    await createNotification(householdId, 'info', `Quase lá! Estás a 90% de atingir ${goal.name}! 💪`);
+  } else if (oldPct < 100 && newPct >= 100) {
+    await createNotification(householdId, 'success', `Meta atingida! Parabéns por completares: ${goal.name}! 🎉`);
+  }
+
+  res.json({ success: true, savedAmount: finalSavedAmount });
 };
 
 const deleteGoal = async (req, res) => {

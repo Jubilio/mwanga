@@ -7,16 +7,16 @@ import { useToast } from "../components/Toast";
    DESIGN TOKENS — Mwanga Midnight Gold
 ═══════════════════════════════════════ */
 const G = {
-  bg: "#07090f", bg2: "#0c1018", bg3: "#101620",
+  bg: "var(--color-midnight)", bg2: "var(--color-midnight-light)", bg3: "#101620",
   card: "rgba(255,255,255,0.04)", cardHov: "rgba(255,255,255,0.07)",
   border: "rgba(255,255,255,0.07)", borderS: "rgba(255,255,255,0.13)",
-  gold: "#F59E0B", gold2: "#F97316", goldGlow: "rgba(245,158,11,0.28)",
+  gold: "var(--color-gold)", gold2: "var(--color-gold-light)", goldGlow: "rgba(245,158,11,0.28)",
   text: "#e8f0fe", muted: "#6b7fa3", muted2: "#3a4a62", muted3: "#1a2535",
-  green: "#00D68F", red: "#FF4C4C", blue: "#60A5FA", purple: "#8B5CF6",
-  credit: "#10B981",   // verde esmeralda — cor do módulo crédito
+  green: "var(--color-leaf)", red: "var(--color-coral)", blue: "var(--color-ocean)", purple: "#8B5CF6",
+  credit: "var(--color-leaf)",   // verde esmeralda — cor do módulo crédito
   credit2: "#059669",
-  warn: "#F59E0B",
-  danger: "#EF4444",
+  warn: "var(--color-gold)",
+  danger: "var(--color-coral)",
 };
 
 /* ═══════════════════════════════════════
@@ -28,10 +28,16 @@ const FinancialEngine = {
     return principal * Math.pow(1 + rateMonthly, months);
   },
   // Parcela Price (anuidade)
-  installment(principal, rateMonthly, months) {
-    if (rateMonthly === 0) return principal / months;
-    return (principal * rateMonthly * Math.pow(1 + rateMonthly, months))
-      / (Math.pow(1 + rateMonthly, months) - 1);
+  // isAnnual: se a taxa for anual (bancos), convertemos para mensal
+  installment(principal, rate, months, isAnnual = false) {
+    let i = isAnnual ? (Math.pow(1 + rate, 1/12) - 1) : rate;
+    if (i === 0) return principal / months;
+    return (principal * i * Math.pow(1 + i, months))
+      / (Math.pow(1 + i, months) - 1);
+  },
+  // Imposto de Selo (Moz) - Aprox 0.5% do capital
+  stampDuty(principal) {
+    return principal * 0.005;
   },
   // Tabela de amortização completa
   amortizationTable(principal, rateMonthly, months) {
@@ -53,8 +59,19 @@ const FinancialEngine = {
     return rows;
   },
   // CET aproximado (anualizado)
-  cet(principal, rateMonthly) {
-    return (Math.pow(1 + rateMonthly, 12) - 1) * 100;
+  cet(amount, rate, months, isAnnual = false) {
+    const rateAnnual = isAnnual ? rate : (Math.pow(1 + rate, 12) - 1);
+    return rateAnnual * 100;
+  },
+  // Encontrar n tal que a parcela P <= maxInstallment
+  suggestMinMonths(amount, rate, maxInstallment, isAnnual = false) {
+    if (maxInstallment <= 0) return 60;
+    const i = isAnnual ? (Math.pow(1 + rate, 1/12) - 1) : rate;
+    if (i <= 0) return Math.ceil(amount / maxInstallment);
+    const check = (amount * i) / maxInstallment;
+    if (check >= 1) return 120; // Inatingível com este salário
+    const n = Math.log(1 - check) / -Math.log(1 + i);
+    return Math.ceil(n);
   }
 };
 
@@ -328,33 +345,77 @@ function TabOverview({ onApply, scoreData, eligData, hist, isPro }) {
 /* ═══════════════════════════════════════
    TAB: SIMULADOR
 ═══════════════════════════════════════ */
-function TabSimulator({ scoreData, eligData, userData, isPro }) {
-  const [amount, setAmount] = useState(5000);
-  const [months, setMonths] = useState(3);
-  const [rate, setRate] = useState(0.08); // 8% ao mês = parceiro conservador
+function TabSimulator({ eligData, userData, isPro }) {
+  const BANKS = [
+    { id: "bim", name: "Millennium BIM", rate: 0.261, tag: "26.1% AA", color: G.red, isAnnual: true },
+    { id: "bci", name: "BCI", rate: 0.281, tag: "28.1% AA", color: G.blue, isAnnual: true },
+    { id: "micro", name: "Microcrédito Informal", rate: 0.10, tag: "10%/mês", color: G.gold, isAnnual: false },
+    { id: "xitique", name: "Xitique", rate: 0.00, tag: "0%/mês", color: G.green, isAnnual: false },
+  ];
+
+  const [amount, setAmount] = useState(200000);
+  const [months, setMonths] = useState(8);
+  const [rate, setRate] = useState(BANKS[0].rate);
   const [showTable, setShowTable] = useState(false);
 
-  const maxAmount = scoreData.maxAmount;
+  // Regra Bancária: Prestação máxima é 1/3 do salário
+  const salary = userData.salario || 0;
+  const maxAllowedInstallment = salary / 3;
 
-  const parcela = FinancialEngine.installment(amount, rate, months);
-  const totalDue = parcela * months;
-  const totalJuros = totalDue - amount;
-  const cet = FinancialEngine.cet(amount, rate, months);
-  const table = FinancialEngine.amortizationTable(amount, rate, months);
+  const selectedBank = BANKS.find(b => b.rate === rate) || BANKS[0];
+  const isAnnual = selectedBank.isAnnual;
 
-  const isAffordable = parcela <= eligData.maxParcela;
-  const percentSalary = userData.salario > 0 ? (parcela / userData.salario) * 100 : 0;
-  const newComprometimento = userData.salario > 0 ? ((userData.dividas_parcelas + parcela) / userData.salario) * 100 : 0;
+  const parcela = FinancialEngine.installment(amount, rate, months, isAnnual);
+  const stampDuty = FinancialEngine.stampDuty(amount);
+  const totalDue = (parcela * months) + stampDuty;
+  const totalJuros = totalDue - amount - stampDuty;
+  const cet = FinancialEngine.cet(amount, rate, months, isAnnual);
+  const table = FinancialEngine.amortizationTable(amount, isAnnual ? (Math.pow(1 + rate, 1/12) - 1) : rate, months);
 
-  const BANKS = [
-    { id: "bim", name: "Millennium BIM", rate: 0.18, tag: "18%/mês", color: G.red },
-    { id: "bci", name: "BCI", rate: 0.20, tag: "20%/mês", color: G.blue },
-    { id: "micro", name: "Microcrédito Informal", rate: 0.30, tag: "30%/mês", color: G.gold },
-    { id: "xitique", name: "Xitique", rate: 0.00, tag: "0%/mês", color: G.green },
-  ];
+  const isAffordable = parcela <= maxAllowedInstallment;
+  const suggestedMonths = !isAffordable ? FinancialEngine.suggestMinMonths(amount, rate, maxAllowedInstallment, isAnnual) : months;
+  const newComprometimento = salary > 0 ? ((userData.dividas_parcelas + parcela) / salary) * 100 : 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+
+      {/* Alerta Inteligente se exceder 1/3 */}
+      {!isAffordable && salary > 0 && (
+        <div style={{ 
+          padding: "16px 20px", 
+          background: "rgba(239, 68, 68, 0.12)", 
+          border: "1px solid rgba(239, 68, 68, 0.3)", 
+          borderRadius: 20,
+          display: 'flex',
+          gap: 14,
+          alignItems: 'center',
+          animation: 'fadeIn 0.4s ease'
+        }}>
+          <div style={{ fontSize: 24 }}>🛑</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: G.red, marginBottom: 2 }}>Capacidade Excedida (Regra de 1/3)</div>
+            <div style={{ fontSize: 12, color: G.muted, lineHeight: 1.5 }}>
+              O banco não permite uma prestação de <strong>MT {fmt(parcela)}</strong> com o teu salário actual (MT {fmt(salary)}). 
+              Para pedires <strong>MT {fmt(amount)}</strong>, precisas de estender o prazo para <strong>pelo menos {suggestedMonths} meses</strong> para ser aprovado.
+            </div>
+          </div>
+          <button 
+            onClick={() => setMonths(suggestedMonths)}
+            style={{ padding: '8px 16px', background: G.red, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}
+          >
+            Ajustar para {suggestedMonths}m
+          </button>
+        </div>
+      )}
+
+      {/* Alerta Se inatingível (Salário zero) */}
+      {!isAffordable && salary <= 0 && (
+        <div style={{ padding: "16px 20px", background: "rgba(201, 150, 58, 0.1)", border: `1px solid ${G.gold}30`, borderRadius: 16 }}>
+           <div style={{ fontSize: 13, color: G.gold, fontWeight: 700 }}>Dica Mwanga Finance</div>
+           <div style={{ fontSize: 12, color: G.muted }}>Configura o teu salário no perfil para receberes uma análise de elegibilidade bancária real (regra de 33%).</div>
+        </div>
+      )}
 
       {/* Inputs */}
       <Card>
@@ -366,12 +427,12 @@ function TabSimulator({ scoreData, eligData, userData, isPro }) {
             <span style={{ fontSize: 13, color: G.text, fontWeight: 600 }}>Valor solicitado</span>
             <span style={{ fontSize: 20, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif" }}>MT {fmtShort(amount)}</span>
           </div>
-          <input type="range" min={1000} max={maxAmount} step={500} value={amount}
+          <input type="range" min={1000} max={3000000} step={1000} value={amount}
             onChange={e => setAmount(+e.target.value)}
             style={{ width: "100%", accentColor: G.credit, cursor: "pointer" }} />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
             <span style={{ fontSize: 11, color: G.muted2 }}>MT 1,000</span>
-            <span style={{ fontSize: 11, color: G.muted2 }}>MT {fmtShort(maxAmount)}</span>
+            <span style={{ fontSize: 11, color: G.muted2 }}>MT 3,000,000</span>
           </div>
         </div>
 
@@ -381,10 +442,10 @@ function TabSimulator({ scoreData, eligData, userData, isPro }) {
             <span style={{ fontSize: 13, color: G.text, fontWeight: 600 }}>Prazo</span>
             <span style={{ fontSize: 14, fontWeight: 700, color: G.gold }}>{months} {months === 1 ? "mês" : "meses"}</span>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {[1, 2, 3, 6, 12].map(m => (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {[3, 6, 12, 24, 36, 48, 60].map(m => (
               <button key={m} onClick={() => setMonths(m)} style={{
-                flex: 1, padding: "8px 4px", borderRadius: 10, border: "none", cursor: "pointer",
+                flex: "1 0 50px", padding: "8px 4px", borderRadius: 10, border: "none", cursor: "pointer",
                 background: months === m ? `linear-gradient(135deg,${G.credit},${G.credit2})` : G.muted3,
                 color: months === m ? "#000" : G.muted, fontWeight: 700, fontSize: 13, fontFamily: "inherit",
               }}>{m}m</button>
@@ -432,8 +493,8 @@ function TabSimulator({ scoreData, eligData, userData, isPro }) {
             { l: "Parcela mensal", v: `MT ${fmt(parcela)}`, c: isAffordable ? G.green : G.red, big: true },
             { l: "Total a pagar", v: `MT ${fmt(totalDue)}`, c: G.text, big: true },
             { l: "Total de juros", v: `MT ${fmt(totalJuros)}`, c: G.red },
-            { l: "CET anual", v: `${cet.toFixed(0)}%`, c: rate >= 0.20 ? G.red : G.gold },
-            { l: "% do salário", v: `${percentSalary.toFixed(1)}%`, c: percentSalary > 30 ? G.red : G.gold },
+            { l: "Imposto de Selo", v: `MT ${fmt(stampDuty)}`, c: G.muted },
+            { l: "Taxa Efectiva (AA)", v: `${cet.toFixed(1)}%`, c: cet >= 50 ? G.red : G.gold },
             { l: "Comprometimento", v: `${newComprometimento.toFixed(1)}%`, c: newComprometimento > 40 ? G.danger : G.green },
           ].map((r, i) => (
             <div key={i} style={{ background: G.muted3, borderRadius: 14, padding: "12px 14px" }}>
@@ -546,15 +607,18 @@ function TabSimulator({ scoreData, eligData, userData, isPro }) {
 /* ═══════════════════════════════════════
    TAB: COMPARADOR (BIM vs BCI vs Xitique)
 ═══════════════════════════════════════ */
-function TabCompare() {
-  const [amount, setAmount] = useState(10000);
-  const [months, setMonths] = useState(6);
+function TabCompare({ userData }) {
+  const [amount, setAmount] = useState(200000);
+  const [months, setMonths] = useState(12);
+
+  const salary = userData.salario || 0;
+  const maxInstallment = salary / 3;
 
   const OPTIONS = [
-    { id: 'bim', name: 'Millennium BIM', rate: 0.18, color: G.red, desc: 'Rápido, desconto no salário' },
-    { id: 'bci', name: 'BCI', rate: 0.20, color: G.blue, desc: 'Ideal para clientes conta-ordenado' },
-    { id: 'micro', name: 'Microcrédito', rate: 0.30, color: G.gold, desc: 'Aprovação fácil, risco elevado' },
-    { id: 'xitique', name: 'Xitique', rate: 0, color: G.green, desc: 'Sem juros, depende dos amigos', tooltip: 'Requer esperar a tua vez no ciclo' }
+    { id: 'bim', name: 'Millennium BIM', rate: 0.261, color: G.red, desc: 'Rápido, desconto no salário', isAnnual: true },
+    { id: 'bci', name: 'BCI', rate: 0.281, color: G.blue, desc: 'Ideal para clientes conta-ordenado', isAnnual: true },
+    { id: 'micro', name: 'Microcrédito', rate: 0.10, color: G.gold, desc: 'Aprovação fácil, risco elevado', isAnnual: false },
+    { id: 'xitique', name: 'Xitique', rate: 0, color: G.green, desc: 'Sem juros, depende dos amigos', isAnnual: false }
   ];
 
   return (
@@ -567,16 +631,16 @@ function TabCompare() {
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                <span style={{ fontSize: 20, fontWeight: 900, color: G.credit, fontFamily: 'Sora,sans-serif' }}>MT {fmtShort(amount)}</span>
             </div>
-            <input type='range' min={1000} max={50000} step={500} value={amount}
+            <input type='range' min={1000} max={3000000} step={1000} value={amount}
               onChange={e => setAmount(+e.target.value)}
               style={{ width: '100%', accentColor: G.credit, cursor: 'pointer' }} />
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>
             <label style={{ fontSize: 13, color: G.text, fontWeight: 600, display: 'block', marginBottom: 8 }}>Prazo (Meses)</label>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {[3, 6, 12].map(m => (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {[3, 6, 12, 24, 36].map(m => (
                 <button key={m} onClick={() => setMonths(m)} style={{
-                  flex: 1, padding: '9px 4px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                  flex: "1 0 40px", padding: '9px 4px', borderRadius: 10, border: 'none', cursor: 'pointer',
                   background: months === m ? `linear-gradient(135deg,${G.credit},${G.credit2})` : G.muted3,
                   color: months === m ? '#000' : G.muted, fontWeight: 700, fontSize: 13, fontFamily: 'inherit',
                 }}>{m}m</button>
@@ -588,15 +652,21 @@ function TabCompare() {
         {/* Display dos cartões lado a lado */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
           {OPTIONS.map(opt => {
-            const parcela = FinancialEngine.installment(amount, opt.rate, months);
-            const total = parcela * months;
-            const juros = total - amount;
+            const isAnnual = opt.isAnnual;
+            const parcela = FinancialEngine.installment(amount, opt.rate, months, isAnnual);
+            const isAffordable = salary > 0 ? parcela <= maxInstallment : true;
+            const stampDuty = isAnnual ? FinancialEngine.stampDuty(amount) : 0;
+            const total = (parcela * months) + stampDuty;
+            const juros = total - amount - stampDuty;
             
             return (
               <div key={opt.id} style={{ padding: 16, borderRadius: 16, border: `1px solid ${opt.color}40`, background: `${opt.color}08` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                   <div style={{ fontWeight: 700, color: opt.color }}>{opt.name}</div>
-                  <Badge label={`${(opt.rate * 100).toFixed(0)}%/mês`} color={opt.color} />
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                    <Badge label={isAnnual ? `${(opt.rate * 100).toFixed(1)}% AA` : `${(opt.rate * 100).toFixed(0)}%/mês`} color={opt.color} />
+                    {!isAffordable && <span style={{ fontSize: 9, fontWeight: 900, color: G.red, textTransform: 'uppercase' }}>🛑 Excede 1/3 de Cap.</span>}
+                  </div>
                 </div>
                 <div style={{ marginBottom: 12 }}>
                   <div style={{ fontSize: 11, color: G.muted }}>Custo Mensal</div>
@@ -624,7 +694,7 @@ function TabCompare() {
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: G.credit, marginBottom: 4 }}>Veredicto Binth Intelligence</div>
               <div style={{ fontSize: 13, color: G.muted, lineHeight: 1.6 }}>
-                Para <strong>MT {fmtShort(amount)}</strong> em <strong>{months} meses</strong>, o Xitique é a única opção sem custos, poupando-te <strong>MT {fmtShort(FinancialEngine.installment(amount, 0.18, months) * months - amount)}</strong> em juros face ao banco formal mais barato. Se precisas de financiamento com urgência, o <strong style={{color:G.red}}>Millennium BIM</strong> surge como a melhor alternativa de crédito.
+                Para <strong>MT {fmtShort(amount)}</strong> em <strong>{months} meses</strong>, o Xitique é a única opção com custo zero. No entanto, o <strong style={{color:G.red}}>Millennium BIM</strong> é agora a melhor alternativa de crédito formal, poupando-te cerca de <strong>MT {fmtShort((FinancialEngine.installment(amount, 0.10, months, false) * months) - (FinancialEngine.installment(amount, 0.261, months, true) * months))}</strong> em juros comparado ao microcrédito informal.
               </div>
             </div>
           </div>
@@ -637,18 +707,22 @@ function TabCompare() {
 /* ═══════════════════════════════════════
    TAB: CONSOLIDAÇÃO DE DÍVIDAS
 ═══════════════════════════════════════ */
-function TabConsolidate({ debts }) {
-  const [rate, setRate] = useState(0.18); // BIM default
-  const [months, setMonths] = useState(12);
+function TabConsolidate({ debts, userData }) {
+  const [rate, setRate] = useState(0.261); // BIM Reality
+  const [months, setMonths] = useState(24);
+
+  const salary = userData.salario || 0;
+  const maxInstallment = salary / 3;
 
   const activeDebts = (debts || []).filter(d => d.status !== 'paid' && (d.remaining_amount > 0 || d.restante > 0 || d.total_amount > 0));
   const currentTotal = activeDebts.reduce((sum, d) => sum + (d.remaining_amount || d.restante || d.total_amount || 0), 0);
   
-  // Parcela actual vs Parcela Simulada
-  // Fazemos uma estimativa se não houver monthly_payment na divída (mt standard é 20% em 3m)
   const currentMonthly = activeDebts.reduce((sum, d) => sum + (d.monthly_payment || FinancialEngine.installment(d.remaining_amount || d.restante || d.total_amount, 0.20, 3)), 0);
 
-  const newInstallment = FinancialEngine.installment(currentTotal, rate, months);
+  const isAnnual = rate < 1; // Real banks use annual, micro uses 0.10+
+  const parcela = FinancialEngine.installment(currentTotal, rate, months, isAnnual);
+  const newInstallment = parcela;
+  const isAffordable = salary > 0 ? newInstallment <= maxInstallment : true;
   const savingsMonthly = currentMonthly - newInstallment;
   
   // Assumimos que a dívida antiga demorava mais X meses (vamos estimar 4 meses de média ponderada rápida)
@@ -684,9 +758,9 @@ function TabConsolidate({ debts }) {
               <label style={{ fontSize: 12, fontWeight: 600, color: G.text, marginBottom: 8, display: 'block' }}>Banco para Consolidação / Taxa</label>
               <select style={{ width: '100%', padding: 12, borderRadius: 10, background: G.bg2, border: `1px solid ${G.border}`, color: G.text, outline: 'none' }}
                 value={rate} onChange={e => setRate(parseFloat(e.target.value))}>
-                <option value={0.18}>BIM (18%/mês)</option>
-                <option value={0.20}>BCI (20%/mês)</option>
-                <option value={0.10}>Microcrédito Especial (10%/mês)</option>
+                <option value={0.261}>Millennium BIM (26.1% AA)</option>
+                <option value={0.281}>BCI (28.1% AA)</option>
+                <option value={0.10}>Microcrédito (10%/mês)</option>
               </select>
             </div>
             <div style={{ flex: 1, minWidth: 200 }}>
@@ -696,25 +770,27 @@ function TabConsolidate({ debts }) {
                 <option value={6}>6 Meses</option>
                 <option value={12}>12 Meses</option>
                 <option value={24}>24 Meses</option>
+                <option value={36}>36 Meses</option>
+                <option value={48}>48 Meses</option>
               </select>
             </div>
           </div>
           
-          <div style={{ padding: 16, borderRadius: 12, background: savingsMonthly > 0 && savingsTotal > 0 ? `${G.credit}15` : `${G.gold}15`, border: `1px solid ${savingsMonthly > 0 && savingsTotal > 0 ? G.credit : G.gold}30` }}>
-             {savingsMonthly > 0 && savingsTotal > 0 ? (
+          <div style={{ padding: 16, borderRadius: 12, background: isAffordable && savingsMonthly > 0 ? `${G.credit}15` : `${G.gold}15`, border: `1px solid ${isAffordable && savingsMonthly > 0 ? G.credit : G.gold}30` }}>
+             {isAffordable && savingsMonthly > 0 && savingsTotal > 0 ? (
                <div>
                  <div style={{ fontSize: 14, fontWeight: 700, color: G.credit, marginBottom: 8 }}>✅ Vale a pena consolidar!</div>
-                 <div style={{ fontSize: 13, color: G.muted, lineHeight: 1.5 }}>Ganhas folga de <strong>MT {fmtShort(savingsMonthly)}/mês</strong> imediata e também poupas <strong>MT {fmtShort(savingsTotal)}</strong> em juros no fecho das dívidas. Vai ao banco.</div>
+                 <div style={{ fontSize: 13, color: G.muted, lineHeight: 1.5 }}>Ganhas folga de <strong>MT {fmtShort(savingsMonthly)}/mês</strong> imediata e também poupas <strong>MT {fmtShort(savingsTotal)}</strong> em juros. Vai ao banco.</div>
                </div>
-             ) : savingsMonthly > 0 && savingsTotal <= 0 ? (
+             ) : !isAffordable && savingsMonthly > 0 ? (
                <div>
-                 <div style={{ fontSize: 14, fontWeight: 700, color: G.gold, marginBottom: 8 }}>⚠️ Cuidado com a "Falsa Sensação de Alívio"</div>
-                 <div style={{ fontSize: 13, color: G.muted, lineHeight: 1.5 }}>A tua prestação baixa <strong>MT {fmtShort(savingsMonthly)}/mês</strong> mas como arrastas a dívida por {months} meses, pagarás <strong>MT {fmtShort(Math.abs(savingsTotal))} A MAIS</strong> em juros totais ao banco. Consolida SÓ se estiveres asfixiado este mês.</div>
+                 <div style={{ fontSize: 14, fontWeight: 700, color: G.gold, marginBottom: 8 }}>⚠️ Alívio mensal, mas limite atingido</div>
+                 <div style={{ fontSize: 13, color: G.muted, lineHeight: 1.5 }}>A nova prestação de <strong>MT {fmt(newInstallment)}</strong> excede 1/3 do teu salário (MT {fmt(maxInstallment)}). Tenta aumentar o prazo para consolidar com sucesso e dentro das regras bancárias.</div>
                </div>
              ) : (
                <div>
                  <div style={{ fontSize: 14, fontWeight: 700, color: G.red, marginBottom: 8 }}>🚫 Não vale a pena consolidar</div>
-                 <div style={{ fontSize: 13, color: G.muted, lineHeight: 1.5 }}>Este cenário é mais caro mensalmente E no total de juros. Fica com as dívidas actuais e tenta cortá-las com Xitique ou orçamento mais rigoroso.</div>
+                 <div style={{ fontSize: 13, color: G.muted, lineHeight: 1.5 }}>Este cenário é mais caro ou não oferece poupança real. Mantém as prestações actuais e foca-te na amortização acelerada.</div>
                </div>
              )}
           </div>
@@ -732,8 +808,8 @@ function TabApplication({ scoreData, eligData, onSuccess }) {
   const [step, setStep] = useState(1); // 1-pre | 2-form | 3-docs | 4-review | 5-submitted
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
-    amount: 5000,
-    months: 3,
+    amount: 200000,
+    months: 12,
     partner: "parceiro_a",
     purpose: "",
     renda_comprovada: "",
@@ -1315,9 +1391,9 @@ export default function MwangaCredito() {
       {/* Content */}
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px 24px 100px", animation: "fadeIn 0.3s ease" }} key={tab}>
         {tab === "overview"  && <TabOverview   onApply={handleApply} scoreData={scoreData} eligData={eligData} hist={hist} isPro={isPro} />}
-        {tab === "simulator" && <TabSimulator  scoreData={scoreData} eligData={eligData} userData={userData} isPro={isPro} />}
-        {tab === "compare"   && <TabCompare    scoreData={scoreData} eligData={eligData} isPro={isPro} />}
-        {tab === "consolidate" && <TabConsolidate debts={state.dividas} />}
+        {tab === "simulator" && <TabSimulator  eligData={eligData} userData={userData} isPro={isPro} />}
+        {tab === "compare"   && <TabCompare    userData={userData} />}
+        {tab === "consolidate" && <TabConsolidate debts={state.dividas} userData={userData} />}
         {tab === "apply"     && <TabApplication scoreData={scoreData} eligData={eligData} />}
         {tab === "strategy"  && (
           <ProGate isPro={isPro} title="Estratégia de Pagamento" description="A análise Avalanche de dívidas e o Mapa de Risco são exclusivos para utilizadores PRO.">
