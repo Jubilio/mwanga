@@ -923,6 +923,44 @@ textarea {
   text-align: center;
 }
 
+.dashboard-balance-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-balance-value {
+  max-width: 100%;
+  font-size: clamp(1.9rem, 8vw, 3rem);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  text-align: center;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.dashboard-balance-toggle {
+  flex-shrink: 0;
+}
+
+@media (max-width: 420px) {
+  .dashboard-balance-hero {
+    padding-inline: 0.25rem;
+  }
+
+  .dashboard-balance-row {
+    gap: 0.5rem;
+  }
+
+  .dashboard-balance-toggle {
+    margin-top: 0.15rem;
+  }
+}
+
 .dashboard-quick-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

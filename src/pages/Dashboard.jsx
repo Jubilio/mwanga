@@ -145,7 +145,7 @@ export default function Dashboard() {
         <div className="relative flex flex-col items-center">
           <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 dark:text-gray-400 mb-1">Balanço Disponível</span>
           
-          <div className="flex items-center gap-3">
+          <div className="dashboard-balance-row">
             <AnimatePresence mode="wait">
               <motion.div 
                 key={showBalance ? 'shown' : 'hidden'}
@@ -153,14 +153,14 @@ export default function Dashboard() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.2 }}
-                className="text-4xl xs:text-5xl font-extrabold text-midnight dark:text-white tracking-tight"
+                className="dashboard-balance-value text-midnight dark:text-white"
               >
                 {showBalance ? fmt(realBalance, currency) : '••••••'}
               </motion.div>
             </AnimatePresence>
             <button 
               onClick={() => setShowBalance(!showBalance)} 
-              className="p-2.5 rounded-full bg-black/5 dark:bg-white/5 text-gray-400 hover:text-ocean dark:hover:text-sky transition-all active:scale-90"
+              className="dashboard-balance-toggle p-2.5 rounded-full bg-black/5 dark:bg-white/5 text-gray-400 hover:text-ocean dark:hover:text-sky transition-all active:scale-90"
               aria-label={showBalance ? 'Ocultar saldo' : 'Mostrar saldo'}
             >
               {showBalance ? <Eye size={16} /> : <EyeOff size={16} />}
