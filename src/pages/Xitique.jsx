@@ -140,6 +140,8 @@ export default function Xitique() {
                       const contribution = x.contributions.find(con => con.cycle_id === c.id);
                       const receipt = x.receipts.find(r => r.cycle_id === c.id);
                       const isYourTurn = c.cycle_number === x.your_position;
+                      const safeContribution = contribution || { paid: false, amount: 0, id: null };
+                      const safeReceipt = receipt || { received_date: null, total_received: x.monthly_amount * x.total_participants, id: null };
 
                       return (
                         <tr key={c.id} style={isYourTurn ? { background: 'rgba(102, 187, 106, 0.05)' } : {}}>
@@ -147,8 +149,8 @@ export default function Xitique() {
                           <td>{c.due_date}</td>
                           <td>
                             {isYourTurn ? (
-                              receipt.received_date ? (
-                                <span className="badge badge-pago">✅ Recebido ({receipt.received_date})</span>
+                              safeReceipt.received_date ? (
+                                <span className="badge badge-pago">✅ Recebido ({safeReceipt.received_date})</span>
                               ) : (
                                 <span className="badge badge-atrasado">💎 Sua Vez!</span>
                               )
@@ -157,7 +159,7 @@ export default function Xitique() {
                             )}
                           </td>
                           <td>
-                            {contribution.paid ? (
+                            {safeContribution.paid ? (
                               <span className="badge badge-pago"><CheckCircle2 size={12} /> Pago</span>
                             ) : (
                               <span className="badge badge-pendente"><AlertCircle size={12} /> Pendente</span>
@@ -165,7 +167,7 @@ export default function Xitique() {
                           </td>
                           <td>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                              {(!contribution.paid || (isYourTurn && !receipt.received_date)) && (
+                              {(!safeContribution.paid || (isYourTurn && !safeReceipt.received_date)) && (
                                 <select 
                                   className="form-input" 
                                   style={{ padding: '0.2rem', fontSize: '0.7rem', width: '120px' }}
@@ -179,14 +181,14 @@ export default function Xitique() {
                                 </select>
                               )}
                               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                {!contribution.paid && (
-                                  <button onClick={() => handlePay(x.id, contribution.id)} className="btn btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
+                                {!safeContribution.paid && safeContribution.id && (
+                                  <button onClick={() => handlePay(x.id, safeContribution.id)} className="btn btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
                                     Pagar
                                   </button>
                                 )}
-                                {isYourTurn && !receipt.received_date && (
-                                  <button onClick={() => handleReceive(x.id, receipt.id)} className="btn btn-leaf" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
-                                     Receber {fmt(receipt.total_received, currency)}
+                                {isYourTurn && !safeReceipt.received_date && safeReceipt.id && (
+                                  <button onClick={() => handleReceive(x.id, safeReceipt.id)} className="btn btn-leaf" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
+                                     Receber {fmt(safeReceipt.total_received, currency)}
                                   </button>
                                 )}
                               </div>

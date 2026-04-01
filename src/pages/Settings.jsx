@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useFinance } from '../hooks/useFinance';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 import { 
   Settings as SettingsIcon, Save, User, Building, 
   Wallet, Palette, Bell, Shield, LogOut, Camera,
@@ -19,6 +20,15 @@ const AVATARS = [
 export default function Settings() {
   const { state, dispatch } = useFinance();
   const { showToast } = useOutletContext();
+  const {
+    enablePush,
+    disablePush,
+    isLoading: isPushLoading,
+    isSubscribed,
+    isSupported,
+    permission,
+    sendTestPush,
+  } = usePushNotifications();
   const [activeTab, setActiveTab] = useState('perfil');
   const [showAvatarGallery, setShowAvatarGallery] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -561,6 +571,81 @@ export default function Settings() {
                                   onChange={(e) => setForm({ ...form, monthly_due_reminder_time: e.target.value })}
                                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-amber-500/40 transition-all font-medium"
                                 />
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-slate-200 bg-[linear-gradient(135deg,#0a4d68,#088395)] p-5 text-white shadow-[0_16px_40px_rgba(10,77,104,0.18)]">
+                              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                  <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em]">
+                                    <Bell size={12} /> Push Engine
+                                  </div>
+                                  <h5 className="text-sm font-black uppercase tracking-[0.18em]">Notificacoes fora da app</h5>
+                                  <p className="mt-2 text-[12px] text-white/75">
+                                    Liga push no browser para receber lembretes, pressao de orcamento e motivacao mesmo com o Mwanga fechado.
+                                  </p>
+                                  <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-[0.2em]">
+                                    <span className="rounded-full bg-white/12 px-3 py-1">
+                                      Suporte: {isSupported ? 'Sim' : 'Nao'}
+                                    </span>
+                                    <span className="rounded-full bg-white/12 px-3 py-1">
+                                      Permissao: {permission}
+                                    </span>
+                                    <span className="rounded-full bg-white/12 px-3 py-1">
+                                      Estado: {isSubscribed ? 'Ativo' : 'Desligado'}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2 sm:min-w-[210px]">
+                                  <button
+                                    type="button"
+                                    disabled={!isSupported || isPushLoading}
+                                    onClick={async () => {
+                                      try {
+                                        await enablePush();
+                                        showToast('Push inteligente ativado.');
+                                      } catch (error) {
+                                        showToast(error.message || 'Nao foi possivel ativar push.');
+                                      }
+                                    }}
+                                    className="rounded-2xl bg-white px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#0a4d68] transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                  >
+                                    {isSubscribed ? 'Reativar Push' : 'Ativar Push'}
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    disabled={!isSubscribed || isPushLoading}
+                                    onClick={async () => {
+                                      try {
+                                        await sendTestPush();
+                                        showToast('Teste enviado. Fecha ou minimiza a app para validar o fluxo.');
+                                      } catch {
+                                        showToast('Nao foi possivel enviar o teste.');
+                                      }
+                                    }}
+                                    className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-white/16 disabled:cursor-not-allowed disabled:opacity-60"
+                                  >
+                                    Enviar Teste
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    disabled={!isSubscribed || isPushLoading}
+                                    onClick={async () => {
+                                      try {
+                                        await disablePush();
+                                        showToast('Push desativado neste dispositivo.');
+                                      } catch {
+                                        showToast('Nao foi possivel desativar push.');
+                                      }
+                                    }}
+                                    className="rounded-2xl border border-white/20 bg-transparent px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                                  >
+                                    Desligar
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>

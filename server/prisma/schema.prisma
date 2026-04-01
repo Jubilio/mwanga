@@ -11,34 +11,38 @@ model Household {
   id        Int      @id @default(autoincrement())
   name      String
   createdAt DateTime @default(now())
-  users     User[]
-  transactions Transaction[]
-  budgets   Budget[]
-  goals     Goal[]
-  rentals   Rental[]
-  assets    Asset[]
-  liabilities Liability[]
-  xitiques  Xitique[]
-  credits   Credit[]
-  debts     Debt[]
-  notifications Notification[]
-  smsImports SmsImport[]
+  users              User[]
+  transactions       Transaction[]
+  budgets            Budget[]
+  goals              Goal[]
+  rentals            Rental[]
+  assets             Asset[]
+  liabilities        Liability[]
+  xitiques           Xitique[]
+  credits            Credit[]
+  debts              Debt[]
+  notifications      Notification[]
+  smsImports         SmsImport[]
+  pushSubscriptions  PushSubscription[]
+  behaviorEvents     BehaviorEvent[]
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  name          String
-  email         String   @unique
-  passwordHash  String
-  householdId   Int
-  household     Household @relation(fields: [householdId], references: [id])
-  nationalId    String?
-  kycStatus     String   @default("pending")
-  creditScore   Int      @default(0)
-  role          String   @default("user")
-  createdAt     DateTime @default(now())
-  notifications Notification[]
-  smsImports    SmsImport[]
+  id                 Int      @id @default(autoincrement())
+  name               String
+  email              String   @unique
+  passwordHash       String
+  householdId        Int
+  household          Household @relation(fields: [householdId], references: [id])
+  nationalId         String?
+  kycStatus          String   @default("pending")
+  creditScore        Int      @default(0)
+  role               String   @default("user")
+  createdAt          DateTime @default(now())
+  notifications      Notification[]
+  smsImports         SmsImport[]
+  pushSubscriptions  PushSubscription[]
+  behaviorEvents     BehaviorEvent[]
 }
 
 model Transaction {
@@ -143,14 +147,29 @@ model Debt {
 }
 
 model Notification {
-  id          Int      @id @default(autoincrement())
-  type        String
-  message     String
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id])
-  householdId Int
-  household   Household @relation(fields: [householdId], references: [id])
-  createdAt   DateTime @default(now())
+  id            Int       @id @default(autoincrement())
+  type          String
+  title         String?
+  message       String
+  channel       String    @default("in_app")
+  tone          String    @default("friendly")
+  actionPayload Json?
+  metadata      Json?
+  dedupeKey     String?
+  status        String    @default("stored")
+  read          Boolean   @default(false)
+  sentAt        DateTime?
+  deliveredAt   DateTime?
+  openedAt      DateTime?
+  clickedAt     DateTime?
+  userId        Int?
+  user          User?     @relation(fields: [userId], references: [id])
+  householdId   Int
+  household     Household @relation(fields: [householdId], references: [id])
+  createdAt     DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@unique([userId, dedupeKey])
 }
 
 model SmsImport {
@@ -162,4 +181,42 @@ model SmsImport {
   householdId Int
   household   Household @relation(fields: [householdId], references: [id])
   createdAt   DateTime @default(now())
+}
+
+model PushSubscription {
+  id             Int       @id @default(autoincrement())
+  householdId    Int
+  household      Household @relation(fields: [householdId], references: [id])
+  userId         Int
+  user           User      @relation(fields: [userId], references: [id])
+  endpoint       String    @unique
+  p256dhKey      String
+  authKey        String
+  expirationTime String?
+  deviceType     String    @default("pwa")
+  platform       String    @default("web")
+  userAgent      String?
+  isActive       Boolean   @default(true)
+  failureCount   Int       @default(0)
+  lastError      String?
+  lastSeenAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now())
+
+  @@index([userId, isActive])
+}
+
+model BehaviorEvent {
+  id          Int       @id @default(autoincrement())
+  householdId Int
+  household   Household @relation(fields: [householdId], references: [id])
+  userId      Int?
+  user        User?     @relation(fields: [userId], references: [id])
+  eventName   String
+  eventSource String
+  eventValue  Float?
+  context     Json?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, createdAt])
 }

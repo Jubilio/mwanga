@@ -263,3 +263,77 @@ CREATE TABLE IF NOT EXISTS loan_payments (
     status TEXT DEFAULT 'pending', -- pending, paid, late
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+-- === Intelligent Notification Engine ===
+
+ALTER TABLE notifications
+    ADD COLUMN IF NOT EXISTS user_id BIGINT REFERENCES users(id),
+    ADD COLUMN IF NOT EXISTS title TEXT,
+    ADD COLUMN IF NOT EXISTS channel TEXT DEFAULT 'in_app',
+    ADD COLUMN IF NOT EXISTS tone TEXT DEFAULT 'friendly',
+    ADD COLUMN IF NOT EXISTS action_payload JSONB DEFAULT '{}'::jsonb,
+    ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb,
+    ADD COLUMN IF NOT EXISTS dedupe_key TEXT,
+    ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'stored',
+    ADD COLUMN IF NOT EXISTS sent_at TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS opened_at TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS clicked_at TIMESTAMPTZ;
+
+UPDATE notifications
+SET
+    title = COALESCE(title, CASE
+        WHEN type = 'warning' THEN 'Alerta financeiro'
+        WHEN type = 'motivation' THEN 'Bom momentum financeiro'
+        ELSE 'Lembrete do Mwanga'
+    END),
+    channel = COALESCE(channel, 'in_app'),
+    tone = COALESCE(tone, 'friendly'),
+    action_payload = COALESCE(action_payload, '{}'::jsonb),
+    metadata = COALESCE(metadata, '{}'::jsonb),
+    status = COALESCE(status, 'stored');
+
+CREATE UNIQUE INDEX IF NOT EXISTS notifications_user_dedupe_idx
+    ON notifications(user_id, dedupe_key);
+
+CREATE INDEX IF NOT EXISTS notifications_user_created_idx
+    ON notifications(user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+    id BIGSERIAL PRIMARY KEY,
+    household_id BIGINT NOT NULL REFERENCES households(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    endpoint TEXT NOT NULL UNIQUE,
+    p256dh_key TEXT NOT NULL,
+    auth_key TEXT NOT NULL,
+    expiration_time TEXT,
+    device_type TEXT DEFAULT 'pwa',
+    platform TEXT DEFAULT 'web',
+    user_agent TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    failure_count INTEGER DEFAULT 0,
+    last_error TEXT,
+    last_seen_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS push_subscriptions_user_active_idx
+    ON push_subscriptions(user_id, is_active);
+
+CREATE TABLE IF NOT EXISTS behavior_events (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+    household_id BIGINT NOT NULL REFERENCES households(id) ON DELETE CASCADE,
+    event_name TEXT NOT NULL,
+    event_source TEXT NOT NULL,
+    event_value DECIMAL(15,2),
+    context JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS behavior_events_user_created_idx
+    ON behavior_events(user_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS behavior_events_household_source_idx
+    ON behavior_events(household_id, event_source, created_at DESC);

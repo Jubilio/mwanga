@@ -108,6 +108,35 @@ function mapAccount(acc) {
   };
 }
 
+function mapXitique(x) {
+  return {
+    ...x,
+    monthly_amount: Number(x.monthly_amount || 0),
+    total_participants: Number(x.total_participants || 0),
+    your_position: Number(x.your_position || 0),
+    cycles: Array.isArray(x.cycles)
+      ? x.cycles.map(cycle => ({
+          ...cycle,
+          cycle_number: Number(cycle.cycle_number || 0),
+          receiver_position: Number(cycle.receiver_position || 0)
+        }))
+      : [],
+    contributions: Array.isArray(x.contributions)
+      ? x.contributions.map(contribution => ({
+          ...contribution,
+          amount: Number(contribution.amount || 0),
+          paid: contribution.paid === true || contribution.paid === 1 || contribution.paid === '1'
+        }))
+      : [],
+    receipts: Array.isArray(x.receipts)
+      ? x.receipts.map(receipt => ({
+          ...receipt,
+          total_received: Number(receipt.total_received || 0)
+        }))
+      : []
+  };
+}
+
 function reducer(state, action) {
   switch (action.type) {
     case 'SET_DATA':
@@ -275,12 +304,7 @@ export function FinanceProvider({ children }) {
               restante: Number(l.remaining_amount || 0), 
               interestRate: Number(l.interest_rate || 0) 
             })) : [],
-            xitiques: Array.isArray(xitiques) ? xitiques.map(x => ({
-              ...x,
-              monthly_amount: Number(x.monthly_amount || 0),
-              contributions: x.contributions?.map(c => ({ ...c, amount: Number(c.amount || 0) })) || [],
-              receipts: x.receipts?.map(r => ({ ...r, total_received: Number(r.total_received || 0) })) || []
-            })) : [],
+            xitiques: Array.isArray(xitiques) ? xitiques.map(mapXitique) : [],
             dividas: Array.isArray(debts) ? debts.map(d => ({
               ...d,
               total_amount: Number(d.total_amount || 0),
@@ -528,7 +552,8 @@ export function FinanceProvider({ children }) {
           });
           break;
         
-        case 'ADD_XITIQUES': {
+        case 'ADD_XITIQUES':
+        case 'ADD_XITIQUE': {
           const xBody = {
             name: action.payload.name,
             monthlyAmount: action.payload.monthly_amount,
@@ -536,13 +561,18 @@ export function FinanceProvider({ children }) {
             startDate: action.payload.start_date,
             yourPosition: action.payload.your_position
           };
-          await fetch(`${FINANCE_API_URL}/xitiques`, {
+          const createResp = await fetch(`${FINANCE_API_URL}/xitiques`, {
             method: 'POST',
             headers,
             body: JSON.stringify(xBody)
-          }).then(r => r.json());
+          });
+          if (!createResp.ok) {
+            const errorData = await createResp.json().catch(() => ({}));
+            throw new Error(errorData?.error || 'Failed to create xitique');
+          }
+
           const fullData = await fetch(`${FINANCE_API_URL}/xitiques`, { headers }).then(r => r.json());
-          dispatch({ type: 'SET_XITIQUES', payload: fullData });
+          dispatch({ type: 'SET_XITIQUES', payload: Array.isArray(fullData) ? fullData.map(mapXitique) : [] });
           return;
         }
         case 'DELETE_XITIQUE': {
@@ -551,34 +581,56 @@ export function FinanceProvider({ children }) {
             headers
           });
           const updatedX = await fetch(`${FINANCE_API_URL}/xitiques`, { headers }).then(r => r.json());
-          dispatch({ type: 'SET_XITIQUES', payload: updatedX });
+          dispatch({ type: 'SET_XITIQUES', payload: Array.isArray(updatedX) ? updatedX.map(mapXitique) : [] });
           return;
         }
         case 'PAY_XITIQUE': {
-          await fetch(`${FINANCE_API_URL}/xitiques/pay/${action.payload.contributionId}`, {
+          const payResp = await fetch(`${FINANCE_API_URL}/xitiques/pay/${action.payload.contributionId}`, {
             method: 'POST',
             headers,
-            body: JSON.stringify({ date: action.payload.date })
+            body: JSON.stringify({
+              date: action.payload.date,
+              account_id: action.payload.account_id || undefined
+            })
           });
-          const refreshX = await fetch(`${FINANCE_API_URL}/xitiques`, { headers }).then(r => r.json());
-          const refreshT = await fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json());
-          dispatch({ type: 'SET_XITIQUES', payload: refreshX });
+          if (!payResp.ok) {
+            const errorData = await payResp.json().catch(() => ({}));
+            throw new Error(errorData?.error || 'Failed to pay xitique contribution');
+          }
+          const [refreshX, refreshT, refreshAccounts] = await Promise.all([
+            fetch(`${FINANCE_API_URL}/xitiques`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
+          ]);
+          dispatch({ type: 'SET_XITIQUES', payload: Array.isArray(refreshX) ? refreshX.map(mapXitique) : [] });
           dispatch({ type: 'SET_DATA', payload: { 
-            transacoes: refreshT.map(mapTransaction)
+            transacoes: refreshT.map(mapTransaction),
+            contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(mapAccount) : []
           }});
           return;
         }
         case 'RECEIVE_XITIQUE': {
-          await fetch(`${FINANCE_API_URL}/xitiques/receive/${action.payload.receiptId}`, {
+          const receiveResp = await fetch(`${FINANCE_API_URL}/xitiques/receive/${action.payload.receiptId}`, {
             method: 'POST',
             headers,
-            body: JSON.stringify({ date: action.payload.date })
+            body: JSON.stringify({
+              date: action.payload.date,
+              account_id: action.payload.account_id || undefined
+            })
           });
-          const refreshX2 = await fetch(`${FINANCE_API_URL}/xitiques`, { headers }).then(r => r.json());
-          const refreshT2 = await fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json());
-          dispatch({ type: 'SET_XITIQUES', payload: refreshX2 });
+          if (!receiveResp.ok) {
+            const errorData = await receiveResp.json().catch(() => ({}));
+            throw new Error(errorData?.error || 'Failed to receive xitique funds');
+          }
+          const [refreshX2, refreshT2, refreshAccounts2] = await Promise.all([
+            fetch(`${FINANCE_API_URL}/xitiques`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
+          ]);
+          dispatch({ type: 'SET_XITIQUES', payload: Array.isArray(refreshX2) ? refreshX2.map(mapXitique) : [] });
           dispatch({ type: 'SET_DATA', payload: { 
-            transacoes: refreshT2.map(mapTransaction)
+            transacoes: refreshT2.map(mapTransaction),
+            contas: Array.isArray(refreshAccounts2) ? refreshAccounts2.map(mapAccount) : []
           }});
           return;
         }

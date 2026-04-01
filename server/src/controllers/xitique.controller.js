@@ -1,6 +1,6 @@
 const { db } = require('../config/db');
 const { z } = require('zod');
-const { createNotification } = require('./notification.controller');
+const { createNotification } = require('../services/notification.service');
 
 const xitiqueSchema = z.object({
   name: z.string().min(1).max(100).trim(),
@@ -52,7 +52,11 @@ const createXitique = async (req, res, next) => {
       sql: 'INSERT INTO xitiques (name, monthly_amount, total_participants, start_date, your_position, household_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
       args: [data.name, data.monthlyAmount, data.totalParticipants, data.startDate, data.yourPosition, req.user.householdId]
     });
-    const xitiqueId = Number(xResult.lastInsertRowid);
+    const xitiqueId = Number(xResult.rows?.[0]?.id || xResult.lastInsertRowid || 0);
+
+    if (!xitiqueId) {
+      return res.status(500).json({ error: 'Falha ao criar o grupo de xitique' });
+    }
 
     // Sequential creation for reliable lastInsertRowid
     for (let i = 1; i <= data.totalParticipants; i++) {
@@ -64,7 +68,11 @@ const createXitique = async (req, res, next) => {
           sql: 'INSERT INTO xitique_cycles (xitique_id, cycle_number, due_date, receiver_position) VALUES (?, ?, ?, ?) RETURNING id',
           args: [xitiqueId, i, dueDate, i]
         });
-        const cycleId = Number(cResult.lastInsertRowid);
+        const cycleId = Number(cResult.rows?.[0]?.id || cResult.lastInsertRowid || 0);
+
+        if (!cycleId) {
+          return res.status(500).json({ error: 'Falha ao gerar os ciclos do xitique' });
+        }
         
         await db.execute({
           sql: 'INSERT INTO xitique_contributions (xitique_id, cycle_id, amount, paid) VALUES (?, ?, ?, 0)',

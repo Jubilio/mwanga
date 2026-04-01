@@ -65,6 +65,7 @@ export default function App() {
             <Route path="pricing" element={<Pricing />} />
             <Route path="insights" element={<Insights />} />
             <Route path="admin" element={<Admin />} />
+            <Route path="quick-add" element={<Dashboard />} />
           </Route>
           <Route path="login" element={<Login />} />
           <Route path="forgot-password" element={<ForgotPassword />} />

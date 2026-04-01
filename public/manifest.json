@@ -1,11 +1,25 @@
 {
-  "name": "Mwanga — Gestão Financeira",
+  "name": "Mwanga - Gestao Financeira",
   "short_name": "Mwanga",
-  "description": "Gestão financeira inteligente para a sua família",
+  "description": "Gestao financeira inteligente para a sua familia",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0a4d68",
+  "shortcuts": [
+    {
+      "name": "Quick Add",
+      "short_name": "Quick Add",
+      "url": "/quick-add",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
   "icons": [
     {
       "src": "icon-192.png",

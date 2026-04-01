@@ -1,9 +1,26 @@
-import { useState, useEffect } from 'react';
-import { NavLink, Outlet, useLocation, Link } from 'react-router-dom';
-import { 
-  LayoutDashboard, ArrowRightLeft, Home, Target, 
-  PieChart, Calculator, Moon, Sun, Menu, X, Wallet, Globe, Settings as SettingsIcon,
-  Landmark, BarChart3, Crown, Brain, Bell, CreditCard, Sparkles, Info
+import { useEffect, useState } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  ArrowRightLeft,
+  Home,
+  Target,
+  PieChart,
+  Calculator,
+  Moon,
+  Sun,
+  X,
+  Wallet,
+  Globe,
+  Settings as SettingsIcon,
+  Landmark,
+  BarChart3,
+  Crown,
+  Brain,
+  Bell,
+  CreditCard,
+  Sparkles,
+  Info,
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
@@ -11,44 +28,84 @@ import Toast, { useToast } from './Toast';
 import Sidebar from './layout/Sidebar';
 import CustomCursor from './CustomCursor';
 import ConfirmModal from './ConfirmModal';
-import { AnimatePresence, motion } from 'framer-motion';
-
+import QuickAddNotificationModal from './QuickAddNotificationModal';
 
 const bottomNavItems = [
   { to: '/', icon: LayoutDashboard, label: 'Home' },
-  { to: '/transacoes', icon: ArrowRightLeft, label: 'Transações' },
+  { to: '/transacoes', icon: ArrowRightLeft, label: 'Transacoes' },
   { to: '/xitique', icon: Wallet, label: 'Xitique' },
-  { to: '/credito', icon: CreditCard, label: 'Crédito' },
+  { to: '/credito', icon: CreditCard, label: 'Credito' },
   { to: '/insights', icon: Brain, label: 'Binth' },
 ];
 
 const navItems = [
-  // GESTÃO FINANCEIRA
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/transacoes', icon: ArrowRightLeft, label: 'Transações' },
-  { to: '/orcamento', icon: PieChart, label: 'Orçamento' },
-  
-  // FINANCIAMENTO
-  { to: '/credito', icon: CreditCard, label: 'Crédito' },
-  { to: '/dividas', icon: CreditCard, label: 'Dívidas' },
-  { to: '/habitacao', icon: Home, label: 'Habitação' },
-  
-  // POUPANÇA & METAS
+  { to: '/transacoes', icon: ArrowRightLeft, label: 'Transacoes' },
+  { to: '/orcamento', icon: PieChart, label: 'Orcamento' },
+  { to: '/credito', icon: CreditCard, label: 'Credito' },
+  { to: '/dividas', icon: CreditCard, label: 'Dividas' },
+  { to: '/habitacao', icon: Home, label: 'Habitacao' },
   { to: '/xitique', icon: Wallet, label: 'Xitique' },
   { to: '/metas', icon: Target, label: 'Metas' },
   { to: '/nexovibe', icon: Globe, label: 'Nexo Vibe' },
-  
-  // INTELIGÊNCIA PRO
   { to: '/insights', icon: Brain, label: 'Binth Insights' },
   { to: '/sms-import', icon: Globe, label: 'Importar Mensagem' },
-  { to: '/patrimonio', icon: Landmark, label: 'Património' },
+  { to: '/patrimonio', icon: Landmark, label: 'Patrimonio' },
   { to: '/simuladores', icon: Calculator, label: 'Simuladores' },
-  { to: '/relatorio', icon: BarChart3, label: 'Relatórios' },
-  
-  // SISTEMA
+  { to: '/relatorio', icon: BarChart3, label: 'Relatorios' },
   { to: '/pricing', icon: Crown, label: 'Mover para Premium', premium: true },
-  { to: '/settings', icon: SettingsIcon, label: 'Definições' },
+  { to: '/settings', icon: SettingsIcon, label: 'Definicoes' },
 ];
+
+const notificationTypePriority = {
+  warning: 1,
+  reminder: 2,
+  motivation: 3,
+  success: 4,
+  info: 5,
+};
+
+function getNotificationPresentation(notification = {}) {
+  const actionPayload = notification.action_payload || {};
+  const quickActions = Array.isArray(actionPayload.quickActions) ? actionPayload.quickActions.slice(0, 3) : [];
+
+  if (notification.type === 'warning') {
+    return {
+      label: 'Pressao',
+      borderClass: 'border-l-4 border-l-amber-500',
+      accentClass: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300',
+      chipClass: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200',
+      quickActions,
+    };
+  }
+
+  if (notification.type === 'motivation' || notification.type === 'success') {
+    return {
+      label: 'Momentum',
+      borderClass: 'border-l-4 border-l-emerald-500',
+      accentClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300',
+      chipClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200',
+      quickActions,
+    };
+  }
+
+  return {
+    label: 'Check-in',
+    borderClass: 'border-l-4 border-l-sky-500',
+    accentClass: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300',
+    chipClass: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-200',
+    quickActions,
+  };
+}
+
+function parseNotificationPayload(payload = {}) {
+  return {
+    notificationId: payload.notificationId || null,
+    actionId: payload.actionId || payload.action || 'OPEN',
+    date: payload.date || new Date().toISOString().slice(0, 10),
+    route: payload.route || ((payload.date || payload.actionId || payload.action) ? '/quick-add' : null),
+  };
+}
 
 export default function Layout() {
   const { state, dispatch } = useFinance();
@@ -57,150 +114,316 @@ export default function Layout() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isConfirmClearOpen, setIsConfirmClearOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [quickAddPayload, setQuickAddPayload] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchNotifications = async () => {
+      const token = localStorage.getItem('mwanga-token');
+      if (!token) {
+        setNotifications([]);
+        return;
+      }
+
       try {
         const response = await api.get('/notifications');
-        setNotifications(response.data);
+        setNotifications(response.data || []);
       } catch (error) {
+        if (error.response?.status === 401) {
+          setNotifications([]);
+          return;
+        }
+
         if (error.response?.status !== 429) {
           console.error('Error fetching notifications:', error);
         }
       }
     };
+
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000); // Poll every minute
+    const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
-  const currentTitle = navItems.find(i => i.to === location.pathname)?.label || 'Dashboard';
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) {
+      return undefined;
+    }
 
-  const handleMarkRead = async (id) => {
+    const handler = (event) => {
+      if (event.data?.type !== 'MWANGA_NOTIFICATION_ACTION') {
+        return;
+      }
+
+      const payload = parseNotificationPayload(event.data.payload || {});
+      if (payload.notificationId) {
+        setNotifications((current) => current.map((item) => (
+          item.id === payload.notificationId ? { ...item, read: 1, opened_at: new Date().toISOString() } : item
+        )));
+      }
+      setQuickAddPayload(payload);
+      if (payload.notificationId) {
+        api.post('/notifications/interactions', {
+          notificationId: payload.notificationId,
+          interaction: 'opened',
+          actionId: payload.actionId,
+        }).catch(() => {});
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('message', handler);
+    return () => navigator.serviceWorker.removeEventListener('message', handler);
+  }, []);
+
+  const orderedNotifications = [...notifications].sort((a, b) => {
+    const unreadDelta = Number(Boolean(a.read)) - Number(Boolean(b.read));
+    if (unreadDelta !== 0) {
+      return unreadDelta;
+    }
+
+    const aPriority = notificationTypePriority[a.type] || 99;
+    const bPriority = notificationTypePriority[b.type] || 99;
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
+  const currentTitle = navItems.find((item) => item.to === location.pathname)?.label || 'Dashboard';
+  const routeParams = location.pathname === '/quick-add' ? new URLSearchParams(location.search) : null;
+  const routeQuickAddPayload = routeParams
+    ? parseNotificationPayload({
+        notificationId: routeParams.get('notificationId') ? Number(routeParams.get('notificationId')) : null,
+        actionId: routeParams.get('action') || 'OPEN',
+        date: routeParams.get('date') || new Date().toISOString().slice(0, 10),
+        route: '/quick-add',
+      })
+    : null;
+  const activeQuickAddPayload = quickAddPayload || routeQuickAddPayload;
+
+  useEffect(() => {
+    if (!routeQuickAddPayload?.notificationId) {
+      return;
+    }
+
+    setNotifications((current) => current.map((item) => (
+      item.id === routeQuickAddPayload.notificationId
+        ? { ...item, read: 1, opened_at: new Date().toISOString() }
+        : item
+    )));
+
+    api.post('/notifications/interactions', {
+      notificationId: routeQuickAddPayload.notificationId,
+      interaction: 'opened',
+      actionId: routeQuickAddPayload.actionId,
+    }).catch(() => {});
+  }, [location.pathname, location.search, routeQuickAddPayload?.notificationId, routeQuickAddPayload?.actionId]);
+
+  async function handleMarkRead(id) {
     try {
       await api.put(`/notifications/${id}/read`);
-      setNotifications(notifications.map(n => n.id === id ? { ...n, read: 1 } : n));
-    } catch (error) { console.error(error); }
-  };
+      setNotifications((current) => current.map((item) => (
+        item.id === id ? { ...item, read: 1 } : item
+      )));
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
-  const handleClearAll = async () => {
+  async function handleNotificationOpen(notification) {
+    if (!notification.read) {
+      await handleMarkRead(notification.id);
+    }
+
+    const payload = parseNotificationPayload({
+      ...(notification.action_payload || {}),
+      notificationId: notification.id,
+    });
+
+    if (payload.route === '/quick-add') {
+      setQuickAddPayload(payload);
+      setIsNotificationsOpen(false);
+      return;
+    }
+
+    if (payload.route) {
+      navigate(payload.route);
+      setIsNotificationsOpen(false);
+    }
+  }
+
+  async function handleClearAll() {
     try {
       await api.delete('/notifications');
       setNotifications([]);
-      showToast('Notificações limpas!', 'success');
+      showToast('Notificacoes limpas.', 'success');
       setIsConfirmClearOpen(false);
-    } catch (error) { 
+    } catch (error) {
       console.error(error);
-      showToast('Erro ao limpar notificações', 'error');
+      showToast('Erro ao limpar notificacoes.', 'error');
     }
-  };
+  }
 
-  const handleDeleteOne = async (e, id) => {
-    e.stopPropagation();
+  async function handleDeleteOne(event, id) {
+    event.stopPropagation();
     try {
       await api.delete(`/notifications/${id}`);
-      setNotifications(notifications.filter(n => n.id !== id));
-    } catch (error) { console.error(error); }
-  };
+      setNotifications((current) => current.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
-  const getNotificationIcon = (type) => {
+  function closeQuickAddModal() {
+    setQuickAddPayload(null);
+    if (location.pathname === '/quick-add') {
+      navigate('/', { replace: true });
+    }
+  }
+
+  function getNotificationIcon(type = '') {
     if (type.includes('renda')) return <Home size={14} className="text-blue-500" />;
     if (type.includes('meta')) return <Target size={14} className="text-green-500" />;
     if (type.includes('divida')) return <CreditCard size={14} className="text-red-500" />;
     if (type === 'warning') return <Bell size={14} className="text-amber-500" />;
-    if (type === 'success') return <Sparkles size={14} className="text-emerald-500" />;
+    if (type === 'motivation') return <Sparkles size={14} className="text-emerald-500" />;
     return <Info size={14} className="text-ocean dark:text-aurora" />;
-  };
+  }
 
   return (
     <div className={`app-container ${state.darkMode ? 'dark transition-colors' : 'transition-colors'}`}>
       <CustomCursor />
-      {/* Notifications Drawer */}
+
       <div className={`fixed inset-0 z-100 transition-opacity duration-300 ${isNotificationsOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[4px]" onClick={() => setIsNotificationsOpen(false)} />
-        <div className={`absolute right-0 top-0 h-full w-80 bg-white dark:bg-[#1a1a1a] border-l border-white/10 p-6 transform transition-transform duration-300 shadow-2xl ${isNotificationsOpen ? 'translate-x-0' : 'translate-x-full'}`} style={{ willChange: 'transform' }}>
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-              <Bell size={20} className="text-ocean dark:text-aurora" /> Notificações
+        <div
+          className={`absolute right-0 top-0 h-full w-80 border-l border-white/10 bg-white p-6 shadow-2xl transition-transform duration-300 dark:bg-[#1a1a1a] ${isNotificationsOpen ? 'translate-x-0' : 'translate-x-full'}`}
+          style={{ willChange: 'transform' }}
+        >
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white">
+              <Bell size={20} className="text-ocean dark:text-aurora" /> Notificacoes
             </h3>
             <div className="flex items-center gap-2">
               {notifications.length > 0 && (
-                <button 
+                <button
                   onClick={() => setIsConfirmClearOpen(true)}
-                  className="text-[10px] uppercase tracking-wider font-bold text-gray-400 hover:text-coral transition-colors mr-2"
+                  className="mr-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 transition-colors hover:text-coral"
                 >
                   Limpar Tudo
                 </button>
               )}
-              <button onClick={() => setIsNotificationsOpen(false)} className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-full"><X size={20} /></button>
+              <button
+                onClick={() => setIsNotificationsOpen(false)}
+                className="rounded-full p-2 hover:bg-black/5 dark:hover:bg-white/5"
+              >
+                <X size={20} />
+              </button>
             </div>
           </div>
-          <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-150px)] pr-2 custom-scrollbar">
-            {notifications.length === 0 ? (
-              <p className="text-gray-500 text-center py-10 italic">Nenhuma notificação por agora.</p>
+
+          <div className="custom-scrollbar max-h-[calc(100vh-150px)] space-y-4 overflow-y-auto pr-2">
+            {orderedNotifications.length === 0 ? (
+              <p className="py-10 text-center italic text-gray-500">Nenhuma notificacao por agora.</p>
             ) : (
-              notifications.map(n => (
-                <div 
-                  key={n.id} 
-                  onClick={() => !n.read && handleMarkRead(n.id)}
-                  className={`group p-4 rounded-xl border transition-all cursor-pointer relative ${n.read ? 'bg-black/2 dark:bg-white/2 border-black/5 dark:border-white/5 opacity-60' : 'bg-ocean/5 dark:bg-aurora/5 border-ocean/30 dark:border-aurora/30 shadow-lg'}`}
-                >
-                  <button 
-                    onClick={(e) => handleDeleteOne(e, n.id)}
-                    className="absolute top-2 right-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/10 rounded-full"
+              orderedNotifications.map((notification) => {
+                const presentation = getNotificationPresentation(notification);
+
+                return (
+                  <div
+                    key={notification.id}
+                    onClick={() => handleNotificationOpen(notification)}
+                    className={`group relative cursor-pointer rounded-2xl border p-4 transition-all ${presentation.borderClass} ${
+                      notification.read
+                        ? 'border-black/5 bg-black/2 opacity-60 dark:border-white/5 dark:bg-white/2'
+                        : 'border-ocean/20 bg-white shadow-lg dark:border-aurora/20 dark:bg-[#122331]'
+                    }`}
                   >
-                    <X size={12} className="text-gray-400 hover:text-red-500" />
-                  </button>
-                  <div className="flex justify-between items-start gap-2 mb-1">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      {getNotificationIcon(n.type)}
-                      <span className="text-[10px] uppercase tracking-widest text-ocean dark:text-aurora font-bold truncate">{n.type.replace('lembrete-', '')}</span>
+                    <button
+                      onClick={(event) => handleDeleteOne(event, notification.id)}
+                      className="absolute right-2 top-2 rounded-full p-1 opacity-0 transition-opacity hover:bg-red-500/10 group-hover:opacity-100"
+                    >
+                      <X size={12} className="text-gray-400 hover:text-red-500" />
+                    </button>
+
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${presentation.accentClass}`}>
+                            {getNotificationIcon(notification.type)}
+                            {presentation.label}
+                          </span>
+                          {!notification.read && (
+                            <span className="inline-flex rounded-full bg-coral/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-coral">
+                              Novo
+                            </span>
+                          )}
+                        </div>
+                        <div className="pr-4 text-sm font-bold text-slate-800 dark:text-white">
+                          {notification.title || 'Mwanga'}
+                        </div>
+                      </div>
+                      {!notification.read && <div className="h-2 w-2 shrink-0 rounded-full bg-ocean animate-pulse dark:bg-aurora" />}
                     </div>
-                    {!n.read && <div className="w-2 h-2 rounded-full bg-ocean dark:bg-aurora animate-pulse shrink-0" />}
+
+                    <p className="pr-4 text-sm leading-6 text-gray-700 dark:text-gray-200">{notification.message}</p>
+
+                    {presentation.quickActions.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {presentation.quickActions.map((item) => (
+                          <span
+                            key={`${notification.id}-${item}`}
+                            className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${presentation.chipClass}`}
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <span className="mt-3 block text-[10px] font-medium uppercase tracking-[0.14em] text-gray-500">
+                      {new Date(notification.created_at).toLocaleString()}
+                    </span>
                   </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-200 pr-4">{n.message}</p>
-                  <span className="text-[10px] text-gray-500 mt-2 block">{new Date(n.created_at).toLocaleString()}</span>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
       </div>
 
       <div style={{ display: 'flex', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
-        {/* ═══ SIDEBAR (Desktop) ═══ */}
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-        {/* ═══ MOBILE HEADER & CONTENT ═══ */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
-          <header className="sticky top-0 z-40 bg-white/70 dark:bg-midnight/80 backdrop-blur-3xl border-b border-white/10 py-3 px-5 flex items-center justify-between transition-all">
-            <div className="flex items-center gap-3 min-w-0">
-              <button 
+          <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/10 bg-white/70 px-5 py-3 backdrop-blur-3xl transition-all dark:bg-midnight/80">
+            <div className="min-w-0 flex items-center gap-3">
+              <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="w-10 h-10 rounded-2xl bg-gradient-to-br from-ocean to-sky flex items-center justify-center shadow-lg shadow-ocean/20 text-white font-bold shrink-0 hover:scale-105 active:scale-95 transition-transform"
+                className="h-10 w-10 shrink-0 rounded-2xl bg-gradient-to-br from-ocean to-sky text-white shadow-lg shadow-ocean/20 transition-transform hover:scale-105 active:scale-95"
               >
                 {state.user?.name?.charAt(0) || 'M'}
               </button>
-              <div className="min-w-0 flex flex-col justify-center">
-                <span className="text-[9px] uppercase tracking-[0.2em] text-gray-400 font-black">Mwanga Finance</span>
-                <span className="text-midnight dark:text-white font-extrabold text-base truncate leading-tight">
+              <div className="min-w-0">
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">Mwanga Finance</span>
+                <span className="block truncate text-base font-extrabold leading-tight text-midnight dark:text-white">
                   {currentTitle}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              <button 
-                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 relative"
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                className="relative rounded-xl p-2 hover:bg-black/5 dark:hover:bg-white/5"
                 onClick={() => setIsNotificationsOpen(true)}
               >
                 <Bell size={20} />
-                {unreadCount > 0 && <span className="absolute top-2 right-2 w-2 h-2 bg-coral rounded-full" />}
+                {unreadCount > 0 && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-coral" />}
               </button>
-              <button 
-                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5"
+              <button
+                className="rounded-xl p-2 hover:bg-black/5 dark:hover:bg-white/5"
                 onClick={() => dispatch({ type: 'TOGGLE_DARK_MODE' })}
               >
                 {state.darkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -208,37 +431,27 @@ export default function Layout() {
             </div>
           </header>
 
-          <main className="w-full flex-1 pb-24 md:pb-8 flex flex-col max-w-full overflow-hidden bg-cream dark:bg-[#0a1926]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="w-full flex-1 flex flex-col p-4 md:p-8 pt-6"
-              >
-                <Outlet context={{ showToast }} />
-              </motion.div>
-            </AnimatePresence>
+          <main className="flex w-full max-w-full flex-1 flex-col overflow-hidden bg-cream pb-24 dark:bg-[#0a1926] md:pb-8">
+            <div className="flex w-full flex-1 flex-col p-4 pt-6 md:p-8">
+              <Outlet context={{ showToast }} />
+            </div>
           </main>
         </div>
       </div>
 
-      {/* ═══ MOBILE BOTTOM NAV ═══ */}
-      <nav className="hide-desktop fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-[#0a1926]/90 backdrop-blur-2xl border-t border-black/5 dark:border-white/5 flex justify-around p-2 pt-3 pb-6 z-50">
-        {bottomNavItems.map(item => (
+      <nav className="hide-desktop fixed bottom-0 left-0 right-0 z-50 flex justify-around border-t border-black/5 bg-white/80 p-2 pb-6 pt-3 backdrop-blur-2xl dark:border-white/5 dark:bg-[#0a1926]/90">
+        {bottomNavItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.to === '/'}
-            className={({ isActive }) => `flex flex-col items-center gap-1 transition-all ${isActive ? 'text-ocean dark:text-sky scale-110' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+            className={({ isActive }) => `flex flex-col items-center gap-1 transition-all ${isActive ? 'scale-110 text-ocean dark:text-sky' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
           >
             {({ isActive }) => (
               <>
-                <div className={`relative p-2 rounded-2xl ${isActive ? 'bg-ocean/10 dark:bg-sky/10' : ''}`}>
+                <div className={`relative rounded-2xl p-2 ${isActive ? 'bg-ocean/10 dark:bg-sky/10' : ''}`}>
                   <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                  {item.to === '/insights' && <span className="absolute top-1 right-1 w-2 h-2 bg-gold rounded-full" />}
+                  {item.to === '/insights' && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-gold" />}
                 </div>
                 <span className="text-[9px] font-bold uppercase tracking-wider">{item.label}</span>
               </>
@@ -247,15 +460,21 @@ export default function Layout() {
         ))}
       </nav>
 
+      <QuickAddNotificationModal
+        isOpen={Boolean(activeQuickAddPayload)}
+        payload={activeQuickAddPayload}
+        onClose={closeQuickAddModal}
+        showToast={showToast}
+      />
+
       <Toast message={toast.message} visible={toast.visible} variant={toast.variant} />
 
-      {/* Global Confirmation Modal for Notifications */}
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={isConfirmClearOpen}
-        title="Limpar Notificações?"
-        message="Esta acção irá eliminar permanentemente todos os teus lembretes e alertas. Tens a certeza?"
+        title="Limpar Notificacoes?"
+        message="Esta acao ira eliminar permanentemente todos os lembretes e alertas. Tens a certeza?"
         confirmText="Sim, Limpar Tudo"
-        cancelText="Não, Manter"
+        cancelText="Nao, Manter"
         onConfirm={handleClearAll}
         onCancel={() => setIsConfirmClearOpen(false)}
       />
