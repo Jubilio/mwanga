@@ -1,6 +1,6 @@
 const { db } = require('../config/db');
 const { z } = require('zod');
-const { createNotification } = require('./notification.controller');
+const { createNotification } = require('../services/notification.service');
 
 const goalSchema = z.object({
   name: z.string().min(1).max(100).trim(),
@@ -26,7 +26,7 @@ const createGoal = async (req, res, next) => {
       sql: 'INSERT INTO goals (name, target_amount, saved_amount, deadline, category, monthly_saving, household_id) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id',
       args: [data.name, data.targetAmount, data.savedAmount, data.deadline, data.category, data.monthlySaving, req.user.householdId]
     });
-    res.status(201).json({ id: Number(result.lastInsertRowid), ...data });
+    res.status(201).json({ id: Number(result.rows?.[0]?.id || result.lastInsertRowid || 0), ...data });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     next(error);

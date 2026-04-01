@@ -30,7 +30,7 @@ const createAsset = async (req, res, next) => {
       sql: 'INSERT INTO assets (name, type, value, household_id) VALUES (?, ?, ?, ?) RETURNING id',
       args: [data.name, data.type, data.value, req.user.householdId]
     });
-    res.status(201).json({ id: Number(result.lastInsertRowid), ...data });
+    res.status(201).json({ id: Number(result.rows?.[0]?.id || result.lastInsertRowid || 0), ...data });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     next(error);
@@ -61,7 +61,7 @@ const createLiability = async (req, res, next) => {
       sql: 'INSERT INTO liabilities (name, total_amount, remaining_amount, interest_rate, household_id) VALUES (?, ?, ?, ?, ?) RETURNING id',
       args: [data.name, data.totalAmount, data.remainingAmount, data.interestRate, req.user.householdId]
     });
-    res.status(201).json({ id: Number(result.lastInsertRowid), ...data });
+    res.status(201).json({ id: Number(result.rows?.[0]?.id || result.lastInsertRowid || 0), ...data });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     next(error);

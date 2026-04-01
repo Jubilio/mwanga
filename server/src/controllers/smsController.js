@@ -34,11 +34,12 @@ exports.parseSmsMessage = async (req, res, next) => {
         status
       ]
     });
+    const messageId = Number(result.rows?.[0]?.id || result.lastInsertRowid || 0);
 
     res.status(200).json({
       success: true,
       data: {
-        message_id: Number(result.lastInsertRowid),
+        message_id: messageId,
         parsed_data: parsedData
       }
     });

@@ -1,6 +1,6 @@
 const express = require('express');
 const { getTransactions, createTransaction, deleteTransaction } = require('../controllers/transaction.controller');
-const { getBudgets, upsertBudget } = require('../controllers/budget.controller');
+const { getBudgets, upsertBudget, deleteBudget } = require('../controllers/budget.controller');
 const { getGoals, createGoal, updateGoalProgress, deleteGoal } = require('../controllers/goal.controller');
 const { getRentals, createRental, deleteRental } = require('../controllers/rental.controller');
 const { getAssets, createAsset, deleteAsset, getLiabilities, createLiability, deleteLiability } = require('../controllers/patrimony.controller');
@@ -35,6 +35,7 @@ router.delete('/transactions/:id', deleteTransaction);
 // Budgets
 router.get('/budgets', getBudgets);
 router.post('/budgets', upsertBudget);
+router.delete('/budgets/:id', deleteBudget);
 
 // Goals
 router.get('/goals', getGoals);

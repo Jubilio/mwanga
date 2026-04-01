@@ -110,14 +110,15 @@ const submitApplication = async (req, res, next) => {
         selfiePath
       ]
     });
+    const applicationId = Number(result.rows?.[0]?.id || result.lastInsertRowid || 0);
 
     // 2. Proactively update user score
     await scoringService.updateUserInfo(userId, score);
 
-    logger.info(`Credit application ${result.lastInsertRowid} created for user ${userId} with score ${score}`);
+    logger.info(`Credit application ${applicationId} created for user ${userId} with score ${score}`);
     res.status(201).json({ 
       message: 'Pedido submetido com sucesso', 
-      id: Number(result.lastInsertRowid),
+      id: applicationId,
       score,
       riskLevel
     });

@@ -5,8 +5,8 @@ import { Plus, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { fmt, calcCategoryBreakdown, getMonthKey } from '../utils/calculations';
 
 const EXPENSE_CATEGORIES = [
-  'Alimentação', 'Transporte', 'Energia/Água', 'Internet',
-  'Saúde', 'Educação', 'Igreja/Doações', 'Lazer',
+  'AlimentaÃ§Ã£o', 'Transporte', 'Energia/Ãgua', 'Internet',
+  'SaÃºde', 'EducaÃ§Ã£o', 'Igreja/DoaÃ§Ãµes', 'Lazer',
   'Investimentos', 'Casa', 'Outro',
 ];
 
@@ -23,10 +23,10 @@ export default function Budget() {
 
   function handleAdd(e) {
     e.preventDefault();
-    if (!newLimit) { showToast('⚠️ Defina um limite'); return; }
+    if (!newLimit) { showToast('âš ï¸ Defina um limite'); return; }
     dispatch({ type: 'SET_BUDGET', payload: { category: newCat, limit: parseFloat(newLimit) } });
     setNewLimit('');
-    showToast('✅ Orçamento definido!');
+    showToast('âœ… OrÃ§amento definido!');
   }
 
   return (
@@ -55,31 +55,32 @@ export default function Budget() {
       </div>
 
       {/* Budget Progress */}
-      <div className="section-title">Orçamento do Mês</div>
+      <div className="section-title">OrÃ§amento do MÃªs</div>
 
       {state.budgets.length === 0 ? (
         <div className="glass-card">
           <div className="empty-state">
-            <div className="icon">📊</div>
-            <div className="title">Sem orçamentos definidos</div>
+            <div className="icon">ðŸ“Š</div>
+            <div className="title">Sem orÃ§amentos definidos</div>
             <div className="subtitle">Defina limites para controlar as suas despesas</div>
           </div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
 
-          {/* Biblical Principle Banner — Contentamento */}
+          {/* Biblical Principle Banner â€” Contentamento */}
           <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-700/30 text-indigo-700 dark:text-indigo-400">
-            <span className="text-base flex-shrink-0">📖</span>
+            <span className="text-base flex-shrink-0">ðŸ“–</span>
             <div className="text-[12px] leading-relaxed">
               <span className="font-bold">Contentamento: </span>
-              A riqueza real começa por saber o que é suficiente. Cada limite de orçamento que defines é uma escolha sábia de quem governa o seu dinheiro com intencionalidade.
+              A riqueza real comeÃ§a por saber o que Ã© suficiente. Cada limite de orÃ§amento que defines Ã© uma escolha sÃ¡bia de quem governa o seu dinheiro com intencionalidade.
             </div>
           </div>
 
           {state.budgets.map(budget => {
             const spent = categories.find(c => c.category === budget.category)?.amount || 0;
-            const pct = Math.min(100, Math.round((spent / budget.limit) * 100));
+            const budgetLimit = Number(budget.limit || 0);
+            const pct = budgetLimit > 0 ? Math.min(100, Math.round((spent / budgetLimit) * 100)) : (spent > 0 ? 100 : 0);
             const isOver = pct >= 100;
             const isWarning = pct >= 80 && !isOver;
             const barColor = isOver ? 'var(--color-coral)' : isWarning ? 'var(--color-gold)' : 'var(--color-leaf)';
@@ -96,7 +97,7 @@ export default function Budget() {
                     )}
                     {isWarning && (
                       <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: 'var(--color-gold)', fontWeight: 600 }}>
-                        ⚠️ Atenção
+                        âš ï¸ AtenÃ§Ã£o
                       </span>
                     )}
                     {!isOver && !isWarning && pct > 0 && (
@@ -107,7 +108,14 @@ export default function Budget() {
                   </div>
                   <button
                     className="btn btn-danger"
-                    onClick={() => { dispatch({ type: 'DELETE_BUDGET', payload: budget.id }); showToast('🗑️ Orçamento removido'); }}
+                    onClick={() => {
+                      dispatch({
+                        type: 'DELETE_BUDGET',
+                        payload: budget.id,
+                        meta: { category: budget.category }
+                      });
+                      showToast('Orcamento removido');
+                    }}
                   >
                     <Trash2 size={12} />
                   </button>
@@ -130,8 +138,8 @@ export default function Budget() {
                 {/* Biblical micro-tip when over budget */}
                 {isOver && (
                   <div style={{ marginTop: '0.5rem', fontSize: '0.68rem', color: 'var(--color-coral)', display: 'flex', gap: 5, alignItems: 'flex-start', opacity: 0.9 }}>
-                    <span>📖</span>
-                    <em>Princípio do Contentamento: reveja o que é essencial nesta categoria antes do próximo gasto.</em>
+                    <span>ðŸ“–</span>
+                    <em>PrincÃ­pio do Contentamento: reveja o que Ã© essencial nesta categoria antes do prÃ³ximo gasto.</em>
                   </div>
                 )}
               </div>

@@ -171,6 +171,13 @@ function reducer(state, action) {
       }
       return { ...state, budgets: [...state.budgets, action.payload] };
     }
+    case 'DELETE_BUDGET':
+      return {
+        ...state,
+        budgets: state.budgets.filter(
+          budget => budget.id !== action.payload && budget.category !== action.meta?.category
+        )
+      };
 
     case 'UPDATE_SETTING':
       return { 
@@ -514,7 +521,42 @@ export function FinanceProvider({ children }) {
               limit: action.payload.limit
             })
           });
-          break;
+          {
+            const refreshBudgets = await fetch(`${FINANCE_API_URL}/budgets`, { headers }).then(r => r.json());
+            dispatch({
+              type: 'SET_DATA',
+              payload: {
+                budgets: Array.isArray(refreshBudgets)
+                  ? refreshBudgets.map(b => ({
+                      id: b.id,
+                      category: b.category,
+                      limit: Number(b.limit_amount || 0)
+                    }))
+                  : []
+              }
+            });
+          }
+          return;
+        case 'DELETE_BUDGET': {
+          await fetch(`${FINANCE_API_URL}/budgets/${action.payload}`, {
+            method: 'DELETE',
+            headers
+          });
+          const refreshBudgets = await fetch(`${FINANCE_API_URL}/budgets`, { headers }).then(r => r.json());
+          dispatch({
+            type: 'SET_DATA',
+            payload: {
+              budgets: Array.isArray(refreshBudgets)
+                ? refreshBudgets.map(b => ({
+                    id: b.id,
+                    category: b.category,
+                    limit: Number(b.limit_amount || 0)
+                  }))
+                : []
+            }
+          });
+          return;
+        }
         case 'ADD_ASSET': {
           const assetRet = await fetch(`${FINANCE_API_URL}/assets`, {
             method: 'POST',
