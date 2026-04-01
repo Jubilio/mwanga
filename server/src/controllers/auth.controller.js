@@ -184,32 +184,62 @@ const googleLogin = async (req, res) => {
     });
 
     const payload = ticket.getPayload();
-    const { email, name } = payload;
+    const { email, name, email_verified: emailVerified } = payload || {};
 
+    if (!email) {
+      return res.status(400).json({ error: 'Google nao devolveu um email valido' });
+    }
+
+    if (emailVerified === false) {
+      return res.status(401).json({ error: 'O email do Google precisa de estar verificado' });
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const displayName = String(name || normalizedEmail.split('@')[0] || 'Utilizador Mwanga').trim();
+
+    let created = false;
     let result = await db.execute({
       sql: 'SELECT * FROM users WHERE email = $1',
-      args: [email]
+      args: [normalizedEmail]
     });
     let user = result.rows[0];
 
     if (!user) {
-      const householdInsert = await db.execute({
-        sql: 'INSERT INTO households (name) VALUES ($1) RETURNING id',
-        args: [`Familia de ${name}`]
-      });
-      const householdId = Number(householdInsert.rows[0]?.id || householdInsert.lastInsertRowid);
+      try {
+        created = true;
+        const householdInsert = await db.execute({
+          sql: 'INSERT INTO households (name) VALUES ($1) RETURNING id',
+          args: [`Familia de ${displayName}`]
+        });
+        const householdId = Number(householdInsert.rows[0]?.id || householdInsert.lastInsertRowid);
 
-      const passwordHash = createGooglePasswordHash();
-      const userInsert = await db.execute({
-        sql: 'INSERT INTO users (name, email, password_hash, household_id) VALUES ($1, $2, $3, $4) RETURNING id',
-        args: [name, email, passwordHash, householdId]
-      });
-      const userId = Number(userInsert.rows[0]?.id || userInsert.lastInsertRowid);
+        const passwordHash = createGooglePasswordHash();
+        const userInsert = await db.execute({
+          sql: 'INSERT INTO users (name, email, password_hash, household_id) VALUES ($1, $2, $3, $4) RETURNING id',
+          args: [displayName, normalizedEmail, passwordHash, householdId]
+        });
+        const userId = Number(userInsert.rows[0]?.id || userInsert.lastInsertRowid);
 
-      await logAction(userId, 'REGISTER_GOOGLE', 'USER', userId);
-      user = { id: userId, name, email, household_id: householdId, role: 'user' };
+        await logAction(userId, 'REGISTER_GOOGLE', 'USER', userId);
+        user = { id: userId, name: displayName, email: normalizedEmail, household_id: householdId, role: 'user' };
+      } catch (insertError) {
+        if (!(insertError.message && (insertError.message.includes('UNIQUE constraint') || insertError.message.includes('duplicate key')))) {
+          throw insertError;
+        }
+
+        created = false;
+        result = await db.execute({
+          sql: 'SELECT * FROM users WHERE email = $1',
+          args: [normalizedEmail]
+        });
+        user = result.rows[0];
+      }
     } else {
       await logAction(user.id, 'LOGIN_GOOGLE', 'USER', user.id);
+    }
+
+    if (!user) {
+      return res.status(500).json({ error: 'Nao foi possivel concluir a autenticacao com Google' });
     }
 
     const userData = {
@@ -220,7 +250,7 @@ const googleLogin = async (req, res) => {
       role: user.role || 'user'
     };
 
-    res.json({ user: userData, token: createSessionToken(userData) });
+    res.json({ user: userData, token: createSessionToken(userData), created });
   } catch (error) {
     console.error('[Google Login Error]', error);
     res.status(401).json({ error: 'Falha na autenticacao com o Google' });

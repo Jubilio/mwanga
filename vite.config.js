@@ -23,6 +23,16 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
+        share_target: {
+          action: '/sms-import',
+          method: 'GET',
+          enctype: 'application/x-www-form-urlencoded',
+          params: {
+            title: 'title',
+            text: 'text',
+            url: 'url',
+          },
+        },
         shortcuts: [
           {
             name: 'Quick Add',

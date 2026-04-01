@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { useFinance } from '../hooks/useFinance';
-import { Wallet, LogIn, UserPlus, Lock, Mail, User } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
+import { Wallet, LogIn, UserPlus, Lock, Mail, User } from 'lucide-react';
+import { useFinance } from '../hooks/useFinance';
 
 function getApiUrl() {
   let apiUrl = import.meta.env.VITE_API_URL || '';
@@ -30,7 +30,7 @@ export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState({ name: '', email: '', password: '', householdName: '' });
   const [loading, setLoading] = useState(false);
-  const { dispatch } = useFinance();
+  const { reloadData } = useFinance();
   const navigate = useNavigate();
   const { showToast } = useOutletContext?.() || { showToast: console.log };
   const currentOrigin = getCurrentOrigin();
@@ -53,11 +53,11 @@ export default function Login() {
 
       const data = await resp.json();
       if (!resp.ok) {
-        throw new Error(getApiErrorMessage(data, 'Autenticacao falhou'));
+        throw new Error(getApiErrorMessage(data, 'Autenticação falhou'));
       }
 
       localStorage.setItem('mwanga-token', data.token);
-      dispatch({ type: 'SET_USER', payload: data.user });
+      await reloadData({ preferredUser: data.user });
 
       showToast(isLogin ? 'Bem-vindo de volta!' : 'Conta criada com sucesso!');
       navigate('/');
@@ -80,13 +80,17 @@ export default function Login() {
 
       const data = await resp.json();
       if (!resp.ok) {
-        throw new Error(getApiErrorMessage(data, 'Autenticacao com Google falhou'));
+        throw new Error(getApiErrorMessage(data, 'Autenticação com Google falhou'));
+      }
+
+      if (!data?.token || !data?.user) {
+        throw new Error('Resposta inválida ao autenticar com Google');
       }
 
       localStorage.setItem('mwanga-token', data.token);
-      dispatch({ type: 'SET_USER', payload: data.user });
+      await reloadData({ preferredUser: data.user });
 
-      showToast('Bem-vindo via Google!');
+      showToast(data.created ? 'Conta criada com Google e sessão iniciada!' : 'Bem-vindo via Google!');
       navigate('/');
     } catch (err) {
       showToast(`Erro: ${err.message}`);
@@ -98,7 +102,7 @@ export default function Login() {
   function handleGoogleError() {
     const originLabel = currentOrigin || 'origem atual';
     showToast(
-      `Google Login indisponivel: autorize ${originLabel} no Google Cloud Console em Authorized JavaScript origins.`
+      `Login com Google indisponível. Confirme a configuração dessa origem: ${originLabel}.`
     );
   }
 
@@ -117,7 +121,7 @@ export default function Login() {
         className="glass-card"
         style={{
           width: '100%',
-          maxWidth: '400px',
+          maxWidth: '420px',
           padding: '2rem',
           boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
         }}
@@ -138,6 +142,7 @@ export default function Login() {
           >
             <Wallet size={30} />
           </div>
+
           <h1
             style={{
               fontFamily: 'var(--font-display)',
@@ -148,16 +153,50 @@ export default function Login() {
           >
             Mwanga <span style={{ color: 'var(--color-gold)' }}>✦</span>
           </h1>
-          <p style={{ color: 'var(--color-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
-            {isLogin ? 'Faca login para gerir as suas financas' : 'Crie uma conta para a sua familia'}
+
+          <p style={{ color: 'var(--color-muted)', fontSize: '0.92rem', marginTop: '0.5rem', lineHeight: 1.5 }}>
+            {isLogin ? 'Entre para gerir as suas finanças.' : 'Crie a sua conta para começar a organizar a vida financeira da família.'}
           </p>
+        </div>
+
+        <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              useOneTap
+              theme="outline"
+              size="large"
+              shape="pill"
+              locale="pt_BR"
+              text="continue_with"
+            />
+          </div>
+
+          <p
+            style={{
+              margin: 0,
+              fontSize: '0.78rem',
+              lineHeight: 1.5,
+              color: 'var(--color-muted)',
+              textAlign: 'center'
+            }}
+          >
+            Continue com Google para entrar ou criar a sua conta automaticamente no primeiro acesso.
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
+            <span style={{ fontSize: '0.8rem', color: 'var(--color-muted)' }}>OU</span>
+            <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
           {!isLogin && (
             <div>
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <User size={14} /> Nome Completo
+                <User size={14} /> Nome completo
               </label>
               <input
                 type="text"
@@ -165,7 +204,7 @@ export default function Login() {
                 minLength={2}
                 maxLength={100}
                 className="form-input"
-                placeholder="Ex: Joao Silva"
+                placeholder="Ex: João Silva"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
@@ -197,13 +236,13 @@ export default function Login() {
               minLength={isLogin ? 1 : 8}
               maxLength={100}
               className="form-input"
-              placeholder="********"
+              placeholder="••••••••"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
             {!isLogin && (
               <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--color-muted)' }}>
-                Usa pelo menos 8 caracteres.
+                Use pelo menos 8 caracteres.
               </p>
             )}
             {isLogin && (
@@ -220,7 +259,7 @@ export default function Login() {
                     cursor: 'pointer'
                   }}
                 >
-                  Esqueci-me da senha?
+                  Esqueci-me da senha
                 </button>
               </div>
             )}
@@ -228,12 +267,12 @@ export default function Login() {
 
           {!isLogin && (
             <div>
-              <label className="form-label">Nome da Familia (Opcional)</label>
+              <label className="form-label">Nome da família (opcional)</label>
               <input
                 type="text"
                 maxLength={100}
                 className="form-input"
-                placeholder="Ex: Familia Silva"
+                placeholder="Ex: Família Silva"
                 value={form.householdName}
                 onChange={(e) => setForm({ ...form, householdName: e.target.value })}
               />
@@ -255,46 +294,14 @@ export default function Login() {
               marginTop: '0.5rem'
             }}
           >
-            {loading ? 'Processando...' : isLogin ? <><LogIn size={18} /> Entrar</> : <><UserPlus size={18} /> Criar Conta</>}
+            {loading ? 'A processar...' : isLogin ? <><LogIn size={18} /> Entrar</> : <><UserPlus size={18} /> Criar conta</>}
           </button>
         </form>
-
-        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
-            <span style={{ fontSize: '0.8rem', color: 'var(--color-muted)' }}>OU</span>
-            <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-              useOneTap
-              theme="outline"
-              size="large"
-              shape="pill"
-              locale="pt_BR"
-            />
-          </div>
-          <p
-            style={{
-              margin: 0,
-              fontSize: '0.78rem',
-              lineHeight: 1.5,
-              color: 'var(--color-muted)',
-              textAlign: 'center'
-            }}
-          >
-            Se o Google falhar em preview ou localhost, adiciona <strong>{currentOrigin || 'esta origem'}</strong> em
-            {' '}Authorized JavaScript origins no Google Cloud Console.
-          </p>
-        </div>
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--color-muted)' }}>
           {isLogin ? (
             <p>
-              Nao tem uma conta?{' '}
+              Não tem uma conta?{' '}
               <button
                 onClick={() => setIsLogin(false)}
                 style={{ color: 'var(--color-ocean)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
@@ -304,12 +311,12 @@ export default function Login() {
             </p>
           ) : (
             <p>
-              Ja tem uma conta?{' '}
+              Já tem uma conta?{' '}
               <button
                 onClick={() => setIsLogin(true)}
                 style={{ color: 'var(--color-ocean)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
               >
-                Faca Login
+                Faça login
               </button>
             </p>
           )}

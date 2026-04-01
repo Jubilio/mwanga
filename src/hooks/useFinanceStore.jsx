@@ -37,6 +37,13 @@ const defaultState = {
   loading: true,
 };
 
+function createInitialState(darkMode) {
+  return {
+    ...defaultState,
+    darkMode
+  };
+}
+
 function parseBooleanSetting(value, fallback) {
   if (typeof value === 'boolean') return value;
   if (value === 'true' || value === '1') return true;
@@ -137,10 +144,113 @@ function mapXitique(x) {
   };
 }
 
+async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
+  const token = localStorage.getItem('mwanga-token');
+  if (!token) {
+    dispatch({ type: 'RESET_SESSION' });
+    return null;
+  }
+
+  const headers = { Authorization: `Bearer ${token}` };
+
+  const safeFetch = async (url) => {
+    try {
+      const res = await fetch(url, { headers });
+      if (res.status === 401) {
+        console.warn(`Session expired (401): ${url}. Clearing token.`);
+        localStorage.removeItem('mwanga-token');
+        dispatch({ type: 'RESET_SESSION' });
+        return [];
+      }
+      if (res.status === 429) {
+        console.warn(`Rate limited: ${url}`);
+        return [];
+      }
+      if (!res.ok) {
+        console.warn(`Failed fetch (${res.status}): ${url}`);
+        return [];
+      }
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        return [];
+      }
+      return await res.json();
+    } catch (err) {
+      console.warn(`Fetch failed for ${url}:`, err.message);
+      return [];
+    }
+  };
+
+  try {
+    console.log('Fetching session data from:', FINANCE_API_URL);
+    const [ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans] = await Promise.all([
+      safeFetch(`${FINANCE_API_URL}/transactions`),
+      safeFetch(`${FINANCE_API_URL}/rentals`),
+      safeFetch(`${FINANCE_API_URL}/goals`),
+      safeFetch(`${FINANCE_API_URL}/budgets`),
+      safeFetch(`${FINANCE_API_URL}/assets`),
+      safeFetch(`${FINANCE_API_URL}/liabilities`),
+      safeFetch(`${FINANCE_API_URL}/xitiques`),
+      safeFetch(`${FINANCE_API_URL}/settings`),
+      safeFetch(`${FINANCE_API_URL}/auth/me`),
+      safeFetch(`${FINANCE_API_URL}/debts`),
+      safeFetch(`${FINANCE_API_URL}/accounts`),
+      safeFetch(`${FINANCE_API_URL}/credit/applications`),
+      safeFetch(`${FINANCE_API_URL}/credit/loans`),
+    ]);
+
+    const mergedSettings = normalizeSettings(
+      settingsResp && !Array.isArray(settingsResp) ? settingsResp : {}
+    );
+
+    const resolvedUser = preferredUser || user || null;
+
+    dispatch({
+      type: 'SET_DATA',
+      payload: {
+        transacoes: Array.isArray(ts) ? ts.map(mapTransaction) : [],
+        rendas: Array.isArray(rendas) ? rendas.map(mapRental) : [],
+        metas: Array.isArray(metas) ? metas.map(mapGoal) : [],
+        budgets: Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: b.category, limit: Number(b.limit_amount || 0) })) : [],
+        activos: Array.isArray(assets) ? assets.map(a => ({ id: a.id, name: a.name, type: a.type, value: Number(a.value || 0) })) : [],
+        passivos: Array.isArray(liabs) ? liabs.map(l => ({
+          id: l.id,
+          name: l.name,
+          total: Number(l.total_amount || 0),
+          restante: Number(l.remaining_amount || 0),
+          interestRate: Number(l.interest_rate || 0)
+        })) : [],
+        xitiques: Array.isArray(xitiques) ? xitiques.map(mapXitique) : [],
+        dividas: Array.isArray(debts) ? debts.map(d => ({
+          ...d,
+          total_amount: Number(d.total_amount || 0),
+          remaining_amount: Number(d.remaining_amount || 0),
+          payments: d.payments?.map(p => ({ ...p, amount: Number(p.amount || 0) })) || []
+        })) : [],
+        contas: Array.isArray(accounts) ? accounts.map(mapAccount) : [],
+        loanApplications: Array.isArray(loanApplications) ? loanApplications : [],
+        loans: Array.isArray(loans) ? loans : [],
+        settings: mergedSettings,
+        user: resolvedUser
+      }
+    });
+
+    return resolvedUser;
+  } catch (e) {
+    console.error('API Fetch failed, using demo data:', e);
+    const demo = generateDemoData();
+    dispatch({ type: 'SET_DATA', payload: { ...demo, user: preferredUser || null } });
+    return preferredUser || null;
+  }
+}
+
 function reducer(state, action) {
   switch (action.type) {
     case 'SET_DATA':
       return { ...state, ...action.payload, loading: false };
+
+    case 'RESET_SESSION':
+      return { ...createInitialState(state.darkMode), loading: false };
     
     case 'SET_USER':
       return { ...state, user: action.payload };
@@ -230,8 +340,7 @@ function reducer(state, action) {
 export function FinanceProvider({ children }) {
   const storedDarkMode = localStorage.getItem('mwanga-dark');
   const [state, dispatch] = useReducer(reducer, {
-    ...defaultState,
-    darkMode: storedDarkMode === null ? true : storedDarkMode === 'true'
+    ...createInitialState(storedDarkMode === null ? true : storedDarkMode === 'true')
   });
 
   // Initial Fetch from API
@@ -821,7 +930,7 @@ export function FinanceProvider({ children }) {
   };
 
   return (
-    <FinanceContext.Provider value={{ state, dispatch: apiDispatch }}>
+    <FinanceContext.Provider value={{ state, dispatch: apiDispatch, reloadData: (options) => fetchSessionData(dispatch, options) }}>
       {children}
     </FinanceContext.Provider>
   );

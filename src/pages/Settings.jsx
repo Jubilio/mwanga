@@ -580,13 +580,13 @@ export default function Settings() {
                                   <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em]">
                                     <Bell size={12} /> Push Engine
                                   </div>
-                                  <h5 className="text-sm font-black uppercase tracking-[0.18em]">Notificacoes fora da app</h5>
+                                  <h5 className="text-sm font-black uppercase tracking-[0.18em]">Notificações fora da app</h5>
                                   <p className="mt-2 text-[12px] text-white/75">
-                                    Liga push no browser para receber lembretes, pressao de orcamento e motivacao mesmo com o Mwanga fechado.
+                                    Liga push no browser para receber lembretes, pressão de orçamento e motivação mesmo com o Mwanga fechado.
                                   </p>
                                   <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-[0.2em]">
                                     <span className="rounded-full bg-white/12 px-3 py-1">
-                                      Suporte: {isSupported ? 'Sim' : 'Nao'}
+                                      Suporte: {isSupported ? 'Sim' : 'Não'}
                                     </span>
                                     <span className="rounded-full bg-white/12 px-3 py-1">
                                       Permissao: {permission}
@@ -606,7 +606,7 @@ export default function Settings() {
                                         await enablePush();
                                         showToast('Push inteligente ativado.');
                                       } catch (error) {
-                                        showToast(error.message || 'Nao foi possivel ativar push.');
+                                        showToast(error.message || 'Não foi possível ativar push.');
                                       }
                                     }}
                                     className="rounded-2xl bg-white px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#0a4d68] transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
@@ -622,7 +622,7 @@ export default function Settings() {
                                         await sendTestPush();
                                         showToast('Teste enviado. Fecha ou minimiza a app para validar o fluxo.');
                                       } catch {
-                                        showToast('Nao foi possivel enviar o teste.');
+                                        showToast('Não foi possível enviar o teste.');
                                       }
                                     }}
                                     className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-white/16 disabled:cursor-not-allowed disabled:opacity-60"
@@ -638,7 +638,7 @@ export default function Settings() {
                                         await disablePush();
                                         showToast('Push desativado neste dispositivo.');
                                       } catch {
-                                        showToast('Nao foi possivel desativar push.');
+                                        showToast('Não foi possível desativar push.');
                                       }
                                     }}
                                     className="rounded-2xl border border-white/20 bg-transparent px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"

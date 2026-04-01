@@ -36,14 +36,14 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="animate-fade-in" style={{ 
-      minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' 
+    <div className="animate-fade-in" style={{
+      minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
     }}>
       <div className="glass-card" style={{ width: '100%', maxWidth: '400px', padding: '2rem' }}>
         <div style={{ marginBottom: '1.5rem' }}>
-          <button onClick={() => navigate(-1)} style={{ 
-            background: 'none', border: 'none', color: 'var(--color-muted)', 
-            display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' 
+          <button onClick={() => navigate(-1)} style={{
+            background: 'none', border: 'none', color: 'var(--color-muted)',
+            display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem'
           }}>
             <ArrowLeft size={16} /> Voltar
           </button>
@@ -52,7 +52,7 @@ export default function ForgotPassword() {
         {!sent ? (
           <>
             <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-ocean)', marginBottom: '0.5rem' }}>
-              Recuperar Senha
+              Recuperar senha
             </h1>
             <p style={{ color: 'var(--color-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
               Introduza o seu email para receber um link de recuperação.
@@ -63,8 +63,8 @@ export default function ForgotPassword() {
                 <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Mail size={14} /> Email
                 </label>
-                <input 
-                  type="email" required className="form-input" 
+                <input
+                  type="email" required className="form-input"
                   placeholder="seu@email.com"
                   value={email} onChange={e => setEmail(e.target.value)}
                 />
@@ -72,11 +72,11 @@ export default function ForgotPassword() {
 
               {error && <div style={{ color: 'var(--color-red)', fontSize: '0.85rem' }}>❌ {error}</div>}
 
-              <button 
-                type="submit" disabled={loading} className="btn btn-primary" 
+              <button
+                type="submit" disabled={loading} className="btn btn-primary"
                 style={{ width: '100%', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
               >
-                {loading ? 'Processando...' : <><Send size={18} /> Enviar Link</>}
+                {loading ? 'A processar...' : <><Send size={18} /> Enviar link</>}
               </button>
             </form>
           </>
@@ -86,13 +86,13 @@ export default function ForgotPassword() {
               <CheckCircle2 size={60} strokeWidth={1.5} style={{ margin: '0 auto' }} />
             </div>
             <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '0.8rem' }}>
-              Link Enviado!
+              Link enviado!
             </h2>
             <p style={{ color: 'var(--color-muted)', fontSize: '0.95rem', lineHeight: '1.5', marginBottom: '2rem' }}>
               Se o email <strong>{email}</strong> estiver registado, receberá as instruções de redefinição em breve.
             </p>
             <Link to="/login" className="btn btn-primary" style={{ display: 'inline-block', padding: '12px 24px', textDecoration: 'none' }}>
-              Ir para o Login
+              Ir para o login
             </Link>
           </div>
         )}

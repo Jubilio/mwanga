@@ -32,29 +32,29 @@ import QuickAddNotificationModal from './QuickAddNotificationModal';
 
 const bottomNavItems = [
   { to: '/', icon: LayoutDashboard, label: 'Home' },
-  { to: '/transacoes', icon: ArrowRightLeft, label: 'Transacoes' },
+  { to: '/transacoes', icon: ArrowRightLeft, label: 'Transações' },
   { to: '/xitique', icon: Wallet, label: 'Xitique' },
-  { to: '/credito', icon: CreditCard, label: 'Credito' },
+  { to: '/credito', icon: CreditCard, label: 'Crédito' },
   { to: '/insights', icon: Brain, label: 'Binth' },
 ];
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/transacoes', icon: ArrowRightLeft, label: 'Transacoes' },
-  { to: '/orcamento', icon: PieChart, label: 'Orcamento' },
-  { to: '/credito', icon: CreditCard, label: 'Credito' },
-  { to: '/dividas', icon: CreditCard, label: 'Dividas' },
-  { to: '/habitacao', icon: Home, label: 'Habitacao' },
+  { to: '/transacoes', icon: ArrowRightLeft, label: 'Transações' },
+  { to: '/orcamento', icon: PieChart, label: 'Orçamento' },
+  { to: '/credito', icon: CreditCard, label: 'Crédito' },
+  { to: '/dividas', icon: CreditCard, label: 'Dívidas' },
+  { to: '/habitacao', icon: Home, label: 'Habitação' },
   { to: '/xitique', icon: Wallet, label: 'Xitique' },
   { to: '/metas', icon: Target, label: 'Metas' },
   { to: '/nexovibe', icon: Globe, label: 'Nexo Vibe' },
   { to: '/insights', icon: Brain, label: 'Binth Insights' },
   { to: '/sms-import', icon: Globe, label: 'Importar Mensagem' },
-  { to: '/patrimonio', icon: Landmark, label: 'Patrimonio' },
+  { to: '/patrimonio', icon: Landmark, label: 'Património' },
   { to: '/simuladores', icon: Calculator, label: 'Simuladores' },
-  { to: '/relatorio', icon: BarChart3, label: 'Relatorios' },
+  { to: '/relatorio', icon: BarChart3, label: 'Relatórios' },
   { to: '/pricing', icon: Crown, label: 'Mover para Premium', premium: true },
-  { to: '/settings', icon: SettingsIcon, label: 'Definicoes' },
+  { to: '/settings', icon: SettingsIcon, label: 'Definições' },
 ];
 
 const notificationTypePriority = {
@@ -71,7 +71,7 @@ function getNotificationPresentation(notification = {}) {
 
   if (notification.type === 'warning') {
     return {
-      label: 'Pressao',
+      label: 'Pressão',
       borderClass: 'border-l-4 border-l-amber-500',
       accentClass: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300',
       chipClass: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200',
@@ -258,11 +258,11 @@ export default function Layout() {
     try {
       await api.delete('/notifications');
       setNotifications([]);
-      showToast('Notificacoes limpas.', 'success');
+      showToast('Notificações limpas.', 'success');
       setIsConfirmClearOpen(false);
     } catch (error) {
       console.error(error);
-      showToast('Erro ao limpar notificacoes.', 'error');
+      showToast('Erro ao limpar notificações.', 'error');
     }
   }
 
@@ -304,7 +304,7 @@ export default function Layout() {
         >
           <div className="mb-6 flex items-center justify-between">
             <h3 className="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white">
-              <Bell size={20} className="text-ocean dark:text-aurora" /> Notificacoes
+              <Bell size={20} className="text-ocean dark:text-aurora" /> Notificações
             </h3>
             <div className="flex items-center gap-2">
               {notifications.length > 0 && (
@@ -326,7 +326,7 @@ export default function Layout() {
 
           <div className="custom-scrollbar max-h-[calc(100vh-150px)] space-y-4 overflow-y-auto pr-2">
             {orderedNotifications.length === 0 ? (
-              <p className="py-10 text-center italic text-gray-500">Nenhuma notificacao por agora.</p>
+              <p className="py-10 text-center italic text-gray-500">Nenhuma notificação por agora.</p>
             ) : (
               orderedNotifications.map((notification) => {
                 const presentation = getNotificationPresentation(notification);
@@ -471,10 +471,10 @@ export default function Layout() {
 
       <ConfirmModal
         isOpen={isConfirmClearOpen}
-        title="Limpar Notificacoes?"
-        message="Esta acao ira eliminar permanentemente todos os lembretes e alertas. Tens a certeza?"
+        title="Limpar Notificações?"
+        message="Esta ação irá eliminar permanentemente todos os lembretes e alertas. Tens a certeza?"
         confirmText="Sim, Limpar Tudo"
-        cancelText="Nao, Manter"
+        cancelText="Não, Manter"
         onConfirm={handleClearAll}
         onCancel={() => setIsConfirmClearOpen(false)}
       />
