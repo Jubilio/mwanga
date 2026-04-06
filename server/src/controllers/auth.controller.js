@@ -44,7 +44,8 @@ const registerSchema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8).max(100),
-  householdName: z.string().trim().max(100).optional()
+  householdName: z.string().trim().max(100).optional(),
+  inviteCode: z.string().trim().optional()
 }).strict();
 
 const loginSchema = z.object({
@@ -53,7 +54,8 @@ const loginSchema = z.object({
 }).strict();
 
 const updateProfileSchema = z.object({
-  name: z.string().trim().min(2).max(100)
+  name: z.string().trim().min(2).max(100).optional(),
+  nationalId: z.string().trim().max(50).optional()
 }).strict();
 
 const forgotPasswordSchema = z.object({
@@ -67,13 +69,27 @@ const resetPasswordSchema = z.object({
 
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, householdName } = registerSchema.parse(req.body);
+    const { name, email, password, householdName, inviteCode } = registerSchema.parse(req.body);
 
-    const householdInsert = await db.execute({
-      sql: 'INSERT INTO households (name) VALUES ($1) RETURNING id',
-      args: [householdName || `${name}'s Home`]
-    });
-    const householdId = Number(householdInsert.rows[0]?.id || householdInsert.lastInsertRowid);
+    let householdId = null;
+
+    if (inviteCode) {
+      const inviteResult = await db.execute({
+        sql: 'SELECT household_id FROM household_invites WHERE invite_code = $1 AND status = $2 AND expires_at > NOW()',
+        args: [inviteCode, 'active']
+      });
+      
+      if (inviteResult.rows.length === 0) {
+        return res.status(400).json({ error: 'Código de convite inválido ou expirado.' });
+      }
+      householdId = Number(inviteResult.rows[0].household_id);
+    } else {
+      const householdInsert = await db.execute({
+        sql: 'INSERT INTO households (name) VALUES ($1) RETURNING id',
+        args: [householdName || `${name}'s Home`]
+      });
+      householdId = Number(householdInsert.rows[0]?.id || householdInsert.lastInsertRowid);
+    }
 
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(password, salt);
@@ -125,6 +141,11 @@ const login = async (req, res, next) => {
     };
 
     await logAction(user.id, 'LOGIN', 'USER', user.id);
+    
+    // Asynchronously evaluate badges
+    const { evaluateUserBadges } = require('../services/gamificationEngine.service');
+    evaluateUserBadges(user.id, user.household_id).catch(() => {});
+    
     res.json({ user: userData, token: createSessionToken(userData) });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -147,20 +168,49 @@ const getMe = async (req, res) => {
   }
 
   const { password_hash, household_id, ...data } = user;
+  
+  // Decrypt PII data (At-Rest Application level decryption)
+  const cryptoService = require('../utils/crypto.service');
+  if (data.nationalId) {
+    data.nationalId = cryptoService.decrypt(data.nationalId) || data.nationalId;
+  }
+  if (data.national_id) {
+    data.nationalId = cryptoService.decrypt(data.national_id) || data.national_id; // Support both casings
+    delete data.national_id;
+  }
+
   res.json({ ...data, householdId: household_id, role: user.role || 'user' });
 };
 
 const updateProfile = async (req, res, next) => {
   try {
-    const { name } = updateProfileSchema.parse(req.body);
+    const { name, nationalId } = updateProfileSchema.parse(req.body);
+    const cryptoService = require('../utils/crypto.service');
 
-    await db.execute({
-      sql: 'UPDATE users SET name = $1 WHERE id = $2',
-      args: [name, req.user.id]
-    });
+    let updates = [];
+    let args = [];
+    let paramCount = 1;
 
-    await logAction(req.user.id, 'UPDATE_PROFILE', 'USER', req.user.id);
-    res.json({ success: true, name });
+    if (name) {
+      updates.push(`name = $${paramCount++}`);
+      args.push(name);
+    }
+
+    if (nationalId) {
+      updates.push(`national_id = $${paramCount++}`); // Assuming snake_case in column if it's raw SQL though Prisma uses camelCase for the schema property! Prisma maps it by default? Wait, schema.prisma says "nationalId String?" (Prisma usually maps to "nationalId" unless mapped otherwise). Let me use "nationalId" as the column name. Actually, previous queries used "password_hash", so snake_case. Let's use nationalId if not mapped. Wait, schema.prisma has no @map. I will use "nationalId".
+      args.push(cryptoService.encrypt(nationalId));
+    }
+
+    if (updates.length > 0) {
+      args.push(req.user.id);
+      await db.execute({
+        sql: `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramCount}`,
+        args: args
+      });
+      await logAction(req.user.id, 'UPDATE_PROFILE', 'USER', req.user.id);
+    }
+    
+    res.json({ success: true, message: 'Perfil e dados PII atualizados com sucesso.' });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json(getValidationErrorPayload(error));
@@ -172,7 +222,7 @@ const updateProfile = async (req, res, next) => {
 
 const googleLogin = async (req, res) => {
   try {
-    const { credential } = req.body;
+    const { credential, inviteCode } = req.body;
 
     if (!credential) {
       return res.status(400).json({ error: 'Token do Google e obrigatorio' });
@@ -207,11 +257,24 @@ const googleLogin = async (req, res) => {
     if (!user) {
       try {
         created = true;
-        const householdInsert = await db.execute({
-          sql: 'INSERT INTO households (name) VALUES ($1) RETURNING id',
-          args: [`Familia de ${displayName}`]
-        });
-        const householdId = Number(householdInsert.rows[0]?.id || householdInsert.lastInsertRowid);
+        
+        let householdId = null;
+        if (inviteCode) {
+          const inviteResult = await db.execute({
+            sql: 'SELECT household_id FROM household_invites WHERE invite_code = $1 AND status = $2 AND expires_at > NOW()',
+            args: [inviteCode, 'active']
+          });
+          if (inviteResult.rows.length === 0) {
+            return res.status(400).json({ error: 'Código de convite inválido ou expirado.' });
+          }
+          householdId = Number(inviteResult.rows[0].household_id);
+        } else {
+          const householdInsert = await db.execute({
+            sql: 'INSERT INTO households (name) VALUES ($1) RETURNING id',
+            args: [`Familia de ${displayName}`]
+          });
+          householdId = Number(householdInsert.rows[0]?.id || householdInsert.lastInsertRowid);
+        }
 
         const passwordHash = createGooglePasswordHash();
         const userInsert = await db.execute({

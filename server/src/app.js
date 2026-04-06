@@ -13,6 +13,8 @@ const creditRoutes = require('./routes/credit.routes');
 const kycRoutes = require('./routes/kyc.routes');
 const adminRoutes = require('./routes/admin.routes');
 const notificationRoutes = require('./routes/notification.routes');
+const inviteRoutes = require('./routes/invite.routes');
+const webauthnRoutes = require('./routes/webauthn.routes');
 const { getNotificationReadValue } = require('./services/notificationRead.service');
 const logger = require('./utils/logger');
 const swaggerUi = require('swagger-ui-express');
@@ -122,12 +124,14 @@ app.get('/api/health', async (req, res) => {
 
 // 9. Routes registration
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api/auth/webauthn', webauthnRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/sms', smsRoutes);
 app.use('/api/credit', creditRoutes);
 app.use('/api/kyc', kycRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/households', inviteRoutes);
 
 app.use('/api', financeRoutes);
 
