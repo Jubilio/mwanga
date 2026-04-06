@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { FinanceProvider } from './hooks/useFinanceStore';
 import Layout from './components/Layout';
+import AdminLayout from './components/AdminLayout';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Budget from './pages/Budget';
@@ -17,7 +18,10 @@ import Dividas from './pages/Dividas';
 import Credito from './pages/Credito';
 import Pricing from './pages/Pricing';
 import Login from './pages/Login';
+import AdminLogin from './pages/AdminLogin';
 import Admin from './pages/Admin';
+import AdminUsers from './pages/AdminUsers';
+import AdminSettings from './pages/AdminSettings';
 import Insights from './pages/Insights';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -47,6 +51,7 @@ export default function App() {
     <FinanceProvider>
       <BrowserRouter>
         <Routes>
+          {/* ── Main App (financial) ── */}
           <Route element={<RequireAuth><Layout /></RequireAuth>}>
             <Route index element={<Dashboard />} />
             <Route path="transacoes" element={<Transactions />} />
@@ -64,9 +69,18 @@ export default function App() {
             <Route path="settings" element={<Settings />} />
             <Route path="pricing" element={<Pricing />} />
             <Route path="insights" element={<Insights />} />
-            <Route path="admin" element={<Admin />} />
             <Route path="quick-add" element={<Dashboard />} />
           </Route>
+
+          {/* ── Admin Portal (isolated) ── */}
+          <Route path="admin/login" element={<AdminLogin />} />
+          <Route path="admin" element={<AdminLayout />}>
+            <Route index element={<Admin />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
+
+          {/* ── Public auth pages ── */}
           <Route path="login" element={<Login />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />

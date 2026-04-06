@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
 import {
   Users, Shield, BarChart2, CheckCircle, XCircle, Clock,
@@ -24,8 +23,12 @@ const EMPTY_STATS = {
   kycSummary: { approved: 0, pending: 0, rejected: 0 }
 };
 
+function getAdminHeaders() {
+  const token = localStorage.getItem('mwanga-admin-token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export default function Admin() {
-  const { state } = useFinance();
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
@@ -44,9 +47,10 @@ export default function Admin() {
     setError('');
 
     try {
+      const headers = getAdminHeaders();
       const [usersResp, statsResp] = await Promise.all([
-        api.get('/admin/users'),
-        api.get('/admin/stats')
+        api.get('/admin/users', { headers }),
+        api.get('/admin/stats', { headers })
       ]);
       setUsers(Array.isArray(usersResp.data) ? usersResp.data : []);
       setStats({ ...EMPTY_STATS, ...statsResp.data });
@@ -62,7 +66,8 @@ export default function Admin() {
   const handleKycUpdate = async (userId, status) => {
     try {
       setError('');
-      await api.post('/admin/kyc/status', { userId, status });
+      const headers = getAdminHeaders();
+      await api.post('/admin/kyc/status', { userId, status }, { headers });
       fetchData();
     } catch (updateError) {
       console.error('Error updating KYC:', updateError);
@@ -86,21 +91,6 @@ export default function Admin() {
       ? 'O pipeline operacional está a crescer e pode precisar de triagem.'
       : 'A operação está estável com baixa pressão de risco neste momento.';
 
-  if (state.user && state.user.role !== 'admin') {
-    return (
-      <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto', color: G.text }}>
-        <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <Shield size={22} color={G.red} />
-            <h1 style={{ fontSize: '22px', fontWeight: 900, fontFamily: 'Sora, sans-serif' }}>Acesso restrito</h1>
-          </div>
-          <p style={{ color: G.muted, lineHeight: 1.6 }}>
-            Esta área é reservada para administradores. A tua sessão atual não tem privilégios de gestão da plataforma.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
