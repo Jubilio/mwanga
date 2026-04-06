@@ -471,7 +471,29 @@ const PROVIDERS = {
       'X-Title': 'Mwanga Binth'
     }),
     body: (messages, system, tools = []) => ({
-      model: 'meta-llama/llama-3.1-8b-instruct',
+      model: process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.1-8b-instruct',
+      temperature: 0.7,
+      is_free: true, // Hint for OpenRouter to prefer free models if possible
+      messages: [{ role: 'system', content: system }, ...messages],
+      tools: tools.length > 0 ? tools : undefined
+    }),
+    extract: (data) => data.choices?.[0]?.message?.content,
+    extractToolCall: (data) => {
+      const call = data.choices?.[0]?.message?.tool_calls?.[0]?.function;
+      return call ? { name: call.name, args: JSON.parse(call.arguments || '{}') } : null;
+    }
+  },
+
+  anthropic: {
+    url: () => 'https://openrouter.ai/api/v1/chat/completions',
+    headers: (key) => ({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${key || process.env.OPENROUTER_API_KEY}`,
+      'HTTP-Referer': 'https://mwanga.app',
+      'X-Title': 'Mwanga Binth (Anthropic Mode)'
+    }),
+    body: (messages, system, tools = []) => ({
+      model: process.env.ANTHROPIC_MODEL || 'qwen/qwen-2-vl-7b-instruct:free',
       temperature: 0.7,
       messages: [{ role: 'system', content: system }, ...messages],
       tools: tools.length > 0 ? tools : undefined
@@ -737,7 +759,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
         method: 'POST',
         headers: hdrs,
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(10000)
+        signal: AbortSignal.timeout(30000)
       });
 
       if (!res.ok) {
