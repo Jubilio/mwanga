@@ -10,9 +10,11 @@ export default function Patrimony() {
   const { showToast } = useOutletContext();
   const [showAssetModal, setShowAssetModal] = useState(false);
   const [showLiabilityModal, setShowLiabilityModal] = useState(false);
+  const [showAccountModal, setShowAccountModal] = useState(false);
 
   const [assetForm, setAssetForm] = useState({ name: '', type: 'imóvel', value: '' });
   const [liabilityForm, setLiabilityForm] = useState({ name: '', totalAmount: '', remainingAmount: '', interestRate: '' });
+  const [accountForm, setAccountForm] = useState({ name: '', type: 'bank', initial_balance: '' });
 
   // Advanced Simulators State
   const [retireMonthlySavings, setRetireMonthlySavings] = useState(10000);
@@ -81,12 +83,34 @@ export default function Patrimony() {
     showToast('Passivo adicionado com sucesso!');
   };
 
+  const handleAddAccount = (e) => {
+    e.preventDefault();
+    if (!accountForm.name || accountForm.initial_balance === '') return;
+    dispatch({ 
+      type: 'ADD_ACCOUNT', 
+      payload: { 
+        name: accountForm.name, 
+        type: accountForm.type, 
+        initial_balance: parseFloat(accountForm.initial_balance)
+      } 
+    });
+    setShowAccountModal(false);
+    setAccountForm({ name: '', type: 'bank', initial_balance: '' });
+    showToast('Conta adicionada com sucesso!');
+  };
+
   const assetIcons = {
     'imóvel': Home,
     'veiculo': Car,
     'poupanca': Smartphone,
     'investimento': TrendingUp,
     'outro': Star
+  };
+
+  const accountIcons = {
+    'bank': Briefcase,
+    'mobile': Smartphone,
+    'cash': Zap
   };
 
   return (
@@ -137,7 +161,53 @@ export default function Patrimony() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Contas Section */}
+        <div>
+          <div className="sh">
+            <h2 className="st">Contas</h2>
+            <button className="btn btn-secondary py-1 px-3 text-sm" onClick={() => setShowAccountModal(true)}>
+              <Plus size={16} /> Adicionar
+            </button>
+          </div>
+          
+          <div className="glass-card overflow-hidden">
+            {state.contas?.length > 0 ? (
+              <div className="divide-y divide-slate-100">
+                {state.contas.map((account, idx) => {
+                  const Icon = accountIcons[account.type] || Briefcase;
+                  return (
+                    <div key={account.id || `account-${idx}`} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                          <Icon size={18} />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-slate-800">{account.name}</div>
+                          <div className="text-xs text-slate-500 capitalize">{account.type === 'bank' ? 'Banco' : account.type === 'mobile' ? 'Móvel' : 'Físico'}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="font-bold text-ocean">{fmt(account.current_balance, currency)}</div>
+                        <button 
+                          className="text-slate-300 hover:text-rose-500 transition-colors"
+                          onClick={() => dispatch({ type: 'DELETE_ACCOUNT', payload: account.id })}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-8 text-center text-slate-400">
+                <p>Nenhuma conta registada.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Assets Section */}
         <div>
           <div className="sh">
@@ -396,6 +466,47 @@ export default function Patrimony() {
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" className="btn btn-secondary flex-1" onClick={() => setShowLiabilityModal(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-primary flex-1">Adicionar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showAccountModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="card-glass p-6 w-full max-w-md animate-in fade-in zoom-in duration-200">
+            <h3 className="text-lg font-bold font-serif mb-4">Adicionar Conta</h3>
+            <form onSubmit={handleAddAccount} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-500 uppercase">Nome da Conta</label>
+                <input 
+                  type="text" className="w-full" placeholder="Ex: Millennium Bim / M-Pesa" required
+                  value={accountForm.name} onChange={e => setAccountForm({...accountForm, name: e.target.value})}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Tipo</label>
+                  <select 
+                    className="w-full"
+                    value={accountForm.type} onChange={e => setAccountForm({...accountForm, type: e.target.value})}
+                  >
+                    <option value="bank">Banco</option>
+                    <option value="mobile">Carteira Móvel</option>
+                    <option value="cash">Dinheiro Físico</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Saldo Inicial (MT)</label>
+                  <input 
+                    type="number" className="w-full" placeholder="0" required
+                    value={accountForm.initial_balance} onChange={e => setAccountForm({...accountForm, initial_balance: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" className="btn btn-secondary flex-1" onClick={() => setShowAccountModal(false)}>Cancelar</button>
                 <button type="submit" className="btn btn-primary flex-1">Adicionar</button>
               </div>
             </form>

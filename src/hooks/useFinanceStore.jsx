@@ -864,8 +864,19 @@ export function FinanceProvider({ children }) {
             headers,
             body: JSON.stringify(paymentBody)
           });
-          const refreshD = await fetch(`${FINANCE_API_URL}/debts`, { headers }).then(r => r.json());
-          dispatch({ type: 'SET_DEBTS', payload: refreshD });
+          const [refreshD, refreshT, refreshAccounts] = await Promise.all([
+            fetch(`${FINANCE_API_URL}/debts`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
+          ]);
+          dispatch({ type: 'SET_DEBTS', payload: Array.isArray(refreshD) ? refreshD : [] });
+          dispatch({ 
+            type: 'SET_DATA', 
+            payload: { 
+              transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : [],
+              contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(mapAccount) : []
+            }
+          });
           return;
         }
         case 'ADD_ACCOUNT': {

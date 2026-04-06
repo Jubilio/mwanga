@@ -575,20 +575,32 @@ export default function Settings() {
                             </div>
 
                             <div className="rounded-2xl border border-slate-200 bg-[linear-gradient(135deg,#0a4d68,#088395)] p-5 text-white shadow-[0_16px_40px_rgba(10,77,104,0.18)]">
-                              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                                <div>
+                              <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="flex-1 min-w-0">
                                   <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em]">
                                     <Bell size={12} /> Push Engine
                                   </div>
-                                  <h5 className="text-sm font-black uppercase tracking-[0.18em]">Notificações fora da app</h5>
-                                  <p className="mt-2 text-[12px] text-white/75">
+                                  <h5 className="text-sm font-black uppercase tracking-[0.18em] truncate">Notificações fora da app</h5>
+                                  <p className="mt-2 text-[12px] text-white/75 break-words">
                                     Liga push no browser para receber lembretes, pressão de orçamento e motivação mesmo com o Mwanga fechado.
                                   </p>
-                                  <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-[0.2em]">
+
+                                  {isSubscribed && (
+                                    <div className="mt-3 bg-white/5 border border-white/10 rounded-xl p-3 text-[11px] text-white/80 leading-relaxed overflow-hidden">
+                                      <strong className="text-white block mb-1">Se a notificação não saltar no ecrã:</strong>
+                                      <ul className="list-disc list-inside space-y-1">
+                                        <li>Verifique o <strong>Centro de Notificações</strong> (canto inferior direito no Windows).</li>
+                                        <li>Desligue o <strong>Modo de Concentração</strong> (Focus Assist) ou "Não Incomodar".</li>
+                                        <li>No Chrome, certifique-se que permitiu as notificações à vista.</li>
+                                      </ul>
+                                    </div>
+                                  )}
+
+                                  <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-[0.2em]">
                                     <span className="rounded-full bg-white/12 px-3 py-1">
                                       Suporte: {isSupported ? 'Sim' : 'Não'}
                                     </span>
-                                    <span className="rounded-full bg-white/12 px-3 py-1">
+                                    <span className="rounded-full bg-white/12 px-3 py-1 truncate max-w-[120px]">
                                       Permissao: {permission}
                                     </span>
                                     <span className="rounded-full bg-white/12 px-3 py-1">
@@ -597,7 +609,7 @@ export default function Settings() {
                                   </div>
                                 </div>
 
-                                <div className="flex flex-col gap-2 sm:min-w-[210px]">
+                                <div className="flex flex-col gap-2 w-full sm:w-auto sm:min-w-[180px] shrink-0">
                                   <button
                                     type="button"
                                     disabled={!isSupported || isPushLoading}

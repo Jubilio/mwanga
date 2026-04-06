@@ -116,6 +116,20 @@ exports.addPayment = async (req, res, next) => {
       {
         sql: 'UPDATE debts SET remaining_amount = $1, status = $2 WHERE id = $3',
         args: [newRemaining, newStatus, id]
+      },
+      {
+        sql: `
+          INSERT INTO transactions (date, type, description, amount, category, note, household_id, account_id)
+          VALUES ($1, 'despesa', $2, $3, 'Dívida', $4, $5, $6) RETURNING id
+        `,
+        args: [
+          payment_date,
+          `Pagamento de Dívida: ${debt.creditor_name}`,
+          numAmount,
+          `Pagamento ${newStatus === 'paid' ? 'final' : 'parcial'} da dívida`,
+          householdId,
+          account_id || null
+        ]
       }
     ];
 
@@ -138,3 +152,4 @@ exports.addPayment = async (req, res, next) => {
     next(error);
   }
 };
+
