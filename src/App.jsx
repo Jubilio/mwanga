@@ -25,6 +25,7 @@ import AdminSettings from './pages/AdminSettings';
 import Insights from './pages/Insights';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Help from './pages/Help';
 import { useFinance } from './hooks/useFinance';
 import { Navigate } from 'react-router-dom';
 
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="settings" element={<Settings />} />
             <Route path="pricing" element={<Pricing />} />
             <Route path="insights" element={<Insights />} />
+            <Route path="help" element={<Help />} />
             <Route path="quick-add" element={<Dashboard />} />
           </Route>
 

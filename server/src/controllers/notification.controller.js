@@ -1,180 +1,181 @@
-const { z } = require('zod');
-const {
-  clearNotifications,
-  createNotification,
-  deletePushSubscription,
-  getPushConfig,
-  listNotificationsForUser,
-  markNotificationAsRead,
-  recordNotificationInteraction,
-  removeNotification,
-  sendTestNotification,
-  upsertPushSubscription,
-} = require('../services/notification.service');
-const { runUserEngagementSweep } = require('../services/notificationEventEngine.service');
+const notificationService = require('../services/notification.service');
 const logger = require('../utils/logger');
 
-const pushSubscriptionSchema = z.object({
-  subscription: z.object({
-    endpoint: z.string().url(),
-    expirationTime: z.any().nullable().optional(),
-    keys: z.object({
-      p256dh: z.string().min(1),
-      auth: z.string().min(1),
-    }),
-  }),
-  deviceType: z.string().min(1).max(30).optional(),
-  platform: z.string().min(1).max(30).optional(),
-}).strict();
-
-const deleteSubscriptionSchema = z.object({
-  endpoint: z.string().url(),
-}).strict();
-
-const interactionSchema = z.object({
-  notificationId: z.coerce.number().int().positive(),
-  interaction: z.enum(['opened', 'actioned']).default('opened'),
-  actionId: z.string().max(50).optional(),
-}).strict();
-
-const getNotifications = async (req, res) => {
+const getPushConfig = (req, res) => {
   try {
-    try {
-      await runUserEngagementSweep({
-        userId: req.user.id,
-        householdId: req.user.householdId,
-        sendPush: false,
-      });
-    } catch (error) {
-      logger.warn(`Notification sweep skipped: ${error.message}`);
+    const config = notificationService.getPushConfig();
+    res.json(config);
+  } catch (error) {
+    logger.error(`Error in getPushConfig: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to retrieve push configuration.' });
+  }
+};
+
+const subscribe = async (req, res) => {
+  try {
+    const { subscription, deviceType, platform, userAgent } = req.body;
+    const { household_id, id: userId } = req.user;
+
+    if (!subscription || !subscription.endpoint) {
+      return res.status(400).json({ status: 'error', message: 'Invalid subscription object.' });
     }
 
-    const notifications = await listNotificationsForUser({
-      householdId: req.user.householdId,
-      userId: req.user.id,
-      limit: 50,
+    const result = await notificationService.upsertPushSubscription({
+      householdId: household_id,
+      userId,
+      subscription,
+      deviceType: deviceType || 'pwa',
+      platform: platform || 'web',
+      userAgent: userAgent || req.get('User-Agent') || '',
+    });
+
+    res.status(201).json({ status: 'success', data: result });
+  } catch (error) {
+    logger.error(`Error in subscribe: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to save push subscription.' });
+  }
+};
+
+const unsubscribe = async (req, res) => {
+  try {
+    const { endpoint } = req.body;
+    const { household_id, id: userId } = req.user;
+
+    if (!endpoint) {
+      return res.status(400).json({ status: 'error', message: 'Endpoint is required for unsubscription.' });
+    }
+
+    await notificationService.deletePushSubscription({
+      householdId: household_id,
+      userId,
+      endpoint,
+    });
+
+    res.json({ status: 'success', message: 'Push subscription removed.' });
+  } catch (error) {
+    logger.error(`Error in unsubscribe: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to remove push subscription.' });
+  }
+};
+
+const list = async (req, res) => {
+  try {
+    const { household_id, id: userId } = req.user;
+    const limit = Number(req.query.limit) || 50;
+
+    const notifications = await notificationService.listNotificationsForUser({
+      householdId: household_id,
+      userId,
+      limit,
     });
 
     res.json(notifications);
   } catch (error) {
-    logger.error(`Notifications fetch failed: ${error.message}`);
-    res.status(200).json([]);
+    logger.error(`Error in listNotifications: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to list notifications.' });
   }
 };
 
-const markAsRead = async (req, res) => {
-  const notification = await markNotificationAsRead({
-    notificationId: Number(req.params.id),
-    householdId: req.user.householdId,
-    userId: req.user.id,
-  });
+const markRead = async (req, res) => {
+  try {
+    const { id: notificationId } = req.params;
+    const { household_id, id: userId } = req.user;
 
-  res.json({ success: Boolean(notification), notification });
+    const notification = await notificationService.markNotificationAsRead({
+      notificationId: Number(notificationId),
+      householdId: household_id,
+      userId,
+    });
+
+    if (!notification) {
+      return res.status(404).json({ status: 'error', message: 'Notification not found or access denied.' });
+    }
+
+    res.json({ status: 'success', data: notification });
+  } catch (error) {
+    logger.error(`Error in markRead: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to mark notification as read.' });
+  }
 };
 
 const clearAll = async (req, res) => {
-  await clearNotifications({
-    householdId: req.user.householdId,
-    userId: req.user.id,
-  });
-
-  res.json({ success: true });
-};
-
-const deleteNotification = async (req, res) => {
-  await removeNotification({
-    notificationId: Number(req.params.id),
-    householdId: req.user.householdId,
-    userId: req.user.id,
-  });
-
-  res.json({ success: true });
-};
-
-const getPushPublicKey = async (req, res) => {
-  res.json(getPushConfig());
-};
-
-const savePushSubscription = async (req, res, next) => {
   try {
-    const data = pushSubscriptionSchema.parse(req.body);
-    const subscription = await upsertPushSubscription({
-      householdId: req.user.householdId,
-      userId: req.user.id,
-      subscription: data.subscription,
-      deviceType: data.deviceType || 'pwa',
-      platform: data.platform || 'web',
-      userAgent: req.headers['user-agent'] || '',
+    const { household_id, id: userId } = req.user;
+
+    await notificationService.clearNotifications({
+      householdId: household_id,
+      userId,
     });
 
-    res.status(201).json(subscription);
+    res.json({ status: 'success', message: 'All notifications cleared.' });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Validation failed', details: error.issues || error.errors });
-    }
-
-    next(error);
+    logger.error(`Error in clearNotifications: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to clear notifications.' });
   }
 };
 
-const removePushSubscription = async (req, res, next) => {
+const deleteOne = async (req, res) => {
   try {
-    const data = deleteSubscriptionSchema.parse(req.body);
-    await deletePushSubscription({
-      householdId: req.user.householdId,
-      userId: req.user.id,
-      endpoint: data.endpoint,
+    const { id: notificationId } = req.params;
+    const { household_id, id: userId } = req.user;
+
+    await notificationService.removeNotification({
+      notificationId: Number(notificationId),
+      householdId: household_id,
+      userId,
     });
 
-    res.json({ success: true });
+    res.json({ status: 'success', message: 'Notification removed.' });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Validation failed', details: error.issues || error.errors });
-    }
-
-    next(error);
+    logger.error(`Error in removeNotification: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to remove notification.' });
   }
 };
 
-const registerInteraction = async (req, res, next) => {
+const recordInteraction = async (req, res) => {
   try {
-    const data = interactionSchema.parse(req.body);
-    const notification = await recordNotificationInteraction({
-      notificationId: data.notificationId,
-      householdId: req.user.householdId,
-      userId: req.user.id,
-      interaction: data.interaction,
-      actionId: data.actionId || null,
+    const { notificationId, interaction, actionId } = req.body;
+    const { household_id, id: userId } = req.user;
+
+    const result = await notificationService.recordNotificationInteraction({
+      notificationId: Number(notificationId),
+      householdId: household_id,
+      userId,
+      interaction,
+      actionId,
     });
 
-    res.json({ success: Boolean(notification), notification });
+    res.json({ status: 'success', data: result });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Validation failed', details: error.issues || error.errors });
-    }
-
-    next(error);
+    logger.error(`Error in recordInteraction: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to record interaction.' });
   }
 };
 
-const sendTestPush = async (req, res) => {
-  const notification = await sendTestNotification({
-    householdId: req.user.householdId,
-    userId: req.user.id,
-  });
+const sendTest = async (req, res) => {
+  try {
+    const { household_id, id: userId } = req.user;
 
-  res.status(201).json(notification);
+    const notification = await notificationService.sendTestNotification({
+      householdId: household_id,
+      userId,
+    });
+
+    res.status(201).json({ status: 'success', data: notification });
+  } catch (error) {
+    logger.error(`Error in sendTestNotification: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to send test push.' });
+  }
 };
 
 module.exports = {
+  getPushConfig,
+  subscribe,
+  unsubscribe,
+  list,
+  markRead,
   clearAll,
-  createNotification,
-  deleteNotification,
-  getNotifications,
-  getPushPublicKey,
-  markAsRead,
-  registerInteraction,
-  removePushSubscription,
-  savePushSubscription,
-  sendTestPush,
+  deleteOne,
+  recordInteraction,
+  sendTest,
 };

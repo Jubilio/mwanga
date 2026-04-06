@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useFinance } from '../hooks/useFinance';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { 
@@ -7,7 +7,8 @@ import {
   Wallet, Palette, Bell, Shield, LogOut, Camera,
   Banknote, Calendar, Globe, Mail, CreditCard, Chrome,
   Sun, Moon, Calculator, Check, ChevronRight, Sparkles, Zap,
-  Loader2, CloudCheck, Home as HomeIcon, Heart, TrendingUp
+  Loader2, CloudCheck, Home as HomeIcon, Heart, TrendingUp,
+  HelpCircle
 } from 'lucide-react';
 
 const AVATARS = [
@@ -20,6 +21,7 @@ const AVATARS = [
 export default function Settings() {
   const { state, dispatch } = useFinance();
   const { showToast } = useOutletContext();
+  const navigate = useNavigate();
   const {
     enablePush,
     disablePush,
@@ -27,7 +29,6 @@ export default function Settings() {
     isSubscribed,
     isSupported,
     permission,
-    sendTestPush,
   } = usePushNotifications();
   const [activeTab, setActiveTab] = useState('perfil');
   const [showAvatarGallery, setShowAvatarGallery] = useState(false);
@@ -58,20 +59,17 @@ export default function Settings() {
     try {
       const updates = [];
       
-      // Special cases for User and Household data
       if (form.user_name !== state.user?.name) {
         updates.push(dispatch({ type: 'UPDATE_USER', payload: { name: form.user_name } }));
       }
       
-      // All other settings
       const settingsToSave = { ...form };
-      delete settingsToSave.user_name; // Managed by UPDATE_USER
+      delete settingsToSave.user_name;
       
       Object.entries(settingsToSave).map(([key, value]) => 
         updates.push(dispatch({ type: 'UPDATE_SETTING', payload: { key, value } }))
       );
 
-      // Handle household table naming sync
       if (form.household_name !== state.settings.household_name) {
         updates.push(dispatch({ type: 'UPDATE_HOUSEHOLD', payload: { name: form.household_name } }));
       }
@@ -103,11 +101,9 @@ export default function Settings() {
     }
   };
 
-  // Autosave Effect
   useEffect(() => {
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     
-    // Don't save on initial mount
     const hasChanged = JSON.stringify(form) !== JSON.stringify({
       user_salary: state.settings.user_salary || 50000,
       default_rent: state.settings.default_rent || 15000,
@@ -143,7 +139,6 @@ export default function Settings() {
       {/* ═══ WORLD-CLASS HERO ═══ */}
       <div className="relative mb-12 animate-in fade-in slide-in-from-top-6 duration-1000">
         <div className="h-64 rounded-[2.5rem] bg-[#0a4d68] relative overflow-hidden shadow-[0_20px_50px_rgba(10,77,104,0.3)]">
-          {/* Decorative Mesh Gradient */}
           <div className="absolute inset-0 opacity-40 bg-gradient-to-br from-teal-400 via-transparent to-indigo-500" />
           <div className="absolute -top-20 -left-20 w-80 h-80 bg-gold-400/20 rounded-full blur-[100px] animate-pulse" />
           <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0a4d68] to-transparent" />
@@ -165,7 +160,6 @@ export default function Settings() {
                     </button>
                   </div>
                   
-                  {/* Avatar Gallery Dropdown */}
                   {showAvatarGallery && (
                     <div className="absolute top-full mt-4 left-0 p-4 glass-card shadow-2xl z-50 flex gap-3 animate-in fade-in zoom-in-95 duration-200">
                       {AVATARS.map((url, i) => (
@@ -207,7 +201,6 @@ export default function Settings() {
                     <Building size={16} /> {form.household_name} • <span className="opacity-60 italic text-sm">Conta Premium Nexo Vibe</span>
                   </p>
                   
-                  {/* Autosave Indicator */}
                   <div className="mt-4 flex items-center gap-3">
                     {isSaving ? (
                       <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white/80 text-[10px] font-black uppercase tracking-widest animate-pulse">
@@ -236,7 +229,6 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* ═══ TAB NAVIGATION ═══ */}
       <div className="flex p-1.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-2xl backdrop-blur-md mb-8 max-w-md mx-auto sticky top-20 z-40 border border-white/20 shadow-lg">
         {tabs.map(tab => (
           <button
@@ -256,11 +248,9 @@ export default function Settings() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-2">
         
-        {/* Main Form Content */}
         <div className="lg:col-span-8">
-           <form onSubmit={handleSaveAll} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               
-              {/* TAB: PERFIL */}
               {activeTab === 'perfil' && (
                 <div className="space-y-8">
                   <div className="glass-card p-10 relative overflow-hidden group">
@@ -278,64 +268,61 @@ export default function Settings() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4">
-                  {/* Personal Info Group */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400">
-                        <User size={18} />
-                      </div>
-                      <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest">Informação Pessoal</h3>
-                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400">
+                            <User size={18} />
+                          </div>
+                          <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest">Informação Pessoal</h3>
+                        </div>
 
-                    <div className="group transition-all">
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">O Seu Nome</label>
-                      <div className="relative">
-                        <input 
-                          type="text" 
-                          value={form.user_name}
-                          onChange={(e) => setForm({ ...form, user_name: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-slate-200 outline-none focus:border-teal-500/50 focus:bg-white/10 transition-all font-medium"
-                          placeholder="Como quer ser chamado?"
-                        />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:opacity-100 transition-opacity">
-                           <Sparkles size={16} className="text-teal-400" />
+                        <div className="group transition-all">
+                          <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">O Seu Nome</label>
+                          <div className="relative">
+                            <input 
+                              type="text" 
+                              value={form.user_name}
+                              onChange={(e) => setForm({ ...form, user_name: e.target.value })}
+                              className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-slate-200 outline-none focus:border-teal-500/50 focus:bg-white/10 transition-all font-medium"
+                              placeholder="Como quer ser chamado?"
+                            />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:opacity-100 transition-opacity">
+                               <Sparkles size={16} className="text-teal-400" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="p-2 rounded-xl bg-sky-500/10 text-sky-400">
+                            <HomeIcon size={18} />
+                          </div>
+                          <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest">A Minha Família</h3>
+                        </div>
+
+                        <div className="group transition-all">
+                          <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">Nome do Agregado</label>
+                          <div className="relative">
+                            <input 
+                              type="text" 
+                              value={form.household_name}
+                              onChange={(e) => setForm({ ...form, household_name: e.target.value })}
+                              className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-slate-200 outline-none focus:border-sky-500/50 focus:bg-white/10 transition-all font-medium"
+                              placeholder="Ex: Família Mwanga"
+                            />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:opacity-100 transition-opacity">
+                               <Heart size={16} className="text-sky-400" />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Household Group */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-xl bg-sky-500/10 text-sky-400">
-                        <HomeIcon size={18} />
-                      </div>
-                      <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest">A Minha Família</h3>
-                    </div>
-
-                    <div className="group transition-all">
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">Nome do Agregado</label>
-                      <div className="relative">
-                        <input 
-                          type="text" 
-                          value={form.household_name}
-                          onChange={(e) => setForm({ ...form, household_name: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-slate-200 outline-none focus:border-sky-500/50 focus:bg-white/10 transition-all font-medium"
-                          placeholder="Ex: Família Mwanga"
-                        />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:opacity-100 transition-opacity">
-                           <Heart size={16} className="text-sky-400" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
                   </div>
                 </div>
               )}
 
-              {/* TAB: FINANÇAS */}
               {activeTab === 'financas' && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="glass-card p-10 border-t-4 border-teal-500">
@@ -350,7 +337,6 @@ export default function Settings() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                      {/* Income Section */}
                       <div className="space-y-8">
                         <div className="flex items-center gap-3">
                           <div className="p-3 rounded-2xl bg-teal-500/10 text-teal-400">
@@ -381,7 +367,6 @@ export default function Settings() {
                         </div>
                       </div>
 
-                      {/* Housing Section */}
                       <div className="space-y-8">
                         <div className="flex items-center gap-3">
                           <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-500">
@@ -426,7 +411,6 @@ export default function Settings() {
                 </div>
               )}
 
-              {/* TAB: PREFERENCIAS */}
               {activeTab === 'pref' && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="glass-card p-10 border-t-4 border-amber-500">
@@ -441,7 +425,6 @@ export default function Settings() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                      {/* Currency & Region */}
                       <div className="space-y-6">
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-xl bg-teal-500/10 text-teal-600">
@@ -465,7 +448,6 @@ export default function Settings() {
                         </div>
                       </div>
 
-                      {/* Theme & Cycle */}
                       <div className="space-y-6">
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600">
@@ -501,180 +483,129 @@ export default function Settings() {
                             <div className={`w-3 h-3 rounded-full bg-white transition-all ${state.darkMode ? 'translate-x-5' : 'translate-x-0'}`} />
                           </div>
                         </div>
+                      </div>
+                    </div>
 
-                        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-5">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
-                              <Bell size={18} />
+                    <div className="mt-10 rounded-3xl border border-slate-200 bg-[linear-gradient(135deg,#0a4d68,#088395)] p-1 text-white shadow-[0_16px_40px_rgba(10,120,104,0.18)]">
+                      <div className="bg-white/5 backdrop-blur-3xl rounded-[1.4rem] p-6">
+                        <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between mb-8">
+                          <div className="flex-1 min-w-0">
+                            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.11em]">
+                              <Bell size={12} /> Push Engine ✦
                             </div>
-                            <div>
-                              <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Lembretes</h4>
-                              <p className="text-[11px] text-slate-500">Define quando queres receber alertas para registo e pagamentos.</p>
+                            <h5 className="text-sm font-black uppercase tracking-[0.11em]">Notificações Inteligentes</h5>
+                            <p className="mt-2 text-[12px] text-white/75 leading-relaxed">
+                              Receba alertas de orçamento, metas e lembretes mesmo com a aplicação fechada.
+                            </p>
+                          </div>
+
+                          <div className="flex flex-col gap-2 w-full sm:w-auto">
+                            <button
+                              type="button"
+                              disabled={!isSupported || isPushLoading}
+                              onClick={async () => {
+                                try {
+                                  await enablePush();
+                                  showToast('Push ativado! ✦');
+                                } catch (e) {
+                                  showToast('Erro ao ativar notificações');
+                                }
+                              }}
+                              className="rounded-2xl bg-white px-6 py-3 text-xs font-black uppercase tracking-widest text-[#0a4d68] hover:bg-slate-50 transition-all disabled:opacity-50 shadow-xl"
+                            >
+                              {isSubscribed ? 'Ligado' : 'Ligar Push'}
+                            </button>
+                            {isSubscribed && (
+                              <button
+                                type="button"
+                                onClick={disablePush}
+                                className="px-6 py-2 text-[10px] font-bold text-white/50 hover:text-white transition-colors"
+                              >
+                                Desativar Notificações
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* ═══ GRANULAR CONTROLS ═══ */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-white/10 pt-6">
+                          {/* Lembrete Diário */}
+                          <div className="bg-white/5 rounded-2xl p-4 border border-white/5 hover:bg-white/10 transition-all">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <Calendar size={14} className="text-teal-300" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Resumo Diário</span>
+                              </div>
+                              <input 
+                                type="checkbox"
+                                checked={form.daily_entry_reminder_enabled}
+                                onChange={(e) => setForm({ ...form, daily_entry_reminder_enabled: e.target.checked })}
+                                className="w-4 h-4 rounded border-white/20 bg-transparent text-teal-500 focus:ring-teal-500"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input 
+                                  type="time" 
+                                  value={form.daily_entry_reminder_time}
+                                  onChange={(e) => setForm({ ...form, daily_entry_reminder_time: e.target.value })}
+                                  disabled={!form.daily_entry_reminder_enabled}
+                                  className="bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white outline-none focus:border-teal-400 disabled:opacity-30"
+                                />
+                                <span className="text-[9px] text-white/40 italic">Hora do lembrete diário</span>
                             </div>
                           </div>
 
-                          <div className="space-y-4">
-                            <label className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 cursor-pointer">
-                              <div>
-                                <div className="text-sm font-bold text-slate-800">Lembrete diário de registo</div>
-                                <div className="text-[11px] text-slate-500">Ajuda-te a lançar gastos e entradas do dia.</div>
+                          {/* Lembrete Mensal */}
+                          <div className="bg-white/5 rounded-2xl p-4 border border-white/5 hover:bg-white/10 transition-all">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <Banknote size={14} className="text-amber-300" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Compromissos</span>
                               </div>
-                              <input
+                              <input 
                                 type="checkbox"
-                                checked={Boolean(form.daily_entry_reminder_enabled)}
-                                onChange={(e) => setForm({ ...form, daily_entry_reminder_enabled: e.target.checked })}
-                                className="h-4 w-4 accent-teal-600"
-                              />
-                            </label>
-
-                            <div>
-                              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Hora do lembrete diário</label>
-                              <input
-                                type="time"
-                                value={form.daily_entry_reminder_time}
-                                onChange={(e) => setForm({ ...form, daily_entry_reminder_time: e.target.value })}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-amber-500/40 transition-all font-medium"
+                                checked={form.monthly_due_reminder_enabled}
+                                onChange={(e) => setForm({ ...form, monthly_due_reminder_enabled: e.target.checked })}
+                                className="w-4 h-4 rounded border-white/20 bg-transparent text-teal-500 focus:ring-teal-500"
                               />
                             </div>
-
-                            <label className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 cursor-pointer">
-                              <div>
-                                <div className="text-sm font-bold text-slate-800">Lembrete mensal de compromissos</div>
-                                <div className="text-[11px] text-slate-500">Avisa sobre renda, xitique e dívidas perto do início ou fim do mês.</div>
-                              </div>
-                              <input
-                                type="checkbox"
-                                checked={Boolean(form.monthly_due_reminder_enabled)}
-                                onChange={(e) => setForm({ ...form, monthly_due_reminder_enabled: e.target.checked })}
-                                className="h-4 w-4 accent-amber-600"
-                              />
-                            </label>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Quando lembrar</label>
-                                <select
-                                  value={form.monthly_due_reminder_period}
-                                  onChange={(e) => setForm({ ...form, monthly_due_reminder_period: e.target.value })}
-                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-amber-500/40 transition-all appearance-none cursor-pointer font-medium"
-                                >
-                                  <option value="inicio">No início do mês</option>
-                                  <option value="fim">No fim do mês</option>
-                                </select>
-                              </div>
-
-                              <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Hora do lembrete mensal</label>
-                                <input
-                                  type="time"
+                            <div className="flex gap-2">
+                                <input 
+                                  type="time" 
                                   value={form.monthly_due_reminder_time}
                                   onChange={(e) => setForm({ ...form, monthly_due_reminder_time: e.target.value })}
-                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-amber-500/40 transition-all font-medium"
+                                  disabled={!form.monthly_due_reminder_enabled}
+                                  className="flex-1 bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white outline-none focus:border-teal-400 disabled:opacity-30"
                                 />
-                              </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-slate-200 bg-[linear-gradient(135deg,#0a4d68,#088395)] p-5 text-white shadow-[0_16px_40px_rgba(10,77,104,0.18)]">
-                              <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-                                <div className="flex-1 min-w-0">
-                                  <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em]">
-                                    <Bell size={12} /> Push Engine
-                                  </div>
-                                  <h5 className="text-sm font-black uppercase tracking-[0.18em] truncate">Notificações fora da app</h5>
-                                  <p className="mt-2 text-[12px] text-white/75 break-words">
-                                    Liga push no browser para receber lembretes, pressão de orçamento e motivação mesmo com o Mwanga fechado.
-                                  </p>
-
-                                  {isSubscribed && (
-                                    <div className="mt-3 bg-white/5 border border-white/10 rounded-xl p-3 text-[11px] text-white/80 leading-relaxed overflow-hidden">
-                                      <strong className="text-white block mb-1">Se a notificação não saltar no ecrã:</strong>
-                                      <ul className="list-disc list-inside space-y-1">
-                                        <li>Verifique o <strong>Centro de Notificações</strong> (canto inferior direito no Windows).</li>
-                                        <li>Desligue o <strong>Modo de Concentração</strong> (Focus Assist) ou "Não Incomodar".</li>
-                                        <li>No Chrome, certifique-se que permitiu as notificações à vista.</li>
-                                      </ul>
-                                    </div>
-                                  )}
-
-                                  <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-[0.2em]">
-                                    <span className="rounded-full bg-white/12 px-3 py-1">
-                                      Suporte: {isSupported ? 'Sim' : 'Não'}
-                                    </span>
-                                    <span className="rounded-full bg-white/12 px-3 py-1 truncate max-w-[120px]">
-                                      Permissao: {permission}
-                                    </span>
-                                    <span className="rounded-full bg-white/12 px-3 py-1">
-                                      Estado: {isSubscribed ? 'Ativo' : 'Desligado'}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                <div className="flex flex-col gap-2 w-full sm:w-auto sm:min-w-[180px] shrink-0">
-                                  <button
-                                    type="button"
-                                    disabled={!isSupported || isPushLoading}
-                                    onClick={async () => {
-                                      try {
-                                        await enablePush();
-                                        showToast('Push inteligente ativado.');
-                                      } catch (error) {
-                                        showToast(error.message || 'Não foi possível ativar push.');
-                                      }
-                                    }}
-                                    className="rounded-2xl bg-white px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#0a4d68] transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-                                  >
-                                    {isSubscribed ? 'Reativar Push' : 'Ativar Push'}
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    disabled={!isSubscribed || isPushLoading}
-                                    onClick={async () => {
-                                      try {
-                                        await sendTestPush();
-                                        showToast('Teste enviado. Fecha ou minimiza a app para validar o fluxo.');
-                                      } catch {
-                                        showToast('Não foi possível enviar o teste.');
-                                      }
-                                    }}
-                                    className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-white/16 disabled:cursor-not-allowed disabled:opacity-60"
-                                  >
-                                    Enviar Teste
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    disabled={!isSubscribed || isPushLoading}
-                                    onClick={async () => {
-                                      try {
-                                        await disablePush();
-                                        showToast('Push desativado neste dispositivo.');
-                                      } catch {
-                                        showToast('Não foi possível desativar push.');
-                                      }
-                                    }}
-                                    className="rounded-2xl border border-white/20 bg-transparent px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
-                                  >
-                                    Desligar
-                                  </button>
-                                </div>
-                              </div>
+                                <select 
+                                  value={form.monthly_due_reminder_period}
+                                  onChange={(e) => setForm({ ...form, monthly_due_reminder_period: e.target.value })}
+                                  disabled={!form.monthly_due_reminder_enabled}
+                                  className="flex-1 bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-[10px] font-bold text-white outline-none focus:border-teal-400 disabled:opacity-30 uppercase tracking-tighter"
+                                >
+                                  <option value="inicio" className="bg-[#0a4d68]">Início</option>
+                                  <option value="fim" className="bg-[#0a4d68]">Fim</option>
+                                </select>
                             </div>
                           </div>
                         </div>
+
+                        <p className="mt-4 text-[9px] text-white/30 text-center uppercase tracking-[0.2em]">
+                          Sincronizado com o motor Binth AI
+                        </p>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
-           </form>
+           </div>
         </div>
 
         {/* Sidebar Controls */}
         <div className="lg:col-span-4 space-y-8 animate-in fade-in slide-in-from-right-10 duration-700">
            
-           {/* Summary Tooltip Card */}
-           <div className="glass-card p-8 !bg-[#0a4d68] text-white overflow-hidden relative group">
+           {/* Tooltip Card */}
+           <div className="glass-card p-8 bg-[#0a4d68] text-white overflow-hidden relative group">
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000" />
               <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white/40 mb-6">Estado da Conta</h3>
               
@@ -692,8 +623,8 @@ export default function Settings() {
                        <Shield size={20} className="text-teal-400" />
                     </div>
                     <div>
-                       <p className="text-xs font-bold">2FA Ativado</p>
-                       <p className="text-[10px] text-white/50">Proteção biométrica</p>
+                       <p className="text-xs font-bold">Proteção Mwanga 2.0</p>
+                       <p className="text-[10px] text-white/50">Encriptação Activa</p>
                     </div>
                  </div>
               </div>
@@ -703,18 +634,27 @@ export default function Settings() {
            <div className="glass-card p-8 space-y-4">
               <div className="p-4 rounded-2xl bg-teal-50/10 border border-teal-500/10 text-center mb-4">
                 <p className="text-[10px] font-black uppercase tracking-widest text-teal-400">Autosave Ativo</p>
-                <p className="text-xs text-slate-400 mt-1">As suas alterações são gravadas instantaneamente.</p>
+                <p className="text-xs text-slate-400 mt-1">As alterações são gravadas instantaneamente.</p>
               </div>
 
               <button 
+                type="button"
+                onClick={() => navigate('/help')}
+                className="w-full py-5 rounded-[2rem] bg-white border border-slate-200 text-[#0a4d68] font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 transition-all hover:bg-slate-50"
+              >
+                <HelpCircle size={20} /> Manual do Utilizador
+              </button>
+
+              <button 
+                type="button"
                 onClick={handleSaveAll}
                 disabled={isSaving}
                 className={`w-full py-5 rounded-[2rem] font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 transition-all ${
-                  isSaving ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-[#0a4d68] hover:bg-[#088395] text-white shadow-[0_10px_30px_rgba(10,77,104,0.3)]'
+                  isSaving ? 'bg-slate-200 text-slate-400' : 'bg-[#0a4d68] hover:bg-[#088395] text-white shadow-lg'
                 }`}
               >
                 {isSaving ? <Loader2 className="animate-spin" /> : <Save size={20} />} 
-                {isSaving ? 'Gravando...' : 'Sincronizar Agora'}
+                Sincronizar Agora
               </button>
               
               <button 
@@ -726,9 +666,9 @@ export default function Settings() {
               </button>
            </div>
 
-           {/* Attribution */}
+           {/* Branding */}
            <div className="text-center px-4">
-              <div className="flex items-center justify-center gap-2 mb-3 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all cursor-crosshair">
+              <div className="flex items-center justify-center gap-2 mb-3 grayscale opacity-30">
                  <Zap size={14} className="text-amber-400" />
                  <span className="text-[10px] font-black uppercase tracking-[0.3em]">Nexo Vibe 2026</span>
               </div>
@@ -738,16 +678,6 @@ export default function Settings() {
               </p>
            </div>
         </div>
-      </div>
-
-      {/* FIXED BOTTOM FLOATING BAR (Mobile Only) */}
-      <div className="fixed bottom-24 left-4 right-4 lg:hidden pointer-events-none z-50">
-         <button 
-           onClick={handleSaveAll}
-           className="w-full h-16 rounded-full bg-teal-500 text-white shadow-2xl pointer-events-auto flex items-center justify-center gap-3 animate-bounce shadow-teal-500/40"
-         >
-           <Save size={24} /> <span className="font-black uppercase tracking-widest text-sm">Guardar Alterações</span>
-         </button>
       </div>
 
     </div>

@@ -21,6 +21,7 @@ import {
   CreditCard,
   Sparkles,
   Info,
+  HelpCircle,
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
@@ -54,6 +55,7 @@ const navItems = [
   { to: '/simuladores', icon: Calculator, label: 'Simuladores' },
   { to: '/relatorio', icon: BarChart3, label: 'Relatórios' },
   { to: '/pricing', icon: Crown, label: 'Mover para Premium', premium: true },
+  { to: '/help', icon: HelpCircle, label: 'Ajuda e Manual' },
   { to: '/settings', icon: SettingsIcon, label: 'Definições' },
 ];
 
@@ -152,11 +154,19 @@ export default function Layout() {
     }
 
     const handler = (event) => {
-      if (event.data?.type !== 'MWANGA_NOTIFICATION_ACTION') {
+      if (
+        event.data?.type !== 'MWANGA_NOTIFICATION_ACTION' &&
+        event.data?.type !== 'NOTIFICATION_INTERACTION'
+      ) {
         return;
       }
 
-      const payload = parseNotificationPayload(event.data.payload || {});
+      const payloadData = event.data.payload || event.data.data || {};
+      const payload = parseNotificationPayload({
+        ...payloadData,
+        actionId: event.data.action || payloadData.actionId || payloadData.action,
+      });
+
       if (payload.notificationId) {
         setNotifications((current) => current.map((item) => (
           item.id === payload.notificationId ? { ...item, read: 1, opened_at: new Date().toISOString() } : item
@@ -421,6 +431,13 @@ export default function Layout() {
               >
                 <Bell size={20} />
                 {unreadCount > 0 && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-coral" />}
+              </button>
+              <button
+                className="rounded-xl p-2 hover:bg-black/5 dark:hover:bg-white/5"
+                onClick={() => navigate('/help')}
+                title="Ajuda"
+              >
+                <HelpCircle size={20} />
               </button>
               <button
                 className="rounded-xl p-2 hover:bg-black/5 dark:hover:bg-white/5"

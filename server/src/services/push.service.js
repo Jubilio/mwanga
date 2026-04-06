@@ -3,14 +3,19 @@ const { db } = require('../config/db');
 const logger = require('../utils/logger');
 const { getNotificationSchema } = require('./notificationSchema.service');
 
-const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:support@mwanga.app';
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
+function getVapidKeys() {
+  return {
+    subject: process.env.VAPID_SUBJECT || 'mailto:support@mwanga.app',
+    publicKey: process.env.VAPID_PUBLIC_KEY || '',
+    privateKey: process.env.VAPID_PRIVATE_KEY || '',
+  };
+}
 
 let vapidConfigured = false;
 
 function hasPushCredentials() {
-  return Boolean(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY);
+  const { publicKey, privateKey } = getVapidKeys();
+  return Boolean(publicKey && privateKey);
 }
 
 function configureVapid() {
@@ -18,7 +23,8 @@ function configureVapid() {
     return vapidConfigured;
   }
 
-  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  const { subject, publicKey, privateKey } = getVapidKeys();
+  webpush.setVapidDetails(subject, publicKey, privateKey);
   vapidConfigured = true;
   return true;
 }
@@ -140,17 +146,19 @@ async function markPushDeliverySuccess(subscriptionId) {
 async function sendPushNotification(notification) {
   const schema = await getNotificationSchema();
   if (!schema.hasPushSubscriptionsTable) {
+    logger.warn('Push skipped: push_subscriptions table does not exist. Run the notification migration.');
     await updateNotificationStatus(notification?.id, 'stored', 0);
     return { attempted: 0, delivered: 0, skipped: true };
   }
 
   if (!notification?.user_id) {
+    logger.warn(`Push skipped: notification has no user_id (notification.id=${notification?.id}).`);
     await updateNotificationStatus(notification?.id, 'stored', 0);
     return { attempted: 0, delivered: 0, skipped: true };
   }
 
   if (!hasPushCredentials()) {
-    logger.warn('Push delivery skipped because VAPID keys are not configured.');
+    logger.warn('Push skipped: VAPID keys are not configured in .env (VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY).');
     await updateNotificationStatus(notification?.id, 'stored', 0);
     return { attempted: 0, delivered: 0, skipped: true };
   }
@@ -171,9 +179,12 @@ async function sendPushNotification(notification) {
 
   const subscriptions = result.rows || [];
   if (subscriptions.length === 0) {
+    logger.warn(`Push skipped: no active subscriptions for user_id=${notification.user_id}, household_id=${notification.household_id}.`);
     await updateNotificationStatus(notification?.id, 'stored', 0);
     return { attempted: 0, delivered: 0, skipped: true };
   }
+
+  logger.info(`Push: attempting delivery to ${subscriptions.length} subscription(s) for user_id=${notification.user_id}...`);
 
   const payload = buildPushPayload(notification);
   let delivered = 0;
@@ -218,5 +229,5 @@ module.exports = {
   buildPushPayload,
   hasPushCredentials,
   sendPushNotification,
-  VAPID_PUBLIC_KEY,
+  getVapidKeys,
 };

@@ -16,7 +16,8 @@ import {
   ChevronRight,
   Sparkles,
   Target,
-  PiggyBank
+  PiggyBank,
+  RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useMemo } from 'react';
@@ -137,8 +138,15 @@ export default function Dashboard() {
         className="dashboard-balance-hero"
       >
         {/* Greeting */}
-        <div className="text-center mb-1">
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">{greeting} ✨</span>
+        <div className="text-center mb-1 flex items-center justify-center gap-2">
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 pl-6">{greeting} ✨</span>
+          <button 
+            onClick={() => window.location.reload()}
+            className="p-1.5 text-gray-400 hover:text-gold transition-colors"
+            title="Recarregar"
+          >
+            <RefreshCw size={12} />
+          </button>
         </div>
 
         {/* Balance */}

@@ -1,6 +1,6 @@
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
-const { sendPushNotification, VAPID_PUBLIC_KEY, hasPushCredentials } = require('./push.service');
+const { sendPushNotification, getVapidKeys, hasPushCredentials } = require('./push.service');
 const { trackBehaviorEvent } = require('./behaviorTracking.service');
 const { getNotificationSchema } = require('./notificationSchema.service');
 
@@ -492,8 +492,9 @@ async function sendTestNotification({ householdId, userId }) {
 }
 
 function getPushConfig() {
+  const { publicKey } = getVapidKeys();
   return {
-    publicKey: VAPID_PUBLIC_KEY,
+    publicKey,
     enabled: hasPushCredentials(),
   };
 }

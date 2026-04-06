@@ -2,6 +2,10 @@ import { useState, useRef } from "react";
 import { useFinance } from "../hooks/useFinance";
 import api from "../utils/api";
 import { useToast } from "../components/Toast";
+import VslaModule from "../components/credit/VslaModule";
+import { RefreshCw } from "lucide-react";
+
+
 
 /* ═══════════════════════════════════════
    DESIGN TOKENS — Mwanga Midnight Gold
@@ -1378,6 +1382,7 @@ export default function MwangaCredito() {
 
   const TABS = [
     { id: "overview",  label: "Visão Geral",  icon: "◎" },
+    { id: "vsla",      label: "Comunidade",   icon: "🤝" },
     { id: "simulator", label: "Simulador",    icon: "🧭" },
     { id: "compare",   label: "Comparar",     icon: "⚖️" },
     { id: "consolidate", label: "Consolidar", icon: "🔄" },
@@ -1411,7 +1416,23 @@ export default function MwangaCredito() {
                 <div style={{ fontSize: 20, fontWeight: 900, fontFamily: "Sora,sans-serif", color: G.text, letterSpacing: "-0.01em" }}>
                   Mwanga <span style={{ color: G.credit }}>Credit</span>
                 </div>
-                <div style={{ fontSize: 12, color: G.muted }}>Microcrédito inteligente · Powered by Binth</div>
+                <div style={{ fontSize: 12, color: G.muted, display: "flex", alignItems: "center", gap: 8 }}>
+                  Microcrédito inteligente · Powered by Binth
+                  <button 
+                    onClick={() => window.location.reload()}
+                    title="Actualizar aplicação"
+                    style={{ 
+                      background: "transparent", border: "none", cursor: "pointer", 
+                      padding: 4, display: "flex", alignItems: "center", justifyContent: "center",
+                      color: G.muted, transition: "all 0.2s ease",
+                      opacity: 0.6
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = G.gold; e.currentTarget.style.opacity = 1; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = G.muted; e.currentTarget.style.opacity = 0.6; }}
+                  >
+                    <RefreshCw size={12} />
+                  </button>
+                </div>
               </div>
             </div>
             <div style={{ textAlign: "right" }}>
@@ -1448,6 +1469,7 @@ export default function MwangaCredito() {
       {/* Content */}
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px 24px 100px", animation: "fadeIn 0.3s ease" }} key={tab}>
         {tab === "overview"  && <TabOverview   onApply={handleApply} scoreData={scoreData} eligData={eligData} hist={hist} isPro={isPro} />}
+        {tab === "vsla"      && <VslaModule />}
         {tab === "simulator" && <TabSimulator  eligData={eligData} userData={userData} isPro={isPro} />}
         {tab === "compare"   && <TabCompare    userData={userData} />}
         {tab === "consolidate" && <TabConsolidate debts={state.dividas} userData={userData} />}

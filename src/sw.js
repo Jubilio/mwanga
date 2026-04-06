@@ -70,27 +70,40 @@ self.addEventListener('push', (event) => {
     title: 'Mwanga',
     body: 'Tens uma nova atualização financeira.',
     data: { route: '/quick-add', action: 'OPEN_DAILY_LOG' },
-    actions: [{ action: 'OPEN', title: 'Abrir Mwanga' }],
   };
 
   try {
-    payload = event.data ? event.data.json() : payload;
-  } catch {
-    // Ignore malformed payloads and keep the fallback.
+    if (event.data) {
+      const data = event.data.json();
+      // Supports both flat and nested payload structures
+      payload = {
+        title: data.title || payload.title,
+        body: data.body || data.message || payload.body,
+        icon: data.icon || '/icon-192.png',
+        badge: data.badge || '/icon-192.png',
+        tag: data.tag || data.dedupeKey || 'mwanga-notification',
+        renotify: data.renotify !== false,
+        requireInteraction: data.requireInteraction || false,
+        data: data.data || data, // Fallback to root data if not nested
+        actions: Array.isArray(data.actions) ? data.actions : [],
+      };
+    }
+  } catch (error) {
+    console.warn('Push payload parsing failed, using fallback:', error);
   }
 
   const options = {
     body: payload.body,
-    icon: payload.icon || '/icon-192.png',
-    badge: payload.badge || '/icon-192.png',
-    tag: payload.tag || 'mwanga-notification',
-    renotify: Boolean(payload.renotify),
-    requireInteraction: Boolean(payload.requireInteraction),
-    data: payload.data || {},
-    actions: Array.isArray(payload.actions) ? payload.actions.slice(0, 2) : [],
+    icon: payload.icon,
+    badge: payload.badge,
+    tag: payload.tag,
+    renotify: payload.renotify,
+    requireInteraction: payload.requireInteraction,
+    data: payload.data,
+    actions: payload.actions.slice(0, 2),
   };
 
-  event.waitUntil(self.registration.showNotification(payload.title || 'Mwanga', options));
+  event.waitUntil(self.registration.showNotification(payload.title, options));
 });
 
 self.addEventListener('notificationclick', (event) => {
@@ -98,5 +111,7 @@ self.addEventListener('notificationclick', (event) => {
   const actionId = event.action || notificationData.action || 'OPEN';
 
   event.notification.close();
+
+  // Handle specific actions if needed, otherwise just open/focus the app
   event.waitUntil(focusOrOpenClient(notificationData, actionId));
 });

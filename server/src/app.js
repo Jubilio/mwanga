@@ -12,6 +12,7 @@ const smsRoutes = require('./routes/smsRoutes');
 const creditRoutes = require('./routes/credit.routes');
 const kycRoutes = require('./routes/kyc.routes');
 const adminRoutes = require('./routes/admin.routes');
+const notificationRoutes = require('./routes/notification.routes');
 const { getNotificationReadValue } = require('./services/notificationRead.service');
 const logger = require('./utils/logger');
 const swaggerUi = require('swagger-ui-express');
@@ -24,7 +25,7 @@ const app = express();
 
 app.set('trust proxy', 1);
 
-// Security Middlewares
+// 1. Security Middlewares
 app.use(helmet({
   crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
   contentSecurityPolicy: {
@@ -37,11 +38,7 @@ app.use(helmet({
   },
 }));
 
-// Compression Middleware
-app.use(compression());
-
-// Serve KYC Uploads
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// 2. CORS
 app.use(cors({
   origin: [
     'https://mwanga-opal.vercel.app',
@@ -54,131 +51,116 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Rate Limiting - General API
+// 3. Compression
+app.use(compression());
+
+// 4. Rate Limiting (JSON fixed)
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000,
-  message: 'Too many requests from this IP, please try again after 15 minutes',
+  windowMs: 15 * 60 * 1000, 
+  max: 5000,
+  handler: (req, res) => {
+    res.status(429).json({
+      status: 'error',
+      message: 'Demasiados pedidos a partir deste IP. Por favor, tente novamente em 15 minutos.'
+    });
+  }
 });
 app.use('/api', limiter);
 
-// Stricter Rate Limiting for Auth/Sensitive routes
 const authLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 20, // 20 attempts per hour
-  message: 'Too many login attempts from this IP, please try again after an hour',
+  windowMs: 60 * 60 * 1000,
+  max: 100,
+  handler: (req, res) => {
+    res.status(429).json({
+      status: 'error',
+      message: 'Demasiadas tentativas de login. Tente novamente em uma hora.'
+    });
+  }
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
-// Parameter Pollution Protection
+// 5. Body Parsing & Sanitization
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(hpp());
 
-// Basic XSS Sanitization Middleware
 app.use((req, res, next) => {
   if (req.body) {
     for (const key in req.body) {
       if (typeof req.body[key] === 'string') {
-        req.body[key] = xss(req.body[key]);
+        req.body[key] = req.body[key].replace(/</g, "&lt;").replace(/>/g, "&gt;");
       }
     }
   }
   next();
 });
 
-// Body Parsing
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// 6. Static Files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Request Logging
+// 7. Request Logging
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.url}`);
   next();
 });
 
-// Routes
-app.get('/', (req, res) => {
-  res.send('Mwanga ✦ Backend API is running.');
-});
-
+// 8. Health Check
 app.get('/api/health', async (req, res) => {
   try {
-    // Check database connection
     const { db } = require('./config/db');
     await db.execute({ sql: 'SELECT 1', args: [] });
-
-    // Check Redis connection
-    const redis = require('./utils/redis');
-    await redis.ping();
-
     res.json({
       status: 'healthy',
       branding: 'Mwanga ✦',
-      timestamp: new Date(),
-      services: {
-        database: 'connected',
-        redis: 'connected'
-      }
+      timestamp: new Date()
     });
   } catch (error) {
-    logger.error('Health check failed:', error);
-    res.status(503).json({
-      status: 'unhealthy',
-      branding: 'Mwanga ✦',
-      timestamp: new Date(),
-      error: error.message
-    });
+    res.status(503).json({ status: 'unhealthy', error: error.message });
   }
 });
 
-// Metrics endpoint for monitoring
-const { authenticate, isAdmin } = require('./middleware/auth.middleware');
-
-app.get('/api/metrics', authenticate, isAdmin, async (req, res) => {
-  try {
-    const { db } = require('./config/db');
-    const unreadValue = await getNotificationReadValue(false);
-
-    // Get basic database stats
-    const stats = await db.execute({
-      sql: `
-        SELECT
-          (SELECT COUNT(*) FROM transactions) as total_transactions,
-          (SELECT COUNT(*) FROM users) as total_users,
-          (SELECT COUNT(*) FROM households) as total_households,
-          (SELECT COUNT(*) FROM notifications WHERE read = ?) as unread_notifications
-      `,
-      args: [unreadValue]
-    });
-
-    const row = stats.rows[0];
-
-    res.json({
-      timestamp: new Date(),
-      database: {
-        total_transactions: row.total_transactions,
-        total_users: row.total_users,
-        total_households: row.total_households,
-        unread_notifications: row.unread_notifications
-      },
-      memory: process.memoryUsage(),
-      uptime: process.uptime()
-    });
-  } catch (error) {
-    logger.error('Metrics collection failed:', error);
-    res.status(500).json({ error: 'Failed to collect metrics' });
-  }
-});
-
+// 9. Routes registration
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api/auth', authRoutes);
 app.use('/api/sms', smsRoutes);
 app.use('/api/credit', creditRoutes);
 app.use('/api/kyc', kycRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/notifications', notificationRoutes);
+
 app.use('/api', financeRoutes);
 
-// Error Handling
+app.get('/', (req, res) => {
+  res.send('Mwanga ✦ Backend API is running.');
+});
+
+// 10. Metrics (Admin only)
+const { authenticate, isAdmin } = require('./middleware/auth.middleware');
+app.get('/api/metrics', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { db } = require('./config/db');
+    const unreadValue = await getNotificationReadValue(false);
+    const stats = await db.execute({
+      sql: `SELECT 
+        (SELECT COUNT(*) FROM transactions) as total_transactions,
+        (SELECT COUNT(*) FROM users) as total_users,
+        (SELECT COUNT(*) FROM households) as total_households,
+        (SELECT COUNT(*) FROM notifications WHERE read = ?) as unread_notifications`,
+      args: [unreadValue]
+    });
+    res.json({
+      timestamp: new Date(),
+      database: stats.rows[0],
+      memory: process.memoryUsage(),
+      uptime: process.uptime()
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to collect metrics' });
+  }
+});
+
+// 11. Error Handling
 app.use(errorHandler);
 
 module.exports = app;

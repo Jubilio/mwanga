@@ -134,16 +134,25 @@ async function generatePersonalizedNotification({
         {
           role: 'user',
           content: `
-Cria UMA notificação push curta para o Mwanga.
+Cria UMA notificação push curta e de alto impacto para o Mwanga.
 Tipo comportamental: ${notificationType}
 Evento: ${JSON.stringify(eventContext)}
-Payload de ação: ${JSON.stringify(actionPayload)}
+Contexto do Utilizador: ${JSON.stringify(contextSummary)}
+
+Ações Disponíveis (usa estas chaves se fizer sentido):
+- "ADD_EXPENSE" (Gasto)
+- "ADD_INCOME" (Receita)
+- "VIEW_BUDGET" (Orçamento)
+- "OPEN_DAILY_LOG" (Fechar dia)
 
 Responde em JSON puro com:
 {
-  "message": "mensagem curta com no máximo 128 caracteres",
+  "message": "mensagem curta (máx 128 chars)",
   "insight_type": "warning | celebration | info | action",
-  "quick_actions": ["opção 1", "opção 2", "opção 3"]
+  "actions": [
+    {"label": "Texto do Botão", "id": "ADD_EXPENSE"},
+    ... (máx 2)
+  ]
 }
           `.trim(),
         },
@@ -159,13 +168,15 @@ Responde em JSON puro com:
       info: fallback.title,
     };
 
+    const actions = Array.isArray(aiResponse?.actions) && aiResponse.actions.length > 0
+      ? aiResponse.actions.map(a => ({ action: a.id, title: a.label }))
+      : fallback.quickActions.map(label => ({ action: 'OPEN_DAILY_LOG', title: label }));
+
     return {
       title: truncate(titleMap[insightType] || fallback.title, 42),
       message,
       tone: fallback.tone,
-      quickActions: Array.isArray(aiResponse?.quick_actions) && aiResponse.quick_actions.length > 0
-        ? aiResponse.quick_actions.slice(0, 3)
-        : fallback.quickActions,
+      quickActions: actions.slice(0, 2),
       aiPersonalized: true,
       contextSummary,
     };

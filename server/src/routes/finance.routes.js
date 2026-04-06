@@ -22,10 +22,14 @@ const { getDebts, addDebt, deleteDebt, addPayment } = require('../controllers/de
 const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require('../controllers/accountController');
 const { chat: binthChat, getScore: binthScore, getPageInsight } = require('../controllers/binth.controller');
 const { authenticate } = require('../middleware/auth.middleware');
+const vslaRoutes = require('./vsla.routes');
 
 const router = express.Router();
 
 router.use(authenticate);
+
+// VSLA (Community)
+router.use('/vsla', vslaRoutes);
 
 // Transactions
 router.get('/transactions', getTransactions);

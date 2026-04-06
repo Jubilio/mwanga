@@ -157,32 +157,21 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
     try {
       const res = await fetch(url, { headers });
       if (res.status === 401) {
-        console.warn(`Session expired (401): ${url}. Clearing token.`);
         localStorage.removeItem('mwanga-token');
         dispatch({ type: 'RESET_SESSION' });
         return [];
       }
-      if (res.status === 429) {
-        console.warn(`Rate limited: ${url}`);
-        return [];
-      }
-      if (!res.ok) {
-        console.warn(`Failed fetch (${res.status}): ${url}`);
-        return [];
-      }
+      if (res.status === 429) return [];
+      if (!res.ok) return [];
       const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        return [];
-      }
+      if (!contentType || !contentType.includes('application/json')) return [];
       return await res.json();
-    } catch (err) {
-      console.warn(`Fetch failed for ${url}:`, err.message);
+    } catch {
       return [];
     }
   };
 
   try {
-    console.log('Fetching session data from:', FINANCE_API_URL);
     const [ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans] = await Promise.all([
       safeFetch(`${FINANCE_API_URL}/transactions`),
       safeFetch(`${FINANCE_API_URL}/rentals`),
@@ -236,8 +225,7 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
     });
 
     return resolvedUser;
-  } catch (e) {
-    console.error('API Fetch failed, using demo data:', e);
+  } catch {
     const demo = generateDemoData();
     dispatch({ type: 'SET_DATA', payload: { ...demo, user: preferredUser || null } });
     return preferredUser || null;
@@ -935,8 +923,8 @@ export function FinanceProvider({ children }) {
         }
       }
       dispatch({ ...action, payload });
-    } catch (e) {
-      console.error('API Action failed:', e);
+    } catch {
+      // API Error handled by individual components or ignored if background task
     }
   };
 

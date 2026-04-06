@@ -73,14 +73,23 @@ export function usePushNotifications() {
   }
 
   async function resolveRegistration() {
+    if (!('serviceWorker' in navigator)) return null;
+
+    // In Vite PWA development, the SW might be registered under a different name or path
     let registration = await navigator.serviceWorker.getRegistration();
+    
     if (registration) {
       return registration;
     }
 
-    if (import.meta.env.PROD) {
-      registration = await navigator.serviceWorker.register('/sw.js');
+    // Fallback registration attempt
+    try {
+      registration = await navigator.serviceWorker.register('/sw.js', {
+        type: import.meta.env.DEV ? 'module' : 'classic'
+      });
       return registration;
+    } catch (error) {
+      console.error('Manual SW registration failed:', error);
     }
 
     return navigator.serviceWorker.ready;
