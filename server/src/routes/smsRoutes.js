@@ -3,8 +3,6 @@ const router = express.Router();
 const smsController = require('../controllers/smsController');
 const { authenticate } = require('../middleware/auth.middleware');
 
-// Protect the route so only authenticated users with a household can map it
-// The controller itself contains a try-catch block to handle errors.
 router.post('/parse', authenticate, smsController.parseSmsMessage);
 
 module.exports = router;

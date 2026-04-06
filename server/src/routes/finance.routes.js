@@ -8,15 +8,15 @@ const { getXitiques, createXitique, deleteXitique, payContribution, receiveFunds
 const { getSettings, upsertSetting, updateHousehold } = require('../controllers/settings.controller');
 const { getOverview: getInsights } = require('../controllers/insights.controller');
 const {
-  getNotifications,
-  markAsRead,
+  list: getNotifications,
+  markRead: markAsRead,
   clearAll,
-  deleteNotification,
-  getPushPublicKey,
-  savePushSubscription,
-  removePushSubscription,
-  registerInteraction,
-  sendTestPush,
+  deleteOne: deleteNotification,
+  getPushConfig: getPushPublicKey,
+  subscribe: savePushSubscription,
+  unsubscribe: removePushSubscription,
+  recordInteraction: registerInteraction,
+  sendTest: sendTestPush,
 } = require('../controllers/notification.controller');
 const { getDebts, addDebt, deleteDebt, addPayment } = require('../controllers/debtController');
 const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require('../controllers/accountController');
