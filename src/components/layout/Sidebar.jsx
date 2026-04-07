@@ -2,53 +2,8 @@ import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Settings, LogOut } from 'lucide-react';
 import { useFinance } from '../../hooks/useFinance';
-
-// ─── Nav structure ───────────────────────────────────────────────────────────
-const NAV = [
-  {
-    section: 'GESTÃO FINANCEIRA',
-    items: [
-      { icon: '▦', label: 'Dashboard',          to: '/',            end: true },
-      { icon: '↕', label: 'Transações',          to: '/transacoes' },
-      { icon: '◎', label: 'Orçamento',           to: '/orcamento' },
-    ],
-  },
-  {
-    section: 'FINANCIAMENTO',
-    items: [
-      { icon: '💸', label: 'Crédito',            to: '/credito' },
-      { icon: '⊟', label: 'Dívidas',             to: '/dividas' },
-      { icon: '⌂', label: 'Habitação',           to: '/habitacao' },
-    ],
-  },
-  {
-    section: 'POUPANÇA & METAS',
-    items: [
-      { icon: '✦', label: 'Xitique',             to: '/xitique' },
-      { icon: '◉', label: 'Metas',               to: '/metas' },
-      { icon: '🗺', label: 'Nexo Vibe',          to: '/nexovibe' },
-    ],
-  },
-  {
-    section: 'INTELIGÊNCIA PRO',
-    items: [
-      { icon: '◈', label: 'Binth Insights',    to: '/insights',    pro: true },
-      { icon: '⇩', label: 'Importar Mensagem',  to: '/sms-import',  pro: true, highlight: true },
-      { icon: '◧', label: 'Património',        to: '/patrimonio',  pro: true },
-      { icon: '⧉', label: 'Simuladores',       to: '/simuladores', pro: true },
-      { icon: '↗', label: 'Relatórios',        to: '/relatorio',   pro: true },
-    ],
-  },
-];
-
-const ADMIN_NAV = [
-  {
-    section: 'ADMINISTRAÇÃO',
-    items: [
-      { icon: '⚙', label: 'Painel Admin',      to: '/admin' },
-    ],
-  },
-];
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 // ─── PRO Badge ───────────────────────────────────────────────────────────────
 function ProBadge() {
@@ -162,6 +117,7 @@ export default function Sidebar({ isOpen, onClose }) {
   const [proModal, setProModal] = useState(null); // stores the nav item object
   const { state } = useFinance();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const userName   = state.user?.name || 'Utilizador';
   const familyName = state.settings?.household_name || 'Mwanga';
@@ -171,6 +127,52 @@ export default function Sidebar({ isOpen, onClose }) {
     localStorage.removeItem('mwanga-token');
     window.location.reload();
   };
+
+  const NAV = [
+    {
+      section: 'GESTÃO FINANCEIRA',
+      items: [
+        { icon: '▦', label: t('layout.dashboard'),          to: '/',            end: true },
+        { icon: '↕', label: t('layout.transactions'),        to: '/transacoes' },
+        { icon: '◎', label: t('layout.budget'),              to: '/orcamento' },
+      ],
+    },
+    {
+      section: 'FINANCIAMENTO',
+      items: [
+        { icon: '💸', label: t('layout.credit'),            to: '/credito' },
+        { icon: '⊟', label: t('layout.debts'),              to: '/dividas' },
+        { icon: '⌂', label: t('layout.housing'),            to: '/habitacao' },
+      ],
+    },
+    {
+      section: 'POUPANÇA & METAS',
+      items: [
+        { icon: '✦', label: t('layout.xitique'),            to: '/xitique' },
+        { icon: '◉', label: t('layout.goals'),              to: '/metas' },
+        { icon: '🗺', label: t('layout.nexovibe'),          to: '/nexovibe' },
+      ],
+    },
+    {
+      section: 'INTELIGÊNCIA PRO',
+      items: [
+        { icon: '◈', label: t('layout.nexovibe'),           to: '/insights',    pro: true },
+        { icon: '⇩', label: t('layout.sms_import'),         to: '/sms-import',  pro: true, highlight: true },
+        { icon: '◧', label: t('layout.patrimony'),          to: '/patrimonio',  pro: true },
+        { icon: '⧉', label: t('layout.simulators'),         to: '/simuladores', pro: true },
+        { icon: '↗', label: t('layout.report'),             to: '/relatorio',   pro: true },
+      ],
+    },
+  ];
+
+  const ADMIN_NAV = [
+    {
+      section: 'ADMINISTRAÇÃO',
+      items: [
+        { icon: '⚙', label: t('layout.admin'),      to: '/admin' },
+      ],
+    },
+  ];
 
   return (
     <>
@@ -237,19 +239,24 @@ export default function Sidebar({ isOpen, onClose }) {
           overflowY: 'auto', flexShrink: 0,
         }}
       >
-        {/* Logo */}
+        {/* Logo and Language Switcher */}
         <div style={{ padding: '28px 24px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 10,
-              background: 'linear-gradient(135deg,#F59E0B,#F97316)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, color: '#000', fontWeight: 900,
-              boxShadow: '0 4px 14px rgba(245,158,11,0.35)',
-            }}>M</div>
-            <span style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
-              Mwanga
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 34, height: 34, borderRadius: 10,
+                background: 'linear-gradient(135deg,#F59E0B,#F97316)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 17, color: '#000', fontWeight: 900,
+                boxShadow: '0 4px 14px rgba(245,158,11,0.35)',
+              }}>M</div>
+              <span style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
+                Mwanga
+              </span>
+            </div>
+            
+            <LanguageSwitcher />
+            
           </div>
         </div>
 

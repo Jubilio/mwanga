@@ -1,0 +1,21 @@
+{
+  "layout": {
+    "dashboard": "Dashboard Principal",
+    "transactions": "Transações",
+    "budget": "Orçamento",
+    "housing": "Habitação",
+    "goals": "Metas / Poupanças",
+    "xitique": "Módulo Xitique",
+    "debts": "Dívidas Ativas",
+    "credit": "Crédito Bancário",
+    "simulators": "Simuladores IA",
+    "report": "Relatório Mensal",
+    "patrimony": "Património",
+    "sms_import": "Importador SMS",
+    "nexovibe": "NexoVibe Analytics",
+    "admin": "Painel Admin",
+    "help": "Ajuda / Tutorial",
+    "settings": "Definições",
+    "logout": "Terminar Sessão"
+  }
+}

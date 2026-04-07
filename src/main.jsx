@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import { registerSW } from 'virtual:pwa-register'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import './i18n' // Import i18n configuration
 
 // Register PWA service worker
 registerSW({ immediate: true })

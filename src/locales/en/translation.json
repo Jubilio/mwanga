@@ -1,0 +1,21 @@
+{
+  "layout": {
+    "dashboard": "Main Dashboard",
+    "transactions": "Transactions",
+    "budget": "Budget",
+    "housing": "Housing",
+    "goals": "Goals / Savings",
+    "xitique": "Xitique Module",
+    "debts": "Active Debts",
+    "credit": "Bank Credit",
+    "simulators": "AI Simulators",
+    "report": "Monthly Report",
+    "patrimony": "Patrimony",
+    "sms_import": "SMS Importer",
+    "nexovibe": "NexoVibe Analytics",
+    "admin": "Admin Panel",
+    "help": "Help / Tutorial",
+    "settings": "Settings",
+    "logout": "Log Out"
+  }
+}

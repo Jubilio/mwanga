@@ -382,12 +382,12 @@ export default function Layout() {
 
                     {presentation.quickActions.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {presentation.quickActions.map((item) => (
+                        {presentation.quickActions.map((item, idx) => (
                           <span
-                            key={`${notification.id}-${item}`}
+                            key={`${notification.id}-${item?.title || item}-${idx}`}
                             className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${presentation.chipClass}`}
                           >
-                            {item}
+                            {item?.title || item}
                           </span>
                         ))}
                       </div>
