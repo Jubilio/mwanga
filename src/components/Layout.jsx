@@ -30,6 +30,7 @@ import Toast, { useToast } from './Toast';
 import Sidebar from './layout/Sidebar';
 import CustomCursor from './CustomCursor';
 import ConfirmModal from './ConfirmModal';
+import FeedbackModal from './FeedbackModal';
 import QuickAddNotificationModal from './QuickAddNotificationModal';
 import InstallBanner from './InstallBanner';
 import { usePWA } from '../hooks/usePWA';
@@ -118,6 +119,7 @@ export default function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isConfirmClearOpen, setIsConfirmClearOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [quickAddPayload, setQuickAddPayload] = useState(null);
   const location = useLocation();
@@ -577,6 +579,21 @@ export default function Layout() {
         onConfirm={handleClearAll}
         onCancel={() => setIsConfirmClearOpen(false)}
       />
+
+      <FeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+        showToast={showToast}
+      />
+
+      {/* Floating Feedback Button */}
+      <button
+        onClick={() => setIsFeedbackModalOpen(true)}
+        className="fixed bottom-24 right-4 z-49 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-ocean/90 text-white shadow-xl shadow-ocean/30 backdrop-blur-md transition-all hover:scale-110 hover:bg-ocean active:scale-95 dark:border-white/10 dark:bg-aurora/90 dark:shadow-aurora/20 md:bottom-8 md:right-8"
+        title="Enviar Feedback ou Reportar Erro"
+      >
+        <MessageSquare size={20} className="animate-pulse" />
+      </button>
     </div>
   );
 }

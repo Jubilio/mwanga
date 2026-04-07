@@ -14,7 +14,9 @@ const adminRoutes = require('./routes/admin.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const inviteRoutes = require('./routes/invite.routes');
 const webauthnRoutes = require('./routes/webauthn.routes');
+const feedbackRoutes = require('./routes/feedback.routes');
 const { getNotificationReadValue } = require('./services/notificationRead.service');
+const { initFeedbackTable } = require('./services/feedback.service');
 const logger = require('./utils/logger');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
@@ -23,6 +25,9 @@ const path = require('path');
 const swaggerDocument = YAML.load(path.join(__dirname, 'config', 'swagger.yaml'));
 
 const app = express();
+
+// Initialize tables
+initFeedbackTable();
 
 app.set('trust proxy', 1);
 
@@ -131,6 +136,7 @@ app.use('/api/kyc', kycRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/households', inviteRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 app.use('/api', financeRoutes);
 
@@ -159,6 +165,7 @@ app.get('/api/metrics', authenticate, isAdmin, async (req, res) => {
       uptime: process.uptime()
     });
   } catch (error) {
+    logger.error('Metrics collection failed:', error.message);
     res.status(500).json({ error: 'Failed to collect metrics' });
   }
 });

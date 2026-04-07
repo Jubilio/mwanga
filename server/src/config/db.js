@@ -16,9 +16,9 @@ if (!connectionString) {
 
 const poolConfig = {
   connectionString,
-  max: 10, // Increased slightly for better concurrency
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
+  max: 25, // Increased from 10 to 25 for concurrent scheduler tasks
+  idleTimeoutMillis: 60000, // Increased from 30s to 60s
+  connectionTimeoutMillis: 30000, // Increased from 10s to 30s (crucial for latency spikes)
   keepAlive: true,
   keepAliveInitialDelayMillis: 10000,
 };
@@ -30,13 +30,13 @@ if (connectionString && !connectionString.includes('sslmode=disable')) {
   };
 }
 
-logger.info(`Database Config: Pool Max=${poolConfig.max}, SSL=${!!poolConfig.ssl}, KeepAlive=true`);
+logger.info(`Database Config (Stable): Pool Max=${poolConfig.max}, SSL=${!!poolConfig.ssl}, Timeout=30s`);
 const pool = new Pool(poolConfig);
 
 pool.on('error', (err) => {
   // Common error with PgBouncer/Supabase, we log it but the pool recovers
-  if (err.message.includes('terminated unexpectedly')) {
-    logger.warn('A database connection was terminated unexpectedly in the background.');
+  if (err.message.includes('terminated unexpectedly') || err.message.includes('timeout')) {
+    logger.warn(`Pool warning: ${err.message}`);
   } else {
     logger.error('Unexpected error on idle database client', err);
   }
@@ -67,9 +67,13 @@ const db = {
         rowCount: result.rowCount
       };
     } catch (error) {
-      // If connection was terminated, try one more time before giving up
-      if (retry && error.message.includes('terminated unexpectedly')) {
-        logger.warn('Database connection lost. Retrying query once...');
+      // Retry for both terminated connections AND connection timeouts
+      const isRetryable = error.message.includes('terminated unexpectedly') || 
+                          error.message.includes('timeout') ||
+                          error.message.includes('connection error');
+
+      if (retry && isRetryable) {
+        logger.warn(`Database connection spike. Retrying query (${error.message.split('\n')[0]})...`);
         return db.execute(params, false);
       }
 
