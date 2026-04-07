@@ -1,5 +1,7 @@
+/* eslint-env node */
 const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
+const { db } = require('../config/db');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -8,7 +10,7 @@ if (!JWT_SECRET) {
   process.exit(1); // Stop server immediately if secret is missing for safety
 }
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -19,6 +21,27 @@ const authenticate = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
+
+    // Unify key naming (handle both underscore and camelCase)
+    req.user.id = req.user.id || req.user.userId || req.user.user_id;
+    req.user.householdId = req.user.householdId || req.user.household_id;
+
+    // Backward compatibility patch: if token is old and lacks householdId altogether, fetch it from DB
+    if (!req.user.householdId && req.user.id) {
+      try {
+        const userResult = await db.execute({
+          sql: 'SELECT household_id FROM users WHERE id = ?',
+          args: [req.user.id]
+        });
+        if (userResult.rows[0]) {
+          req.user.householdId = userResult.rows[0].household_id || userResult.rows[0].householdId;
+        }
+      } catch (dbError) {
+        logger.error(`Failed to fetch fallback householdId for user ${req.user.id}: ${dbError.message}`);
+        // Continue anyway, controllers will handle missing ID gracefully
+      }
+    }
+
     next();
   } catch (error) {
     logger.warn(`Invalid token attempt: ${error.message}`);

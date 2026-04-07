@@ -7,17 +7,6 @@ const { getAssets, createAsset, deleteAsset, getLiabilities, createLiability, de
 const { getXitiques, createXitique, deleteXitique, payContribution, receiveFunds } = require('../controllers/xitique.controller');
 const { getSettings, upsertSetting, updateHousehold } = require('../controllers/settings.controller');
 const { getOverview: getInsights } = require('../controllers/insights.controller');
-const {
-  list: getNotifications,
-  markRead: markAsRead,
-  clearAll,
-  deleteOne: deleteNotification,
-  getPushConfig: getPushPublicKey,
-  subscribe: savePushSubscription,
-  unsubscribe: removePushSubscription,
-  recordInteraction: registerInteraction,
-  sendTest: sendTestPush,
-} = require('../controllers/notification.controller');
 const { getDebts, addDebt, deleteDebt, addPayment } = require('../controllers/debtController');
 const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require('../controllers/accountController');
 const { chat: binthChat, getScore: binthScore, getPageInsight } = require('../controllers/binth.controller');
@@ -69,17 +58,6 @@ router.delete('/xitiques/:id', deleteXitique);
 
 // Insights
 router.get('/insights', getInsights);
-
-// Notifications
-router.get('/notifications/push-config', getPushPublicKey);
-router.post('/notifications/push-subscriptions', savePushSubscription);
-router.delete('/notifications/push-subscriptions', removePushSubscription);
-router.post('/notifications/interactions', registerInteraction);
-router.post('/notifications/test', sendTestPush);
-router.get('/notifications', getNotifications);
-router.put('/notifications/:id/read', markAsRead);
-router.delete('/notifications/:id', deleteNotification);
-router.delete('/notifications', clearAll);
 
 // Settings & Household
 router.get('/settings', getSettings);

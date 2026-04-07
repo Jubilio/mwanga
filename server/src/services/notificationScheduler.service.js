@@ -1,34 +1,41 @@
+/**
+ * Mwanga Notification Scheduler.
+ * Periodically triggers the engagement sweep and the intelligent decision engine.
+ * @file notificationScheduler.service.js
+ */
+
+const cron = require('node-cron');
 const logger = require('../utils/logger');
 const { runScheduledEngagementSweep } = require('./notificationEventEngine.service');
+const { processNotificationCandidates } = require('./notificationEngine.service');
 
-let schedulerHandle = null;
-
-async function runSchedulerTick(reason) {
-  try {
-    await runScheduledEngagementSweep(new Date());
-    logger.info(`Notification scheduler tick completed (${reason}).`);
-  } catch (error) {
-    logger.warn(`Notification scheduler tick failed (${reason}): ${error.message}`);
-  }
-}
+const SCHEDULER_INTERVAL = process.env.NOTIFICATION_SCHEDULER_CRON || '*/5 * * * *'; // Every 5 minutes
 
 function startNotificationScheduler() {
-  if (schedulerHandle || process.env.DISABLE_NOTIFICATION_SCHEDULER === 'true') {
-    return;
-  }
+  logger.info(`Notification scheduler started with pattern: ${SCHEDULER_INTERVAL}`);
 
-  const intervalMs = Number(process.env.NOTIFICATION_SCHEDULER_INTERVAL_MS || 15 * 60 * 1000);
-  const startupDelayMs = Number(process.env.NOTIFICATION_SCHEDULER_STARTUP_DELAY_MS || 15000);
+  // 1. Every 5 minutes: Generate new candidates from system status
+  cron.schedule(SCHEDULER_INTERVAL, async () => {
+    try {
+      logger.info('[Scheduler] Running engagement sweep...');
+      await runScheduledEngagementSweep();
+    } catch (error) {
+      logger.error(`[Scheduler] Engagement sweep failed: ${error.message}`);
+    }
+  });
 
-  setTimeout(() => {
-    runSchedulerTick('startup');
-  }, startupDelayMs);
-
-  schedulerHandle = setInterval(() => {
-    runSchedulerTick('interval');
-  }, intervalMs);
-
-  logger.info(`Notification scheduler started (interval=${intervalMs}ms).`);
+  // 2. Every 5 minutes (offset by 1 min to avoid DB locks): Run the Decision Engine
+  // This processes BOTH the candidates from step 1 AND real-time events.
+  cron.schedule('1-59/5 * * * *', async () => {
+    try {
+      logger.info('[Scheduler] Running intelligent notification engine...');
+      await processNotificationCandidates();
+    } catch (error) {
+      logger.error(`[Scheduler] Intelligent engine loop failed: ${error.message}`);
+    }
+  });
 }
 
-module.exports = { startNotificationScheduler };
+module.exports = {
+  startNotificationScheduler,
+};

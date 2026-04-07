@@ -1,7 +1,6 @@
 const EventEmitter = require('events');
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
-const { createNotification } = require('./notification.service');
 const { generatePersonalizedNotification } = require('./notificationAi.service');
 const { trackBehaviorEvent } = require('./behaviorTracking.service');
 
@@ -116,6 +115,52 @@ async function getAllUserNotificationSettings() {
   }));
 }
 
+async function createNotificationEvent(userId, eventType, entityType, entityId, eventData = {}) {
+  const result = await db.execute({
+    sql: `
+      INSERT INTO notification_events (user_id, event_type, entity_type, entity_id, event_data)
+      VALUES (?, ?, ?, ?, ?::jsonb)
+      RETURNING id
+    `,
+    args: [userId, eventType, entityType, entityId, JSON.stringify(eventData)],
+  });
+  return result.rows[0]?.id;
+}
+
+async function createNotificationCandidate({
+  userId,
+  eventId,
+  type,
+  category,
+  priority = 0,
+  title,
+  body,
+  payload = {},
+  scheduledFor = null
+}) {
+  const result = await db.execute({
+    sql: `
+      INSERT INTO notification_candidates (
+        user_id, event_id, type, category, priority, title, body, payload, status, scheduled_for
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?::jsonb, 'pending', ?)
+      RETURNING id
+    `,
+    args: [
+      userId,
+      eventId,
+      type,
+      category,
+      priority,
+      title,
+      body,
+      JSON.stringify(payload),
+      scheduledFor || new Date().toISOString()
+    ],
+  });
+  return result.rows[0]?.id;
+}
+
 async function buildNotificationDraft({
   householdId,
   userId,
@@ -124,8 +169,9 @@ async function buildNotificationDraft({
   eventContext = {},
   actionPayload = {},
   dedupeKey,
-  sendPush = true,
 }) {
+  const eventId = await createNotificationEvent(userId, triggerType, actionPayload.type, actionPayload.id, eventContext);
+  
   const personalized = await generatePersonalizedNotification({
     householdId,
     userId,
@@ -134,30 +180,26 @@ async function buildNotificationDraft({
     actionPayload,
   });
 
-  return createNotification({
-    householdId,
+  return createNotificationCandidate({
     userId,
+    eventId,
+    type: triggerType,
+    category: notificationType,
+    priority: triggerType.includes('due') ? 80 : 40,
     title: personalized.title,
-    message: personalized.message,
-    type: notificationType,
-    tone: personalized.tone,
-    actionPayload: {
+    body: personalized.message,
+    payload: {
       route: '/quick-add',
       action: 'OPEN_DAILY_LOG',
       ...actionPayload,
       quickActions: personalized.quickActions,
-    },
-    metadata: {
-      triggerType,
-      eventContext,
       aiPersonalized: personalized.aiPersonalized,
-    },
-    dedupeKey,
-    sendPush,
+      dedupeKey
+    }
   });
 }
 
-async function maybeSendDailyReminder(userSettings, parts, options = {}) {
+async function maybeSendDailyReminder(userSettings, parts) {
   if (!userSettings.daily_entry_reminder_enabled) {
     return;
   }
@@ -197,11 +239,10 @@ async function maybeSendDailyReminder(userSettings, parts, options = {}) {
       action: 'OPEN_DAILY_LOG',
     },
     dedupeKey: `daily-reminder:${userSettings.user_id}:${parts.date}`,
-    sendPush: options.sendPush !== false,
   });
 }
 
-async function maybeSendMonthlyCommitmentReminder(userSettings, parts, options = {}) {
+async function maybeSendMonthlyCommitmentReminder(userSettings, parts) {
   if (!userSettings.monthly_due_reminder_enabled) {
     return;
   }
@@ -283,11 +324,10 @@ async function maybeSendMonthlyCommitmentReminder(userSettings, parts, options =
       action: 'OPEN_DAILY_LOG',
     },
     dedupeKey: `monthly-commitments:${userSettings.user_id}:${parts.month}:${userSettings.monthly_due_reminder_period}`,
-    sendPush: options.sendPush !== false,
   });
 }
 
-async function maybeSendStreakMotivation(userSettings, parts, options = {}) {
+async function maybeSendStreakMotivation(userSettings, parts) {
   if (!isWithinDeliveryWindow(process.env.MOTIVATION_PUSH_TIME || '09:00', parts.time)) {
     return;
   }
@@ -344,7 +384,6 @@ async function maybeSendStreakMotivation(userSettings, parts, options = {}) {
       action: 'OPEN_DAILY_LOG',
     },
     dedupeKey: `streak-motivation:${userSettings.user_id}:${parts.date}`,
-    sendPush: options.sendPush !== false,
   });
 }
 
@@ -454,17 +493,16 @@ async function handleTransactionCreated(payload) {
         action: 'OPEN_DAILY_LOG',
       },
       dedupeKey: `savings-celebration:${userId}:${transaction.date}`,
-      sendPush: true,
     });
   }
 }
 
-async function runUserEngagementSweep({ userId, householdId, now = new Date(), sendPush = true }) {
+async function runUserEngagementSweep({ userId, householdId, now = new Date() }) {
   const parts = getLocalParts(now);
   const settings = await getUserNotificationSettings(userId, householdId);
-  await maybeSendDailyReminder(settings, parts, { sendPush });
-  await maybeSendMonthlyCommitmentReminder(settings, parts, { sendPush });
-  await maybeSendStreakMotivation(settings, parts, { sendPush });
+  await maybeSendDailyReminder(settings, parts);
+  await maybeSendMonthlyCommitmentReminder(settings, parts);
+  await maybeSendStreakMotivation(settings, parts);
 }
 
 async function runScheduledEngagementSweep(now = new Date()) {

@@ -1,29 +1,46 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
 import { Plus, Search, Trash2, Download } from 'lucide-react';
 import { fmt, exportToCSV } from '../utils/calculations';
 import { getPaymentMethodLabel } from '../utils/paymentMethods';
 
 const CATEGORIES = [
-  'Salário', 'Renda Casa', 'Alimentação', 'Transporte', 'Saúde',
-  'Educação', 'Energia/Água', 'Internet', 'Igreja/Doações',
-  'Lazer', 'Investimentos', 'Poupança', 'Outro',
-];
-
-const TYPES = [
-  { value: 'receita', label: '💰 Receita' },
-  { value: 'despesa', label: '💸 Despesa' },
-  { value: 'renda', label: '🏠 Renda da Casa' },
-  { value: 'poupanca', label: '🏦 Poupança' },
+  { id: 'Salário', key: 'salary' },
+  { id: 'Renda Casa', key: 'house_rent' },
+  { id: 'Alimentação', key: 'food' },
+  { id: 'Transporte', key: 'transport' },
+  { id: 'Saúde', key: 'health' },
+  { id: 'Educação', key: 'education' },
+  { id: 'Energia/Água', key: 'energy_water' },
+  { id: 'Internet', key: 'internet' },
+  { id: 'Igreja/Doações', key: 'church_donations' },
+  { id: 'Lazer', key: 'leisure' },
+  { id: 'Investimentos', key: 'investments' },
+  { id: 'Poupança', key: 'savings' },
+  { id: 'Outro', key: 'other' },
 ];
 
 export default function Transactions() {
   const { state, dispatch } = useFinance();
+  const { t } = useTranslation();
   const currency = state.settings.currency || 'MT';
   const { showToast } = useOutletContext();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
+
+  const TYPES = [
+    { value: 'receita', label: t('transactions.types.receita') },
+    { value: 'despesa', label: t('transactions.types.despesa') },
+    { value: 'renda', label: t('transactions.types.renda') },
+    { value: 'poupanca', label: t('transactions.types.poupanca') },
+  ];
+
+  const getCategoryTranslation = (catName) => {
+    const cat = CATEGORIES.find(c => c.id === catName);
+    return cat ? t(`transactions.categories.${cat.key}`) : catName;
+  };
 
   const today = new Date().toISOString().split('T')[0];
   const [form, setForm] = useState({
@@ -33,7 +50,7 @@ export default function Transactions() {
   function handleSubmit(e) {
     e.preventDefault();
     if (!form.desc || !form.valor) {
-      showToast('⚠️ Preencha descrição e valor');
+      showToast(t('transactions.toast_fill_desc'));
       return;
     }
     dispatch({
@@ -41,7 +58,7 @@ export default function Transactions() {
       payload: { ...form, valor: parseFloat(form.valor), account_id: form.account_id || null },
     });
     setForm({ ...form, desc: '', valor: '', nota: '', account_id: '' });
-    showToast('✅ Transação adicionada!');
+    showToast(t('transactions.toast_added'));
   }
 
   const filtered = state.transacoes
@@ -56,7 +73,7 @@ export default function Transactions() {
       {/* Add Transaction Form */}
       <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
         <div className="section-title">
-          <span>Adicionar Transação</span>
+          <span>{t('transactions.add_transaction')}</span>
         </div>
         <form onSubmit={handleSubmit}>
           <div style={{
@@ -65,7 +82,7 @@ export default function Transactions() {
             gap: '1rem',
           }}>
             <div>
-              <label className="form-label">Data</label>
+              <label className="form-label">{t('transactions.date')}</label>
               <input
                 type="date"
                 className="form-input"
@@ -74,7 +91,7 @@ export default function Transactions() {
               />
             </div>
             <div>
-              <label className="form-label">Tipo</label>
+              <label className="form-label">{t('transactions.type')}</label>
               <select
                 className="form-input"
                 value={form.tipo}
@@ -84,17 +101,17 @@ export default function Transactions() {
               </select>
             </div>
             <div>
-              <label className="form-label">Descrição</label>
+              <label className="form-label">{t('transactions.description')}</label>
               <input
                 type="text"
                 className="form-input"
-                placeholder="Ex: Supermercado, Salário..."
+                placeholder={t('transactions.desc_placeholder')}
                 value={form.desc}
                 onChange={e => setForm({ ...form, desc: e.target.value })}
               />
             </div>
             <div>
-              <label className="form-label">Valor (MT)</label>
+              <label className="form-label">{t('transactions.value_mt').replace('{currency}', currency)}</label>
               <input
                 type="number"
                 className="form-input"
@@ -105,143 +122,27 @@ export default function Transactions() {
               />
             </div>
             <div>
-              <label className="form-label">Categoria</label>
+              <label className="form-label">{t('transactions.category')}</label>
               <select
                 className="form-input"
                 value={form.cat}
                 onChange={e => setForm({ ...form, cat: e.target.value })}
               >
-                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{t(`transactions.categories.${c.key}`)}</option>)}
               </select>
             </div>
             <div>
-                <label className="form-label">Meio de Pagamento (Opcional)</label>
+                <label className="form-label">{t('transactions.payment_method')}</label>
               <select
                 className="form-input"
                 value={form.account_id}
                 onChange={e => setForm({ ...form, account_id: e.target.value })}
               >
-                <option value="">Nenhum</option>
+                <option value="">{t('transactions.none')}</option>
                 {state.contas?.map(acc => (
                   <option key={acc.id} value={acc.id}>{acc.name} • {getPaymentMethodLabel(acc.type)} ({fmt(acc.current_balance, currency)})</option>
                 ))}
               </select>
-            </div>
-            <div>
-              <label className="form-label">Notas</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Observação..."
-                value={form.nota}
-                onChange={e => setForm({ ...form, nota: e.target.value })}
-              />
-            </div>
-          </div>
-          <div style={{ marginTop: '1.25rem' }}>
-            <button type="submit" className="btn btn-primary">
-              <Plus size={16} /> Adicionar
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Filters + Export */}
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '0.75rem',
-        alignItems: 'center',
-        marginBottom: '1rem',
-      }}>
-        <div style={{ position: 'relative', flex: '1 1 200px' }}>
-          <Search size={16} style={{
-            position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)',
-            color: 'var(--color-muted)',
-          }} />
-          <input
-            type="text"
-            className="form-input"
-            placeholder="Pesquisar transações..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{ paddingLeft: '2.5rem' }}
-          />
-        </div>
-        <select
-          className="form-input"
-          value={filterType}
-          onChange={e => setFilterType(e.target.value)}
-          style={{ width: 'auto', minWidth: '140px' }}
-        >
-          <option value="all">Todos os tipos</option>
-          {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-        </select>
-        <button
-          className="btn btn-primary"
-          onClick={() => { exportToCSV(state.transacoes); showToast('📥 CSV exportado!'); }}
-          style={{ fontSize: '0.8rem' }}
-        >
-          <Download size={14} /> CSV
-        </button>
-      </div>
-
-      {/* Count */}
-      <div className="section-title">
-        <span>Todas as Transações</span>
-        <span style={{ fontSize: '0.8rem', fontWeight: 400, fontFamily: 'var(--font-body)', color: 'var(--color-muted)' }}>
-          {filtered.length} registos
-        </span>
-      </div>
-
-      {/* Table */}
-      <div className="glass-card" style={{ overflow: 'hidden', borderRadius: '16px' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="data-table">
-            <thead>
-              <tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Valor</th><th></th></tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <div className="empty-state">
-                      <div className="icon">📭</div>
-                      <div className="title">Sem transações</div>
-                      <div className="subtitle">Adicione a primeira transação acima</div>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filtered.map(t => (
-                  <tr key={t.id}>
-                    <td style={{ fontSize: '0.82rem', color: 'var(--color-muted)', whiteSpace: 'nowrap' }}>{t.data}</td>
-                    <td style={{ fontWeight: 500 }}>
-                      {t.desc}
-                      {t.nota && <div style={{ fontSize: '0.72rem', color: 'var(--color-muted)' }}>{t.nota}</div>}
-                    </td>
-                    <td style={{ fontSize: '0.82rem' }}>{t.cat}</td>
-                    <td><span className={`badge badge-${t.tipo}`}>{t.tipo}</span></td>
-                    <td style={{
-                      fontWeight: 600,
-                      whiteSpace: 'nowrap',
-                      color: t.tipo === 'despesa' ? 'var(--color-coral)' : 'var(--color-leaf)',
-                    }}>
-                      {t.tipo === 'despesa' ? '−' : '+'}{fmt(t.valor, currency)}
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-danger"
-                        onClick={() => { dispatch({ type: 'DELETE_TRANSACTION', payload: t.id }); showToast('🗑️ Removido'); }}
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
         </div>
       </div>
     </div>

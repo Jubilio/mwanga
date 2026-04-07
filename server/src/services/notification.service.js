@@ -402,50 +402,53 @@ async function upsertPushSubscription({
   const p256dh = subscription.keys?.p256dh;
   const auth = subscription.keys?.auth;
 
-  const result = await db.execute({
-    sql: `
-      INSERT INTO push_subscriptions (
-        household_id,
-        user_id,
+    const result = await db.execute({
+      sql: `
+        INSERT INTO push_subscriptions (
+          household_id,
+          user_id,
+          endpoint,
+          p256dh_key,
+          auth_key,
+          expiration_time,
+          device_type,
+          platform,
+          user_agent,
+          is_active,
+          last_seen_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE, NOW())
+        ON CONFLICT (endpoint) DO UPDATE SET
+          household_id = EXCLUDED.household_id,
+          user_id = EXCLUDED.user_id,
+          p256dh_key = EXCLUDED.p256dh_key,
+          auth_key = EXCLUDED.auth_key,
+          expiration_time = EXCLUDED.expiration_time,
+          device_type = EXCLUDED.device_type,
+          platform = EXCLUDED.platform,
+          user_agent = EXCLUDED.user_agent,
+          is_active = TRUE,
+          updated_at = NOW(),
+          last_seen_at = NOW()
+        RETURNING *
+      `,
+      args: [
+        householdId,
+        userId,
         endpoint,
-        p256dh_key,
-        auth_key,
-        expiration_time,
-        device_type,
+        p256dh,
+        auth,
+        expirationTime,
+        deviceType,
         platform,
-        user_agent,
-        is_active,
-        last_seen_at
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE, NOW())
-      ON CONFLICT (endpoint) DO UPDATE SET
-        household_id = EXCLUDED.household_id,
-        user_id = EXCLUDED.user_id,
-        p256dh_key = EXCLUDED.p256dh_key,
-        auth_key = EXCLUDED.auth_key,
-        expiration_time = EXCLUDED.expiration_time,
-        device_type = EXCLUDED.device_type,
-        platform = EXCLUDED.platform,
-        user_agent = EXCLUDED.user_agent,
-        is_active = TRUE,
-        updated_at = NOW(),
-        last_seen_at = NOW()
-      RETURNING *
-    `,
-    args: [
-      householdId,
-      userId,
-      endpoint,
-      p256dh,
-      auth,
-      expirationTime,
-      deviceType,
-      platform,
-      userAgent,
-    ],
-  });
+        userAgent,
+      ],
+    }).catch(err => {
+      logger.error(`Database error in upsertPushSubscription for user ${userId}, household ${householdId}: ${err.message}`);
+      throw err;
+    });
 
-  return result.rows[0];
+    return result.rows[0];
 }
 
 async function deletePushSubscription({ householdId, userId, endpoint }) {

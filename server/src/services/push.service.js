@@ -143,6 +143,39 @@ async function markPushDeliverySuccess(subscriptionId) {
   });
 }
 
+/**
+ * Low-level push delivery to a specific subscription.
+ */
+async function sendRawPush(payload, subscription, options = {}) {
+  if (!hasPushCredentials()) {
+    throw new Error('Push credentials not configured');
+  }
+
+  configureVapid();
+
+  const pushSubscription = {
+    endpoint: subscription.endpoint,
+    expirationTime: subscription.expiration_time || subscription.expirationTime,
+    keys: {
+      p256dh: subscription.p256dh_key || subscription.keys?.p256dh,
+      auth: subscription.auth_key || subscription.keys?.auth,
+    },
+  };
+
+  try {
+    await webpush.sendNotification(pushSubscription, JSON.stringify(payload), {
+      TTL: options.ttl || 3600,
+      urgency: options.urgency || 'normal',
+    });
+    return { success: true };
+  } catch (error) {
+    const statusCode = error.statusCode || error.status_code;
+    const message = error.body || error.message || 'push_failed';
+    
+    return { success: false, statusCode, message };
+  }
+}
+
 async function sendPushNotification(notification) {
   const schema = await getNotificationSchema();
   if (!schema.hasPushSubscriptionsTable) {
@@ -229,5 +262,6 @@ module.exports = {
   buildPushPayload,
   hasPushCredentials,
   sendPushNotification,
+  sendRawPush,
   getVapidKeys,
 };

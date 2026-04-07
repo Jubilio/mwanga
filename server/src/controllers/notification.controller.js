@@ -14,14 +14,19 @@ const getPushConfig = (req, res) => {
 const subscribe = async (req, res) => {
   try {
     const { subscription, deviceType, platform, userAgent } = req.body;
-    const { householdId, id: userId } = req.user;
+    const { householdId, id: userId } = req.user || {};
+
+    if (!userId || !householdId) {
+      logger.error(`Subscribe failed: Missing user context. UserID: ${userId}, HouseholdID: ${householdId}`);
+      return res.status(401).json({ status: 'error', message: 'Unauthorized: Missing user or household context.' });
+    }
 
     if (!subscription || !subscription.endpoint) {
       return res.status(400).json({ status: 'error', message: 'Invalid subscription object.' });
     }
 
     const result = await notificationService.upsertPushSubscription({
-      householdId: householdId,
+      householdId,
       userId,
       subscription,
       deviceType: deviceType || 'pwa',
@@ -39,14 +44,19 @@ const subscribe = async (req, res) => {
 const unsubscribe = async (req, res) => {
   try {
     const { endpoint } = req.body;
-    const { householdId, id: userId } = req.user;
+    const { householdId, id: userId } = req.user || {};
+
+    if (!userId || !householdId) {
+      logger.error(`Unsubscribe failed: Missing user context. UserID: ${userId}, HouseholdID: ${householdId}`);
+      return res.status(401).json({ status: 'error', message: 'Unauthorized: Missing user or household context.' });
+    }
 
     if (!endpoint) {
       return res.status(400).json({ status: 'error', message: 'Endpoint is required for unsubscription.' });
     }
 
     await notificationService.deletePushSubscription({
-      householdId: householdId,
+      householdId,
       userId,
       endpoint,
     });
@@ -116,12 +126,22 @@ const clearAll = async (req, res) => {
 
 const deleteOne = async (req, res) => {
   try {
-    const { id: notificationId } = req.params;
-    const { householdId, id: userId } = req.user;
+    const { id: rawId } = req.params;
+    const { householdId, id: userId } = req.user || {};
+
+    const notificationId = Number(rawId);
+    if (isNaN(notificationId)) {
+      logger.warn(`Invalid notification ID for delete: ${rawId}`);
+      return res.status(400).json({ status: 'error', message: 'Invalid notification ID.' });
+    }
+
+    if (!userId || !householdId) {
+       return res.status(401).json({ status: 'error', message: 'Unauthorized: Missing household or user context.' });
+    }
 
     await notificationService.removeNotification({
-      notificationId: Number(notificationId),
-      householdId: householdId,
+      notificationId,
+      householdId,
       userId,
     });
 

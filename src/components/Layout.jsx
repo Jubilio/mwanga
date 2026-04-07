@@ -307,7 +307,7 @@ export default function Layout() {
       <CustomCursor />
 
       <div className={`fixed inset-0 z-100 transition-opacity duration-300 ${isNotificationsOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[4px]" onClick={() => setIsNotificationsOpen(false)} />
+        <div className="absolute inset-0 backdrop-blur-xs opacity-20 bg-linear-to-b from-transparent to-black/20" onClick={() => setIsNotificationsOpen(false)} />
         <div
           className={`absolute right-0 top-0 h-full w-80 border-l border-white/10 bg-white p-6 shadow-2xl transition-transform duration-300 dark:bg-[#1a1a1a] ${isNotificationsOpen ? 'translate-x-0' : 'translate-x-full'}`}
           style={{ willChange: 'transform' }}
@@ -408,11 +408,11 @@ export default function Layout() {
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
-          <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/10 bg-white/70 px-5 py-3 backdrop-blur-3xl transition-all dark:bg-midnight/80">
+          <header className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200 bg-white/80 px-5 py-3 backdrop-blur-lg transition-all duration-300 dark:border-slate-800 dark:bg-midnight/90">
             <div className="min-w-0 flex items-center gap-3">
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="h-10 w-10 shrink-0 rounded-2xl bg-gradient-to-br from-ocean to-sky text-white shadow-lg shadow-ocean/20 transition-transform hover:scale-105 active:scale-95"
+                className="h-10 w-10 shrink-0 rounded-2xl bg-linear-to-br from-ocean to-sky text-white shadow-lg shadow-ocean/20 transition-transform hover:scale-105 active:scale-95"
               >
                 {state.user?.name?.charAt(0) || 'M'}
               </button>

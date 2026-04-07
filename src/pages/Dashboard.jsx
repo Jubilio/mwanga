@@ -22,6 +22,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import BinthContextual from '../components/BinthContextual';
 import { useFinance } from '../hooks/useFinance';
 import {
@@ -36,6 +37,7 @@ import {
 export default function Dashboard() {
   const { state } = useFinance();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [showBalance, setShowBalance] = useState(true);
 
   const currency = state.settings.currency || 'MT';
@@ -62,14 +64,14 @@ export default function Dashboard() {
   // Greeting based on time
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Bom dia';
-    if (hour < 18) return 'Boa tarde';
-    return 'Boa noite';
-  }, []);
+    if (hour < 12) return t('dashboard.greeting.morning');
+    if (hour < 18) return t('dashboard.greeting.afternoon');
+    return t('dashboard.greeting.evening');
+  }, [t]);
 
   // Score color and label
   const scoreColor = score > 70 ? 'text-leaf dark:text-leaf-light' : score > 40 ? 'text-gold dark:text-gold-light' : 'text-coral';
-  const scoreLabel = score > 70 ? 'Excelente' : score > 40 ? 'Moderado' : 'Atenção';
+  const scoreLabel = score > 70 ? t('dashboard.health.excellent') : score > 40 ? t('dashboard.health.moderate') : t('dashboard.health.attention');
 
   // Income vs Expense progress
   const totalFlow = totals.totalIncome + totals.totalExpenses;
@@ -79,50 +81,50 @@ export default function Dashboard() {
   const quickActions = [
     {
       icon: Plus,
-      label: 'Despesa',
-      sublabel: 'Registar gasto',
+      label: t('dashboard.quick_actions.expense'),
+      sublabel: t('dashboard.quick_actions.expense_sub'),
       gradient: 'from-coral to-coral-light',
-      bg: 'bg-gradient-to-br from-coral to-coral-light',
+      bg: 'bg-linear-to-br from-coral to-coral-light',
       onClick: () => navigate('/transacoes', { state: { openModal: true, tipo: 'despesa' } })
     },
     {
       icon: ArrowUpRight,
-      label: 'Receita',
-      sublabel: 'Registar ganho',
+      label: t('dashboard.quick_actions.income'),
+      sublabel: t('dashboard.quick_actions.income_sub'),
       gradient: 'from-leaf to-leaf-light',
-      bg: 'bg-gradient-to-br from-leaf to-leaf-light',
+      bg: 'bg-linear-to-br from-leaf to-leaf-light',
       onClick: () => navigate('/transacoes', { state: { openModal: true, tipo: 'receita' } })
     },
     {
       icon: ArrowRightLeft,
-      label: 'Transações',
-      sublabel: 'Ver histórico',
+      label: t('dashboard.quick_actions.transactions'),
+      sublabel: t('dashboard.quick_actions.transactions_sub'),
       gradient: 'from-ocean to-sky',
-      bg: 'bg-gradient-to-br from-ocean to-sky',
+      bg: 'bg-linear-to-br from-ocean to-sky',
       onClick: () => navigate('/transacoes')
     },
     {
       icon: Coins,
-      label: 'Xitique',
-      sublabel: 'Poupança coletiva',
+      label: t('dashboard.quick_actions.xitique'),
+      sublabel: t('dashboard.quick_actions.xitique_sub'),
       gradient: 'from-gold to-gold-light',
-      bg: 'bg-gradient-to-br from-gold to-gold-light',
+      bg: 'bg-linear-to-br from-gold to-gold-light',
       onClick: () => navigate('/xitique')
     },
     {
       icon: CreditCard,
-      label: 'Crédito',
-      sublabel: 'Simular empréstimo',
+      label: t('dashboard.quick_actions.credit'),
+      sublabel: t('dashboard.quick_actions.credit_sub'),
       gradient: 'from-[#0a1926] to-[#1c3545]',
-      bg: 'bg-gradient-to-br from-[#0a1926] to-[#1c3545]',
+      bg: 'bg-linear-to-br from-[#0a1926] to-[#1c3545]',
       onClick: () => navigate('/credito')
     },
     {
       icon: Target,
-      label: 'Metas',
-      sublabel: 'Objectivos',
+      label: t('dashboard.quick_actions.goals'),
+      sublabel: t('dashboard.quick_actions.goals_sub'),
       gradient: 'from-sky to-ocean',
-      bg: 'bg-gradient-to-br from-sky to-ocean',
+      bg: 'bg-linear-to-br from-sky to-ocean',
       onClick: () => navigate('/metas')
     }
   ];
@@ -151,7 +153,7 @@ export default function Dashboard() {
 
         {/* Balance */}
         <div className="relative flex flex-col items-center">
-          <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 dark:text-gray-400 mb-1">Balanço Disponível</span>
+          <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 dark:text-gray-400 mb-1">{t('dashboard.available_balance')}</span>
           
           <div className="dashboard-balance-row">
             <AnimatePresence mode="wait">
@@ -169,7 +171,7 @@ export default function Dashboard() {
             <button 
               onClick={() => setShowBalance(!showBalance)} 
               className="dashboard-balance-toggle p-2.5 rounded-full bg-black/5 dark:bg-white/5 text-gray-400 hover:text-ocean dark:hover:text-sky transition-all active:scale-90"
-              aria-label={showBalance ? 'Ocultar saldo' : 'Mostrar saldo'}
+              aria-label={showBalance ? t('dashboard.hide_balance') : t('dashboard.show_balance')}
             >
               {showBalance ? <Eye size={16} /> : <EyeOff size={16} />}
             </button>
@@ -187,7 +189,7 @@ export default function Dashboard() {
             }`}
           >
             {totals.saldo >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-            {totals.saldo >= 0 ? '+' : ''}{fmt(totals.saldo, currency)} fluxo mensal
+            {totals.saldo >= 0 ? '+' : ''}{fmt(totals.saldo, currency)} {t('dashboard.monthly_flow')}
           </motion.div>
         </div>
 
@@ -199,21 +201,21 @@ export default function Dashboard() {
           className="mt-5 px-4"
         >
           <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5">
-            <span className="text-leaf dark:text-leaf-light">↑ Receitas {fmt(totals.totalIncome, currency)}</span>
-            <span className="text-coral dark:text-coral-light">↓ Despesas {fmt(totals.totalExpenses, currency)}</span>
+            <span className="text-leaf dark:text-leaf-light">↑ {t('dashboard.income')} {fmt(totals.totalIncome, currency)}</span>
+            <span className="text-coral dark:text-coral-light">↓ {t('dashboard.expenses')} {fmt(totals.totalExpenses, currency)}</span>
           </div>
           <div className="h-2 rounded-full overflow-hidden bg-black/5 dark:bg-white/5 flex">
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: `${incomePercent}%` }}
               transition={{ delay: 0.6, duration: 0.8, ease: 'easeOut' }}
-              className="h-full bg-gradient-to-r from-leaf to-leaf-light rounded-full"
+              className="h-full bg-linear-to-r from-leaf to-leaf-light rounded-full"
             />
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: `${100 - incomePercent}%` }}
               transition={{ delay: 0.7, duration: 0.8, ease: 'easeOut' }}
-              className="h-full bg-gradient-to-r from-coral-light to-coral rounded-full"
+              className="h-full bg-linear-to-r from-coral-light to-coral rounded-full"
             />
           </div>
         </motion.div>
@@ -259,11 +261,11 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-ocean to-sky flex items-center justify-center text-white shadow-md">
+              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-ocean to-sky flex items-center justify-center text-white shadow-md">
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <span className="text-xs uppercase tracking-widest font-bold text-gray-500">Saúde Financeira</span>
+                <span className="text-xs uppercase tracking-widest font-bold text-gray-500">{t('dashboard.health.title')}</span>
               </div>
             </div>
             <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 group-hover:text-ocean dark:group-hover:text-sky transition-colors" />
@@ -273,13 +275,13 @@ export default function Dashboard() {
             <div>
               <div className={`text-3xl font-black ${scoreColor}`}>{score}<span className="text-lg">/ 100</span></div>
               <div className={`text-[10px] uppercase font-bold mt-1 ${scoreColor}`}>
-                <Sparkles size={10} className="inline mr-1" />{scoreLabel} · Risco {risk.level}
+                <Sparkles size={10} className="inline mr-1" />{scoreLabel} · {t('dashboard.health.risk')} {risk.level}
               </div>
             </div>
             <div className="text-right">
               <div className="text-sm font-bold text-gray-500">{savingsRate}%</div>
               <div className="text-[9px] uppercase font-bold text-gray-400 flex items-center gap-1">
-                <PiggyBank size={10} /> Poupança
+                <PiggyBank size={10} /> {t('dashboard.health.savings')}
               </div>
             </div>
           </div>
@@ -291,9 +293,9 @@ export default function Dashboard() {
               animate={{ width: `${score}%` }}
               transition={{ delay: 0.5, duration: 1, ease: 'easeOut' }}
               className={`h-full rounded-full ${
-                score > 70 ? 'bg-gradient-to-r from-leaf to-leaf-light' 
-                : score > 40 ? 'bg-gradient-to-r from-gold to-gold-light' 
-                : 'bg-gradient-to-r from-coral to-coral-light'
+                score > 70 ? 'bg-linear-to-r from-leaf to-leaf-light' 
+                : score > 40 ? 'bg-linear-to-r from-gold to-gold-light' 
+                : 'bg-linear-to-r from-coral to-coral-light'
               }`}
             />
           </div>
@@ -308,12 +310,12 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-md ${
                 totalAlerts > 0 
-                  ? 'bg-gradient-to-br from-coral to-coral-light animate-pulse' 
-                  : 'bg-gradient-to-br from-leaf to-leaf-light'
+                  ? 'bg-linear-to-br from-coral to-coral-light animate-pulse' 
+                  : 'bg-linear-to-br from-leaf to-leaf-light'
               }`}>
                 <Bell size={18} />
               </div>
-              <span className="text-xs uppercase tracking-widest font-bold text-gray-500">Alertas</span>
+              <span className="text-xs uppercase tracking-widest font-bold text-gray-500">{t('dashboard.alerts.title')}</span>
             </div>
             <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 group-hover:text-ocean dark:group-hover:text-sky transition-colors" />
           </div>
@@ -321,18 +323,18 @@ export default function Dashboard() {
           {totalAlerts > 0 ? (
             <div>
               <div className="text-3xl font-black text-coral">{totalAlerts}</div>
-              <div className="text-[10px] uppercase font-bold text-gray-400 mt-1">Ações pendentes</div>
+              <div className="text-[10px] uppercase font-bold text-gray-400 mt-1">{t('dashboard.alerts.pending_actions')}</div>
               <div className="mt-3 space-y-1.5">
                 {pendingDebts > 0 && (
                   <div className="flex items-center gap-2 text-xs text-coral font-semibold">
                     <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
-                    {pendingDebts} dívida{pendingDebts > 1 ? 's' : ''} pendente{pendingDebts > 1 ? 's' : ''}
+                    {pendingDebts} {pendingDebts > 1 ? t('dashboard.alerts.debts_pending') : t('dashboard.alerts.debt_pending')}
                   </div>
                 )}
                 {pendingHousing > 0 && (
                   <div className="flex items-center gap-2 text-xs text-gold font-semibold">
                     <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-                    {pendingHousing} renda{pendingHousing > 1 ? 's' : ''} pendente{pendingHousing > 1 ? 's' : ''}
+                    {pendingHousing} {pendingHousing > 1 ? t('dashboard.alerts.rents_pending') : t('dashboard.alerts.rent_pending')}
                   </div>
                 )}
               </div>
@@ -340,9 +342,9 @@ export default function Dashboard() {
           ) : (
             <div>
               <div className="text-3xl font-black text-leaf dark:text-leaf-light">0</div>
-              <div className="text-[10px] uppercase font-bold text-gray-400 mt-1">Tudo em dia ✓</div>
+              <div className="text-[10px] uppercase font-bold text-gray-400 mt-1">{t('dashboard.alerts.all_clear')}</div>
               <div className="mt-3 text-xs text-leaf/80 dark:text-leaf-light/80 font-medium">
-                Sem alertas ou pendências. Continue assim!
+                {t('dashboard.alerts.no_alerts')}
               </div>
             </div>
           )}
@@ -363,10 +365,10 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gold to-gold-light flex items-center justify-center text-white shadow-md">
+              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-gold to-gold-light flex items-center justify-center text-white shadow-md">
                 <ArrowRightLeft size={18} />
               </div>
-              <span className="text-xs uppercase tracking-widest font-bold text-gray-500">Fluxo de Caixa</span>
+              <span className="text-xs uppercase tracking-widest font-bold text-gray-500">{t('dashboard.cashflow.title')}</span>
             </div>
             <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 group-hover:text-ocean dark:group-hover:text-sky transition-colors" />
           </div>
@@ -377,7 +379,7 @@ export default function Dashboard() {
                 <div className="w-7 h-7 rounded-lg bg-leaf/10 flex items-center justify-center">
                   <ArrowUpRight size={14} className="text-leaf" />
                 </div>
-                <span className="text-xs font-semibold text-gray-500">Receitas</span>
+                <span className="text-xs font-semibold text-gray-500">{t('dashboard.income')}</span>
               </div>
               <span className="text-sm font-bold text-leaf dark:text-leaf-light">{fmt(totals.totalIncome, currency)}</span>
             </div>
@@ -386,12 +388,12 @@ export default function Dashboard() {
                 <div className="w-7 h-7 rounded-lg bg-coral/10 flex items-center justify-center">
                   <ArrowDownToLine size={14} className="text-coral" />
                 </div>
-                <span className="text-xs font-semibold text-gray-500">Despesas</span>
+                <span className="text-xs font-semibold text-gray-500">{t('dashboard.expenses')}</span>
               </div>
               <span className="text-sm font-bold text-coral dark:text-coral-light">{fmt(totals.totalExpenses, currency)}</span>
             </div>
             <div className="border-t border-black/5 dark:border-white/5 pt-2 flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold text-gray-400">Saldo mensal</span>
+              <span className="text-[10px] uppercase font-bold text-gray-400">{t('dashboard.cashflow.monthly_balance')}</span>
               <span className={`text-sm font-black ${totals.saldo >= 0 ? 'text-leaf dark:text-leaf-light' : 'text-coral'}`}>
                 {totals.saldo >= 0 ? '+' : ''}{fmt(totals.saldo, currency)}
               </span>
@@ -406,16 +408,16 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-midnight to-dark-light flex items-center justify-center text-gold shadow-md">
+              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-midnight to-dark-light flex items-center justify-center text-gold shadow-md">
                 <Wallet size={18} />
               </div>
-              <span className="text-xs uppercase tracking-widest font-bold text-gray-500">Contas Activas</span>
+              <span className="text-xs uppercase tracking-widest font-bold text-gray-500">{t('dashboard.accounts.title')}</span>
             </div>
             <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 group-hover:text-ocean dark:group-hover:text-sky transition-colors" />
           </div>
 
           <div className="text-2xl font-black text-ocean dark:text-sky">{fmt(totalContas, currency)}</div>
-          <div className="text-[10px] uppercase font-bold text-gray-400 mt-1">Total em {state.contas?.length || 0} conta{(state.contas?.length || 0) !== 1 ? 's' : ''}</div>
+          <div className="text-[10px] uppercase font-bold text-gray-400 mt-1">{t('dashboard.accounts.total_in')} {state.contas?.length || 0} {(state.contas?.length || 0) !== 1 ? t('dashboard.accounts.accounts') : t('dashboard.accounts.account')}</div>
           
           {/* Mini account list */}
           {state.contas && state.contas.length > 0 && (
@@ -427,7 +429,7 @@ export default function Dashboard() {
                 </div>
               ))}
               {state.contas.length > 3 && (
-                <div className="text-[10px] text-ocean dark:text-sky font-bold">+{state.contas.length - 3} mais</div>
+                <div className="text-[10px] text-ocean dark:text-sky font-bold">+{state.contas.length - 3} {t('dashboard.accounts.more')}</div>
               )}
             </div>
           )}
@@ -443,26 +445,26 @@ export default function Dashboard() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.4 }}>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-base font-bold dark:text-white flex items-center gap-2">
-            Últimas Transações
+            {t('dashboard.latest_transactions.title')}
           </h2>
           <button 
             onClick={() => navigate('/transacoes')}
             className="text-[10px] font-bold text-ocean dark:text-sky uppercase tracking-wider hover:underline flex items-center gap-1"
           >
-            Ver Todas <ChevronRight size={12} />
+            {t('dashboard.latest_transactions.view_all')} <ChevronRight size={12} />
           </button>
         </div>
         <div className="glass-card overflow-hidden">
           {latestTransactions.length === 0 ? (
             <div className="p-10 text-center">
               <div className="text-3xl mb-2">📝</div>
-              <div className="text-sm font-bold text-gray-400 dark:text-gray-500">Sem transações recentes</div>
-              <div className="text-[10px] text-gray-400 mt-1">Registre sua primeira transação</div>
+              <div className="text-sm font-bold text-gray-400 dark:text-gray-500">{t('dashboard.latest_transactions.empty')}</div>
+              <div className="text-[10px] text-gray-400 mt-1">{t('dashboard.latest_transactions.empty_sub')}</div>
               <button 
                 onClick={() => navigate('/transacoes', { state: { openModal: true } })}
                 className="mt-4 text-xs font-bold text-ocean dark:text-sky bg-ocean/10 dark:bg-sky/10 px-4 py-2 rounded-full hover:bg-ocean/20 dark:hover:bg-sky/20 transition-colors"
               >
-                + Adicionar
+                {t('dashboard.latest_transactions.add_new')}
               </button>
             </div>
           ) : (
@@ -473,7 +475,7 @@ export default function Dashboard() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.45 + idx * 0.05, duration: 0.3 }}
-                  className="p-4 flex items-center justify-between hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                  className="p-4 flex items-center justify-between hover:bg-black/2 dark:hover:bg-white/2 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
