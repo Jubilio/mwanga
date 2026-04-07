@@ -74,4 +74,16 @@ export default defineConfig({
   css: {
     postcss: './postcss.config.js',
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-charts': ['recharts'],
+          'vendor-auth': ['@simplewebauthn/browser'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 500,
+  },
 });

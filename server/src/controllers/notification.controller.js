@@ -14,14 +14,14 @@ const getPushConfig = (req, res) => {
 const subscribe = async (req, res) => {
   try {
     const { subscription, deviceType, platform, userAgent } = req.body;
-    const { household_id, id: userId } = req.user;
+    const { householdId, id: userId } = req.user;
 
     if (!subscription || !subscription.endpoint) {
       return res.status(400).json({ status: 'error', message: 'Invalid subscription object.' });
     }
 
     const result = await notificationService.upsertPushSubscription({
-      householdId: household_id,
+      householdId: householdId,
       userId,
       subscription,
       deviceType: deviceType || 'pwa',
@@ -39,14 +39,14 @@ const subscribe = async (req, res) => {
 const unsubscribe = async (req, res) => {
   try {
     const { endpoint } = req.body;
-    const { household_id, id: userId } = req.user;
+    const { householdId, id: userId } = req.user;
 
     if (!endpoint) {
       return res.status(400).json({ status: 'error', message: 'Endpoint is required for unsubscription.' });
     }
 
     await notificationService.deletePushSubscription({
-      householdId: household_id,
+      householdId: householdId,
       userId,
       endpoint,
     });
@@ -60,11 +60,11 @@ const unsubscribe = async (req, res) => {
 
 const list = async (req, res) => {
   try {
-    const { household_id, id: userId } = req.user;
+    const { householdId, id: userId } = req.user;
     const limit = Number(req.query.limit) || 50;
 
     const notifications = await notificationService.listNotificationsForUser({
-      householdId: household_id,
+      householdId: householdId,
       userId,
       limit,
     });
@@ -79,11 +79,11 @@ const list = async (req, res) => {
 const markRead = async (req, res) => {
   try {
     const { id: notificationId } = req.params;
-    const { household_id, id: userId } = req.user;
+    const { householdId, id: userId } = req.user;
 
     const notification = await notificationService.markNotificationAsRead({
       notificationId: Number(notificationId),
-      householdId: household_id,
+      householdId: householdId,
       userId,
     });
 
@@ -100,10 +100,10 @@ const markRead = async (req, res) => {
 
 const clearAll = async (req, res) => {
   try {
-    const { household_id, id: userId } = req.user;
+    const { householdId, id: userId } = req.user;
 
     await notificationService.clearNotifications({
-      householdId: household_id,
+      householdId: householdId,
       userId,
     });
 
@@ -117,11 +117,11 @@ const clearAll = async (req, res) => {
 const deleteOne = async (req, res) => {
   try {
     const { id: notificationId } = req.params;
-    const { household_id, id: userId } = req.user;
+    const { householdId, id: userId } = req.user;
 
     await notificationService.removeNotification({
       notificationId: Number(notificationId),
-      householdId: household_id,
+      householdId: householdId,
       userId,
     });
 
@@ -135,11 +135,11 @@ const deleteOne = async (req, res) => {
 const recordInteraction = async (req, res) => {
   try {
     const { notificationId, interaction, actionId } = req.body;
-    const { household_id, id: userId } = req.user;
+    const { householdId, id: userId } = req.user;
 
     const result = await notificationService.recordNotificationInteraction({
       notificationId: Number(notificationId),
-      householdId: household_id,
+      householdId: householdId,
       userId,
       interaction,
       actionId,
@@ -154,10 +154,10 @@ const recordInteraction = async (req, res) => {
 
 const sendTest = async (req, res) => {
   try {
-    const { household_id, id: userId } = req.user;
+    const { householdId, id: userId } = req.user;
 
     const notification = await notificationService.sendTestNotification({
-      householdId: household_id,
+      householdId: householdId,
       userId,
     });
 

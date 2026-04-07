@@ -2,6 +2,7 @@ const { db } = require('../config/db');
 const { z } = require('zod');
 const { createNotification } = require('../services/notification.service');
 
+
 const xitiqueSchema = z.object({
   name: z.string().min(1).max(100).trim(),
   monthlyAmount: z.number().positive(),
@@ -16,28 +17,46 @@ const xitiquePaymentSchema = z.object({
 }).strict();
 
 const getXitiques = async (req, res) => {
-  const result = await db.execute({
-    sql: 'SELECT * FROM xitiques WHERE household_id = ? ORDER BY created_at DESC',
-    args: [req.user.householdId]
-  });
-  const list = result.rows;
+  try {
+    const result = await db.execute({
+      sql: 'SELECT * FROM xitiques WHERE household_id = ? ORDER BY created_at DESC',
+      args: [req.user.householdId]
+    });
+    const list = result.rows;
 
-  const fullList = await Promise.all(list.map(async (x) => {
-    const cyclesRes = await db.execute({
-      sql: 'SELECT * FROM xitique_cycles WHERE xitique_id = ?',
-      args: [x.id]
-    });
-    const contributionsRes = await db.execute({
-      sql: 'SELECT * FROM xitique_contributions WHERE xitique_id = ?',
-      args: [x.id]
-    });
-    const receiptsRes = await db.execute({
-      sql: 'SELECT * FROM xitique_receipts WHERE xitique_id = ?',
-      args: [x.id]
-    });
-    return { ...x, cycles: cyclesRes.rows, contributions: contributionsRes.rows, receipts: receiptsRes.rows };
-  }));
-  res.json(fullList);
+    if (list.length === 0) return res.json([]);
+
+    const ids = list.map(x => x.id);
+    const placeholders = ids.map(() => '?').join(',');
+
+    const [cyclesRes, contributionsRes, receiptsRes] = await Promise.all([
+      db.execute({ sql: `SELECT * FROM xitique_cycles WHERE xitique_id IN (${placeholders})`, args: ids }),
+      db.execute({ sql: `SELECT * FROM xitique_contributions WHERE xitique_id IN (${placeholders})`, args: ids }),
+      db.execute({ sql: `SELECT * FROM xitique_receipts WHERE xitique_id IN (${placeholders})`, args: ids }),
+    ]);
+
+    const groupBy = (rows, key) => rows.reduce((map, row) => {
+      const k = row[key];
+      (map[k] = map[k] || []).push(row);
+      return map;
+    }, {});
+
+    const cyclesMap = groupBy(cyclesRes.rows, 'xitique_id');
+    const contribMap = groupBy(contributionsRes.rows, 'xitique_id');
+    const receiptsMap = groupBy(receiptsRes.rows, 'xitique_id');
+
+    const fullList = list.map(x => ({
+      ...x,
+      cycles: cyclesMap[x.id] || [],
+      contributions: contribMap[x.id] || [],
+      receipts: receiptsMap[x.id] || [],
+    }));
+
+    res.json(fullList);
+  } catch (error) {
+    console.error('Error fetching xitiques:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
 };
 
 const createXitique = async (req, res, next) => {

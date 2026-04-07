@@ -157,29 +157,31 @@ const login = async (req, res, next) => {
 };
 
 const getMe = async (req, res) => {
-  const result = await db.execute({
-    sql: 'SELECT * FROM users WHERE id = $1',
-    args: [req.user.id]
-  });
-  const user = result.rows[0];
+  try {
+    const result = await db.execute({
+      sql: 'SELECT * FROM users WHERE id = $1',
+      args: [req.user.id]
+    });
+    const user = result.rows[0];
 
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
-  const { password_hash, household_id, ...data } = user;
-  
-  // Decrypt PII data (At-Rest Application level decryption)
-  const cryptoService = require('../utils/crypto.service');
-  if (data.nationalId) {
-    data.nationalId = cryptoService.decrypt(data.nationalId) || data.nationalId;
-  }
-  if (data.national_id) {
-    data.nationalId = cryptoService.decrypt(data.national_id) || data.national_id; // Support both casings
-    delete data.national_id;
-  }
+    const { password_hash, household_id, ...data } = user;
+    
+    // Decrypt PII data (At-Rest Application level decryption)
+    const cryptoService = require('../utils/crypto.service');
+    const nationalIdRaw = data.nationalId || data.national_id;
+    if (nationalIdRaw) {
+      data.nationalId = cryptoService.decrypt(nationalIdRaw) || nationalIdRaw;
+      delete data.national_id;
+    }
 
-  res.json({ ...data, householdId: household_id, role: user.role || 'user' });
+    res.json({ ...data, householdId: household_id, role: user.role || 'user' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user profile' });
+  }
 };
 
 const updateProfile = async (req, res, next) => {
@@ -197,7 +199,7 @@ const updateProfile = async (req, res, next) => {
     }
 
     if (nationalId) {
-      updates.push(`national_id = $${paramCount++}`); // Assuming snake_case in column if it's raw SQL though Prisma uses camelCase for the schema property! Prisma maps it by default? Wait, schema.prisma says "nationalId String?" (Prisma usually maps to "nationalId" unless mapped otherwise). Let me use "nationalId" as the column name. Actually, previous queries used "password_hash", so snake_case. Let's use nationalId if not mapped. Wait, schema.prisma has no @map. I will use "nationalId".
+      updates.push(`"nationalId" = $${paramCount++}`);
       args.push(cryptoService.encrypt(nationalId));
     }
 

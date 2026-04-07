@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">mwanga</string>
+    <string name="title_activity_main">mwanga</string>
+    <string name="package_name">app.mwanga.finance</string>
+    <string name="custom_url_scheme">app.mwanga.finance</string>
+</resources>

@@ -17,7 +17,7 @@ const logAction = async (userId, action, targetType = null, targetId = null) => 
     }
 
     await db.execute({
-      sql: 'INSERT INTO audit_log (user_id, action, target_type, target_id) VALUES (?, ?, ?, ?)',
+      sql: 'INSERT INTO audit_log (user_id, action, target_type, target_id) VALUES ($1, $2, $3, $4)',
       args: [userId, action, targetType, targetId]
     });
     

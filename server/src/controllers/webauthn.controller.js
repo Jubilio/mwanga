@@ -211,7 +211,7 @@ const verifyAuthentication = async (req, res, next) => {
       const token = createSessionToken(safeUser);
 
       // Async gamification
-      const { evaluateUserBadges } = require('./gamificationEngine.service');
+      const { evaluateUserBadges } = require('../services/gamificationEngine.service');
       evaluateUserBadges(user.id, user.household_id).catch(() => {});
 
       return res.json({ verified: true, user: safeUser, token });
