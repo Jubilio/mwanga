@@ -23,6 +23,7 @@ import {
   Info,
   HelpCircle,
   Plus,
+  MessageSquare,
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
