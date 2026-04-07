@@ -243,17 +243,12 @@ export default function Sidebar({ isOpen, onClose }) {
         {/* Logo and Language Switcher */}
         <div style={{ padding: '28px 24px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 34, height: 34, borderRadius: 10,
-                background: 'linear-gradient(135deg,#F59E0B,#F97316)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 17, color: '#000', fontWeight: 900,
-                boxShadow: '0 4px 14px rgba(245,158,11,0.35)',
-              }}>M</div>
-              <span style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
-                Mwanga
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <img 
+                src="/logo-mwanga.png?v=2" 
+                alt="Mwanga Logo" 
+                style={{ height: 38, width: 'auto', objectFit: 'contain' }} 
+              />
             </div>
             
             <LanguageSwitcher />

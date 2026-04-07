@@ -263,16 +263,17 @@ export default function Layout() {
         // Swap favicon to red version
         const favicon = document.getElementById('favicon');
         if (favicon) {
-          favicon.setAttribute('href', '/favicon-alert.svg');
+          favicon.setAttribute('href', '/favicon-alert.png');
         }
         
         // Try to trigger a local notification if supported and permitted
         if ('Notification' in window && Notification.permission === 'granted') {
+          const todayStr = new Date().toISOString().split('T')[0];
           const lastNotified = localStorage.getItem('mwanga-last-daily-alert');
           if (lastNotified !== todayStr) {
             new Notification('Mwanga ✦ Lembrete', {
               body: 'Ainda não registaste os teus gastos de hoje. Que tal fazê-lo agora?',
-              icon: '/icon-192.png'
+              icon: '/favicon.png'
             });
             localStorage.setItem('mwanga-last-daily-alert', todayStr);
           }
@@ -283,7 +284,7 @@ export default function Layout() {
         // Restore normal favicon
         const favicon = document.getElementById('favicon');
         if (favicon) {
-          favicon.setAttribute('href', '/favicon.svg');
+          favicon.setAttribute('href', '/favicon.png');
         }
       }
     };

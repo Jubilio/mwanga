@@ -126,33 +126,19 @@ export default function Login() {
           boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
         }}
       >
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div
-            style={{
-              width: '60px',
-              height: '60px',
-              background: 'var(--color-ocean)',
-              borderRadius: '15px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 1rem',
-              color: 'white'
-            }}
-          >
-            <Wallet size={30} />
-          </div>
-
-          <h1
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '1.8rem',
-              fontWeight: 800,
-              color: 'var(--color-ocean)'
-            }}
-          >
-            Mwanga <span style={{ color: 'var(--color-gold)' }}>✦</span>
-          </h1>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <img 
+            src="/logo-mwanga.png?v=2" 
+            alt="Mwanga Financial Light" 
+            style={{ 
+              width: '100%', 
+              maxWidth: '260px', 
+              height: 'auto', 
+              margin: '0 auto',
+              display: 'block',
+              filter: 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.2))'
+            }} 
+          />
 
           <p style={{ color: 'var(--color-muted)', fontSize: '0.92rem', marginTop: '0.5rem', lineHeight: 1.5 }}>
             {isLogin ? 'Entre para gerir as suas finanças.' : 'Crie a sua conta para começar a organizar a vida financeira da família.'}

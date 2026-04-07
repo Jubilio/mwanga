@@ -17,24 +17,36 @@ const addPaymentSchema = z.object({
 exports.getDebts = async (req, res) => {
   try {
     const householdId = req.user.householdId;
-    const result = await db.execute({
+    
+    // 1. Fetch all debts for the household
+    const debtsResult = await db.execute({
       sql: 'SELECT * FROM debts WHERE household_id = $1 ORDER BY created_at DESC',
       args: [householdId]
     });
+    
+    if (debtsResult.rows.length === 0) {
+      return res.json([]);
+    }
 
-    const debts = await Promise.all(
-      result.rows.map(async (debt) => {
-        const paymentResult = await db.execute({
-          sql: 'SELECT * FROM debt_payments WHERE debt_id = $1 ORDER BY payment_date DESC',
-          args: [debt.id]
-        });
+    // 2. Fetch all payments for all these debts in a single query
+    const debtIds = debtsResult.rows.map(d => d.id);
+    const paymentsResult = await db.execute({
+      sql: `SELECT * FROM debt_payments WHERE debt_id IN (${debtIds.map((_, i) => `$${i + 1}`).join(', ')}) ORDER BY payment_date DESC`,
+      args: debtIds
+    });
 
-        return {
-          ...debt,
-          payments: paymentResult.rows
-        };
-      })
-    );
+    // 3. Group payments by debt_id
+    const paymentsByDebt = paymentsResult.rows.reduce((acc, p) => {
+      if (!acc[p.debt_id]) acc[p.debt_id] = [];
+      acc[p.debt_id].push(p);
+      return acc;
+    }, {});
+
+    // 4. Assemble final data
+    const debts = debtsResult.rows.map(debt => ({
+      ...debt,
+      payments: paymentsByDebt[debt.id] || []
+    }));
 
     res.json(debts);
   } catch (error) {
