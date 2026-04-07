@@ -156,18 +156,9 @@ export default function Dashboard() {
           <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 dark:text-gray-400 mb-1">{t('dashboard.available_balance')}</span>
           
           <div className="dashboard-balance-row">
-            <AnimatePresence mode="wait">
-              <motion.div 
-                key={showBalance ? 'shown' : 'hidden'}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                className="dashboard-balance-value text-midnight dark:text-white"
-              >
-                {showBalance ? fmt(realBalance, currency) : '••••••'}
-              </motion.div>
-            </AnimatePresence>
+            <div className="dashboard-balance-value text-midnight dark:text-white">
+              {showBalance ? fmt(realBalance, currency) : '••••••'}
+            </div>
             <button 
               onClick={() => setShowBalance(!showBalance)} 
               className="dashboard-balance-toggle p-2.5 rounded-full bg-black/5 dark:bg-white/5 text-gray-400 hover:text-ocean dark:hover:text-sky transition-all active:scale-90"

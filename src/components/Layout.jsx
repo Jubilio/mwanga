@@ -22,6 +22,7 @@ import {
   Sparkles,
   Info,
   HelpCircle,
+  Plus,
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
@@ -30,12 +31,14 @@ import Sidebar from './layout/Sidebar';
 import CustomCursor from './CustomCursor';
 import ConfirmModal from './ConfirmModal';
 import QuickAddNotificationModal from './QuickAddNotificationModal';
+import InstallBanner from './InstallBanner';
+import { usePWA } from '../hooks/usePWA';
 
 const bottomNavItems = [
   { to: '/', icon: LayoutDashboard, label: 'Home' },
   { to: '/transacoes', icon: ArrowRightLeft, label: 'Transações' },
-  { to: '/xitique', icon: Wallet, label: 'Xitique' },
-  { to: '/credito', icon: CreditCard, label: 'Crédito' },
+  { to: null, icon: Plus, label: 'Add', isFab: true },
+  { to: '/dividas', icon: CreditCard, label: 'Dívidas' },
   { to: '/insights', icon: Brain, label: 'Binth' },
 ];
 
@@ -119,6 +122,9 @@ export default function Layout() {
   const [quickAddPayload, setQuickAddPayload] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const { installPrompt } = usePWA();
+  const [showInstallBanner, setShowInstallBanner] = useState(true);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -230,6 +236,65 @@ export default function Layout() {
       actionId: routeQuickAddPayload.actionId,
     }).catch(() => {});
   }, [location.pathname, location.search, routeQuickAddPayload?.notificationId, routeQuickAddPayload?.actionId]);
+
+  // ─── PWA Badging & Daily Check ───
+  useEffect(() => {
+    const checkDailySpending = async () => {
+      if (!('setAppBadge' in navigator)) return;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const hasAddedToday = state.transacoes.some(t => {
+        const tDate = t.data?.slice(0, 10);
+        return tDate === todayStr;
+      });
+
+      const now = new Date();
+      const currentHour = now.getHours();
+      
+      // Threshold: 19:00 (7 PM)
+      const isPastAlertTime = currentHour >= 19;
+      
+      if (!hasAddedToday && isPastAlertTime) {
+        navigator.setAppBadge?.(1).catch(() => {});
+        
+        // Swap favicon to red version
+        const favicon = document.getElementById('favicon');
+        if (favicon) {
+          favicon.setAttribute('href', '/favicon-alert.svg');
+        }
+        
+        // Try to trigger a local notification if supported and permitted
+        if ('Notification' in window && Notification.permission === 'granted') {
+          const lastNotified = localStorage.getItem('mwanga-last-daily-alert');
+          if (lastNotified !== todayStr) {
+            new Notification('Mwanga ✦ Lembrete', {
+              body: 'Ainda não registaste os teus gastos de hoje. Que tal fazê-lo agora?',
+              icon: '/icon-192.png'
+            });
+            localStorage.setItem('mwanga-last-daily-alert', todayStr);
+          }
+        }
+      } else {
+        navigator.clearAppBadge?.().catch(() => {});
+        
+        // Restore normal favicon
+        const favicon = document.getElementById('favicon');
+        if (favicon) {
+          favicon.setAttribute('href', '/favicon.svg');
+        }
+      }
+    };
+
+    // Request notification permission on first load if not determined
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    checkDailySpending();
+    
+    const interval = setInterval(checkDailySpending, 15 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [state.transacoes]);
 
   async function handleMarkRead(id) {
     try {
@@ -408,7 +473,7 @@ export default function Layout() {
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
-          <header className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200 bg-white/80 px-5 py-3 backdrop-blur-lg transition-all duration-300 dark:border-slate-800 dark:bg-midnight/90">
+          <header className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200 bg-white/80 px-5 pt-[calc(0.75rem+var(--sat))] pb-3 backdrop-blur-lg transition-all duration-300 dark:border-slate-800 dark:bg-midnight/90">
             <div className="min-w-0 flex items-center gap-3">
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -434,13 +499,6 @@ export default function Layout() {
               </button>
               <button
                 className="rounded-xl p-2 hover:bg-black/5 dark:hover:bg-white/5"
-                onClick={() => navigate('/help')}
-                title="Ajuda"
-              >
-                <HelpCircle size={20} />
-              </button>
-              <button
-                className="rounded-xl p-2 hover:bg-black/5 dark:hover:bg-white/5"
                 onClick={() => dispatch({ type: 'TOGGLE_DARK_MODE' })}
               >
                 {state.darkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -448,7 +506,7 @@ export default function Layout() {
             </div>
           </header>
 
-          <main className="flex w-full max-w-full flex-1 flex-col overflow-hidden bg-cream pb-24 dark:bg-[#0a1926] md:pb-8">
+          <main className="flex w-full max-w-full flex-1 flex-col overflow-hidden bg-cream pb-[calc(6rem+var(--sab))] dark:bg-[#0a1926] md:pb-8">
             <div className="flex w-full flex-1 flex-col p-4 pt-6 md:p-8">
               <Outlet context={{ showToast }} />
             </div>
@@ -456,26 +514,50 @@ export default function Layout() {
         </div>
       </div>
 
-      <nav className="hide-desktop fixed bottom-0 left-0 right-0 z-50 flex justify-around border-t border-black/5 bg-white/80 p-2 pb-6 pt-3 backdrop-blur-2xl dark:border-white/5 dark:bg-[#0a1926]/90">
-        {bottomNavItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/'}
-            className={({ isActive }) => `flex flex-col items-center gap-1 transition-all ${isActive ? 'scale-110 text-ocean dark:text-sky' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
-          >
-            {({ isActive }) => (
-              <>
-                <div className={`relative rounded-2xl p-2 ${isActive ? 'bg-ocean/10 dark:bg-sky/10' : ''}`}>
-                  <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                  {item.to === '/insights' && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-gold" />}
+      <nav className="hide-desktop fixed bottom-0 left-0 right-0 z-50 flex items-end justify-around border-t border-black/5 bg-white/80 pb-[calc(0.75rem+var(--sab))] pt-3 backdrop-blur-2xl dark:border-white/5 dark:bg-[#0a1926]/90">
+        {bottomNavItems.map((item) => {
+          if (item.isFab) {
+            return (
+              <div key="fab-container" className="relative flex flex-col items-center">
+                <div className="fab-container">
+                  <button
+                    onClick={() => setQuickAddPayload({ actionId: 'OPEN', route: '/quick-add' })}
+                    className="fab-button"
+                  >
+                    <Plus size={32} strokeWidth={3} />
+                  </button>
                 </div>
-                <span className="text-[9px] font-bold uppercase tracking-wider">{item.label}</span>
-              </>
-            )}
-          </NavLink>
-        ))}
+                <div className="h-8" />
+                <span className="text-[9px] font-black uppercase tracking-wider text-ocean dark:text-sky">Adicionar</span>
+              </div>
+            );
+          }
+
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              className={({ isActive }) => `flex flex-col items-center gap-1 transition-all ${isActive ? 'scale-110 text-ocean dark:text-sky' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
+            >
+              {({ isActive }) => (
+                <>
+                  <div className={`relative rounded-2xl p-2 ${isActive ? 'bg-ocean/10 dark:bg-sky/10' : ''}`}>
+                    <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                  </div>
+                  <span className="text-[9px] font-bold uppercase tracking-wider">{item.label}</span>
+                </>
+              )}
+            </NavLink>
+          );
+        })}
       </nav>
+
+      <InstallBanner
+        installPrompt={installPrompt}
+        onClose={() => setShowInstallBanner(false)}
+        visible={showInstallBanner}
+      />
 
       <QuickAddNotificationModal
         isOpen={Boolean(activeQuickAddPayload)}

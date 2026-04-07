@@ -107,7 +107,7 @@ export default function Simulators() {
 
   const [activeTab, setActiveTab] = useState('budget');
 
-  const [salary, setSalary] = useState(Number(state.settings?.user_salary || 50000));
+  const [salary, setSalary] = useState(() => Number(state.settings?.user_salary || 50000));
   const [needsPct, setNeedsPct] = useState(50);
   const [wantsPct, setWantsPct] = useState(30);
   const [activeModel, setActiveModel] = useState('50/30/20');
@@ -126,18 +126,24 @@ export default function Simulators() {
   const [xitiqueParticipants, setXitiqueParticipants] = useState(10);
   const [xitiquePosition, setXitiquePosition] = useState(1);
 
+  // Sync salary when it changes globally, but allow local override
   useEffect(() => {
     const globalSalary = Number(state.settings?.user_salary || 0);
     if (globalSalary > 0 && globalSalary !== salary) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setSalary(globalSalary);
     }
-  }, [state.settings?.user_salary, salary]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.settings?.user_salary]); // Only depend on global salary
 
+  // Keep position within participants bounds
   useEffect(() => {
     if (xitiquePosition > xitiqueParticipants) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setXitiquePosition(xitiqueParticipants);
     }
-  }, [xitiqueParticipants, xitiquePosition]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [xitiqueParticipants]); // Only depend on participants change
 
   const safeNeedsPct = Math.min(100, Math.max(0, needsPct));
   const safeWantsPct = Math.min(100 - safeNeedsPct, Math.max(0, wantsPct));
@@ -255,8 +261,8 @@ export default function Simulators() {
                       <div className="flex items-start gap-3 min-w-0">
                         <div style={{ width: 12, height: 12, borderRadius: '50%', background: item.color, marginTop: 6, flexShrink: 0 }} />
                         <div className="min-w-0">
-                          <div className="text-[10px] font-black uppercase text-gray-400 mb-1 break-words">{item.name}</div>
-                          <div className="text-lg md:text-xl font-black dark:text-white break-words leading-tight">{fmt(item.value, currency)}</div>
+                          <div className="text-[10px] font-black uppercase text-gray-400 mb-1 wrap-anywhere">{item.name}</div>
+                          <div className="text-lg md:text-xl font-black dark:text-white wrap-anywhere leading-tight">{fmt(item.value, currency)}</div>
                         </div>
                       </div>
                     </div>
@@ -269,8 +275,8 @@ export default function Simulators() {
               </div>
 
               <div className="rounded-[28px] bg-black/5 dark:bg-white/5 border border-white/5 p-6 md:p-7 min-w-0 h-full flex flex-col gap-4">
-                <div className="text-sm font-black text-midnight dark:text-white break-words leading-6">Distribuição do salário</div>
-                <div className="w-full h-[220px] md:h-[240px] min-w-0 min-h-[220px] shrink-0">
+                <div className="text-sm font-black text-midnight dark:text-white wrap-anywhere leading-6">Distribuição do salário</div>
+                <div className="w-full grow flex items-center justify-center min-w-0" style={{ height: 240, minHeight: 240 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={budgetPieData} dataKey="value" innerRadius={65} outerRadius={95} paddingAngle={4}>
@@ -282,7 +288,7 @@ export default function Simulators() {
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 leading-6 break-words pb-1">
+                <div className="text-xs text-gray-500 dark:text-gray-400 leading-6 wrap-anywhere pb-1">
                   Poupança projetada: <strong className="text-leaf">{savingsPct}%</strong>. Se aplicar este modelo, o Mwanga cria limites base para alimentação, transporte, saúde, lazer e poupança.
                 </div>
               </div>
@@ -322,8 +328,8 @@ export default function Simulators() {
               </div>
             </div>
 
-            <div className="w-full h-[320px] min-w-0 min-h-[320px]">
-              <ResponsiveContainer width="100%" height={320}>
+            <div className="w-full" style={{ height: 320, minHeight: 320 }}>
+              <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={investmentChartData}>
                   <defs>
                     <linearGradient id="investmentGradient" x1="0" y1="0" x2="0" y2="1">
@@ -384,7 +390,7 @@ export default function Simulators() {
                           <span className="text-gold">{fireProgress.toFixed(1)}%</span>
                         </div>
                         <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden">
-                          <div className="h-full bg-gradient-to-r from-gold to-gold-light" style={{ width: `${fireProgress}%` }} />
+                          <div className="h-full bg-linear-to-r from-gold to-gold-light" style={{ width: `${fireProgress}%` }} />
                         </div>
                       </div>
 
@@ -404,8 +410,8 @@ export default function Simulators() {
                       </p>
                     </div>
 
-                    <div className="w-full h-[220px] min-w-0 min-h-[220px]">
-                      <ResponsiveContainer width="100%" height={220}>
+                    <div className="w-full" style={{ height: 220, minHeight: 220 }}>
+                      <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={fireChartData}>
                           <defs>
                             <linearGradient id="fireGradient" x1="0" y1="0" x2="0" y2="1">

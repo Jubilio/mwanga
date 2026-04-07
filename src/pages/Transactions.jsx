@@ -61,11 +61,18 @@ export default function Transactions() {
     showToast(t('transactions.toast_added'));
   }
 
+  function handleDelete(id) {
+    if (window.confirm(t('common.confirm_delete'))) {
+      dispatch({ type: 'DELETE_TRANSACTION', payload: id });
+      showToast(t('transactions.toast_removed'));
+    }
+  }
+
   const filtered = state.transacoes
     .filter(t => filterType === 'all' || t.tipo === filterType)
     .filter(t =>
-      t.desc.toLowerCase().includes(search.toLowerCase()) ||
-      t.cat.toLowerCase().includes(search.toLowerCase())
+      (t.desc || '').toLowerCase().includes(search.toLowerCase()) ||
+      (t.cat || '').toLowerCase().includes(search.toLowerCase())
     );
 
   return (
@@ -133,6 +140,7 @@ export default function Transactions() {
             </div>
             <div>
                 <label className="form-label">{t('transactions.payment_method')}</label>
+              <label className="form-label">{t('transactions.payment_method')}</label>
               <select
                 className="form-input"
                 value={form.account_id}
@@ -143,7 +151,109 @@ export default function Transactions() {
                   <option key={acc.id} value={acc.id}>{acc.name} • {getPaymentMethodLabel(acc.type)} ({fmt(acc.current_balance, currency)})</option>
                 ))}
               </select>
+            </div>
+          </div>
+          <button
+            type="submit"
+            className="btn-primary w-full mt-6 flex items-center justify-center gap-2 py-3 rounded-2xl shadow-lg transition-all active:scale-95"
+          >
+            <Plus size={20} strokeWidth={2.5} />
+            {t('transactions.add_transaction')}
+          </button>
+        </form>
+      </div>
+
+      {/* ─── 2. SEARCH & FILTERS ─── */}
+      <div className="flex flex-col md:flex-row gap-3 mb-6">
+        <div className="relative flex-1 group">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-ocean transition-colors">
+            <Search size={18} />
+          </div>
+          <input
+            type="text"
+            className="form-input pl-11 h-12 bg-white/50 backdrop-blur-md border-white/20 focus:bg-white transition-all shadow-sm"
+            placeholder={t('transactions.search_placeholder')}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
         </div>
+        <div className="flex gap-2">
+          <select
+            className="form-input h-12 bg-white/50 backdrop-blur-md border-white/20 min-w-[140px] shadow-sm"
+            value={filterType}
+            onChange={e => setFilterType(e.target.value)}
+          >
+            <option value="all">{t('transactions.all_types')}</option>
+            {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+          <button
+            onClick={() => {
+              exportToCSV(filtered);
+              showToast(t('transactions.toast_exported'));
+            }}
+            className="h-12 px-4 rounded-2xl bg-leaf/10 text-leaf border border-leaf/20 hover:bg-leaf/20 transition-all flex items-center gap-2 font-bold shadow-sm"
+            title={t('transactions.export_csv')}
+          >
+            <Download size={18} />
+          </button>
+        </div>
+      </div>
+
+      {/* ─── 3. TRANSACTIONS LIST ─── */}
+      <div className="flex items-center justify-between mb-3 px-1">
+        <div className="text-xs font-black uppercase tracking-widest text-gray-400">
+          {filtered.length} {t('transactions.records')}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {filtered.length === 0 ? (
+          <div className="glass-card p-10 text-center text-gray-400">
+            <div className="text-3xl mb-2">🔎</div>
+            <p className="font-bold">{t('transactions.empty')}</p>
+            <p className="text-[10px] mt-1">{t('transactions.empty_sub')}</p>
+          </div>
+        ) : (
+          filtered.map((t) => (
+            <div key={t.id} className="glass-card p-4 group hover:border-ocean/30 transition-all active:scale-[0.98]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+                    t.tipo === 'despesa' || t.tipo === 'renda'
+                      ? 'bg-coral/10 text-coral' 
+                      : 'bg-leaf/10 text-leaf'
+                  }`}>
+                    <Plus size={18} className={t.tipo === 'receita' ? 'rotate-0' : 'rotate-45'} />
+                  </div>
+                  <div>
+                    <div className="font-bold text-sm dark:text-gray-200">{t.desc}</div>
+                    <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-0.5">
+                      {getCategoryTranslation(t.cat)} · {t.data}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className={`font-black tabular-nums ${
+                    t.tipo === 'despesa' || t.tipo === 'renda' ? 'text-midnight dark:text-white' : 'text-leaf'
+                  }`}>
+                    {(t.tipo === 'despesa' || t.tipo === 'renda') ? '-' : '+'}{fmt(t.valor, currency)}
+                  </div>
+                  <button
+                    onClick={() => handleDelete(t.id)}
+                    className="p-2 text-gray-300 hover:text-coral transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+              {t.nota && (
+                <div className="mt-2 text-[10px] text-gray-400 italic bg-black/5 dark:bg-white/5 p-2 rounded-lg">
+                  "{t.nota}"
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

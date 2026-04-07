@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
 
 // ─── PRO Badge ───────────────────────────────────────────────────────────────
+// ... [rest of the component stays similar]
 function ProBadge() {
   return (
     <span style={{
@@ -411,10 +412,10 @@ export default function Sidebar({ isOpen, onClose }) {
               {familyName}
             </div>
           </div>
-          <button className="sb-settings-btn" title="Definições" onClick={() => navigate('/settings')}>
+          <button className="sb-settings-btn" title="Definições" onClick={() => { navigate('/settings'); onClose(); }}>
             <Settings size={15} />
           </button>
-          <button className="sb-logout-btn" title="Sair" onClick={handleLogout}>
+          <button className="sb-logout-btn" title="Sair" onClick={() => { handleLogout(); onClose(); }}>
             <LogOut size={15} />
           </button>
         </div>
