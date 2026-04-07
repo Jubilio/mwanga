@@ -74,9 +74,9 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-ocean/10 text-ocean dark:bg-aurora/10 dark:text-aurora">
                 <MessageSquare size={22} />
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-800 dark:text-white">Feedback Mwanga</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Sugestões ou reporte de erros</p>
+              <div className="min-w-0">
+                <h3 className="truncate text-lg font-bold text-gray-800 dark:text-white">Feedback Mwanga</h3>
+                <p className="truncate text-xs text-gray-500 dark:text-gray-400">Sugestões ou reporte de erros</p>
               </div>
             </div>
             <button 
@@ -97,7 +97,7 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Descreve o erro ou a tua sugestão..."
-                className="h-32 w-full resize-none rounded-2xl border border-black/5 bg-gray-50 p-4 text-sm focus:border-ocean/30 focus:outline-hidden dark:border-white/5 dark:bg-white/5 dark:text-white"
+                className="h-32 w-full resize-none rounded-2xl border border-black/5 bg-gray-50 p-4 text-sm break-words focus:border-ocean/30 focus:outline-hidden dark:border-white/5 dark:bg-white/5 dark:text-white"
                 maxLength={1000}
               />
             </div>
@@ -161,8 +161,8 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
 
           {/* Biblical Touch / Motivational */}
           <div className="bg-ocean/5 p-4 text-center dark:bg-aurora/5">
-            <p className="flex items-center justify-center gap-2 text-[10px] font-bold italic text-ocean/60 dark:text-aurora/60">
-              <AlertCircle size={12} />
+            <p className="flex items-center justify-center gap-2 text-[10px] font-bold italic break-words text-ocean/60 dark:text-aurora/60">
+              <AlertCircle size={12} className="shrink-0" />
               "Ouve o conselho e recebe a instrução..." — Provérbios 19:20
             </p>
           </div>

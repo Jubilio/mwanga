@@ -5,6 +5,7 @@ import { useFinance } from '../hooks/useFinance';
 import { Plus, Search, Trash2, Download } from 'lucide-react';
 import { fmt, exportToCSV } from '../utils/calculations';
 import { getPaymentMethodLabel } from '../utils/paymentMethods';
+import CategoryBadge from '../components/CategoryBadge';
 
 const CATEGORIES = [
   { id: 'Salário', key: 'salary' },
@@ -139,7 +140,6 @@ export default function Transactions() {
               </select>
             </div>
             <div>
-                <label className="form-label">{t('transactions.payment_method')}</label>
               <label className="form-label">{t('transactions.payment_method')}</label>
               <select
                 className="form-input"
@@ -225,10 +225,11 @@ export default function Transactions() {
                   }`}>
                     <Plus size={18} className={t.tipo === 'receita' ? 'rotate-0' : 'rotate-45'} />
                   </div>
-                  <div>
-                    <div className="font-bold text-sm dark:text-gray-200">{t.desc}</div>
-                    <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-0.5">
-                      {getCategoryTranslation(t.cat)} · {t.data}
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-sm dark:text-gray-200 truncate">{t.desc}</div>
+                    <div className="text-[10px] text-gray-400 font-bold mt-1 truncate flex items-center gap-2">
+                      <CategoryBadge category={t.cat} />
+                      <span className="opacity-60 uppercase tracking-widest">{t.data}</span>
                     </div>
                   </div>
                 </div>

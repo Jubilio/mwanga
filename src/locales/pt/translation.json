@@ -341,6 +341,21 @@
       "despesa": "💸 Despesa",
       "renda": "🏠 Renda da Casa",
       "poupanca": "🏦 Poupança"
+    },
+    "categories": {
+      "salary": "Salário",
+      "house_rent": "Renda Casa",
+      "food": "Alimentação",
+      "transport": "Transporte",
+      "health": "Saúde",
+      "education": "Educação",
+      "energy_water": "Energia / Água",
+      "internet": "Internet",
+      "church_donations": "Igreja / Doações",
+      "leisure": "Lazer",
+      "investments": "Investimentos",
+      "savings": "Poupança",
+      "other": "Outros"
     }
   }
 }

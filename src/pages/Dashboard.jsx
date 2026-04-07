@@ -24,6 +24,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import BinthContextual from '../components/BinthContextual';
+import CategoryBadge from '../components/CategoryBadge';
 import { useFinance } from '../hooks/useFinance';
 import {
   calcFinancialScore,
@@ -156,7 +157,7 @@ export default function Dashboard() {
           <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 dark:text-gray-400 mb-1">{t('dashboard.available_balance')}</span>
           
           <div className="dashboard-balance-row">
-            <div className="dashboard-balance-value text-midnight dark:text-white">
+            <div className="dashboard-balance-value text-midnight dark:text-white truncate max-w-[80vw]">
               {showBalance ? fmt(realBalance, currency) : '••••••'}
             </div>
             <button 
@@ -476,11 +477,11 @@ export default function Dashboard() {
                     }`}>
                       {t.tipo === 'despesa' ? <ArrowDownToLine size={16} /> : <ArrowUpRight size={16} />}
                     </div>
-                    <div>
-                      <div className="font-bold text-sm dark:text-gray-200 leading-tight">{t.desc}</div>
-                      <div className="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">
-                        {t.categoria && <span className="text-ocean dark:text-sky">{t.categoria} · </span>}
-                        {t.data}
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-sm dark:text-gray-200 leading-tight truncate">{t.desc}</div>
+                      <div className="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5 truncate flex items-center gap-2">
+                        {t.categoria && <CategoryBadge category={t.categoria} />}
+                        <span className="opacity-60">{t.data}</span>
                       </div>
                     </div>
                   </div>
