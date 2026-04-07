@@ -127,7 +127,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 // 9. Routes registration
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api/feedback', feedbackRoutes);
 app.use('/api/auth/webauthn', webauthnRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/sms', smsRoutes);
@@ -136,7 +136,6 @@ app.use('/api/kyc', kycRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/households', inviteRoutes);
-app.use('/api/feedback', feedbackRoutes);
 
 app.use('/api', financeRoutes);
 

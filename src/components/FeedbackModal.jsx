@@ -45,9 +45,7 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
         formData.append('screenshot', file);
       }
 
-      await api.post('/feedback', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post('/feedback', formData);
 
       showToast('Obrigado! O teu feedback foi enviado.', 'success');
       setMessage('');
