@@ -156,7 +156,7 @@ export default function Sidebar({ isOpen, onClose }) {
     {
       section: 'INTELIGÊNCIA PRO',
       items: [
-        { icon: '◈', label: t('layout.nexovibe'),           to: '/insights',    pro: true },
+        { icon: '◈', label: t('layout.insights'),           to: '/insights',    pro: true },
         { icon: '⇩', label: t('layout.sms_import'),         to: '/sms-import',  pro: true, highlight: true },
         { icon: '◧', label: t('layout.patrimony'),          to: '/patrimonio',  pro: true },
         { icon: '⧉', label: t('layout.simulators'),         to: '/simuladores', pro: true },
