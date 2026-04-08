@@ -18,11 +18,7 @@ const feedbackRoutes = require('./routes/feedback.routes');
 const { getNotificationReadValue } = require('./services/notificationRead.service');
 const { initFeedbackTable } = require('./services/feedback.service');
 const logger = require('./utils/logger');
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
 const path = require('path');
-
-const swaggerDocument = YAML.load(path.join(__dirname, 'config', 'swagger.yaml'));
 
 const app = express();
 
@@ -34,9 +30,12 @@ app.set('trust proxy', 1);
 // 1. Security Middlewares
 app.use(helmet({
   crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false,
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "img-src": ["'self'", "data:", "blob:", "http://localhost:3001", "https://mwanga-opal.vercel.app", "https://ui-avatars.com"],
       "script-src": ["'self'", "https://accounts.google.com", "https://mwanga-opal.vercel.app"],
       "frame-src": ["'self'", "https://accounts.google.com"],
       "connect-src": ["'self'", "https://accounts.google.com", "https://mwanga-opal.vercel.app", "https://topical-jaguar-71639.upstash.io"],

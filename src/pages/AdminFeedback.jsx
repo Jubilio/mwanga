@@ -173,11 +173,12 @@ export default function AdminFeedback() {
                   cursor: 'pointer',
                   border: `1px solid ${G.border}`
                 }}
-                onClick={() => setSelectedImage(`${api.defaults.baseURL.replace('/api', '')}/uploads/feedback/${item.screenshot_url}`)}
+                onClick={() => setSelectedImage(`${api.defaults.baseURL.replace('/api', '')}${item.screenshot_url}`)}
               >
                 <img 
-                  src={`${api.defaults.baseURL.replace('/api', '')}/uploads/feedback/${item.screenshot_url}`} 
+                  src={`${api.defaults.baseURL.replace('/api', '')}${item.screenshot_url}`} 
                   alt="Anexo" 
+                  crossOrigin="anonymous"
                   style={{ maxHeight: '120px', maxWidth: '100%', objectFit: 'cover' }}
                 />
               </div>
@@ -212,6 +213,7 @@ export default function AdminFeedback() {
           <img 
             src={selectedImage} 
             alt="Feedback Full Size" 
+            crossOrigin="anonymous"
             style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }}
           />
         </div>
