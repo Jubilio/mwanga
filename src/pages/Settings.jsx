@@ -216,11 +216,11 @@ export default function Settings() {
             </div>
 
             <div className="hidden lg:flex gap-4">
-               <div className="glass-card !bg-white/5 !border-white/10 p-5 backdrop-blur-xl text-white text-center min-w-[120px]">
+               <div className="glass-card bg-white/5! border-white/10! p-5 backdrop-blur-xl text-white text-center min-w-[120px]">
                   <p className="text-[10px] font-black uppercase tracking-widest text-white/50 mb-1">{t('settings.hero.currency_label')}</p>
                   <p className="text-xl font-black font-serif">{form.currency}</p>
                </div>
-               <div className="glass-card !bg-white/5 !border-white/10 p-5 backdrop-blur-xl text-white text-center min-w-[120px]">
+               <div className="glass-card bg-white/5! border-white/10! p-5 backdrop-blur-xl text-white text-center min-w-[120px]">
                   <p className="text-[10px] font-black uppercase tracking-widest text-white/50 mb-1">{t('settings.hero.cycle_label')}</p>
                   <p className="text-xl font-black font-serif">{t('settings.hero.day_label', { day: form.cycle_start })}</p>
                </div>
@@ -236,7 +236,7 @@ export default function Settings() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
               activeTab === tab.id 
-              ? 'bg-white dark:bg-slate-700 text-[#0a4d68] dark:text-teal-400 shadow-md scale-100' 
+              ? 'bg-white dark:bg-slate-700 text-ocean dark:text-teal-400 shadow-md scale-100' 
               : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
             }`}
           >

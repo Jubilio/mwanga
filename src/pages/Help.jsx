@@ -116,7 +116,7 @@ export default function Help() {
           {filteredSections.map((section, idx) => (
             <div 
               key={section.id}
-              className={`glass-card border border-white/5 hover:border-white/20 transition-all duration-500 overflow-hidden group ${activeTab === section.id ? '!border-teal-500/30' : ''}`}
+              className={`glass-card border border-white/5 hover:border-white/20 transition-all duration-500 overflow-hidden group ${activeTab === section.id ? 'border-teal-500/30!' : ''}`}
               style={{ animationDelay: `${idx * 100}ms` }}
             >
               <button 

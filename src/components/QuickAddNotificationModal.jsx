@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, Plus, Wallet, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
 
@@ -32,6 +33,7 @@ export default function QuickAddNotificationModal({
   onClose,
   showToast,
 }) {
+  const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -81,7 +83,7 @@ export default function QuickAddNotificationModal({
     event.preventDefault();
 
     if (!form.desc || !form.valor) {
-      showToast('Preenche descrição e valor para fechar o dia.');
+      showToast(t('quick_add.toast_fill'));
       return;
     }
 
@@ -97,7 +99,7 @@ export default function QuickAddNotificationModal({
       });
 
       await registerInteraction('actioned', form.tipo === 'receita' ? 'ADD_INCOME' : 'ADD_EXPENSE');
-      showToast('Registo feito. Sequência financeira protegida.');
+      showToast(t('quick_add.toast_success'));
       onClose();
     } finally {
       setIsSubmitting(false);
@@ -118,11 +120,11 @@ export default function QuickAddNotificationModal({
           <div className="relative flex items-start justify-between gap-4">
             <div>
               <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em]">
-                <Wallet size={12} /> Quick Add
+                <Wallet size={12} /> {t('quick_add.title')}
               </div>
-              <h2 className="text-2xl font-black tracking-tight">Fecha o dia em menos de 20 segundos</h2>
+              <h2 className="text-2xl font-black tracking-tight">{t('quick_add.header')}</h2>
               <p className="mt-2 max-w-xl text-sm text-white/80">
-                O Mwanga abriu diretamente a ação do lembrete. Regista uma despesa ou receita sem perder o teu ritmo.
+                {t('quick_add.desc')}
               </p>
             </div>
 
@@ -130,7 +132,7 @@ export default function QuickAddNotificationModal({
               type="button"
               onClick={onClose}
               className="rounded-2xl bg-white/10 p-3 text-white transition hover:bg-white/20"
-              aria-label="Fechar"
+              aria-label={t('layout.logout').includes('Terminar') ? 'Fechar' : 'Close'}
             >
               <X size={18} />
             </button>
@@ -154,7 +156,7 @@ export default function QuickAddNotificationModal({
                   })}
                   className={`flex items-center gap-3 rounded-2xl border px-4 py-4 text-left transition ${
                     active
-                      ? 'border-[#0a4d68] bg-[#0a4d68] text-white shadow-lg'
+                      ? 'border-ocean bg-ocean text-white shadow-lg'
                       : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
                   }`}
                 >
@@ -162,9 +164,11 @@ export default function QuickAddNotificationModal({
                     <Icon size={18} />
                   </div>
                   <div>
-                    <div className="text-sm font-black uppercase tracking-[0.2em]">{item.label}</div>
+                    <div className="text-sm font-black uppercase tracking-[0.2em]">
+                      {item.value === 'receita' ? t('quick_add.fields.income') || 'Receita' : t('quick_add.fields.expense') || 'Despesa'}
+                    </div>
                     <div className={`text-xs ${active ? 'text-white/75' : 'text-slate-500'}`}>
-                      {item.value === 'receita' ? 'Entrada rápida' : 'Saída rápida'}
+                      {item.value === 'receita' ? t('quick_add.entry_fast') : t('quick_add.exit_fast')}
                     </div>
                   </div>
                 </button>
@@ -175,11 +179,11 @@ export default function QuickAddNotificationModal({
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
-                Data
+                {t('quick_add.fields.date')}
               </label>
               <input
                 type="date"
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-[#0a4d68]"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-ocean"
                 value={form.data}
                 onChange={(event) => setForm({ ...form, data: event.target.value })}
               />
@@ -187,13 +191,13 @@ export default function QuickAddNotificationModal({
 
             <div>
               <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
-                Valor
+                {t('quick_add.fields.value')}
               </label>
               <input
                 type="number"
                 min="0"
                 step="0.01"
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-[#0a4d68]"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-ocean"
                 placeholder="0.00"
                 value={form.valor}
                 onChange={(event) => setForm({ ...form, valor: event.target.value })}
@@ -202,12 +206,12 @@ export default function QuickAddNotificationModal({
 
             <div className="sm:col-span-2">
               <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
-                Descrição
+                {t('quick_add.fields.description')}
               </label>
               <input
                 type="text"
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-[#0a4d68]"
-                placeholder={form.tipo === 'receita' ? 'Ex: Salário, Freelance' : 'Ex: Supermercado, Transporte'}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-ocean"
+                placeholder={form.tipo === 'receita' ? t('quick_add.fields.desc_placeholder_inc') : t('quick_add.fields.desc_placeholder_exp')}
                 value={form.desc}
                 onChange={(event) => setForm({ ...form, desc: event.target.value })}
               />
@@ -215,16 +219,16 @@ export default function QuickAddNotificationModal({
 
             <div>
               <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
-                Categoria
+                {t('quick_add.fields.category')}
               </label>
               <select
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-[#0a4d68]"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-ocean"
                 value={form.cat}
                 onChange={(event) => setForm({ ...form, cat: event.target.value })}
               >
                 {CATEGORIES.map((category) => (
                   <option key={category} value={category}>
-                    {category}
+                    {t(`common.categories.${category}`) || category}
                   </option>
                 ))}
               </select>
@@ -232,14 +236,14 @@ export default function QuickAddNotificationModal({
 
             <div>
               <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
-                Conta
+                {t('quick_add.fields.account')}
               </label>
               <select
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-[#0a4d68]"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-ocean"
                 value={form.account_id}
                 onChange={(event) => setForm({ ...form, account_id: event.target.value })}
               >
-                <option value="">Sem conta ligada</option>
+                <option value="">{t('quick_add.fields.no_account')}</option>
                 {(state.contas || []).map((account) => (
                   <option key={account.id} value={account.id}>
                     {account.name}
@@ -250,12 +254,12 @@ export default function QuickAddNotificationModal({
 
             <div className="sm:col-span-2">
               <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
-                Nota opcional
+                {t('quick_add.fields.note')}
               </label>
               <input
                 type="text"
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-[#0a4d68]"
-                placeholder="Ex: pago com M-Pesa"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition focus:border-ocean"
+                placeholder={t('quick_add.fields.note_placeholder')}
                 value={form.nota}
                 onChange={(event) => setForm({ ...form, nota: event.target.value })}
               />
@@ -264,7 +268,7 @@ export default function QuickAddNotificationModal({
 
           <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-slate-500">
-              Cada pequeno registo reforça o teu hábito e melhora a qualidade das recomendações do Mwanga.
+              {t('quick_add.habit_hint')}
             </p>
 
             <button
@@ -273,7 +277,7 @@ export default function QuickAddNotificationModal({
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-ocean px-5 py-4 text-sm font-black uppercase tracking-[0.18em] text-white shadow-[0_12px_30px_rgba(10,77,104,0.25)] transition hover:bg-[#088395] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Plus size={16} />
-              {isSubmitting ? 'A guardar...' : 'Guardar agora'}
+              {isSubmitting ? t('quick_add.saving') : t('quick_add.save')}
             </button>
           </div>
         </form>

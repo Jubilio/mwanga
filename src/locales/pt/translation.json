@@ -1,5 +1,6 @@
 {
   "layout": {
+    "home": "Início",
     "dashboard": "Dashboard Principal",
     "transactions": "Transações",
     "budget": "Orçamento",
@@ -17,7 +18,8 @@
     "admin": "Painel Admin",
     "help": "Ajuda / Tutorial",
     "settings": "Definições",
-    "logout": "Terminar Sessão"
+    "logout": "Terminar Sessão",
+    "add": "Adicionar"
   },
   "credit": {
     "header": {
@@ -527,6 +529,10 @@
       "Investimentos": "Investimentos",
       "Casa": "Casa",
       "Outro": "Outro"
+    },
+    "toasts": {
+      "csv_exported": "📥 CSV exportado!",
+      "error_prefix": "Erro: "
     }
   },
   "patrimony": {
@@ -764,7 +770,7 @@
       "salary_label": "Salário mensal",
       "apply_btn": "Aplicar ao orçamento",
       "distribution_title": "Distribuição do salário",
-      "savings_projection": "Poupança projetada: <strong class=\"text-leaf\">{{pct}}%</strong>. Se aplicar este modelo, o Mwanga cria limites base para alimentação, transporte, saúde, lazer e poupança.",
+      "savings_projection": "Poupança projetada: <strong className=\"text-leaf\">{{pct}}%</strong>. Se aplicar este modelo, o Mwanga cria limites base para alimentação, transporte, saúde, lazer e poupança.",
       "toast_applied": "Orçamento base aplicado aos seus limites.",
       "categories": {
         "needs": "Necessidades",
@@ -808,7 +814,7 @@
         "progress": "Progresso atual",
         "suggested_monthly": "Investimento mensal sugerido",
         "projected_balance": "Saldo projetado",
-        "explainer": "Para chegar a {{target}} em {{years}} anos, o plano sugere reforços de <strong class=\"text-white\">{{monthly}}</strong> por mês, assumindo um retorno anual de {{rate}}%."
+        "explainer": "Para chegar a {{target}} em {{years}} anos, o plano sugere reforços de <strong className=\"text-white\">{{monthly}}</strong> por mês, assumindo um retorno anual de {{rate}}%."
       }
     },
     "xitique": {
@@ -828,12 +834,12 @@
       },
       "insights": {
         "quick_read_title": "Leitura rápida",
-        "quick_read_msg": "Receber na posição {{position}}ª significa esperar {{months}} mês{{plural}} para levantar cerca de <strong class=\"text-white\">{{amount}}</strong>. Quanto mais cedo receber, maior tende a ser a vantagem de caixa.",
+        "quick_read_msg": "Receber na posição {{position}}ª significa esperar {{months}} mês{{plural}} para levantar cerca de <strong className=\"text-white\">{{amount}}</strong>. Quanto mais cedo receber, maior tende a ser a vantagem de caixa.",
         "credit_comp_title": "Comparação com crédito",
-        "credit_comp_msg": "Num cenário bancário de 26% ao ano, um valor semelhante poderia custar aproximadamente <strong class=\"text-white\">{{amount}}</strong> em juros ao longo do mesmo ciclo."
+        "credit_comp_msg": "Num cenário bancário de 26% ao ano, um valor semelhante poderia custar aproximadamente <strong className=\"text-white\">{{amount}}</strong> em juros ao longo do mesmo ciclo."
       }
     },
-    "disclaimer": "Estas simulações são projeções. Os resultados dependem de disciplina, retorno real, custos e contexto do utilizador. <strong class=\"text-amber-500/80\"> Use o Mwanga para decidir melhor, mas valide decisões críticas com apoio profissional quando necessário.</strong>"
+    "disclaimer": "Estas simulações são projeções. Os resultados dependem de disciplina, retorno real, custos e contexto do utilizador. <strong className=\"text-amber-500/80\"> Use o Mwanga para decidir melhor, mas valide decisões críticas com apoio profissional quando necessário.</strong>"
   },
   "settings": {
     "title": "Configurações",
@@ -988,7 +994,7 @@
   },
   "help": {
     "hero": {
-      "title": "Centro de <span class=\"text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-indigo-300\">Ajuda Mwanga</span>",
+      "title": "Centro de <span className=\"text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-indigo-300\">Ajuda Mwanga</span>",
       "description": "Tudo o que precisa de saber para iluminar o seu caminho financeiro e dominar o sistema Mwanga 2.0.",
       "search_placeholder": "Pesquisar manual..."
     },
@@ -1193,10 +1199,28 @@
       }
     }
   },
-  "common": {
-    "toasts": {
-      "csv_exported": "📥 CSV exportado!",
-      "error_prefix": "Erro: "
-    }
+  "quick_add": {
+    "title": "Ação Rápida",
+    "header": "Fecha o dia em menos de 20 segundos",
+    "desc": "O Mwanga abriu diretamente a ação do lembrete. Regista uma despesa ou receita sem perder o teu ritmo.",
+    "toast_fill": "Preenche descrição e valor para fechar o dia.",
+    "toast_success": "Registo feito. Sequência financeira protegida.",
+    "fields": {
+      "date": "Data",
+      "value": "Valor",
+      "description": "Descrição",
+      "category": "Categoria",
+      "account": "Conta",
+      "note": "Nota opcional",
+      "no_account": "Sem conta ligada",
+      "desc_placeholder_inc": "Ex: Salário, Freelance",
+      "desc_placeholder_exp": "Ex: Supermercado, Transporte",
+      "note_placeholder": "Ex: pago com M-Pesa"
+    },
+    "entry_fast": "Entrada rápida",
+    "exit_fast": "Saída rápida",
+    "habit_hint": "Cada pequeno registo reforça o teu hábito e melhora a qualidade das recomendações do Mwanga.",
+    "saving": "A guardar...",
+    "save": "Guardar agora"
   }
 }
