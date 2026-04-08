@@ -32,6 +32,7 @@ const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const Admin = lazy(() => import('./pages/Admin'));
 const AdminUsers = lazy(() => import('./pages/AdminUsers'));
 const AdminSettings = lazy(() => import('./pages/AdminSettings'));
+const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
 function PageLoader() {
   return (
@@ -94,6 +95,7 @@ export default function App() {
               <Route index element={<Admin />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="feedback" element={<AdminFeedback />} />
             </Route>
 
             {/* ── Public auth pages ── */}

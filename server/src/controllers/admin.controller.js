@@ -92,6 +92,15 @@ const getPlatformStats = async (req, res) => {
       logger.warn('Credit Applications table might not exist yet:', e.message);
     }
 
+    // 5. Feedback Count
+    let feedbackCount = 0;
+    try {
+      const fCount = await db.execute('SELECT COUNT(*) as count FROM feedbacks WHERE status = ?', ['pending']);
+      feedbackCount = Number(fCount.rows[0].count);
+    } catch (e) {
+      logger.warn('Feedbacks table might not exist yet:', e.message);
+    }
+
     res.json({
       totalUsers: Number(usersCount.rows[0].count),
       kyc: kycStats.rows,
@@ -101,6 +110,7 @@ const getPlatformStats = async (req, res) => {
         avgRate: Number(loanStats.rows[0].avg_rate || 0)
       },
       pendingApplications: Number(pendingApps.rows[0].count),
+      feedbackCount,
       kycSummary: {
         approved: Number(kycStats.rows.find((row) => row.kyc_status === 'approved')?.count || 0),
         pending: Number(kycStats.rows.find((row) => row.kyc_status === 'pending')?.count || 0),

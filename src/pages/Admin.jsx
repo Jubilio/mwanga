@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import {
   Users, Shield, BarChart2, CheckCircle, XCircle, Clock,
-  TrendingUp, AlertCircle, RefreshCw, FileCheck, UserX
+  TrendingUp, AlertCircle, RefreshCw, FileCheck, UserX, MessageSquare
 } from 'lucide-react';
 import { Tooltip, PieChart, Pie, Cell } from 'recharts';
 
@@ -288,8 +288,8 @@ export default function Admin() {
             <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>Ações prioritárias</h3>
             <div style={{ display: 'grid', gap: '12px' }}>
               <PriorityRow icon={<Clock size={16} color={G.gold} />} label="Rever pedidos KYC pendentes" value={stats.kycSummary.pending} />
+              <PriorityRow icon={<MessageSquare size={16} color={G.blue} />} label="Ver novo feedback dos utilizadores" value={stats.feedbackCount || 0} />
               <PriorityRow icon={<UserX size={16} color={G.red} />} label="Analisar rejeições recentes" value={stats.kycSummary.rejected} />
-              <PriorityRow icon={<BarChart2 size={16} color={G.blue} />} label="Pedidos de crédito em fila" value={stats.pendingApplications} />
             </div>
           </div>
         </div>

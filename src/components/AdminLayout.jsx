@@ -10,6 +10,7 @@ import {
   X,
   Bell,
   ChevronRight,
+  MessageSquare,
 } from 'lucide-react';
 
 const G = {
@@ -26,6 +27,7 @@ const G = {
 const adminNavItems = [
   { to: '/admin', icon: LayoutDashboard, label: 'Painel Geral', end: true },
   { to: '/admin/users', icon: Users, label: 'Utilizadores', end: false },
+  { to: '/admin/feedback', icon: MessageSquare, label: 'Feedback', end: false },
   { to: '/admin/settings', icon: Settings, label: 'Configuração', end: false },
 ];
 
