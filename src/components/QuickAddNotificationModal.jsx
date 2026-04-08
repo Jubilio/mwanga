@@ -109,11 +109,11 @@ export default function QuickAddNotificationModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-120 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-[#03141d]/60 backdrop-blur-md" onClick={onClose} />
 
-      <div className="relative w-full max-w-2xl rounded-[2rem] border border-white/10 bg-white shadow-[0_30px_80px_rgba(3,20,29,0.25)]">
-        <div className="relative overflow-hidden rounded-t-[2rem] bg-[linear-gradient(135deg,#0a4d68,#088395)] px-6 py-6 text-white">
+      <div className="relative w-full max-w-2xl rounded-4xl border border-white/10 bg-white shadow-[0_30px_80px_rgba(3,20,29,0.25)]">
+        <div className="relative overflow-hidden rounded-t-4xl bg-linear-to-br from-ocean to-[#088395] px-6 py-6 text-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_42%)]" />
           <div className="relative flex items-start justify-between gap-4">
             <div>
@@ -270,7 +270,7 @@ export default function QuickAddNotificationModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0a4d68] px-5 py-4 text-sm font-black uppercase tracking-[0.18em] text-white shadow-[0_12px_30px_rgba(10,77,104,0.25)] transition hover:bg-[#088395] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-ocean px-5 py-4 text-sm font-black uppercase tracking-[0.18em] text-white shadow-[0_12px_30px_rgba(10,77,104,0.25)] transition hover:bg-[#088395] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Plus size={16} />
               {isSubmitting ? 'A guardar...' : 'Guardar agora'}

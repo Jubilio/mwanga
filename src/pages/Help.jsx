@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { 
   Book, ChevronRight, HelpCircle, LayoutDashboard, 
   Wallet, Banknote, Users, Sparkles, Shield, 
@@ -6,93 +7,63 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const HELP_SECTIONS = [
-  {
-    id: 'intro',
-    title: '📱 Primeiros Passos',
-    icon: Smartphone,
-    color: 'indigo',
-    content: `
-      O Mwanga é uma aplicação PWA. Isso significa que pode instalá-lo no seu telemóvel sem ir à Play Store ou App Store.
-      \n\n• No Android: Clique nos 3 pontos do Chrome e selecione "Instalar Mensageiro Financeiro".
-      \n• No iPhone: Use o botão Partilhar e selecione "Adicionar ao Ecrã Principal".
-    `
-  },
-  {
-    id: 'dashboard',
-    title: '📊 Painel de Controlo',
-    icon: LayoutDashboard,
-    color: 'emerald',
-    content: `
-      O Dashboard oferece uma visão 360º das suas finanças.
-      \n\n• Gráfico de Radar: Identifique rapidamente se os seus gastos estão equilibrados com os ganhos.
-      \n• Widgets: Acompanhe o saldo total das suas contas e o progresso das suas metas de poupança num relance.
-    `
-  },
-  {
-    id: 'finance',
-    title: '💰 Gestão Financeira',
-    icon: Wallet,
-    color: 'teal',
-    content: `
-      Domine o seu dinheiro com as ferramentas de orçamento.
-      \n\n• Transações: Registe cada metical que sai ou entra. Separe por conta (M-Pesa, Carteira, Banco).
-      \n• Regra 50/30/20: O sistema ajuda-o a cumprir a meta de gastar 50% em necessidades, 30% em desejos e 20% para o futuro.
-      \n• Metas: Defina objetivos claros (ex: "Compra de Moto") e deixe o Mwanga calcular quanto precisa de poupar mensalmente.
-    `
-  },
-  {
-    id: 'credit',
-    title: '⚖️ Crédito Inteligente',
-    icon: Banknote,
-    color: 'amber',
-    content: `
-      Antes de pedir um empréstimo, consulte os nossos simuladores.
-      \n\n• Simulador de Prestação: Saiba exatamente quanto vai pagar ao banco por mês.
-      \n• Comparador: Veja se compensa mais um empréstimo bancário, um Xitique ou esperar e poupar.
-      \n• Consolidação: Aprenda a juntar várias dívidas numa só para pagar menos juros totais.
-    `
-  },
-  {
-    id: 'community',
-    title: '🤝 Mwanga Community (VSLA)',
-    icon: Users,
-    color: 'sky',
-    content: `
-      Poupe em conjunto com a sua família ou amigos.
-      \n\n• Shares: No Digital VSLA, você compra "shares" mensais que formam o capital do grupo.
-      \n• Empréstimos Internos: Os membros podem pedir empréstimos ao grupo a taxas decididas pela comunidade.
-      \n• Lucros: Os juros acumulados são distribuídos equitativamente no final do ciclo de poupança.
-    `
-  },
-  {
-    id: 'binth',
-    title: '🤖 Assistente Binth IA',
-    icon: Sparkles,
-    color: 'purple',
-    content: `
-      O Binth é o cérebro do Mwanga.
-      \n\n• Diagnósticos Rápidos: Peça conselhos sobre se deve ou não fazer uma compra.
-      \n• Contexto Real: O Binth analisa os seus gastos reais (anonimamente) para dar respostas precisas.
-    `
-  },
-  {
-    id: 'security',
-    title: '🛡️ Segurança e Alertas',
-    icon: Shield,
-    color: 'rose',
-    content: `
-      A sua privacidade é o nosso foco.
-      \n\n• Notificações Push: Ative os lembretes para nunca ser apanhado de surpresa pela renda ou prestações.
-      \n• Dados Protegidos: Usamos encriptação de nível militar para proteger os seus registos financeiros.
-    `
-  }
-];
-
 export default function Help() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const HELP_SECTIONS = [
+    {
+      id: 'intro',
+      title: t('help.sections.intro.title'),
+      icon: Smartphone,
+      color: 'indigo',
+      content: t('help.sections.intro.content')
+    },
+    {
+      id: 'dashboard',
+      title: t('help.sections.dashboard.title'),
+      icon: LayoutDashboard,
+      color: 'emerald',
+      content: t('help.sections.dashboard.content')
+    },
+    {
+      id: 'finance',
+      title: t('help.sections.finance.title'),
+      icon: Wallet,
+      color: 'teal',
+      content: t('help.sections.finance.content')
+    },
+    {
+      id: 'credit',
+      title: t('help.sections.credit.title'),
+      icon: Banknote,
+      color: 'amber',
+      content: t('help.sections.credit.content')
+    },
+    {
+      id: 'community',
+      title: t('help.sections.community.title'),
+      icon: Users,
+      color: 'sky',
+      content: t('help.sections.community.content')
+    },
+    {
+      id: 'binth',
+      title: t('help.sections.binth.title'),
+      icon: Sparkles,
+      color: 'purple',
+      content: t('help.sections.binth.content')
+    },
+    {
+      id: 'security',
+      title: t('help.sections.security.title'),
+      icon: Shield,
+      color: 'rose',
+      content: t('help.sections.security.content')
+    }
+  ];
 
   const filteredSections = HELP_SECTIONS.filter(s => 
     s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -103,7 +74,7 @@ export default function Help() {
     <div className="min-h-screen bg-[#050B15] text-white/90 font-sans pb-24">
       
       {/* ═══ WORLD-CLASS HEADER ═══ */}
-      <div className="relative overflow-hidden bg-gradient-to-b from-[#0a4d68]/40 to-transparent pt-12 pb-20 px-6">
+      <div className="relative overflow-hidden bg-linear-to-b from-ocean/40 to-transparent pt-12 pb-20 px-6">
         <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 blur-[120px] rounded-full animate-pulse" />
         
         <div className="max-w-4xl mx-auto flex flex-col items-center text-center relative z-10">
@@ -114,15 +85,15 @@ export default function Help() {
             <ArrowLeft className="text-white/60 group-hover:text-white transition-colors" />
           </button>
 
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-teal-400 to-indigo-600 flex items-center justify-center shadow-[0_0_40px_rgba(20,184,166,0.3)] mb-6 animate-in zoom-in-75 duration-700">
+          <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-teal-400 to-indigo-600 flex items-center justify-center shadow-[0_0_40px_rgba(20,184,166,0.3)] mb-6 animate-in zoom-in-75 duration-700">
             <Book className="text-white" size={36} />
           </div>
           
           <h1 className="text-4xl md:text-5xl font-black font-serif tracking-tight mb-4 drop-shadow-2xl">
-            Centro de <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-indigo-300">Ajuda Mwanga</span>
+            <Trans i18nKey="help.hero.title" components={{ span: <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-300 to-indigo-300" /> }} />
           </h1>
           <p className="text-lg text-white/50 max-w-xl font-medium mb-10">
-            Tudo o que precisa de saber para iluminar o seu caminho financeiro e dominar o sistema Mwanga 2.0.
+            {t('help.hero.description')}
           </p>
 
           {/* Search Bar */}
@@ -130,7 +101,7 @@ export default function Help() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-teal-400 transition-colors" size={20} />
             <input 
               type="text" 
-              placeholder="Pesquisar manual..."
+              placeholder={t('help.hero.search_placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-6 outline-none focus:border-teal-500/50 focus:bg-white/10 transition-all font-medium backdrop-blur-xl"
@@ -165,7 +136,7 @@ export default function Help() {
               
               {activeTab === section.id && (
                 <div className="px-6 pb-8 pt-2 animate-in fade-in slide-in-from-top-4 duration-300">
-                  <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent mb-6" />
+                  <div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent mb-6" />
                   <div className="text-white/60 leading-relaxed font-medium whitespace-pre-wrap pl-1">
                     {section.content}
                   </div>
@@ -176,17 +147,17 @@ export default function Help() {
         </div>
 
         {/* Support CTA */}
-        <div className="mt-16 p-10 glass-card bg-gradient-to-br from-indigo-600/20 to-teal-600/10 border-indigo-500/20 text-center animate-in zoom-in-95 duration-1000">
+        <div className="mt-16 p-10 glass-card bg-linear-to-br from-indigo-600/20 to-teal-600/10 border-indigo-500/20 text-center animate-in zoom-in-95 duration-1000">
           <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <HelpCircle size={32} className="text-teal-400" />
           </div>
-          <h2 className="text-2xl font-black mb-2">Ainda tem dúvidas?</h2>
-          <p className="text-white/50 mb-8 max-w-md mx-auto">O Binth está disponível 24/7 para responder a questões específicas sobre o seu contexto financeiro.</p>
+          <h2 className="text-2xl font-black mb-2">{t('help.support.title')}</h2>
+          <p className="text-white/50 mb-8 max-w-md mx-auto">{t('help.support.description')}</p>
           <button 
              onClick={() => navigate('/chat')}
-             className="px-10 py-4 bg-white text-[#0a4d68] font-black uppercase tracking-widest text-xs rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_10px_40px_rgba(255,255,255,0.1)]"
+             className="btn bg-white text-ocean hover:bg-slate-50 border-none font-black px-10 py-5 rounded-full text-base shadow-2xl transition-all active:scale-95"
           >
-            Falar com o Binth
+            {t('help.support.btn')}
           </button>
         </div>
       </div>

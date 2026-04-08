@@ -52,7 +52,7 @@ export default function BinthContextual({ page }) {
       </div>
 
       <div className="flex items-start gap-3 relative z-10">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold to-yellow-600 flex items-center justify-center flex-shrink-0 animate-pulse-slow">
+        <div className="w-10 h-10 rounded-full bg-linear-to-br from-gold to-yellow-600 flex items-center justify-center shrink-0 animate-pulse-slow">
           <span className="text-lg font-bold text-white">B</span>
         </div>
         
@@ -78,7 +78,7 @@ export default function BinthContextual({ page }) {
               {/* ─ Biblical Insight ─ */}
               {insight.biblical_insight && (
                 <div className="mt-2 flex items-start gap-1.5 text-[11px] text-amber-600 dark:text-amber-400">
-                  <span className="mt-px flex-shrink-0">&#128214;</span>
+                  <span className="mt-px shrink-0">&#128214;</span>
                   <em className="opacity-90">{insight.biblical_insight}</em>
                 </div>
               )}

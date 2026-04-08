@@ -35,34 +35,9 @@ import FeedbackModal from './FeedbackModal';
 import QuickAddNotificationModal from './QuickAddNotificationModal';
 import InstallBanner from './InstallBanner';
 import { usePWA } from '../hooks/usePWA';
+import { useTranslation } from 'react-i18next';
 
-const bottomNavItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Home' },
-  { to: '/transacoes', icon: ArrowRightLeft, label: 'Transações' },
-  { to: null, icon: Plus, label: 'Add', isFab: true },
-  { to: '/dividas', icon: CreditCard, label: 'Dívidas' },
-  { to: '/insights', icon: Brain, label: 'Binth' },
-];
-
-const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/transacoes', icon: ArrowRightLeft, label: 'Transações' },
-  { to: '/orcamento', icon: PieChart, label: 'Orçamento' },
-  { to: '/credito', icon: CreditCard, label: 'Crédito' },
-  { to: '/dividas', icon: CreditCard, label: 'Dívidas' },
-  { to: '/habitacao', icon: Home, label: 'Habitação' },
-  { to: '/xitique', icon: Wallet, label: 'Xitique' },
-  { to: '/metas', icon: Target, label: 'Metas' },
-  { to: '/nexovibe', icon: Globe, label: 'Nexo Vibe' },
-  { to: '/insights', icon: Brain, label: 'Binth Insights' },
-  { to: '/sms-import', icon: Globe, label: 'Importar Mensagem' },
-  { to: '/patrimonio', icon: Landmark, label: 'Património' },
-  { to: '/simuladores', icon: Calculator, label: 'Simuladores' },
-  { to: '/relatorio', icon: BarChart3, label: 'Relatórios' },
-  { to: '/pricing', icon: Crown, label: 'Mover para Premium', premium: true },
-  { to: '/help', icon: HelpCircle, label: 'Ajuda e Manual' },
-  { to: '/settings', icon: SettingsIcon, label: 'Definições' },
-];
+  // Dynamic items will be generated inside the component using t()
 
 const notificationTypePriority = {
   warning: 1,
@@ -115,8 +90,37 @@ function parseNotificationPayload(payload = {}) {
 }
 
 export default function Layout() {
+  const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const { toast, showToast } = useToast();
+  const navItems = [
+    { to: '/', icon: LayoutDashboard, label: t('layout.dashboard') },
+    { to: '/transacoes', icon: ArrowRightLeft, label: t('layout.transactions') },
+    { to: '/orcamento', icon: PieChart, label: t('layout.budget') },
+    { to: '/credito', icon: CreditCard, label: t('layout.credit') },
+    { to: '/dividas', icon: CreditCard, label: t('layout.debts') },
+    { to: '/habitacao', icon: Home, label: t('layout.housing') },
+    { to: '/xitique', icon: Wallet, label: t('layout.xitique') },
+    { to: '/metas', icon: Target, label: t('layout.goals') },
+    { to: '/nexovibe', icon: Globe, label: t('layout.nexovibe') },
+    { to: '/insights', icon: Brain, label: t('layout.insights') },
+    { to: '/sms-import', icon: Globe, label: t('layout.sms_import') },
+    { to: '/patrimonio', icon: Landmark, label: t('layout.patrimony') },
+    { to: '/simuladores', icon: Calculator, label: t('layout.simulators') },
+    { to: '/relatorio', icon: BarChart3, label: t('layout.report') },
+    { to: '/pricing', icon: Crown, label: t('layout.pricing') || 'Premium', premium: true },
+    { to: '/help', icon: HelpCircle, label: t('layout.help') },
+    { to: '/settings', icon: SettingsIcon, label: t('layout.settings') },
+  ];
+
+  const bottomNavItems = [
+    { to: '/', icon: LayoutDashboard, label: t('layout.home') || 'Home' },
+    { to: '/transacoes', icon: ArrowRightLeft, label: t('layout.transactions') },
+    { to: null, icon: Plus, label: t('layout.add') || 'Add', isFab: true },
+    { to: '/dividas', icon: CreditCard, label: t('layout.debts') },
+    { to: '/insights', icon: Brain, label: t('layout.insights') },
+  ];
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isConfirmClearOpen, setIsConfirmClearOpen] = useState(false);
@@ -227,18 +231,22 @@ export default function Layout() {
       return;
     }
 
-    setNotifications((current) => current.map((item) => (
-      item.id === routeQuickAddPayload.notificationId
-        ? { ...item, read: 1, opened_at: new Date().toISOString() }
-        : item
-    )));
+    // Check if we actually need to update to avoid cascading renders
+    const alreadyRead = notifications.find(n => n.id === routeQuickAddPayload.notificationId)?.read;
+    if (!alreadyRead) {
+      setNotifications((current) => current.map((item) => (
+        item.id === routeQuickAddPayload.notificationId
+          ? { ...item, read: 1, opened_at: new Date().toISOString() }
+          : item
+      )));
 
-    api.post('/notifications/interactions', {
-      notificationId: routeQuickAddPayload.notificationId,
-      interaction: 'opened',
-      actionId: routeQuickAddPayload.actionId,
-    }).catch(() => {});
-  }, [location.pathname, location.search, routeQuickAddPayload?.notificationId, routeQuickAddPayload?.actionId]);
+      api.post('/notifications/interactions', {
+        notificationId: routeQuickAddPayload.notificationId,
+        interaction: 'opened',
+        actionId: routeQuickAddPayload.actionId,
+      }).catch(() => {});
+    }
+  }, [location.pathname, location.search, routeQuickAddPayload?.notificationId, routeQuickAddPayload?.actionId, notifications]);
 
   // ─── PWA Badging & Daily Check ───
   useEffect(() => {
@@ -284,7 +292,7 @@ export default function Layout() {
         // Restore normal favicon
         const favicon = document.getElementById('favicon');
         if (favicon) {
-          favicon.setAttribute('href', '/favicon.png');
+          favicon.setAttribute('href', '/favicon-v4.png');
         }
       }
     };
@@ -510,7 +518,7 @@ export default function Layout() {
             </div>
           </header>
 
-          <main className="flex w-full max-w-full flex-1 flex-col overflow-hidden bg-cream pb-[calc(6rem+var(--sab))] dark:bg-[#0a1926] md:pb-8">
+          <main className="flex w-full max-w-full flex-1 flex-col overflow-hidden bg-cream pb-[calc(6rem+var(--sab))] dark:bg-midnight md:pb-8">
             <div className="flex w-full flex-1 flex-col p-4 pt-6 md:p-8">
               <Outlet context={{ showToast }} />
             </div>
@@ -518,7 +526,7 @@ export default function Layout() {
         </div>
       </div>
 
-      <nav className="hide-desktop fixed bottom-0 left-0 right-0 z-50 flex items-end justify-around border-t border-black/5 bg-white/80 pb-[calc(0.75rem+var(--sab))] pt-3 backdrop-blur-2xl dark:border-white/5 dark:bg-[#0a1926]/90">
+      <nav className="hide-desktop fixed bottom-0 left-0 right-0 z-50 flex items-end justify-around border-t border-black/5 bg-white/80 pb-[calc(0.75rem+var(--sab))] pt-3 backdrop-blur-2xl dark:border-white/5 dark:bg-midnight/90">
         {bottomNavItems.map((item) => {
           if (item.isFab) {
             return (

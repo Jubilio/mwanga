@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useOutletContext } from 'react-router-dom';
 import { Send, Sparkles, Brain } from 'lucide-react';
 import api from '../utils/api';
@@ -67,6 +68,7 @@ function ScoreRing({ score, label, biblicalLabel }) {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function Insights() {
+  const { t } = useTranslation();
   const { showToast } = useOutletContext();
 
   // Chat state
@@ -93,9 +95,9 @@ export default function Insights() {
         const { message, insight_type, quick_actions, biblical_insight, alerta } = r.data || {};
         setMessages([{
           role: 'assistant',
-          content: message || 'Olá! Já li o teu contexto financeiro e estou pronta para te ajudar.',
+          content: message || t('insights.welcome_default'),
           insight_type: insight_type || 'info',
-          quick_actions: quick_actions || ['Como canalizar o meu salário?', 'Onde estou a gastar mais?', 'Como posso poupar mais?', 'Analisa o meu orçamento'],
+          quick_actions: quick_actions || t('insights.qa_defaults', { returnObjects: true }),
           biblical_insight,
           alerta,
         }]);
@@ -103,12 +105,12 @@ export default function Insights() {
       .catch(() => {
         setMessages([{
           role: 'assistant',
-          content: 'Olá! Já li o teu contexto financeiro e estou pronta para te ajudar a partir do teu estado real de hoje.',
+          content: t('insights.welcome_default'),
           insight_type: 'info',
-          quick_actions: ['Como estão as minhas finanças?', 'Onde estou a gastar mais?', 'Como posso poupar mais?', 'Analisa o meu orçamento'],
+          quick_actions: t('insights.qa_defaults', { returnObjects: true }),
         }]);
       });
-  }, []);
+  }, [t]);
 
   async function sendMessage(text) {
     const msg = (text || input).trim();
@@ -128,16 +130,16 @@ export default function Insights() {
       });
 
       const { message: aiMessage, ...rest } = res.data;
-      setMessages(prev => [...prev, { role: 'assistant', content: aiMessage || 'Desculpa, não recebi uma resposta válida.', ...rest }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: aiMessage || t('insights.error_invalid_response'), ...rest }]);
     } catch (err) {
-      const errMsg = err.response?.data?.message || 'Não consegui processar o teu pedido. Tenta novamente! 😊';
+      const errMsg = err.response?.data?.message || t('insights.welcome_error');
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: errMsg,
         insight_type: 'info',
-        quick_actions: ['Tentar novamente'],
+        quick_actions: [t('insights.btn_retry')],
       }]);
-      showToast('Erro ao contactar a Binth', 'error');
+      showToast(t('common.toasts.error_prefix') + 'Binth', 'error');
     } finally {
       setLoading(false);
       setTimeout(() => inputRef.current?.focus(), 100);
@@ -178,16 +180,16 @@ export default function Insights() {
           </div>
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
-              Binth <span style={{ color: '#7C3AED' }}>Insights</span>
+              Binth <span style={{ color: '#7C3AED' }}>{t('insights.title').split(' ')[1]}</span>
             </h1>
             <p style={{ fontSize: 12, color: '#5a7a9a', margin: '2px 0 0', letterSpacing: '0.04em' }}>
-              A tua mentora financeira pessoal ✦
+              {t('insights.subtitle')}
             </p>
           </div>
         </div>
 
         {/* Score ring (if loaded) */}
-        {score && <ScoreRing score={score.score} label={score.label} biblicalLabel={score.biblical_label} />}
+        {score && <ScoreRing score={score.score} label={t('insights.score_label')} biblicalLabel={score.biblical_label} />}
       </div>
 
       {/* ─── Chat Window ─────────────────────────────────────────────────── */}
@@ -310,7 +312,7 @@ export default function Insights() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-              placeholder="Pergunta algo à Binth…"
+              placeholder={t('insights.placeholder')}
               disabled={loading}
               style={{
                 width: '100%', background: 'rgba(0,0,0,0.3)',
@@ -343,7 +345,7 @@ export default function Insights() {
         <div style={{ marginTop: 20, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '18px 20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: '#4a5568', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-              Score Financeiro Bíblico
+              {t('insights.score_section.title')}
             </div>
             {score.biblical_label && (
               <div style={{

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useFinance } from '../hooks/useFinance';
 import { useOutletContext } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { TrendingUp, TrendingDown, Medal, Plus, Trash2, Home, Car, Smartphone, Briefcase, Star, Shield, Zap, Flame, Target, Info, ArrowRight, ShieldAlert } from 'lucide-react';
 import { fmt } from '../utils/calculations';
 
 export default function Patrimony() {
+  const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
   const { showToast } = useOutletContext();
@@ -29,12 +31,12 @@ export default function Patrimony() {
   const netWorth = totalAssets - totalLiabilities;
 
   const getNetWorthTier = (amount) => {
-    if (amount < 0) return { label: 'Em Dívida', color: 'var(--color-coral)', icon: TrendingDown };
-    if (amount < 100000) return { label: 'Iniciante', color: 'var(--color-sky)', icon: Star };
-    if (amount < 1000000) return { label: 'Bronze', color: '#cd7f32', icon: Shield };
-    if (amount < 5000000) return { label: 'Prata', color: '#94a3b8', icon: Medal };
-    if (amount < 15000000) return { label: 'Ouro', color: 'var(--color-gold)', icon: Flame };
-    return { label: 'Diamante', color: '#0ea5e9', icon: Zap };
+    if (amount < 0) return { label: t('patrimony.tiers.debt'), color: 'var(--color-coral)', icon: TrendingDown };
+    if (amount < 100000) return { label: t('patrimony.tiers.beginner'), color: 'var(--color-sky)', icon: Star };
+    if (amount < 1000000) return { label: t('patrimony.tiers.bronze'), color: '#cd7f32', icon: Shield };
+    if (amount < 5000000) return { label: t('patrimony.tiers.silver'), color: '#94a3b8', icon: Medal };
+    if (amount < 15000000) return { label: t('patrimony.tiers.gold'), color: 'var(--color-gold)', icon: Flame };
+    return { label: t('patrimony.tiers.diamond'), color: '#0ea5e9', icon: Zap };
   };
   const tier = getNetWorthTier(netWorth);
 
@@ -63,7 +65,7 @@ export default function Patrimony() {
     dispatch({ type: 'ADD_ASSET', payload: { ...assetForm, value: parseFloat(assetForm.value) } });
     setShowAssetModal(false);
     setAssetForm({ name: '', type: 'imóvel', value: '' });
-    showToast('Activo adicionado com sucesso!');
+    showToast(t('patrimony.toasts.asset_added'));
   };
 
   const handleAddLiability = (e) => {
@@ -80,7 +82,7 @@ export default function Patrimony() {
     });
     setShowLiabilityModal(false);
     setLiabilityForm({ name: '', totalAmount: '', remainingAmount: '', interestRate: '' });
-    showToast('Passivo adicionado com sucesso!');
+    showToast(t('patrimony.toasts.liability_added'));
   };
 
   const handleAddAccount = (e) => {
@@ -96,7 +98,7 @@ export default function Patrimony() {
     });
     setShowAccountModal(false);
     setAccountForm({ name: '', type: 'bank', initial_balance: '' });
-    showToast('Conta adicionada com sucesso!');
+    showToast(t('patrimony.toasts.account_added'));
   };
 
   const assetIcons = {
@@ -117,8 +119,8 @@ export default function Patrimony() {
     <div className="section-fade">
       <div className="sh">
         <div>
-          <h1 className="section-title">Património</h1>
-          <p className="ssub">Gestão de bens e dívidas</p>
+          <h1 className="section-title">{t('patrimony.title')}</h1>
+          <p className="ssub">{t('patrimony.subtitle')}</p>
         </div>
       </div>
 
@@ -127,7 +129,7 @@ export default function Patrimony() {
           <div className="flex items-center gap-3 mb-2 justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 group-hover:scale-110 transition-transform"><TrendingUp size={20} /></div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Activos</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('patrimony.total_assets')}</span>
             </div>
           </div>
           <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{fmt(totalAssets, currency)}</div>
@@ -137,7 +139,7 @@ export default function Patrimony() {
           <div className="flex items-center gap-3 mb-2 justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-rose-500/10 text-rose-500 group-hover:scale-110 transition-transform"><TrendingDown size={20} /></div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Passivos</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('patrimony.total_liabilities')}</span>
             </div>
           </div>
           <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{fmt(totalLiabilities, currency)}</div>
@@ -147,7 +149,7 @@ export default function Patrimony() {
           <div className="flex items-center gap-3 mb-2 justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500 group-hover:scale-110 transition-transform"><Medal size={20} /></div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Líquido</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('patrimony.net_worth')}</span>
             </div>
             {netWorth >= 0 && (
               <div className="premium-badge animate-float" style={{ background: `linear-gradient(135deg, ${tier.color}, #333)`, color: 'white', border: `1px solid ${tier.color}` }}>
@@ -165,9 +167,9 @@ export default function Patrimony() {
         {/* Contas Section */}
         <div>
           <div className="sh">
-            <h2 className="st">Contas</h2>
+            <h2 className="st">{t('patrimony.accounts.title')}</h2>
             <button className="btn btn-secondary py-1 px-3 text-sm" onClick={() => setShowAccountModal(true)}>
-              <Plus size={16} /> Adicionar
+              <Plus size={16} /> {t('patrimony.accounts.add')}
             </button>
           </div>
           
@@ -184,7 +186,7 @@ export default function Patrimony() {
                         </div>
                         <div>
                           <div className="font-semibold text-slate-800">{account.name}</div>
-                          <div className="text-xs text-slate-500 capitalize">{account.type === 'bank' ? 'Banco' : account.type === 'mobile' ? 'Móvel' : 'Físico'}</div>
+                          <div className="text-xs text-slate-500 capitalize">{t(`patrimony.accounts.types.${account.type}`)}</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
@@ -202,7 +204,7 @@ export default function Patrimony() {
               </div>
             ) : (
               <div className="p-8 text-center text-slate-400">
-                <p>Nenhuma conta registada.</p>
+                <p>{t('patrimony.accounts.empty')}</p>
               </div>
             )}
           </div>
@@ -211,9 +213,9 @@ export default function Patrimony() {
         {/* Assets Section */}
         <div>
           <div className="sh">
-            <h2 className="st">Activos</h2>
+            <h2 className="st">{t('patrimony.assets.title')}</h2>
             <button className="btn btn-secondary py-1 px-3 text-sm" onClick={() => setShowAssetModal(true)}>
-              <Plus size={16} /> Adicionar
+              <Plus size={16} /> {t('patrimony.assets.add')}
             </button>
           </div>
           
@@ -230,7 +232,7 @@ export default function Patrimony() {
                         </div>
                         <div>
                           <div className="font-semibold text-slate-800">{asset.name}</div>
-                          <div className="text-xs text-slate-500 capitalize">{asset.type}</div>
+                          <div className="text-xs text-slate-500 capitalize">{t(`patrimony.assets.types.${asset.type}`)}</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
@@ -248,7 +250,7 @@ export default function Patrimony() {
               </div>
             ) : (
               <div className="p-8 text-center text-slate-400">
-                <p>Nenhum activo registado.</p>
+                <p>{t('patrimony.assets.empty')}</p>
               </div>
             )}
           </div>
@@ -257,9 +259,9 @@ export default function Patrimony() {
         {/* Liabilities Section */}
         <div>
           <div className="sh">
-            <h2 className="st">Passivos</h2>
+            <h2 className="st">{t('patrimony.liabilities.title')}</h2>
             <button className="btn btn-secondary py-1 px-3 text-sm" onClick={() => setShowLiabilityModal(true)}>
-              <Plus size={16} /> Adicionar
+              <Plus size={16} /> {t('patrimony.liabilities.add')}
             </button>
           </div>
 
@@ -275,14 +277,14 @@ export default function Patrimony() {
                       <div>
                         <div className="font-semibold text-slate-800">{p.name}</div>
                         <div className="text-xs text-slate-500">
-                          {p.interestRate ? `${p.interestRate}% juro` : 'Sem juros'}
+                          {p.interestRate ? t('patrimony.liabilities.interest', { rate: p.interestRate }) : t('patrimony.liabilities.no_interest')}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <div className="font-bold text-rose-600">{fmt(p.restante)}</div>
-                        <div className="text-[10px] text-slate-400">de {fmt(p.total)}</div>
+                        <div className="text-[10px] text-slate-400">{t('patrimony.liabilities.of_total', { total: fmt(p.total) })}</div>
                       </div>
                       <button 
                         className="text-slate-300 hover:text-rose-500 transition-colors"
@@ -296,7 +298,7 @@ export default function Patrimony() {
               </div>
             ) : (
               <div className="p-8 text-center text-slate-400">
-                <p>Nenhum passivo registado.</p>
+                <p>{t('patrimony.liabilities.empty')}</p>
               </div>
             )}
           </div>
@@ -307,8 +309,8 @@ export default function Patrimony() {
       <div className="mt-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
         <div className="sh">
           <div>
-            <h2 className="section-title" style={{ border: 'none', marginBottom: 0 }}>Projeções de Património <span className="premium-badge ml-3 animate-pulse" style={{ background: 'var(--color-ocean)', color: 'white' }}>PRO</span></h2>
-            <p className="ssub" style={{ marginTop: '-4px' }}>Simuladores de reforma e impacto inflacionário</p>
+            <h2 className="section-title" style={{ border: 'none', marginBottom: 0 }}>{t('patrimony.projections.title')} <span className="premium-badge ml-3 animate-pulse" style={{ background: 'var(--color-ocean)', color: 'white' }}>PRO</span></h2>
+            <p className="ssub" style={{ marginTop: '-4px' }}>{t('patrimony.projections.subtitle')}</p>
           </div>
         </div>
 
@@ -316,34 +318,34 @@ export default function Patrimony() {
           {/* Retirement / FIRE Simulator */}
           <div className="glass-card p-5" style={{ background: 'linear-gradient(135deg, rgba(201, 150, 58, 0.03), rgba(10, 77, 104, 0.03))' }}>
             <div className="flex items-center gap-2 mb-4 text-emerald-700 font-bold text-sm uppercase tracking-wide">
-              <Flame size={18} /> Simulador FIRE (Reforma)
+              <Flame size={18} /> {t('patrimony.projections.fire.title')}
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="form-label text-[10px]">Renda Desejada na Reforma</label>
+                <label className="form-label text-[10px]">{t('patrimony.projections.fire.target_income')}</label>
                 <input type="number" className="form-input text-sm" value={retireTargetIncome} onChange={(e) => setRetireTargetIncome(parseFloat(e.target.value) || 0)} />
               </div>
               <div>
-                <label className="form-label text-[10px]">Taxa de Retorno Anual (%)</label>
+                <label className="form-label text-[10px]">{t('patrimony.projections.fire.return_rate')}</label>
                 <input type="number" className="form-input text-sm" value={retireReturnRate} onChange={(e) => setRetireReturnRate(parseFloat(e.target.value) || 0)} />
               </div>
               <div className="col-span-2">
-                <label className="form-label text-[10px]">Poupança Mensal</label>
+                <label className="form-label text-[10px]">{t('patrimony.projections.fire.monthly_savings')}</label>
                 <input type="number" className="form-input text-sm" value={retireMonthlySavings} onChange={(e) => setRetireMonthlySavings(parseFloat(e.target.value) || 0)} />
               </div>
             </div>
             
             <div className="bg-white/40 dark:bg-black/20 p-4 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
               <div className="flex justify-between items-end mb-2">
-                <span className="text-xs text-slate-500 font-semibold uppercase">Potencial de Reforma</span>
-                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{yearsToFire > 0 ? `Em ${yearsToFire} Anos` : 'Meta Atingida! 🎉'}</span>
+                <span className="text-xs text-slate-500 font-semibold uppercase">{t('patrimony.projections.fire.potential')}</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{yearsToFire > 0 ? t('patrimony.projections.fire.in_years', { years: yearsToFire }) : t('patrimony.projections.fire.goal_met')}</span>
               </div>
               <div className="progress-bar-track mb-3">
                 <div className="progress-bar-fill" style={{ width: `${Math.min(100, Math.max(0, (netWorth / fireNumber) * 100))}%`, background: 'var(--color-ocean)' }} />
               </div>
               <div className="flex justify-between text-[11px] text-slate-400">
-                <span>Atual: {fmt(Math.max(0, netWorth), currency)}</span>
-                <span>Alvo FIRE: <strong className="text-amber-600">{fmt(fireNumber, currency)}</strong></span>
+                <span>{t('patrimony.projections.fire.current', { amount: fmt(Math.max(0, netWorth), currency) })}</span>
+                <span>{t('patrimony.projections.fire.target', { amount: fmt(fireNumber, currency) })}</span>
               </div>
             </div>
           </div>
@@ -351,32 +353,32 @@ export default function Patrimony() {
           {/* Inflation Simulator */}
           <div className="glass-card p-5">
             <div className="flex items-center gap-2 mb-4 text-rose-600 font-bold text-sm uppercase tracking-wide">
-              <ShieldAlert size={18} /> Simulador de Inflação
+              <ShieldAlert size={18} /> {t('patrimony.projections.inflation.title')}
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="form-label text-[10px]">Tempo de Projeção (Anos)</label>
+                <label className="form-label text-[10px]">{t('patrimony.projections.inflation.years')}</label>
                 <input type="number" className="form-input text-sm" value={inflationYears} onChange={(e) => setInflationYears(parseInt(e.target.value) || 0)} />
               </div>
               <div>
-                <label className="form-label text-[10px]">Taxa de Inflação Média (%)</label>
+                <label className="form-label text-[10px]">{t('patrimony.projections.inflation.rate')}</label>
                 <input type="number" className="form-input text-sm" value={inflationRate} onChange={(e) => setInflationRate(parseFloat(e.target.value) || 0)} />
               </div>
             </div>
             
             <div className="bg-rose-50/50 dark:bg-rose-950/10 p-4 rounded-xl border border-rose-100 dark:border-rose-900/30">
               <p className="text-[11px] text-slate-500 leading-relaxed mb-3">
-                Seu património líquido atual de <strong className="text-slate-700 dark:text-slate-300">{fmt(Math.max(0, netWorth), currency)}</strong> valerá em <strong>{inflationYears} anos</strong>:
+                {t('patrimony.projections.inflation.description', { amount: fmt(Math.max(0, netWorth), currency), years: inflationYears })}
               </p>
               <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-2 px-3 rounded-lg mb-2 shadow-sm">
                 <div className="flex items-center gap-2 text-rose-600 text-xs font-semibold">
-                  <TrendingDown size={14} /> Se deixado parado
+                  <TrendingDown size={14} /> {t('patrimony.projections.inflation.left_idle')}
                 </div>
                 <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{fmt(purchasingPower, currency)}</div>
               </div>
               <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-2 px-3 rounded-lg shadow-sm">
                 <div className="flex items-center gap-2 text-emerald-600 text-xs font-semibold">
-                  <TrendingUp size={14} /> Se investido ({retireReturnRate}%)
+                  <TrendingUp size={14} /> {t('patrimony.projections.inflation.if_invested', { rate: retireReturnRate })}
                 </div>
                 <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{fmt(investedPower, currency)}</div>
               </div>
@@ -389,31 +391,31 @@ export default function Patrimony() {
       {showAssetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="card-glass p-6 w-full max-w-md animate-in fade-in zoom-in duration-200">
-            <h3 className="text-lg font-bold font-serif mb-4">Adicionar Activo</h3>
+            <h3 className="text-lg font-bold font-serif mb-4">{t('patrimony.modals.add_asset')}</h3>
             <form onSubmit={handleAddAsset} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Nome</label>
+                <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.name_label')}</label>
                 <input 
-                  type="text" className="w-full" placeholder="Ex: Terreno Pemba" required
+                  type="text" className="w-full" placeholder={t('patrimony.modals.name_placeholder')} required
                   value={assetForm.name} onChange={e => setAssetForm({...assetForm, name: e.target.value})}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Tipo</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.type_label')}</label>
                   <select 
                     className="w-full"
                     value={assetForm.type} onChange={e => setAssetForm({...assetForm, type: e.target.value})}
                   >
-                    <option value="imóvel">Imóvel</option>
-                    <option value="veiculo">Veículo</option>
-                    <option value="poupanca">Poupança</option>
-                    <option value="investimento">Investimento</option>
-                    <option value="outro">Outro</option>
+                    <option value="imóvel">{t('patrimony.assets.types.imóvel')}</option>
+                    <option value="veiculo">{t('patrimony.assets.types.veiculo')}</option>
+                    <option value="poupanca">{t('patrimony.assets.types.poupanca')}</option>
+                    <option value="investimento">{t('patrimony.assets.types.investimento')}</option>
+                    <option value="outro">{t('patrimony.assets.types.outro')}</option>
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Valor (MT)</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.value_label')}</label>
                   <input 
                     type="number" className="w-full" placeholder="0" required
                     value={assetForm.value} onChange={e => setAssetForm({...assetForm, value: e.target.value})}
@@ -421,8 +423,8 @@ export default function Patrimony() {
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="button" className="btn btn-secondary flex-1" onClick={() => setShowAssetModal(false)}>Cancelar</button>
-                <button type="submit" className="btn btn-primary flex-1">Adicionar</button>
+                <button type="button" className="btn btn-secondary flex-1" onClick={() => setShowAssetModal(false)}>{t('patrimony.modals.cancel')}</button>
+                <button type="submit" className="btn btn-primary flex-1">{t('patrimony.modals.add')}</button>
               </div>
             </form>
           </div>
@@ -432,25 +434,25 @@ export default function Patrimony() {
       {showLiabilityModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="card-glass p-6 w-full max-w-md animate-in fade-in zoom-in duration-200">
-            <h3 className="text-lg font-bold font-serif mb-4">Adicionar Passivo</h3>
+            <h3 className="text-lg font-bold font-serif mb-4">{t('patrimony.modals.add_liability')}</h3>
             <form onSubmit={handleAddLiability} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Nome da Dívida</label>
+                <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.liability_name_label')}</label>
                 <input 
-                  type="text" className="w-full" placeholder="Ex: Crédito BCI" required
+                  type="text" className="w-full" placeholder={t('patrimony.modals.liability_name_placeholder')} required
                   value={liabilityForm.name} onChange={e => setLiabilityForm({...liabilityForm, name: e.target.value})}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Valor Total (MT)</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.total_amount_label')}</label>
                   <input 
                     type="number" className="w-full" placeholder="0" required
                     value={liabilityForm.totalAmount} onChange={e => setLiabilityForm({...liabilityForm, totalAmount: e.target.value})}
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Restante (MT)</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.remaining_amount_label')}</label>
                   <input 
                     type="number" className="w-full" placeholder="0" required
                     value={liabilityForm.remainingAmount} onChange={e => setLiabilityForm({...liabilityForm, remainingAmount: e.target.value})}
@@ -458,15 +460,15 @@ export default function Patrimony() {
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Taxa Juro Anual (%)</label>
+                <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.interest_rate_label')}</label>
                 <input 
-                  type="number" className="w-full" placeholder="Ex: 18"
+                  type="number" className="w-full" placeholder={t('patrimony.modals.interest_rate_placeholder', { defaultValue: 'Ex: 18' })}
                   value={liabilityForm.interestRate} onChange={e => setLiabilityForm({...liabilityForm, interestRate: e.target.value})}
                 />
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="button" className="btn btn-secondary flex-1" onClick={() => setShowLiabilityModal(false)}>Cancelar</button>
-                <button type="submit" className="btn btn-primary flex-1">Adicionar</button>
+                <button type="button" className="btn btn-secondary flex-1" onClick={() => setShowLiabilityModal(false)}>{t('patrimony.modals.cancel')}</button>
+                <button type="submit" className="btn btn-primary flex-1">{t('patrimony.modals.add')}</button>
               </div>
             </form>
           </div>
@@ -476,12 +478,12 @@ export default function Patrimony() {
       {showAccountModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="card-glass p-6 w-full max-w-md animate-in fade-in zoom-in duration-200">
-            <h3 className="text-lg font-bold font-serif mb-4">Adicionar Conta</h3>
+            <h3 className="text-lg font-bold font-serif mb-4">{t('patrimony.modals.add_account')}</h3>
             <form onSubmit={handleAddAccount} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Nome da Conta</label>
+                <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.account_name_label')}</label>
                 <input 
-                  type="text" className="w-full" placeholder="Ex: Millennium Bim / M-Pesa" required
+                  type="text" className="w-full" placeholder={t('patrimony.modals.account_name_placeholder')} required
                   value={accountForm.name} onChange={e => setAccountForm({...accountForm, name: e.target.value})}
                 />
               </div>
@@ -492,13 +494,13 @@ export default function Patrimony() {
                     className="w-full"
                     value={accountForm.type} onChange={e => setAccountForm({...accountForm, type: e.target.value})}
                   >
-                    <option value="bank">Banco</option>
-                    <option value="mobile">Carteira Móvel</option>
-                    <option value="cash">Dinheiro Físico</option>
+                    <option value="bank">{t('patrimony.accounts.types.bank')}</option>
+                    <option value="mobile">{t('patrimony.accounts.types.mobile')}</option>
+                    <option value="cash">{t('patrimony.accounts.types.cash')}</option>
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Saldo Inicial (MT)</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.initial_balance_label')}</label>
                   <input 
                     type="number" className="w-full" placeholder="0" required
                     value={accountForm.initial_balance} onChange={e => setAccountForm({...accountForm, initial_balance: e.target.value})}
@@ -506,8 +508,8 @@ export default function Patrimony() {
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="button" className="btn btn-secondary flex-1" onClick={() => setShowAccountModal(false)}>Cancelar</button>
-                <button type="submit" className="btn btn-primary flex-1">Adicionar</button>
+                <button type="button" className="btn btn-secondary flex-1" onClick={() => setShowAccountModal(false)}>{t('patrimony.modals.cancel')}</button>
+                <button type="submit" className="btn btn-primary flex-1">{t('patrimony.modals.add')}</button>
               </div>
             </form>
           </div>

@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, Fragment } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { useTranslation, Trans } from 'react-i18next';
 import { Banknote, Check, Flame, Info, RefreshCcw, Sparkles, Target, TrendingUp, Wallet } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip as RTooltip, XAxis, YAxis, Cell } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,6 +8,7 @@ import { useFinance } from '../hooks/useFinance';
 import { calcCompoundInterest, fmt } from '../utils/calculations';
 
 function ProGate({ children, isPro, title, description }) {
+  const { t } = useTranslation();
   if (isPro) return children;
 
   return (
@@ -44,7 +46,7 @@ function ProGate({ children, isPro, title, description }) {
             color: '#08111a',
           }}
         >
-          Mudar para PRO
+          {t('simulators.pro_gate.btn')}
         </a>
       </div>
     </div>
@@ -100,6 +102,7 @@ function TabButton({ active, icon: Icon, label, onClick }) {
 }
 
 export default function Simulators() {
+  const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const { showToast } = useOutletContext();
   const currency = state.settings?.currency || 'MT';
@@ -130,20 +133,16 @@ export default function Simulators() {
   useEffect(() => {
     const globalSalary = Number(state.settings?.user_salary || 0);
     if (globalSalary > 0 && globalSalary !== salary) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       setSalary(globalSalary);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.settings?.user_salary]); // Only depend on global salary
+  }, [state.settings?.user_salary, salary]);
 
   // Keep position within participants bounds
   useEffect(() => {
     if (xitiquePosition > xitiqueParticipants) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       setXitiquePosition(xitiqueParticipants);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [xitiqueParticipants]); // Only depend on participants change
+  }, [xitiqueParticipants, xitiquePosition]);
 
   const safeNeedsPct = Math.min(100, Math.max(0, needsPct));
   const safeWantsPct = Math.min(100 - safeNeedsPct, Math.max(0, wantsPct));
@@ -159,9 +158,9 @@ export default function Simulators() {
   }, [salary, safeNeedsPct, safeWantsPct, savingsPct]);
 
   const budgetPieData = [
-    { name: 'Essencial', value: budgetBreakdown.needs, color: 'var(--color-ocean)' },
-    { name: 'Estilo de vida', value: budgetBreakdown.wants, color: 'var(--color-gold)' },
-    { name: 'Futuro', value: budgetBreakdown.savings, color: 'var(--color-leaf)' },
+    { name: t('simulators.budget.categories.essencial'), value: budgetBreakdown.needs, color: 'var(--color-ocean)' },
+    { name: t('simulators.budget.categories.lifestyle'), value: budgetBreakdown.wants, color: 'var(--color-gold)' },
+    { name: t('simulators.budget.categories.future'), value: budgetBreakdown.savings, color: 'var(--color-leaf)' },
   ];
 
   const investmentData = calcCompoundInterest(investmentPrincipal, investmentMonthly, investmentRate, investmentYears);
@@ -191,7 +190,7 @@ export default function Simulators() {
       },
     });
     dispatch({ type: 'UPDATE_SETTING', payload: { key: 'user_salary', value: Math.max(0, Number(salary || 0)) } });
-    showToast('Orçamento base aplicado aos seus limites.');
+    showToast(t('simulators.budget.toast_applied'));
   };
 
   const setBudgetPreset = (preset) => {
@@ -204,15 +203,15 @@ export default function Simulators() {
   return (
     <div className="w-full flex-1 flex flex-col pb-20">
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-midnight dark:text-white mb-2 font-display">Simuladores</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Projeções práticas para orçamento, investimento, independência financeira e Xitique.</p>
+        <h1 className="text-3xl font-black text-midnight dark:text-white mb-2 font-display">{t('simulators.title')}</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('simulators.description')}</p>
       </div>
 
       <div className="flex gap-2 mb-8 overflow-x-auto p-1.5 rounded-[20px] bg-white/5 border border-white/5">
-        <TabButton active={activeTab === 'budget'} icon={Banknote} label="Orçamento" onClick={() => setActiveTab('budget')} />
-        <TabButton active={activeTab === 'invest'} icon={TrendingUp} label="Investimento" onClick={() => setActiveTab('invest')} />
-        <TabButton active={activeTab === 'fire'} icon={Flame} label="Independência" onClick={() => setActiveTab('fire')} />
-        <TabButton active={activeTab === 'xitique'} icon={RefreshCcw} label="Xitique" onClick={() => setActiveTab('xitique')} />
+        <TabButton active={activeTab === 'budget'} icon={Banknote} label={t('simulators.tabs.budget')} onClick={() => setActiveTab('budget')} />
+        <TabButton active={activeTab === 'invest'} icon={TrendingUp} label={t('simulators.tabs.invest')} onClick={() => setActiveTab('invest')} />
+        <TabButton active={activeTab === 'fire'} icon={Flame} label={t('simulators.tabs.fire')} onClick={() => setActiveTab('fire')} />
+        <TabButton active={activeTab === 'xitique'} icon={RefreshCcw} label={t('simulators.tabs.xitique')} onClick={() => setActiveTab('xitique')} />
       </div>
 
       <AnimatePresence mode="wait">
@@ -223,13 +222,13 @@ export default function Simulators() {
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-ocean/10 flex items-center justify-center text-ocean"><Banknote size={20} /></div>
                   <div className="min-w-0">
-                    <h2 className="text-xl font-black text-midnight dark:text-white">Modelo de orçamento</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Ajuste o salário e aplique limites reais ao seu orçamento.</p>
+                    <h2 className="text-xl font-black text-midnight dark:text-white">{t('simulators.budget.title')}</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('simulators.budget.subtitle')}</p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-2 block">Salário mensal</label>
+                  <label className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-2 block">{t('simulators.budget.salary_label')}</label>
                   <div className="relative">
                     <input type="number" value={salary} onChange={(e) => setSalary(Number(e.target.value))} className="w-full bg-black/5 dark:bg-white/5 border-none rounded-2xl p-4 pr-4 pl-14 text-lg font-black dark:text-white outline-none focus:ring-2 ring-ocean/50" />
                     <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
@@ -246,11 +245,11 @@ export default function Simulators() {
 
                 <div className="space-y-4">
                   <div className="p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/5">
-                    <div className="flex justify-between mb-2 text-sm font-bold dark:text-white"><span>Necessidades</span><span>{safeNeedsPct}%</span></div>
+                    <div className="flex justify-between mb-2 text-sm font-bold dark:text-white"><span>{t('simulators.budget.categories.needs')}</span><span>{safeNeedsPct}%</span></div>
                     <input type="range" min="20" max="80" step="5" value={safeNeedsPct} onChange={(e) => { setNeedsPct(Number(e.target.value)); setActiveModel('personalizado'); }} className="w-full accent-ocean" />
                   </div>
                   <div className="p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/5">
-                    <div className="flex justify-between mb-2 text-sm font-bold dark:text-white"><span>Desejos</span><span>{safeWantsPct}%</span></div>
+                    <div className="flex justify-between mb-2 text-sm font-bold dark:text-white"><span>{t('simulators.budget.categories.wants')}</span><span>{safeWantsPct}%</span></div>
                     <input type="range" min="0" max={100 - safeNeedsPct} step="5" value={safeWantsPct} onChange={(e) => { setWantsPct(Number(e.target.value)); setActiveModel('personalizado'); }} className="w-full accent-gold" />
                   </div>
                 </div>
@@ -270,12 +269,12 @@ export default function Simulators() {
                 </div>
 
                 <button onClick={applyBudgetModel} className="btn btn-primary px-5 py-3 text-sm font-black">
-                  Aplicar ao orçamento
+                  {t('simulators.budget.apply_btn')}
                 </button>
               </div>
 
               <div className="rounded-[28px] bg-black/5 dark:bg-white/5 border border-white/5 p-6 md:p-7 min-w-0 h-full flex flex-col gap-4">
-                <div className="text-sm font-black text-midnight dark:text-white wrap-anywhere leading-6">Distribuição do salário</div>
+                <div className="text-sm font-black text-midnight dark:text-white wrap-anywhere leading-6">{t('simulators.budget.distribution_title')}</div>
                 <div className="w-full grow flex items-center justify-center min-w-0" style={{ height: 240, minHeight: 240 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -289,7 +288,7 @@ export default function Simulators() {
                   </ResponsiveContainer>
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 leading-6 wrap-anywhere pb-1">
-                  Poupança projetada: <strong className="text-leaf">{savingsPct}%</strong>. Se aplicar este modelo, o Mwanga cria limites base para alimentação, transporte, saúde, lazer e poupança.
+                  <Trans i18nKey="simulators.budget.savings_projection" values={{ pct: savingsPct }} components={{ strong: <strong className="text-leaf" /> }} />
                 </div>
               </div>
             </div>
@@ -301,29 +300,29 @@ export default function Simulators() {
             <div className="flex items-center gap-3 mb-8">
               <div className="w-10 h-10 rounded-xl bg-leaf/10 flex items-center justify-center text-leaf"><TrendingUp size={20} /></div>
               <div>
-                <h2 className="text-xl font-black text-midnight dark:text-white">Juros compostos</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Simule o impacto do valor inicial, reforços mensais e taxa anual.</p>
+                <h2 className="text-xl font-black text-midnight dark:text-white">{t('simulators.invest.title')}</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('simulators.invest.subtitle')}</p>
               </div>
             </div>
 
             <div className="grid md:grid-cols-4 gap-4 mb-8">
-              <input type="number" value={investmentPrincipal} onChange={(e) => setInvestmentPrincipal(Number(e.target.value))} className="w-full bg-white/5 p-3 rounded-xl dark:text-white font-bold border-none" placeholder="Valor inicial" />
-              <input type="number" value={investmentMonthly} onChange={(e) => setInvestmentMonthly(Number(e.target.value))} className="w-full bg-white/5 p-3 rounded-xl dark:text-white font-bold border-none" placeholder="Aporte mensal" />
-              <input type="number" value={investmentRate} onChange={(e) => setInvestmentRate(Number(e.target.value))} className="w-full bg-white/5 p-3 rounded-xl dark:text-white font-bold border-none" placeholder="Taxa anual (%)" />
-              <input type="number" value={investmentYears} onChange={(e) => setInvestmentYears(Number(e.target.value))} className="w-full bg-white/5 p-3 rounded-xl dark:text-white font-bold border-none" placeholder="Anos" />
+              <input type="number" value={investmentPrincipal} onChange={(e) => setInvestmentPrincipal(Number(e.target.value))} className="w-full bg-white/5 p-3 rounded-xl dark:text-white font-bold border-none" placeholder={t('simulators.invest.placeholders.principal')} />
+              <input type="number" value={investmentMonthly} onChange={(e) => setInvestmentMonthly(Number(e.target.value))} className="w-full bg-white/5 p-3 rounded-xl dark:text-white font-bold border-none" placeholder={t('simulators.invest.placeholders.monthly')} />
+              <input type="number" value={investmentRate} onChange={(e) => setInvestmentRate(Number(e.target.value))} className="w-full bg-white/5 p-3 rounded-xl dark:text-white font-bold border-none" placeholder={t('simulators.invest.placeholders.rate')} />
+              <input type="number" value={investmentYears} onChange={(e) => setInvestmentYears(Number(e.target.value))} className="w-full bg-white/5 p-3 rounded-xl dark:text-white font-bold border-none" placeholder={t('simulators.invest.placeholders.years')} />
             </div>
 
             <div className="grid md:grid-cols-3 gap-4 mb-8">
               <div className="rounded-2xl bg-ocean/5 border border-ocean/10 p-5 text-center">
-                <div className="text-[11px] font-black uppercase text-ocean mb-1">Resultado final</div>
+                <div className="text-[11px] font-black uppercase text-ocean mb-1">{t('simulators.invest.summary.final_balance')}</div>
                 <div className="text-2xl font-black dark:text-white">{fmt(investmentSummary.balance, currency)}</div>
               </div>
               <div className="rounded-2xl bg-leaf/5 border border-leaf/10 p-5 text-center">
-                <div className="text-[11px] font-black uppercase text-leaf mb-1">Total investido</div>
+                <div className="text-[11px] font-black uppercase text-leaf mb-1">{t('simulators.invest.summary.total_invested')}</div>
                 <div className="text-2xl font-black dark:text-white">{fmt(investmentSummary.invested, currency)}</div>
               </div>
               <div className="rounded-2xl bg-gold/5 border border-gold/10 p-5 text-center">
-                <div className="text-[11px] font-black uppercase text-gold mb-1">Ganhos</div>
+                <div className="text-[11px] font-black uppercase text-gold mb-1">{t('simulators.invest.summary.gains')}</div>
                 <div className="text-2xl font-black dark:text-white">{fmt(investmentSummary.balance - investmentSummary.invested, currency)}</div>
               </div>
             </div>
@@ -350,27 +349,27 @@ export default function Simulators() {
 
         {activeTab === 'fire' && (
           <motion.div key="fire" initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -18 }}>
-            <ProGate isPro={isPro} title="Simulador FIRE" description="Descubra quanto precisa investir por mês para comprar liberdade financeira com disciplina.">
+            <ProGate isPro={isPro} title={t('simulators.pro_gate.title')} description={t('simulators.pro_gate.description')}>
               <div className="glass-card p-6 rounded-[28px] border border-white/5 shadow-2xl">
                 <div className="flex items-center gap-3 mb-8">
                   <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-gold"><Flame size={20} /></div>
                   <div>
-                    <h2 className="text-xl font-black text-midnight dark:text-white">Independência financeira</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Baseado na regra dos 4% e num plano de acumulação com juros compostos.</p>
+                    <h2 className="text-xl font-black text-midnight dark:text-white">{t('simulators.fire.title')}</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('simulators.fire.subtitle')}</p>
                   </div>
                 </div>
 
                 <div className="grid lg:grid-cols-[1fr_1.1fr] gap-8">
                   <div className="space-y-4">
-                    <input type="number" value={fireMonthlyNeed} onChange={(e) => setFireMonthlyNeed(Number(e.target.value))} className="w-full bg-white/5 p-4 rounded-2xl dark:text-white font-bold border-none" placeholder="Despesa mensal desejada" />
-                    <input type="number" value={fireCurrentInvested} onChange={(e) => setFireCurrentInvested(Number(e.target.value))} className="w-full bg-white/5 p-4 rounded-2xl dark:text-white font-bold border-none" placeholder="Valor já investido" />
-                    <input type="number" value={fireYearsToGoal} onChange={(e) => setFireYearsToGoal(Number(e.target.value))} className="w-full bg-white/5 p-4 rounded-2xl dark:text-white font-bold border-none" placeholder="Anos até à meta" />
-                    <input type="number" value={fireReturnRate} onChange={(e) => setFireReturnRate(Number(e.target.value))} className="w-full bg-white/5 p-4 rounded-2xl dark:text-white font-bold border-none" placeholder="Retorno anual (%)" />
+                    <input type="number" value={fireMonthlyNeed} onChange={(e) => setFireMonthlyNeed(Number(e.target.value))} className="w-full bg-white/5 p-4 rounded-2xl dark:text-white font-bold border-none" placeholder={t('simulators.fire.placeholders.monthly_need')} />
+                    <input type="number" value={fireCurrentInvested} onChange={(e) => setFireCurrentInvested(Number(e.target.value))} className="w-full bg-white/5 p-4 rounded-2xl dark:text-white font-bold border-none" placeholder={t('simulators.fire.placeholders.current_invested')} />
+                    <input type="number" value={fireYearsToGoal} onChange={(e) => setFireYearsToGoal(Number(e.target.value))} className="w-full bg-white/5 p-4 rounded-2xl dark:text-white font-bold border-none" placeholder={t('simulators.fire.placeholders.years_to_goal')} />
+                    <input type="number" value={fireReturnRate} onChange={(e) => setFireReturnRate(Number(e.target.value))} className="w-full bg-white/5 p-4 rounded-2xl dark:text-white font-bold border-none" placeholder={t('simulators.fire.placeholders.return_rate')} />
 
                     <div className="rounded-[24px] bg-gold/5 border border-gold/10 p-5">
-                      <div className="text-[10px] font-black uppercase tracking-widest text-gold mb-1">Número FIRE</div>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-gold mb-1">{t('simulators.fire.summary.fire_number')}</div>
                       <div className="text-3xl font-black dark:text-white font-display">{fmt(fireTarget, currency)}</div>
-                      <p className="text-xs text-gray-500 mt-3">Este capital tenta sustentar cerca de {fmt(fireMonthlyNeed, currency)} por mês sem depender de salário.</p>
+                      <p className="text-xs text-gray-500 mt-3">{t('simulators.fire.summary.fire_explainer', { amount: fmt(fireMonthlyNeed, currency) })}</p>
                     </div>
                   </div>
 
@@ -378,15 +377,15 @@ export default function Simulators() {
                     <div className="flex items-center gap-3 mb-6">
                       <Sparkles className="text-gold" size={20} />
                       <div>
-                        <div className="text-lg font-black dark:text-white">Insight do Mwanga</div>
-                        <div className="text-xs text-gray-400">Projeção personalizada para o seu objetivo</div>
+                        <div className="text-lg font-black dark:text-white">{t('simulators.fire.insight.title')}</div>
+                        <div className="text-xs text-gray-400">{t('simulators.fire.insight.subtitle')}</div>
                       </div>
                     </div>
 
                     <div className="space-y-5 mb-6">
                       <div>
                         <div className="flex justify-between mb-2 text-sm font-bold text-gray-300">
-                          <span>Progresso atual</span>
+                          <span>{t('simulators.fire.insight.progress')}</span>
                           <span className="text-gold">{fireProgress.toFixed(1)}%</span>
                         </div>
                         <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden">
@@ -396,18 +395,21 @@ export default function Simulators() {
 
                   <div className="grid md:grid-cols-2 gap-4 min-w-0">
                         <div className="rounded-2xl bg-white/5 border border-white/5 p-4">
-                          <div className="text-[10px] font-black uppercase text-gray-400 mb-1">Investimento mensal sugerido</div>
+                          <div className="text-[10px] font-black uppercase text-gray-400 mb-1">{t('simulators.fire.insight.suggested_monthly')}</div>
                           <div className="text-2xl font-black text-white">{fmt(fireMonthlyNeeded, currency)}</div>
                         </div>
                         <div className="rounded-2xl bg-white/5 border border-white/5 p-4">
-                          <div className="text-[10px] font-black uppercase text-gray-400 mb-1">Saldo projetado</div>
+                          <div className="text-[10px] font-black uppercase text-gray-400 mb-1">{t('simulators.fire.insight.projected_balance')}</div>
                           <div className="text-2xl font-black text-white">{fmt(fireProjectedBalance, currency)}</div>
                         </div>
                       </div>
 
-                      <p className="text-sm text-gray-400 leading-7">
-                        Para chegar a {fmt(fireTarget, currency)} em {fireYearsToGoal} anos, o plano sugere reforços de <strong className="text-white">{fmt(fireMonthlyNeeded, currency)}</strong> por mês, assumindo um retorno anual de {fireReturnRate}%.
-                      </p>
+                      <div className="text-sm text-gray-400 leading-7">
+                        <Trans i18nKey="simulators.fire.insight.explainer" 
+                          values={{ target: fmt(fireTarget, currency), years: fireYearsToGoal, monthly: fmt(fireMonthlyNeeded, currency), rate: fireReturnRate }} 
+                          components={{ strong: <strong className="text-white" /> }} 
+                        />
+                      </div>
                     </div>
 
                     <div className="w-full" style={{ height: 220, minHeight: 220 }}>
@@ -439,42 +441,42 @@ export default function Simulators() {
             <div className="flex items-center gap-3 mb-8">
               <div className="w-10 h-10 rounded-xl bg-sky/10 flex items-center justify-center text-sky"><RefreshCcw size={20} /></div>
               <div>
-                <h2 className="text-xl font-black text-midnight dark:text-white">Simulador de Xitique</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Veja a liquidez total do círculo e o benefício versus crédito bancário caro.</p>
+                <h2 className="text-xl font-black text-midnight dark:text-white">{t('simulators.xitique.title')}</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('simulators.xitique.subtitle')}</p>
               </div>
             </div>
 
             <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8">
               <div className="space-y-5">
                 <div className="rounded-[24px] bg-white/5 border border-white/5 p-5">
-                  <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">Contribuição mensal</span><span className="font-bold text-white">{fmt(xitiqueContribution, currency)}</span></div>
+                  <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">{t('simulators.xitique.labels.monthly_contribution')}</span><span className="font-bold text-white">{fmt(xitiqueContribution, currency)}</span></div>
                   <input type="range" min="1000" max="30000" step="500" value={xitiqueContribution} onChange={(e) => setXitiqueContribution(Number(e.target.value))} className="w-full accent-sky" />
                 </div>
                 <div className="rounded-[24px] bg-white/5 border border-white/5 p-5">
-                  <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">Participantes</span><span className="font-bold text-white">{xitiqueParticipants}</span></div>
+                  <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">{t('simulators.xitique.labels.participants')}</span><span className="font-bold text-white">{xitiqueParticipants}</span></div>
                   <input type="range" min="2" max="24" value={xitiqueParticipants} onChange={(e) => setXitiqueParticipants(Number(e.target.value))} className="w-full accent-sky" />
                 </div>
                 <div className="rounded-[24px] bg-white/5 border border-white/5 p-5">
-                  <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">Posição para receber</span><span className="font-bold text-white">{xitiquePosition}ª</span></div>
+                  <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">{t('simulators.xitique.labels.position')}</span><span className="font-bold text-white">{xitiquePosition}{t('simulators.xitique.labels.position_suffix')}</span></div>
                   <input type="range" min="1" max={xitiqueParticipants} value={xitiquePosition} onChange={(e) => setXitiquePosition(Number(e.target.value))} className="w-full accent-sky" />
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4 content-start">
                 <div className="rounded-[24px] bg-ocean/5 border border-ocean/10 p-5">
-                  <div className="text-[10px] font-black uppercase text-ocean mb-1">Montante do círculo</div>
+                  <div className="text-[10px] font-black uppercase text-ocean mb-1">{t('simulators.xitique.summary.circle_amount')}</div>
                   <div className="text-2xl font-black dark:text-white">{fmt(xitiquePool, currency)}</div>
                 </div>
                 <div className="rounded-[24px] bg-gold/5 border border-gold/10 p-5">
-                  <div className="text-[10px] font-black uppercase text-gold mb-1">Meses até receber</div>
+                  <div className="text-[10px] font-black uppercase text-gold mb-1">{t('simulators.xitique.summary.months_to_receive')}</div>
                   <div className="text-2xl font-black dark:text-white">{xitiqueMonthsUntilReceive}</div>
                 </div>
                 <div className="rounded-[24px] bg-leaf/5 border border-leaf/10 p-5">
-                  <div className="text-[10px] font-black uppercase text-leaf mb-1">Liquidez imediata</div>
+                  <div className="text-[10px] font-black uppercase text-leaf mb-1">{t('simulators.xitique.summary.immediate_liquidity')}</div>
                   <div className="text-2xl font-black dark:text-white">{fmt(xitiqueLiquidityGain, currency)}</div>
                 </div>
                 <div className="rounded-[24px] bg-coral/5 border border-coral/10 p-5">
-                  <div className="text-[10px] font-black uppercase text-coral mb-1">Juros evitados</div>
+                  <div className="text-[10px] font-black uppercase text-coral mb-1">{t('simulators.xitique.summary.avoided_interest')}</div>
                   <div className="text-2xl font-black dark:text-white">{fmt(xitiqueEquivalentBankInterest, currency)}</div>
                 </div>
 
@@ -482,19 +484,27 @@ export default function Simulators() {
                   <div className="flex items-start gap-4">
                     <div className="w-11 h-11 rounded-full bg-ocean/20 flex items-center justify-center text-ocean shrink-0"><Check size={20} /></div>
                     <div>
-                      <div className="text-lg font-black dark:text-white">Leitura rápida</div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 leading-7">
-                        Receber na posição {xitiquePosition}ª significa esperar {xitiqueMonthsUntilReceive} mês{xitiqueMonthsUntilReceive === 1 ? '' : 'es'} para levantar cerca de <strong className="text-white">{fmt(xitiquePool, currency)}</strong>. Quanto mais cedo receber, maior tende a ser a vantagem de caixa.
-                      </p>
+                      <div className="text-lg font-black dark:text-white">{t('simulators.xitique.insights.quick_read_title')}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400 leading-7">
+                        <Trans 
+                          i18nKey="simulators.xitique.insights.quick_read_msg" 
+                          values={{ position: xitiquePosition, months: xitiqueMonthsUntilReceive, plural: xitiqueMonthsUntilReceive === 1 ? '' : 'es', amount: fmt(xitiquePool, currency) }} 
+                          components={{ strong: <strong className="text-white" /> }} 
+                        />
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
                     <div className="w-11 h-11 rounded-full bg-gold/20 flex items-center justify-center text-gold shrink-0"><Info size={20} /></div>
                     <div>
-                      <div className="text-lg font-black dark:text-white">Comparação com crédito</div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 leading-7">
-                        Num cenário bancário de 26% ao ano, um valor semelhante poderia custar aproximadamente <strong className="text-white">{fmt(xitiqueEquivalentBankInterest, currency)}</strong> em juros ao longo do mesmo ciclo.
-                      </p>
+                      <div className="text-lg font-black dark:text-white">{t('simulators.xitique.insights.credit_comp_title')}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400 leading-7">
+                        <Trans 
+                          i18nKey="simulators.xitique.insights.credit_comp_msg" 
+                          values={{ amount: fmt(xitiqueEquivalentBankInterest, currency) }} 
+                          components={{ strong: <strong className="text-white" /> }} 
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -506,10 +516,9 @@ export default function Simulators() {
 
       <div className="mt-8 p-6 rounded-[28px] bg-amber-500/5 border border-amber-500/10 flex gap-4">
         <Info className="text-amber-500 shrink-0" size={24} />
-        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-          Estas simulações são projeções. Os resultados dependem de disciplina, retorno real, custos e contexto do utilizador.
-          <strong className="text-amber-500/80"> Use o Mwanga para decidir melhor, mas valide decisões críticas com apoio profissional quando necessário.</strong>
-        </p>
+        <div className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+          <Trans i18nKey="simulators.disclaimer" components={{ strong: <strong className="text-amber-500/80" /> }} />
+        </div>
       </div>
     </div>
   );

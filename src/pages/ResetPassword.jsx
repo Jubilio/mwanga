@@ -1,29 +1,32 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Lock, CheckCircle2, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Lock, CheckCircle2, ShieldCheck, AlertCircle, Key } from 'lucide-react';
 
 export default function ResetPassword() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
 
-  const [form, setForm] = useState({ password: '', confirm: '' });
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (!token) {
-      setError('Token de recuperação em falta ou inválido.');
+      setError(t('auth.reset.errors.token'));
     }
-  }, [token]);
+  }, [token, t]);
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (form.password !== form.confirm) {
-      return setError('As senhas não coincidem');
+    if (password !== confirmPassword) {
+      return setError(t('auth.reset.errors.match'));
     }
-    if (form.password.length < 8) {
-      return setError('A senha deve ter pelo menos 8 caracteres');
+    if (password.length < 8) {
+      return setError(t('auth.reset.errors.length'));
     }
 
     setLoading(true);
@@ -36,11 +39,11 @@ export default function ResetPassword() {
       const resp = await fetch(`${apiUrl}/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password: form.password })
+        body: JSON.stringify({ token, password })
       });
 
       const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'Falha ao redefinir senha');
+      if (!resp.ok) throw new Error(data.error || t('auth.reset.errors.fallback'));
 
       setSuccess(true);
     } catch (err) {
@@ -66,33 +69,33 @@ export default function ResetPassword() {
                 <ShieldCheck size={30} />
               </div>
               <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-ocean)', marginBottom: '0.5rem' }}>
-                Nova senha
+                {t('auth.reset.title')}
               </h1>
-              <p style={{ color: 'var(--color-muted)', fontSize: '0.9rem' }}>
-                Crie uma senha forte para proteger a sua conta.
+              <p style={{ color: 'var(--color-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                {t('auth.reset.subtitle')}
               </p>
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               <div>
                 <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Lock size={14} /> Nova senha
+                  <Lock size={14} /> {t('auth.login.password_label')}
                 </label>
                 <input
-                  type="password" required className="form-input"
+                  type="password" required minLength={8} className="form-input"
                   placeholder="••••••••"
-                  value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
+                  value={password} onChange={e => setPassword(e.target.value)}
                 />
               </div>
 
               <div>
                 <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Lock size={14} /> Confirmar senha
+                  <Lock size={14} /> {t('auth.reset.confirm_label') || 'Confirmar Senha'}
                 </label>
                 <input
-                  type="password" required className="form-input"
+                  type="password" required minLength={8} className="form-input"
                   placeholder="••••••••"
-                  value={form.confirm} onChange={e => setForm({ ...form, confirm: e.target.value })}
+                  value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
                 />
               </div>
 
@@ -107,10 +110,10 @@ export default function ResetPassword() {
               )}
 
               <button
-                type="submit" disabled={loading || (!!error && !token)} className="btn btn-primary"
+                type="submit" disabled={loading || !token} className="btn btn-primary"
                 style={{ width: '100%', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
               >
-                {loading ? 'A processar...' : 'Atualizar senha'}
+                {loading ? t('auth.login.btn_processing') : <><Key size={18} /> {t('auth.reset.btn_update')}</>}
               </button>
             </form>
           </>
@@ -120,13 +123,13 @@ export default function ResetPassword() {
               <CheckCircle2 size={60} strokeWidth={1.5} style={{ margin: '0 auto' }} />
             </div>
             <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '0.8rem' }}>
-              Senha atualizada!
+              {t('auth.reset.success_title')}
             </h2>
             <p style={{ color: 'var(--color-muted)', fontSize: '0.95rem', lineHeight: '1.5', marginBottom: '2rem' }}>
-              A sua senha foi redefinida com sucesso. Já pode aceder à sua conta Mwanga.
+              {t('auth.reset.success_desc')}
             </p>
             <Link to="/login" className="btn btn-primary" style={{ display: 'inline-block', padding: '12px 24px', textDecoration: 'none' }}>
-              Fazer login
+              {t('auth.reset.btn_to_login')}
             </Link>
           </div>
         )}

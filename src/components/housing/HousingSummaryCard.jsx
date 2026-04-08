@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { TrendingUp, AlertCircle, CheckCircle2, ChevronRight } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { fmt } from '../../utils/calculations';
@@ -8,8 +9,9 @@ const sparklineData = [
 ];
 
 export default function HousingSummaryCard({ totalInvested, currency, type }) {
+  const { t } = useTranslation();
   return (
-    <div className="relative min-w-0 overflow-hidden rounded-2xl p-6 md:p-8 bg-gradient-to-br from-ocean-deep via-ocean to-ocean-light border border-white/10 shadow-xl group">
+    <div className="relative min-w-0 overflow-hidden rounded-2xl p-6 md:p-8 bg-linear-to-br from-ocean-deep via-ocean to-ocean-light border border-white/10 shadow-xl group">
       {/* Decorative background flair */}
       <div className="absolute -right-20 -top-20 w-64 h-64 bg-gold/10 rounded-full blur-3xl group-hover:bg-gold/20 transition-all duration-700"></div>
       
@@ -19,7 +21,7 @@ export default function HousingSummaryCard({ totalInvested, currency, type }) {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-white/70 text-sm font-medium tracking-wide uppercase">
-              {type === 'renda' ? 'Total Arrendamento (Ano)' : 'Total Casa Própria (Ano)'}
+              {type === 'renda' ? t('housing.summary.total_rent_year') : t('housing.summary.total_own_year')}
             </span>
           </div>
           <div className="text-4xl md:text-5xl font-display font-bold text-white mb-4 drop-shadow-sm">
@@ -29,10 +31,10 @@ export default function HousingSummaryCard({ totalInvested, currency, type }) {
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-md border border-white/5">
               <span className="w-2 h-2 rounded-full bg-leaf animate-pulse"></span>
-              Estado: Em dia
+              {t('housing.summary.status')}
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-md border border-white/5">
-              <span>Próximo pag.: <strong>01 do próximo mês</strong></span>
+              <span>{t('housing.summary.next_payment', { date: <strong>{t('housing.summary.next_month_01')}</strong> })}</span>
             </div>
           </div>
         </div>
@@ -53,7 +55,7 @@ export default function HousingSummaryCard({ totalInvested, currency, type }) {
             </ResponsiveContainer>
           </div>
           <button className="text-xs font-semibold text-gold-light hover:text-gold flex items-center gap-1 transition-colors">
-            Ver detalhes completos <ChevronRight size={14} />
+            {t('housing.summary.view_details')} <ChevronRight size={14} />
           </button>
         </div>
         

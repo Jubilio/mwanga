@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { Wallet, LogIn, UserPlus, Lock, Mail, User } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
+import MwangaLogo from '../components/MwangaLogo';
 
 function getApiUrl() {
   let apiUrl = import.meta.env.VITE_API_URL || '';
@@ -27,6 +29,7 @@ function getCurrentOrigin() {
 }
 
 export default function Login() {
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState({ name: '', email: '', password: '', householdName: '' });
   const [loading, setLoading] = useState(false);
@@ -53,13 +56,13 @@ export default function Login() {
 
       const data = await resp.json();
       if (!resp.ok) {
-        throw new Error(getApiErrorMessage(data, 'Autenticação falhou'));
+        throw new Error(getApiErrorMessage(data, t('auth.forgot.error_fallback')));
       }
 
       localStorage.setItem('mwanga-token', data.token);
       await reloadData({ preferredUser: data.user });
 
-      showToast(isLogin ? 'Bem-vindo de volta!' : 'Conta criada com sucesso!');
+      showToast(isLogin ? t('auth.login.toasts.success') : t('auth.register.toasts.success'));
       navigate('/');
     } catch (err) {
       showToast(`Erro: ${err.message}`);
@@ -80,17 +83,17 @@ export default function Login() {
 
       const data = await resp.json();
       if (!resp.ok) {
-        throw new Error(getApiErrorMessage(data, 'Autenticação com Google falhou'));
+        throw new Error(getApiErrorMessage(data, t('auth.login.toasts.google_failed')));
       }
 
       if (!data?.token || !data?.user) {
-        throw new Error('Resposta inválida ao autenticar com Google');
+        throw new Error(t('auth.login.toasts.google_failed'));
       }
 
       localStorage.setItem('mwanga-token', data.token);
       await reloadData({ preferredUser: data.user });
 
-      showToast(data.created ? 'Conta criada com Google e sessão iniciada!' : 'Bem-vindo via Google!');
+      showToast(data.created ? t('auth.register.toasts.google_success') : t('auth.login.toasts.welcome_google'));
       navigate('/');
     } catch (err) {
       showToast(`Erro: ${err.message}`);
@@ -101,9 +104,7 @@ export default function Login() {
 
   function handleGoogleError() {
     const originLabel = currentOrigin || 'origem atual';
-    showToast(
-      `Login com Google indisponível. Confirme a configuração dessa origem: ${originLabel}.`
-    );
+    showToast(t('auth.login.toasts.google_unavailable', { origin: originLabel }));
   }
 
   return (
@@ -127,21 +128,12 @@ export default function Login() {
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <img 
-            src="/logo-mwanga.png?v=2" 
-            alt="Mwanga Financial Light" 
-            style={{ 
-              width: '100%', 
-              maxWidth: '260px', 
-              height: 'auto', 
-              margin: '0 auto',
-              display: 'block',
-              filter: 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.2))'
-            }} 
-          />
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <MwangaLogo variant="login" />
+          </div>
 
           <p style={{ color: 'var(--color-muted)', fontSize: '0.92rem', marginTop: '0.5rem', lineHeight: 1.5 }}>
-            {isLogin ? 'Entre para gerir as suas finanças.' : 'Crie a sua conta para começar a organizar a vida financeira da família.'}
+            {isLogin ? t('auth.login.subtitle') : t('auth.register.subtitle')}
           </p>
         </div>
 
@@ -154,7 +146,7 @@ export default function Login() {
               theme="outline"
               size="large"
               shape="pill"
-              locale="pt_BR"
+              locale={t('auth.login.google_locale') || 'pt_BR'}
               text="continue_with"
             />
           </div>
@@ -168,12 +160,12 @@ export default function Login() {
               textAlign: 'center'
             }}
           >
-            Continue com Google para entrar ou criar a sua conta automaticamente no primeiro acesso.
+            {t('auth.login.google_tip')}
           </p>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
-            <span style={{ fontSize: '0.8rem', color: 'var(--color-muted)' }}>OU</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--color-muted)' }}>{t('auth.login.or_divider')}</span>
             <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
           </div>
         </div>
@@ -182,7 +174,7 @@ export default function Login() {
           {!isLogin && (
             <div>
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <User size={14} /> Nome completo
+                <User size={14} /> {t('auth.register.name_label')}
               </label>
               <input
                 type="text"
@@ -190,7 +182,7 @@ export default function Login() {
                 minLength={2}
                 maxLength={100}
                 className="form-input"
-                placeholder="Ex: João Silva"
+                placeholder={t('auth.register.name_placeholder')}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
@@ -199,7 +191,7 @@ export default function Login() {
 
           <div>
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Mail size={14} /> Email
+              <Mail size={14} /> {t('auth.login.email_label')}
             </label>
             <input
               type="email"
@@ -214,7 +206,7 @@ export default function Login() {
 
           <div>
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Lock size={14} /> Senha
+              <Lock size={14} /> {t('auth.login.password_label')}
             </label>
             <input
               type="password"
@@ -228,7 +220,7 @@ export default function Login() {
             />
             {!isLogin && (
               <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--color-muted)' }}>
-                Use pelo menos 8 caracteres.
+                {t('auth.register.password_tip')}
               </p>
             )}
             {isLogin && (
@@ -245,7 +237,7 @@ export default function Login() {
                     cursor: 'pointer'
                   }}
                 >
-                  Esqueci-me da senha
+                  {t('auth.login.forgot_password')}
                 </button>
               </div>
             )}
@@ -253,12 +245,12 @@ export default function Login() {
 
           {!isLogin && (
             <div>
-              <label className="form-label">Nome da família (opcional)</label>
+              <label className="form-label">{t('auth.register.family_label')}</label>
               <input
                 type="text"
                 maxLength={100}
                 className="form-input"
-                placeholder="Ex: Família Silva"
+                placeholder={t('auth.register.family_placeholder')}
                 value={form.householdName}
                 onChange={(e) => setForm({ ...form, householdName: e.target.value })}
               />
@@ -280,29 +272,29 @@ export default function Login() {
               marginTop: '0.5rem'
             }}
           >
-            {loading ? 'A processar...' : isLogin ? <><LogIn size={18} /> Entrar</> : <><UserPlus size={18} /> Criar conta</>}
+            {loading ? t('auth.login.btn_processing') : isLogin ? <><LogIn size={18} /> {t('auth.login.btn_login')}</> : <><UserPlus size={18} /> {t('auth.register.btn_register')}</>}
           </button>
         </form>
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--color-muted)' }}>
           {isLogin ? (
             <p>
-              Não tem uma conta?{' '}
+              {t('auth.login.no_account')}{' '}
               <button
                 onClick={() => setIsLogin(false)}
                 style={{ color: 'var(--color-ocean)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
               >
-                Registe-se
+                {t('auth.login.register_link')}
               </button>
             </p>
           ) : (
             <p>
-              Já tem uma conta?{' '}
+              {t('auth.register.already_have')}{' '}
               <button
                 onClick={() => setIsLogin(true)}
                 style={{ color: 'var(--color-ocean)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
               >
-                Faça login
+                {t('auth.register.login_link')}
               </button>
             </p>
           )}

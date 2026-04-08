@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
 import { fmt, getMonthKey } from '../utils/calculations';
 import { getPaymentMethodLabel } from '../utils/paymentMethods';
 import { Plus, Trash2, CheckCircle2, AlertCircle, RefreshCcw, Wallet } from 'lucide-react';
 
 export default function Xitique() {
+  const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
   const [showAdd, setShowAdd] = useState(false);
@@ -49,11 +51,11 @@ export default function Xitique() {
     <div className="animate-fade-in" style={{ paddingBottom: '5rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 700, fontFamily: 'var(--font-display)' }}>Xitique</h1>
-          <p style={{ color: 'var(--color-muted)', fontSize: '0.9rem' }}>Gestão de poupança rotativa comunitária</p>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 700, fontFamily: 'var(--font-display)' }}>{t('xitique.title')}</h1>
+          <p style={{ color: 'var(--color-muted)', fontSize: '0.9rem' }}>{t('xitique.description')}</p>
         </div>
         <button onClick={() => setShowAdd(!showAdd)} className="btn btn-primary">
-          <Plus size={18} /> {showAdd ? 'Cancelar' : 'Novo Xitique'}
+          <Plus size={18} /> {showAdd ? t('xitique.btns.cancel') : t('xitique.btns.new')}
         </button>
       </div>
 
@@ -62,27 +64,27 @@ export default function Xitique() {
           <form onSubmit={handleCreate}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
               <div>
-                <label className="form-label">Nome do Grupo</label>
-                <input type="text" className="form-input" placeholder="Ex: Amigos de Pemba" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+                <label className="form-label">{t('xitique.form.group_name')}</label>
+                <input type="text" className="form-input" placeholder={t('xitique.form.group_name_placeholder')} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
               </div>
               <div>
-                <label className="form-label">Valor Mensal ({currency})</label>
-                <input type="number" className="form-input" placeholder="Ex: 5000" value={form.monthly_amount} onChange={e => setForm({ ...form, monthly_amount: e.target.value })} />
+                <label className="form-label">{t('xitique.form.monthly_amount', { currency })}</label>
+                <input type="number" className="form-input" placeholder={t('xitique.form.monthly_amount_placeholder')} value={form.monthly_amount} onChange={e => setForm({ ...form, monthly_amount: e.target.value })} />
               </div>
               <div>
-                <label className="form-label">Total Participantes</label>
+                <label className="form-label">{t('xitique.form.total_participants')}</label>
                 <input type="number" className="form-input" placeholder="5" value={form.total_participants} onChange={e => setForm({ ...form, total_participants: e.target.value })} />
               </div>
               <div>
-                <label className="form-label">Mês de Início</label>
+                <label className="form-label">{t('xitique.form.start_date')}</label>
                 <input type="date" className="form-input" value={form.start_date} onChange={e => setForm({ ...form, start_date: e.target.value })} />
               </div>
               <div>
-                <label className="form-label">Sua Posição</label>
+                <label className="form-label">{t('xitique.form.your_position')}</label>
                 <input type="number" className="form-input" min="1" max={form.total_participants || 1} value={form.your_position} onChange={e => setForm({ ...form, your_position: e.target.value })} />
               </div>
             </div>
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem', width: '100%' }}>Criar Grupo de Xitique</button>
+            <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem', width: '100%' }}>{t('xitique.btns.create')}</button>
           </form>
         </div>
       )}
@@ -90,8 +92,8 @@ export default function Xitique() {
       {state.xitiques.length === 0 ? (
         <div className="glass-card" style={{ padding: '3rem', textAlign: 'center' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔁</div>
-          <h3>Nenhum Xitique ativo</h3>
-          <p style={{ color: 'var(--color-muted)' }}>Crie um novo grupo para começar a poupar em comunidade.</p>
+          <h3>{t('xitique.empty.title')}</h3>
+          <p style={{ color: 'var(--color-muted)' }}>{t('xitique.empty.subtitle')}</p>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
@@ -101,9 +103,9 @@ export default function Xitique() {
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{x.name}</h3>
                   <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--color-muted)' }}>
-                    <span>Mensalidade: <strong>{fmt(x.monthly_amount, currency)}</strong></span>
-                    <span>Participantes: <strong>{x.total_participants}</strong></span>
-                    <span>Sua Vez: <strong>Mês {x.your_position}</strong></span>
+                    <span>{t('xitique.card.monthly_payment')}: <strong>{fmt(x.monthly_amount, currency)}</strong></span>
+                    <span>{t('xitique.card.participants')}: <strong>{x.total_participants}</strong></span>
+                    <span>{t('xitique.card.your_turn', { position: x.your_position })}</span>
                   </div>
                 </div>
                 <button onClick={() => dispatch({ type: 'DELETE_XITIQUE', payload: x.id })} className="btn btn-danger" style={{ padding: '0.5rem' }}>
@@ -114,11 +116,11 @@ export default function Xitique() {
               {/* Progress Summary */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>Total Contribuído</div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>{t('xitique.card.total_contributed')}</div>
                    <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>{fmt(x.contributions.filter(c => c.paid).reduce((s, c) => s + c.amount, 0), currency)}</div>
                 </div>
                 <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>Total a Receber</div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>{t('xitique.card.total_to_receive')}</div>
                    <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-leaf)' }}>{fmt(x.monthly_amount * x.total_participants, currency)}</div>
                 </div>
               </div>
@@ -128,11 +130,11 @@ export default function Xitique() {
                 <table className="data-table" style={{ fontSize: '0.85rem' }}>
                   <thead>
                     <tr>
-                      <th>Ciclo</th>
-                      <th>Mês Esperado</th>
-                      <th>Estado Recebimento</th>
-                      <th>Estado Pagamento</th>
-                      <th>Ações</th>
+                      <th>{t('xitique.table.cycle')}</th>
+                      <th>{t('xitique.table.expected_month')}</th>
+                      <th>{t('xitique.table.receipt_status')}</th>
+                      <th>{t('xitique.table.payment_status')}</th>
+                      <th>{t('xitique.table.actions')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -145,14 +147,14 @@ export default function Xitique() {
 
                       return (
                         <tr key={c.id} style={isYourTurn ? { background: 'rgba(102, 187, 106, 0.05)' } : {}}>
-                          <td><strong>Mes {c.cycle_number}</strong></td>
+                          <td><strong>{t('xitique.table.month_label', { number: c.cycle_number })}</strong></td>
                           <td>{c.due_date}</td>
                           <td>
                             {isYourTurn ? (
                               safeReceipt.received_date ? (
-                                <span className="badge badge-pago">✅ Recebido ({safeReceipt.received_date})</span>
+                                <span className="badge badge-pago">{t('xitique.table.received', { date: safeReceipt.received_date })}</span>
                               ) : (
-                                <span className="badge badge-atrasado">💎 Sua Vez!</span>
+                                <span className="badge badge-atrasado">{t('xitique.table.your_turn_badge')}</span>
                               )
                             ) : (
                               <span style={{ opacity: 0.3 }}>—</span>
@@ -160,9 +162,9 @@ export default function Xitique() {
                           </td>
                           <td>
                             {safeContribution.paid ? (
-                              <span className="badge badge-pago"><CheckCircle2 size={12} /> Pago</span>
+                              <span className="badge badge-pago"><CheckCircle2 size={12} /> {t('xitique.table.paid')}</span>
                             ) : (
-                              <span className="badge badge-pendente"><AlertCircle size={12} /> Pendente</span>
+                              <span className="badge badge-pendente"><AlertCircle size={12} /> {t('xitique.table.pending')}</span>
                             )}
                           </td>
                           <td>
@@ -174,7 +176,7 @@ export default function Xitique() {
                                   value={paymentAccount}
                                   onChange={e => setPaymentAccount(e.target.value)}
                                 >
-                                  <option value="">Sem meio associado</option>
+                                  <option value="">{t('xitique.table.no_account')}</option>
                                   {state.contas?.map(acc => (
                                     <option key={acc.id} value={acc.id}>{acc.name} • {getPaymentMethodLabel(acc.type)}</option>
                                   ))}
@@ -183,12 +185,12 @@ export default function Xitique() {
                               <div style={{ display: 'flex', gap: '0.5rem' }}>
                                 {!safeContribution.paid && safeContribution.id && (
                                   <button onClick={() => handlePay(x.id, safeContribution.id)} className="btn btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
-                                    Pagar
+                                    {t('xitique.table.pay_btn')}
                                   </button>
                                 )}
                                 {isYourTurn && !safeReceipt.received_date && safeReceipt.id && (
                                   <button onClick={() => handleReceive(x.id, safeReceipt.id)} className="btn btn-leaf" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
-                                     Receber {fmt(safeReceipt.total_received, currency)}
+                                     {t('xitique.table.receive_btn', { amount: fmt(safeReceipt.total_received, currency) })}
                                   </button>
                                 )}
                               </div>

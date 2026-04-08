@@ -244,6 +244,7 @@ const parseWithLLM = async (text) => {
         'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01',
       },
+      timeout: 12000, // 12s timeout to prevent hanging on mobile
     });
 
     const raw = res.data.content?.map((block) => block.text || '').join('').trim();

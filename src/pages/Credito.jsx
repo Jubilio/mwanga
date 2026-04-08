@@ -902,12 +902,12 @@ function TabApplication({ scoreData, eligData, onSuccess }) {
   ];
 
   const PURPOSES = [
-    t('credit.apply.purpose_capital', { defaultValue: "Capital de giro" }),
-    t('credit.apply.purpose_school', { defaultValue: "Material escolar" }),
-    t('credit.apply.purpose_medical', { defaultValue: "Despesas médicas" }),
-    t('credit.apply.purpose_home', { defaultValue: "Reforma da casa" }),
-    t('credit.apply.purpose_equip', { defaultValue: "Equipamento" }),
-    t('credit.apply.purpose_other', { defaultValue: "Outro" })
+    t('credit.apply.purpose_capital'),
+    t('credit.apply.purpose_school'),
+    t('credit.apply.purpose_medical'),
+    t('credit.apply.purpose_home'),
+    t('credit.apply.purpose_equip'),
+    t('credit.apply.purpose_other')
   ];
 
   const handleFileChange = (docKey, e) => {
@@ -996,17 +996,17 @@ function TabApplication({ scoreData, eligData, onSuccess }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Card glow={G.credit} style={{ textAlign: "center", padding: "28px 20px" }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>✅</div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif", marginBottom: 8 }}>Pré-qualificado!</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif", marginBottom: 8 }}>{t('credit.apply.pre_title')}</div>
             <div style={{ fontSize: 14, color: G.muted, lineHeight: 1.7, marginBottom: 20 }}>
-              Com base no teu perfil financeiro, o Mwanga pré-aprovou-te para um crédito de até
+              {t('credit.apply.pre_desc_1')}
               <strong style={{ color: G.text }}> MT {fmtShort(scoreData.maxAmount)}</strong>.
-              Score: <strong style={{ color: G.credit }}>{scoreData.score}/100 — {scoreData.label}</strong>
+              {t('credit.apply.pre_desc_2')} <strong style={{ color: G.credit }}>{scoreData.score}/100 — {scoreData.label}</strong>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
               {[
-                { l: "Máximo aprovado", v: `MT ${fmtShort(scoreData.maxAmount)}`, c: G.credit },
-                { l: "Parcela máxima", v: `MT ${fmtShort(eligData.maxParcela)}`, c: G.gold },
-                { l: "Comprometimento actual", v: `${eligData.comprometimento_atual.toFixed(0)}%`, c: eligData.comprometimento_atual > 30 ? G.warn : G.green },
+                { l: t('credit.apply.pre_grid_1'), v: `MT ${fmtShort(scoreData.maxAmount)}`, c: G.credit },
+                { l: t('credit.apply.pre_grid_2'), v: `MT ${fmtShort(eligData.maxParcela)}`, c: G.gold },
+                { l: t('credit.apply.pre_grid_3'), v: `${eligData.comprometimento_atual.toFixed(0)}%`, c: eligData.comprometimento_atual > 30 ? G.warn : G.green },
               ].map((s, i) => (
                 <div key={i} style={{ background: G.muted3, borderRadius: 12, padding: "12px 8px", textAlign: "center" }}>
                   <div style={{ fontSize: 10, color: G.muted, marginBottom: 4 }}>{s.l}</div>
@@ -1015,11 +1015,11 @@ function TabApplication({ scoreData, eligData, onSuccess }) {
               ))}
             </div>
             <Btn variant="green" size="lg" style={{ width: "100%" }} onClick={() => setStep(2)}>
-              Continuar com a Solicitação →
+              {t('credit.apply.pre_btn')}
             </Btn>
           </Card>
           <div style={{ fontSize: 12, color: G.muted, textAlign: "center", lineHeight: 1.7 }}>
-            A pré-qualificação não é garantia de aprovação final. O parceiro financiador tomará a decisão definitiva após análise dos documentos.
+            {t('credit.apply.pre_disclaimer')}
           </div>
         </div>
       )}
@@ -1121,10 +1121,10 @@ function TabApplication({ scoreData, eligData, onSuccess }) {
             <div style={{ fontSize: 12, fontWeight: 700, color: G.muted, letterSpacing: "0.12em", marginBottom: 16 }}>{t('credit.apply.docs_title')}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {[
-                { key: "biDocument", label: "Bilhete de Identidade (BI)", desc: "Frente e verso, foto nítida", icon: "🪪" },
-                { key: "residenciaDocument", label: "Comprovativo de Residência", desc: "Conta de electricidade ou água", icon: "🏠" },
-                { key: "rendaDocument", label: "Comprovativo de Renda", desc: "Recibo de vencimento ou extracto bancário", icon: "💼" },
-                { key: "selfieDocument", label: "Selfie com BI", desc: "Foto segurando o documento aberto", icon: "🤳" },
+                { key: "biDocument", label: t('credit.apply.doc_bi_label'), desc: t('credit.apply.doc_bi_desc'), icon: "🪪" },
+                { key: "residenciaDocument", label: t('credit.apply.doc_res_label'), desc: t('credit.apply.doc_res_desc'), icon: "🏠" },
+                { key: "rendaDocument", label: t('credit.apply.doc_rent_label'), desc: t('credit.apply.doc_rent_desc'), icon: "💼" },
+                { key: "selfieDocument", label: t('credit.apply.doc_selfie_label'), desc: t('credit.apply.doc_selfie_desc'), icon: "🤳" },
               ].map(doc => (
                 <div key={doc.key} onClick={() => docRefs[doc.key].current?.click()} style={{
                   display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14,
@@ -1300,9 +1300,9 @@ function TabStrategy({ scoreData, debts }) {
       <Card>
         <div style={{ fontSize: 12, fontWeight: 700, color: G.muted, letterSpacing: "0.12em", marginBottom: 16 }}>{t('credit.strategy.risk_map_title')}</div>
         {[
-          { zona: t('credit.strategy.risk_green_label', { defaultValue: "Zona Verde" }), desc: t('credit.strategy.risk_green_desc', { defaultValue: "Crédito saudável, pagamentos em dia, score acima de 70" }), color: G.credit, icon: "✅", active: scoreData.score >= 70 },
-          { zona: t('credit.strategy.risk_yellow_label', { defaultValue: "Zona Amarela" }), desc: t('credit.strategy.risk_yellow_desc', { defaultValue: "Comprometimento entre 30–40%, atenção redobrada necessária" }), color: G.gold, icon: "⚠️", active: scoreData.score >= 55 && scoreData.score < 70 },
-          { zona: t('credit.strategy.risk_red_label', { defaultValue: "Zona Vermelha" }), desc: t('credit.strategy.risk_red_desc', { defaultValue: "Score abaixo de 55, crédito negado, risco de incumprimento" }), color: G.red, icon: "🚫", active: scoreData.score < 55 },
+          { zona: t('credit.strategy.risk_green_label'), desc: t('credit.strategy.risk_green_desc'), color: G.credit, icon: "✅", active: scoreData.score >= 70 },
+          { zona: t('credit.strategy.risk_yellow_label'), desc: t('credit.strategy.risk_yellow_desc'), color: G.gold, icon: "⚠️", active: scoreData.score >= 55 && scoreData.score < 70 },
+          { zona: t('credit.strategy.risk_red_label'), desc: t('credit.strategy.risk_red_desc'), color: G.red, icon: "🚫", active: scoreData.score < 55 },
         ].map((z, i) => (
           <div key={i} style={{ display: "flex", gap: 12, padding: "12px 14px", borderRadius: 14, marginBottom: 8, background: z.active ? `${z.color}12` : G.muted3, border: `1px solid ${z.active ? z.color : "transparent"}35` }}>
             <span style={{ fontSize: 20 }}>{z.icon}</span>
@@ -1318,10 +1318,10 @@ function TabStrategy({ scoreData, debts }) {
       <Card style={{ background: `${G.blue}05`, border: `1px solid ${G.blue}18` }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: G.blue, letterSpacing: "0.12em", marginBottom: 16 }}>{t('credit.strategy.improve_title')}</div>
         {[
-          { acção: t('credit.strategy.tip_xitique', { defaultValue: "Completar mais ciclos de Xitique" }), impacto: "+15 pts", prazo: "3–6 meses", icon: "✦" },
-          { acção: t('credit.strategy.tip_savings', { defaultValue: "Aumentar taxa de poupança para 25%+" }), impacto: "+10 pts", prazo: "2 meses", icon: "🏦" },
-          { acção: t('credit.strategy.tip_card', { defaultValue: "Quitar o Cartão Millennium" }), impacto: "+8 pts", prazo: "6 meses", icon: "💳" },
-          { acção: t('credit.strategy.tip_logging', { defaultValue: "Manter registo de transações no Mwanga" }), impacto: "+5 pts", prazo: "1 mês", icon: "↕" },
+          { acção: t('credit.strategy.tip_xitique'), impacto: "+15 pts", prazo: t('credit.strategy.term_3_6_months'), icon: "✦" },
+          { acção: t('credit.strategy.tip_savings'), impacto: "+10 pts", prazo: t('credit.strategy.term_2_months'), icon: "🏦" },
+          { acção: t('credit.strategy.tip_card'), impacto: "+8 pts", prazo: t('credit.strategy.term_6_months'), icon: "💳" },
+          { acção: t('credit.strategy.tip_logging'), impacto: "+5 pts", prazo: t('credit.strategy.term_1_month'), icon: "↕" },
         ].map((a, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: i < 3 ? `1px solid ${G.border}` : "none" }}>
             <span style={{ fontSize: 18 }}>{a.icon}</span>
@@ -1388,13 +1388,13 @@ export default function MwangaCredito() {
   const isPro = state.settings?.plan === 'pro';
 
   const TABS = [
-    { id: "overview",  label: t('credit.tabs.overview', { defaultValue: "Visão Geral" }),  icon: "◎" },
-    { id: "vsla",      label: t('credit.tabs.community', { defaultValue: "Comunidade" }),   icon: "🤝" },
-    { id: "simulator", label: t('credit.tabs.simulator', { defaultValue: "Simulador" }),    icon: "🧭" },
-    { id: "compare",   label: t('credit.tabs.compare', { defaultValue: "Comparar" }),     icon: "⚖️" },
-    { id: "consolidate", label: t('credit.tabs.consolidate', { defaultValue: "Consolidar" }), icon: "🔄" },
-    { id: "apply",     label: t('credit.tabs.apply', { defaultValue: "Solicitar" }),    icon: "💸" },
-    { id: "strategy",  label: t('credit.tabs.strategy', { defaultValue: "Estratégia" }),  icon: "👑" },
+    { id: "overview",  label: t('credit.tabs.overview'),  icon: "◎" },
+    { id: "vsla",      label: t('credit.tabs.community'),   icon: "🤝" },
+    { id: "simulator", label: t('credit.tabs.simulator'),    icon: "🧭" },
+    { id: "compare",   label: t('credit.tabs.compare'),     icon: "⚖️" },
+    { id: "consolidate", label: t('credit.tabs.consolidate'), icon: "🔄" },
+    { id: "apply",     label: t('credit.tabs.apply'),    icon: "💸" },
+    { id: "strategy",  label: t('credit.tabs.strategy'),  icon: "👑" },
   ];
 
   function handleApply() { setTab("apply"); }
@@ -1424,10 +1424,10 @@ export default function MwangaCredito() {
                   Mwanga <span style={{ color: G.credit }}>Credit</span>
                 </div>
                 <div style={{ fontSize: 12, color: G.muted, display: "flex", alignItems: "center", gap: 8 }}>
-                  Microcrédito inteligente · Powered by Binth
+                  {t('credit.header.subtitle')}
                   <button 
                     onClick={() => window.location.reload()}
-                    title="Actualizar aplicação"
+                    title={t('credit.header.refresh_title')}
                     style={{ 
                       background: "transparent", border: "none", cursor: "pointer", 
                       padding: 4, display: "flex", alignItems: "center", justifyContent: "center",
@@ -1443,7 +1443,7 @@ export default function MwangaCredito() {
               </div>
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 11, color: G.muted }}>Score actual</div>
+              <div style={{ fontSize: 11, color: G.muted }}>{t('credit.header.score_label')}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ fontSize: 22, fontWeight: 900, color: scoreData.color, fontFamily: "Sora,sans-serif" }}>{scoreData.score}</span>
                 <Badge label={scoreData.label} color={scoreData.color} />
@@ -1482,7 +1482,7 @@ export default function MwangaCredito() {
         {tab === "consolidate" && <TabConsolidate debts={state.dividas} userData={userData} />}
         {tab === "apply"     && <TabApplication scoreData={scoreData} eligData={eligData} />}
         {tab === "strategy"  && (
-          <ProGate isPro={isPro} title="Estratégia de Pagamento" description="A análise Avalanche de dívidas e o Mapa de Risco são exclusivos para utilizadores PRO.">
+          <ProGate isPro={isPro} title={t('credit.strategy.strategy_title')} description={t('credit.strategy.strategy_desc')}>
             <TabStrategy scoreData={scoreData} debts={state.dividas} />
           </ProGate>
         )}

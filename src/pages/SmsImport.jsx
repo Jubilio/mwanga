@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, Clipboard, MessageSquare, RefreshCw, ShieldCheck, Smartphone, Zap } from 'lucide-react';
 import api from '../utils/api';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '../components/Toast';
 
 const SAMPLE_SMS = [
@@ -12,17 +13,17 @@ const SAMPLE_SMS = [
   'Ola! A tua encomenda chegou. Levanta na loja mais proxima com o codigo 8821.',
 ];
 
-const TYPE_COLORS = {
-  debit: { bg: 'bg-coral/10', border: 'border-coral', text: 'text-coral', label: 'DEBITO' },
-  credit: { bg: 'bg-aurora/10', border: 'border-aurora', text: 'text-aurora', label: 'CREDITO' },
-  transfer_out: { bg: 'bg-gold/10', border: 'border-gold', text: 'text-gold', label: 'TRANSF. SAIDA' },
-  transfer_in: { bg: 'bg-sky/10', border: 'border-sky', text: 'text-sky', label: 'TRANSF. ENTRADA' },
-  withdrawal: { bg: 'bg-purple-500/10', border: 'border-purple-500', text: 'text-purple-400', label: 'LEVANTAMENTO' },
-  deposit: { bg: 'bg-emerald-500/10', border: 'border-emerald-500', text: 'text-emerald-400', label: 'DEPOSITO' },
-  payment: { bg: 'bg-orange-500/10', border: 'border-orange-500', text: 'text-orange-400', label: 'PAGAMENTO' },
-  fee: { bg: 'bg-coral/10', border: 'border-coral', text: 'text-coral', label: 'TAXA' },
-  unknown: { bg: 'bg-slate-500/10', border: 'border-slate-500', text: 'text-slate-400', label: 'DESCONHECIDO' },
-};
+const TYPE_COLORS = (t) => ({
+  debit: { bg: 'bg-coral/10', border: 'border-coral', text: 'text-coral', label: t('sms_import.result.labels.description') },
+  credit: { bg: 'bg-aurora/10', border: 'border-aurora', text: 'text-aurora', label: t('sms_import.result.labels.description') },
+  transfer_out: { bg: 'bg-gold/10', border: 'border-gold', text: 'text-gold', label: t('sms_import.result.labels.description') },
+  transfer_in: { bg: 'bg-sky/10', border: 'border-sky', text: 'text-sky', label: t('sms_import.result.labels.description') },
+  withdrawal: { bg: 'bg-purple-500/10', border: 'border-purple-500', text: 'text-purple-400', label: t('sms_import.result.labels.description') },
+  deposit: { bg: 'bg-emerald-500/10', border: 'border-emerald-500', text: 'text-emerald-400', label: t('sms_import.result.labels.description') },
+  payment: { bg: 'bg-orange-500/10', border: 'border-orange-500', text: 'text-orange-400', label: t('sms_import.result.labels.description') },
+  fee: { bg: 'bg-coral/10', border: 'border-coral', text: 'text-coral', label: t('sms_import.result.labels.description') },
+  unknown: { bg: 'bg-slate-500/10', border: 'border-slate-500', text: 'text-slate-400', label: t('transactions.categories.other') },
+});
 
 function ConfidenceBar({ score }) {
   const pct = Math.round((score || 0) * 100);
@@ -56,30 +57,31 @@ function inferTransactionType(result) {
   return ['credit', 'deposit', 'transfer_in'].includes(result.transaction_type) ? 'receita' : 'despesa';
 }
 
-function inferCategory(result) {
+function inferCategory(result, t) {
   const type = result.transaction_type;
-  if (type === 'withdrawal') return 'Levantamento';
-  if (type === 'transfer_out' || type === 'transfer_in') return 'Transferencias';
-  if (type === 'payment' || type === 'debit') return 'Outros';
-  if (type === 'credit' || type === 'deposit') return 'Receitas';
-  if (type === 'fee') return 'Taxas';
-  return 'Outros';
+  if (type === 'withdrawal') return t('transactions.categories.withdrawal') || 'Levantamento';
+  if (type === 'transfer_out' || type === 'transfer_in') return t('transactions.categories.transport') || 'Transferencias'; // Best fit for general transport/transfer if missing specific
+  if (type === 'payment' || type === 'debit') return t('transactions.categories.other') || 'Outros';
+  if (type === 'credit' || type === 'deposit') return t('transactions.categories.salary') || 'Receitas';
+  if (type === 'fee') return t('transactions.categories.other') || 'Taxas';
+  return t('transactions.categories.other') || 'Outros';
 }
 
-function buildDescription(result) {
-  const label = TYPE_COLORS[result.transaction_type]?.label || result.transaction_type || 'Movimento';
+function buildDescription(result, t) {
+  const types = TYPE_COLORS(t);
+  const label = types[result.transaction_type]?.label || result.transaction_type || 'Movimento';
   const extras = [result.recipient_name, result.agent_code].filter(Boolean).join(' • ');
   return [result.bank_name || 'SMS', label, extras].filter(Boolean).join(' - ').slice(0, 255);
 }
 
-function buildNote(result, rawText) {
+function buildNote(result, rawText, t) {
   const pieces = [
-    `Origem SMS: ${result.bank_name || 'desconhecida'}`,
-    result.transaction_id ? `Ref: ${result.transaction_id}` : null,
-    result.account_number ? `Conta: ${result.account_number}` : null,
-    result.balance_after !== null && result.balance_after !== undefined ? `Saldo apos: ${result.balance_after} ${result.currency || 'MZN'}` : null,
-    result.fee_amount ? `Taxa: ${result.fee_amount} ${result.currency || 'MZN'}` : null,
-    `Confianca: ${Math.round((result.confidence_score || 0) * 100)}%`,
+    `${t('sms_import.result.labels.bank')}: ${result.bank_name || '?' }`,
+    result.transaction_id ? `${t('sms_import.result.labels.tx_id')}: ${result.transaction_id}` : null,
+    result.account_number ? `${t('sms_import.result.labels.account_ref')}: ${result.account_number}` : null,
+    result.balance_after !== null && result.balance_after !== undefined ? `${t('sms_import.result.labels.balance_after')}: ${result.balance_after} ${result.currency || 'MZN'}` : null,
+    result.fee_amount ? `${t('sms_import.result.labels.fee')}: ${result.fee_amount} ${result.currency || 'MZN'}` : null,
+    `${t('sms_import.result.confidence_label')}: ${Math.round((result.confidence_score || 0) * 100)}%`,
     `SMS: ${rawText}`,
   ].filter(Boolean);
 
@@ -93,10 +95,15 @@ export default function SmsImport() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [pasteLoading, setPasteLoading] = useState(false);
+  const { t } = useTranslation();
   const { showToast } = useToast();
   const textareaRef = useRef(null);
 
-  const typeInfo = result?.transaction_type ? TYPE_COLORS[result.transaction_type] || TYPE_COLORS.unknown : null;
+  const typeInfo = useMemo(() => {
+    if (!result?.transaction_type) return null;
+    const types = TYPE_COLORS(t);
+    return types[result.transaction_type] || types.unknown;
+  }, [result?.transaction_type, t]);
   const incomingSharedText = useMemo(
     () => searchParams.get('text') || searchParams.get('sms') || searchParams.get('body') || '',
     [searchParams],
@@ -110,13 +117,23 @@ export default function SmsImport() {
     setResult(null);
 
     try {
-      const res = await api.post('/sms/parse', { raw_text: raw });
+      // Timeout after 15s to prevent infinite loading on mobile
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+      const res = await api.post('/sms/parse', { raw_text: raw }, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
       const parsedData = res.data.data.parsed_data;
       setResult(parsedData);
       showToast('SMS analisado com sucesso!', 'success');
     } catch (error) {
       console.error(error);
-      showToast(error.response?.data?.message || error.response?.data?.error || 'Erro ao processar o SMS.', 'error');
+      if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
+        showToast('A análise demorou demasiado. Verifique a sua conexão e tente novamente.', 'error');
+      } else {
+        showToast(error.response?.data?.message || error.response?.data?.error || 'Erro ao processar o SMS.', 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -130,29 +147,44 @@ export default function SmsImport() {
 
     setSmsText(cleaned);
     setSearchParams({}, { replace: true });
-    showToast('Mensagem recebida no importador. A analisar...', 'success');
+    showToast(t('sms_import.toasts.shared_received'), 'success');
     parseText(cleaned);
-  }, [incomingSharedText, parseText, setSearchParams, showToast]);
+  }, [incomingSharedText, parseText, setSearchParams, showToast, t]);
 
   async function handlePasteFromClipboard() {
-    if (!navigator.clipboard?.readText) {
-      showToast('O seu browser nao permite ler o clipboard automaticamente.', 'error');
-      return;
-    }
-
     setPasteLoading(true);
     try {
-      const clipText = await navigator.clipboard.readText();
+      // Check if Clipboard API is available (requires HTTPS on mobile)
+      if (!navigator.clipboard?.readText) {
+        // Fallback: focus the textarea so user can paste manually
+        textareaRef.current?.focus();
+        showToast(t('sms_import.toasts.paste_info'), 'info');
+        return;
+      }
+
+      // Add timeout for mobile browsers that silently hang
+      const clipPromise = navigator.clipboard.readText();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 5000)
+      );
+
+      const clipText = await Promise.race([clipPromise, timeoutPromise]);
       if (!clipText.trim()) {
-        showToast('Nao foi encontrado texto no clipboard.', 'error');
+        showToast(t('sms_import.toasts.paste_empty'), 'error');
         return;
       }
       setSmsText(clipText);
       textareaRef.current?.focus();
-      showToast('Mensagem colada do clipboard.', 'success');
+      showToast(t('sms_import.toasts.paste_success'), 'success');
     } catch (error) {
       console.error(error);
-      showToast('Nao foi possivel ler o clipboard neste dispositivo.', 'error');
+      // Fallback: focus textarea for manual paste
+      textareaRef.current?.focus();
+      if (error.message === 'timeout') {
+        showToast(t('sms_import.toasts.paste_blocked'), 'error');
+      } else {
+        showToast(t('sms_import.toasts.paste_manual'), 'error');
+      }
     } finally {
       setPasteLoading(false);
     }
@@ -173,12 +205,12 @@ export default function SmsImport() {
       };
 
       await api.post('/transactions', payload);
-      showToast('Transacao gravada com sucesso!', 'success');
+      showToast(t('sms_import.toasts.save_success'), 'success');
       setResult(null);
       setSmsText('');
     } catch (error) {
       console.error(error);
-      showToast(error.response?.data?.error || 'Erro ao guardar a transacao.', 'error');
+      showToast(error.response?.data?.error || t('sms_import.toasts.save_error'), 'error');
     } finally {
       setSaving(false);
     }
@@ -189,10 +221,10 @@ export default function SmsImport() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <Zap className="text-gold" />
-          SMS Financial Parser Engine
+          {t('sms_import.title')}
         </h1>
         <p className="text-slate-400 mt-2">
-          Cole, partilhe ou importe SMS bancarias para extracao estruturada e gravacao rapida.
+          {t('sms_import.description')}
         </p>
       </div>
 
@@ -206,17 +238,17 @@ export default function SmsImport() {
                 <div className="w-2.5 h-2.5 rounded-full bg-aurora" />
               </div>
               <span className="ml-2 text-xs text-slate-400 tracking-widest font-semibold flex items-center gap-2">
-                <MessageSquare size={14} /> SMS INPUT
+                <MessageSquare size={14} /> {t('sms_import.input_header')}
               </span>
             </div>
 
             <div className="p-5 space-y-4">
               <div className="rounded-2xl border border-sky/20 bg-sky/5 p-4 text-xs text-slate-300 leading-6">
                 <div className="flex items-center gap-2 font-bold text-sky mb-2">
-                  <Smartphone size={14} /> No celular
+                  <Smartphone size={14} /> {t('sms_import.mobile_tip.title')}
                 </div>
                 <p>
-                  Pode colar a mensagem do clipboard ou, se o Mwanga estiver instalado como PWA, partilhar o SMS diretamente para esta pagina.
+                  {t('sms_import.mobile_tip.desc')}
                 </p>
               </div>
 
@@ -224,7 +256,7 @@ export default function SmsImport() {
                 ref={textareaRef}
                 value={smsText}
                 onChange={(e) => setSmsText(e.target.value)}
-                placeholder="Cole aqui a mensagem SMS bancaria..."
+                placeholder={t('sms_import.placeholder')}
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}
@@ -239,7 +271,7 @@ export default function SmsImport() {
                   className="py-3 border border-white/10 bg-white/5 hover:bg-white/10 text-slate-200 font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {pasteLoading ? <RefreshCw size={18} className="animate-spin" /> : <Clipboard size={18} />}
-                  Colar do celular
+                  {t('sms_import.btn_paste')}
                 </button>
 
                 <button
@@ -249,14 +281,14 @@ export default function SmsImport() {
                   className="py-3 bg-linear-to-r from-gold to-gold-deep hover:from-gold-deep hover:to-sand text-midnight font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? <RefreshCw size={18} className="animate-spin" /> : <Zap size={18} />}
-                  {loading ? 'ANALISANDO...' : 'EXTRAIR DADOS'}
+                  {loading ? t('sms_import.btn_analyzing') : t('sms_import.btn_analyze')}
                 </button>
               </div>
             </div>
           </div>
 
           <div className="glass-card p-5">
-            <div className="text-xs text-slate-400 tracking-widest font-semibold mb-4">EXEMPLOS RAPIDOS</div>
+            <div className="text-xs text-slate-400 tracking-widest font-semibold mb-4">{t('sms_import.examples_header')}</div>
             <div className="flex flex-col gap-2">
               {SAMPLE_SMS.map((sample, index) => (
                 <button
@@ -282,7 +314,7 @@ export default function SmsImport() {
               <div className={`px-5 py-4 border-b ${typeInfo?.bg || 'bg-white/5'} border-white/10 flex items-center justify-between gap-3`}>
                 {result.is_financial === false ? (
                   <span className="text-sm font-bold text-slate-400 flex items-center gap-2">
-                    <AlertCircle size={16} /> NAO FINANCEIRO
+                    <AlertCircle size={16} /> {t('sms_import.result.non_financial')}
                   </span>
                 ) : (
                   <>
@@ -301,26 +333,26 @@ export default function SmsImport() {
                   <div className="mb-6 bg-black/20 p-4 rounded-xl border border-white/5">
                     <div className="flex justify-between items-center mb-2 gap-3">
                       <span className="text-xs text-slate-400 tracking-widest font-semibold flex items-center gap-1.5">
-                        <ShieldCheck size={14} className="text-aurora" /> NIVEL DE CONFIANCA
+                        <ShieldCheck size={14} className="text-aurora" /> {t('sms_import.result.confidence_label')}
                       </span>
                       {result.confidence_score >= 0.8 && (
-                        <span className="text-[10px] bg-aurora/20 text-aurora px-2 py-0.5 rounded-full">ALTA</span>
+                        <span className="text-[10px] bg-aurora/20 text-aurora px-2 py-0.5 rounded-full">{t('sms_import.result.confidence_high')}</span>
                       )}
                     </div>
                     <ConfidenceBar score={result.confidence_score} />
                   </div>
 
                   <div className="space-y-1 bg-black/10 p-4 rounded-xl border border-white/5">
-                    <DataRow label="Banco / Origem" value={result.bank_name} accentClass="text-slate-200 font-bold" />
-                    <DataRow label="Conta Ref." value={result.account_number} accentClass="text-sky" />
-                    <DataRow label="ID Transacao" value={result.transaction_id} />
-                    <DataRow label="Data/Hora" value={result.transaction_datetime} />
-                    <DataRow label="Saldo Apos" value={result.balance_after !== null && result.balance_after !== undefined ? `${Number(result.balance_after).toLocaleString('pt-MZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${result.currency || 'MZN'}` : null} accentClass="text-aurora" />
-                    <DataRow label="Taxa" value={result.fee_amount ? `${Number(result.fee_amount).toLocaleString('pt-MZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${result.currency || 'MZN'}` : null} accentClass="text-coral" />
-                    <DataRow label="Beneficiario" value={result.recipient_name} />
-                    <DataRow label="Conta Benef." value={result.recipient_account} />
-                    <DataRow label="Codigo Agente" value={result.agent_code} />
-                    <DataRow label="Descricao" value={result.description} />
+                    <DataRow label={t('sms_import.result.labels.bank')} value={result.bank_name} accentClass="text-slate-200 font-bold" />
+                    <DataRow label={t('sms_import.result.labels.account_ref')} value={result.account_number} accentClass="text-sky" />
+                    <DataRow label={t('sms_import.result.labels.tx_id')} value={result.transaction_id} />
+                    <DataRow label={t('sms_import.result.labels.datetime')} value={result.transaction_datetime} />
+                    <DataRow label={t('sms_import.result.labels.balance_after')} value={result.balance_after !== null && result.balance_after !== undefined ? `${Number(result.balance_after).toLocaleString('pt-MZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${result.currency || 'MZN'}` : null} accentClass="text-aurora" />
+                    <DataRow label={t('sms_import.result.labels.fee')} value={result.fee_amount ? `${Number(result.fee_amount).toLocaleString('pt-MZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${result.currency || 'MZN'}` : null} accentClass="text-coral" />
+                    <DataRow label={t('sms_import.result.labels.recipient')} value={result.recipient_name} />
+                    <DataRow label={t('sms_import.result.labels.recipient_acc')} value={result.recipient_account} />
+                    <DataRow label={t('sms_import.result.labels.agent')} value={result.agent_code} />
+                    <DataRow label={t('sms_import.result.labels.description')} value={result.description} />
                   </div>
 
                   <div className="mt-6 space-y-3">
@@ -330,10 +362,10 @@ export default function SmsImport() {
                       className="w-full py-3 bg-aurora/20 hover:bg-aurora/30 text-aurora border border-aurora/40 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(46,204,113,0.1)] hover:shadow-[0_0_20px_rgba(46,204,113,0.2)] disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {saving ? <RefreshCw size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
-                      CONFIRMAR E GRAVAR TRANSACAO
+                      {t('sms_import.result.btn_confirm')}
                     </button>
                     <p className="text-center text-[10px] text-slate-500 leading-5">
-                      O Mwanga vai guardar a transacao com a data {result.transaction_datetime?.split('T')[0] || 'de hoje'} e anexar a origem SMS nas notas.
+                      {t('sms_import.result.save_hint')}
                     </p>
                   </div>
                 </div>
@@ -345,7 +377,7 @@ export default function SmsImport() {
                 <MessageSquare size={24} className="text-slate-500" />
               </div>
               <p className="text-slate-400 leading-relaxed font-mono text-sm max-w-[260px]">
-                Cole um SMS de transferencia, levantamento, pagamento ou credito para iniciar a analise automatica.
+                {t('sms_import.description')}
               </p>
             </div>
           )}

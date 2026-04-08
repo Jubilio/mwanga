@@ -19,232 +19,260 @@
     "settings": "Settings",
     "logout": "Log Out"
   },
+  "credit": {
+    "header": {
+      "title": "Credit",
+      "subtitle": "Smart Microcredit · Powered by Binth",
+      "refresh_title": "Refresh application",
+      "score_label": "Current score",
+      "pro": "👑 PRO",
+      "basic": "BASIC"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "community": "Community",
+      "simulator": "Simulator",
+      "compare": "Compare",
+      "consolidate": "Consolidate",
+      "apply": "Apply",
+      "strategy": "Strategy 👑"
+    },
+    "pro_gate": {
+      "title": "PRO Feature",
+      "desc": "Upgrade to unlock this advanced analysis.",
+      "btn": "Upgrade to PRO →"
+    },
+    "overview": {
+      "score_title": "CREDIT SCORE",
+      "eligible": "Eligible up to",
+      "not_eligible": "Not eligible at the moment",
+      "capacity_title": "CREDIT CAPACITY",
+      "current_commitment": "Current commitment",
+      "available_margin": "Available margin",
+      "max_safe_installment": "Max safe installment",
+      "per_month": "per month",
+      "factors_detail_title": "Detailed Score Factors",
+      "factors_detail_desc": "See exactly which 5 criteria define your Nexo Score and how to improve each one.",
+      "score_factors": "BINTH CREDIT SCORE FACTORS",
+      "integrated_score": "Integrated Score",
+      "capacity_factor": "Capacity Factor",
+      "burden_factor": "Burden Factor",
+      "transparency_title": "Total Fee Transparency",
+      "transparency_desc": "Mwanga Credit operates as a marketplace — connecting you with partner microfinance institutions. Fees charged by our partners range from 5% to 30% per month. Before any contract, you will see the total cost, monthly installment, and impact on your budget. Mwanga does not charge an origination fee. Revenue is generated via commission from the funding partner.",
+      "history_title": "LOAN HISTORY",
+      "history_paid": "✓ Paid",
+      "history_ongoing": "Ongoing",
+      "history_rate": "Rate",
+      "history_installment": "Installment",
+      "history_months": "months",
+      "cta_apply": "💸 Request Microcredit",
+      "insufficient_score": "Insufficient score for credit",
+      "insufficient_desc": "You need at least 55 points to access microcredit. Increase your score by completing more Xitique cycles, increasing your savings rate, and reducing existing debts."
+    },
+    "simulator": {
+      "alert_exceeded_title": "Capacity Exceeded (1/3 Rule)",
+      "alert_exceeded_desc_1": "The bank does not allow an installment of",
+      "alert_exceeded_desc_2": "with your current salary",
+      "alert_exceeded_desc_3": ". To request",
+      "alert_exceeded_desc_4": ", you need to extend the term to",
+      "alert_exceeded_desc_5": "to be approved.",
+      "alert_adjust_btn": "Adjust to",
+      "alert_tip_title": "Mwanga Finance Tip",
+      "alert_tip_desc": "Set your salary in the profile to receive a real bank eligibility analysis (33% rule).",
+      "config_title": "CONFIGURE SIMULATION",
+      "amount_req": "Requested amount",
+      "term": "Term",
+      "months": "months",
+      "month_single": "month",
+      "partner_rate": "Partner / Monthly rate",
+      "partner_micro": "Informal Microcredit",
+      "compare_title": "Compare Partners",
+      "compare_desc": "Access the full rate comparison of all funding partners and choose the best offer for your profile.",
+      "result_title": "SIMULATION RESULT",
+      "monthly_installment": "Monthly installment",
+      "total_payable": "Total payable",
+      "total_interest": "Total interest",
+      "stamp_duty": "Stamp Duty",
+      "effective_rate": "Effective Rate (APR)",
+      "commitment": "Commitment",
+      "impact_title": "Commitment with this credit",
+      "impact_max": "/ 40% max",
+      "debt_warning_title": "Avoid Excessive Debt",
+      "debt_warning_desc_1": "The rate of",
+      "debt_warning_desc_2": "per month is very high. For",
+      "debt_warning_desc_3": ", you will pay an additional",
+      "debt_warning_desc_4": "just in interest. The wise man counts the cost before taking on the weight. Consider a shorter term or saving before spending.",
+      "capacity_block": "🚫 The installment of",
+      "capacity_block_2": "exceeds your maximum capacity of",
+      "amort_title": "Price Amortization Table",
+      "amort_desc": "See the month-by-month detail of each installment: how much goes to interest, how much amortizes the principal, and the outstanding balance.",
+      "amort_table_title": "📊 Price Amortization Table",
+      "amort_see": "View ▼",
+      "amort_hide": "Hide ▲",
+      "amort_headers": {
+        "month": "Month",
+        "installment": "Installment",
+        "interest": "Interest",
+        "amort": "Amort.",
+        "balance": "Balance"
+      },
+      "edu_title": "Advanced Financial Education",
+      "edu_desc": "Learn the difference between simple and compound interest with real values from your simulation.",
+      "edu_label": "📚 FINANCIAL EDUCATION",
+      "edu_vs": "Simple vs Compound Interest",
+      "edu_simple": "Simple Interest",
+      "edu_compound": "Compound Interest",
+      "edu_total1": "Total = P(1 + i×n)",
+      "edu_total2": "Total = P(1+i)ⁿ",
+      "edu_tip": "💡 The formal market uses the Price system (equal installments), based on compound interest. The difference between the two models becomes significant at high rates like 30%/month."
+    },
+    "compare": {
+      "target_value": "Desired amount",
+      "term": "Term (Months)",
+      "cost_month": "Monthly Cost",
+      "total_pay": "Total payable",
+      "interest_only": "Interest only",
+      "exceeds": "🛑 Exceeds 1/3 Cap.",
+      "partner_bim_desc": "Fast, salary discount",
+      "partner_bci_desc": "Ideal for count-order clients",
+      "partner_micro_desc": "Easy approval, high risk",
+      "partner_xitique_desc": "No interest, depends on friends",
+      "verdict_title": "Binth Intelligence Verdict",
+      "verdict_desc_1": "For",
+      "verdict_desc_2": "in",
+      "verdict_desc_3": ", Xitique is the only zero-cost option. However, the",
+      "verdict_desc_4": "is now the best formal credit alternative, saving you about",
+      "verdict_desc_5": "in interest compared to informal microcredit."
+    },
+    "consolidate": {
+      "no_debts": "No debts to consolidate!",
+      "sim_title": "CONSOLIDATION SIMULATOR (IS IT WORTH IT?)",
+      "current_debt": "Current Total Debt",
+      "current_pay": "You pay approx.",
+      "per_month_in": "/month in",
+      "debts": "debts.",
+      "new_install": "New Single Installment",
+      "single_bank": "In a single bank, term of",
+      "bank_select": "Consolidation Bank / Rate",
+      "term_select": "Desired New Term",
+      "worth_it": "✅ Worth consolidating!",
+      "worth_desc_1": "You gain an immediate breathing space of",
+      "worth_desc_2": "/month and also save",
+      "worth_desc_3": "in total interest. Go to the bank.",
+      "alert_limit": "⚠️ Monthly relief, but limit reached",
+      "alert_desc_1": "The new installment of",
+      "alert_desc_2": "exceeds 1/3 of your salary",
+      "alert_desc_3": ". Try increasing the term to consolidate successfully and within banking rules.",
+      "not_worth": "🚫 No advantage in consolidating",
+      "not_worth_desc": "This scenario is more expensive or offers no real savings. Keep current installments and focus on accelerated amortization."
+    },
+    "apply": {
+      "toast_success": "Credit request submitted successfully! The partner will analyze the documents.",
+      "toast_error": "Error submitting request. Try again later.",
+      "not_avail": "Credit not available",
+      "not_avail_desc_1": "Your current Nexo Score (",
+      "not_avail_desc_2": ") does not yet meet the minimum requirement for credit (500). Continue to use Mwanga to manage your finances and increase your score.",
+      "steps": ["Verification", "Proposal", "Documents", "Review"],
+      "pre_title": "Pre-qualified!",
+      "pre_desc_1": "Based on your financial profile, Mwanga has pre-approved you for a credit of up to",
+      "pre_desc_2": "Score:",
+      "pre_grid_1": "Maximum approved",
+      "pre_grid_2": "Maximum installment",
+      "pre_grid_3": "Current commitment",
+      "pre_btn": "Continue with Request →",
+      "pre_disclaimer": "Pre-qualification is not a guarantee of final approval. The funding partner will make the final decision after analyzing the documents.",
+      "details_title": "CREDIT DETAILS",
+      "req_amount": "Request amount",
+      "req_term": "Repayment term",
+      "req_purpose": "Credit purpose",
+      "purpose_capital": "Working capital",
+      "purpose_school": "School materials",
+      "purpose_medical": "Medical expenses",
+      "purpose_home": "Home renovation",
+      "purpose_equip": "Equipment",
+      "purpose_other": "Other",
+      "choose_partner": "CHOOSE FUNDING PARTNER",
+      "partner_res_time": "⏱ Response:",
+      "summary_install": "Monthly installment",
+      "summary_total": "Total to repay",
+      "btn_back": "← Back",
+      "btn_next_docs": "Continue → Documents",
+      "docs_title": "REQUIRED DOCUMENTS",
+      "doc_bi_label": "Identity Card (BI)",
+      "doc_bi_desc": "Front and back, clear photo",
+      "doc_res_label": "Proof of Residence",
+      "doc_res_desc": "Electricity or water bill",
+      "doc_rent_label": "Proof of Income",
+      "doc_rent_desc": "Pay stub or bank statement",
+      "doc_selfie_label": "Selfie with ID",
+      "doc_selfie_desc": "Photo holding open document",
+      "docs_crypto": "🔒 Your documents are encrypted and transmitted directly to the funding partner. Mwanga does not store copies after analysis.",
+      "docs_status": "Click on each document to mark as sent ({count}/4 completed)",
+      "btn_next_review": "Continue → Review",
+      "review_title": "✦ FINAL REQUEST REVIEW",
+      "rev_amount": "Requested amount",
+      "rev_term": "Term",
+      "rev_rate": "Monthly rate (partner)",
+      "rev_install": "Monthly installment",
+      "rev_total": "Total to pay",
+      "rev_interest": "Total interest",
+      "rev_cet": "Annual Effective Rate (APR)",
+      "rev_purpose": "Purpose",
+      "rev_partner": "Partner",
+      "rev_docs": "Documents sent",
+      "rev_disclaimer": "⚠️ By submitting, you confirm that you have read and accept the loan terms. Overdue installments generate a penalty of 2% per day. Upon approval, the amount is credited in 24–48h via M-Pesa or bank account.",
+      "btn_submitting": "⏳ Submitting...",
+      "btn_submit": "✅ Submit Request",
+      "sub_title": "Request sent!",
+      "sub_desc_1": "Your request for",
+      "sub_desc_2": "was sent to",
+      "sub_desc_3": ". You will receive a notification via SMS and in Mwanga in",
+      "sub_desc_4": "2–4 hours",
+      "sub_ref": "Reference",
+      "sub_status": "Status",
+      "sub_status_val": "Under analysis",
+      "btn_new": "New simulation",
+      "partner_a_name": "CapiMoz Microfinance",
+      "partner_b_name": "CrediFácil Mozambique",
+      "partner_c_name": "MicroFinance MZ"
+    },
+    "strategy": {
+      "strategy_title": "Payment Strategy",
+      "strategy_desc": "Debt Avalanche analysis and the Risk Map are exclusive to PRO users.",
+      "avalanche_title": "💡 BINTH CREDIT STRATEGY — AVALANCHE",
+      "avalanche_desc": "The Avalanche strategy focuses on paying off debts with the highest interest rate first. It is the one that saves the most money in the long run vs Snowball.",
+      "current_interest": "Current monthly interest:",
+      "eliminated_in": "— could be eliminated in",
+      "in_progress": "ongoing",
+      "remaining": "Remaining:",
+      "installment": "Installment:",
+      "per_month": "/month",
+      "risk_map_title": "🗺 FINANCIAL RISK MAP",
+      "risk_green_label": "Green Zone",
+      "risk_green_desc": "Healthy credit, payments on time, score above 70",
+      "risk_yellow_label": "Yellow Zone",
+      "risk_yellow_desc": "Commitment between 30–40%, extra attention needed",
+      "risk_red_label": "Red Zone",
+      "risk_red_desc": "Score below 55, credit denied, non-payment risk",
+      "risk_here": "← You are here",
+      "improve_title": "📈 HOW TO IMPROVE SCORE",
+      "tip_xitique": "Complete more Xitique cycles",
+      "tip_savings": "Increase savings rate to 25%+",
+      "tip_card": "Pay off Millennium Card",
+      "tip_logging": "Keep transaction records in Mwanga",
+      "term_1_month": "1 month",
+      "term_2_months": "2 months",
+      "term_3_6_months": "3–6 months",
+      "term_6_months": "6 months",
+      "reg_title": "⚖️ REGULATORY NOTE",
+      "reg_desc": "Mwanga Credit operates as a credit marketplace — it is not a financial institution. We act as pre-qualified intermediaries between users and microfinance institutions licensed by the Bank of Mozambique. All final credit decisions are made by funding partners. Interest rates subject to current regulation. Responsible credit: request only what you can pay."
+    }
+  },
   "dashboard": {
     "greeting": {
       "morning": "Good morning",
       "afternoon": "Good afternoon",
       "evening": "Good evening"
-    },
-    "interactions": {
-      "toast_success": "Interaction recorded",
-      "toast_error": "Error recording interaction"
-    },
-    "credit": {
-      "header": {
-        "title": "Credit",
-        "subtitle": "Smart Microcredit · Powered by Binth",
-        "score": "Current score",
-        "pro": "👑 PRO",
-        "basic": "BASIC"
-      },
-      "tabs": {
-        "overview": "Overview",
-        "vsla": "Community",
-        "simulator": "Simulator",
-        "compare": "Compare",
-        "consolidate": "Consolidate",
-        "apply": "Apply",
-        "strategy": "Strategy 👑"
-      },
-      "pro_gate": {
-        "title": "PRO Feature",
-        "desc": "Upgrade to unlock this advanced analysis.",
-        "btn": "Upgrade to PRO →"
-      },
-      "overview": {
-        "score_title": "CREDIT SCORE",
-        "eligible": "Eligible up to",
-        "not_eligible": "Not eligible at the moment",
-        "capacity_title": "CREDIT CAPACITY",
-        "current_commitment": "Current commitment",
-        "available_margin": "Available margin",
-        "max_safe_installment": "Max safe installment",
-        "per_month": "per month",
-        "factors_detail_title": "Detailed Score Factors",
-        "factors_detail_desc": "See exactly which 5 criteria define your Nexo Score and how to improve each one.",
-        "score_factors": "BINTH CREDIT SCORE FACTORS",
-        "transparency_title": "Total Fee Transparency",
-        "transparency_desc": "Mwanga Credit operates as a marketplace — connecting you with partner microfinance institutions. Fees charged by our partners range from 5% to 30% per month. Before any contract, you will see the total cost, monthly installment, and impact on your budget. Mwanga does not charge an origination fee. Revenue is generated via commission from the funding partner.",
-        "history_title": "LOAN HISTORY",
-        "history_paid": "✓ Paid",
-        "history_ongoing": "Ongoing",
-        "history_rate": "Rate",
-        "history_installment": "Installment",
-        "history_months": "months",
-        "cta_apply": "💸 Request Microcredit",
-        "insufficient_score": "Insufficient score for credit",
-        "insufficient_desc": "You need at least 55 points to access microcredit. Increase your score by completing more Xitique cycles, increasing your savings rate, and reducing existing debts."
-      },
-      "simulator": {
-        "alert_exceeded_title": "Capacity Exceeded (1/3 Rule)",
-        "alert_exceeded_desc_1": "The bank does not allow an installment of",
-        "alert_exceeded_desc_2": "with your current salary",
-        "alert_exceeded_desc_3": ". To request",
-        "alert_exceeded_desc_4": ", you need to extend the term to",
-        "alert_exceeded_desc_5": "to be approved.",
-        "alert_adjust_btn": "Adjust to",
-        "alert_tip_title": "Mwanga Finance Tip",
-        "alert_tip_desc": "Set your salary in the profile to receive a real bank eligibility analysis (33% rule).",
-        "config_title": "CONFIGURE SIMULATION",
-        "amount_req": "Requested amount",
-        "term": "Term",
-        "months": "months",
-        "month_single": "month",
-        "partner_rate": "Partner / Monthly rate",
-        "compare_title": "Compare Partners",
-        "compare_desc": "Access the full rate comparison of all funding partners and choose the best offer for your profile.",
-        "result_title": "SIMULATION RESULT",
-        "monthly_installment": "Monthly installment",
-        "total_payable": "Total payable",
-        "total_interest": "Total interest",
-        "stamp_duty": "Stamp Duty",
-        "effective_rate": "Effective Rate (AA)",
-        "commitment": "Commitment",
-        "impact_title": "Commitment with this credit",
-        "impact_max": "/ 40% max",
-        "debt_warning_title": "Avoid Excessive Debt",
-        "debt_warning_desc_1": "The rate of",
-        "debt_warning_desc_2": "per month is very high. For",
-        "debt_warning_desc_3": ", you will pay an additional",
-        "debt_warning_desc_4": "just in interest. The wise man counts the cost before taking on the weight. Consider a shorter term or saving before spending.",
-        "capacity_block": "🚫 The installment of",
-        "capacity_block_2": "exceeds your maximum capacity of",
-        "amort_title": "Price Amortization Table",
-        "amort_desc": "See the month-by-month detail of each installment: how much goes to interest, how much amortizes the principal, and the outstanding balance.",
-        "amort_table_title": "📊 Price Amortization Table",
-        "amort_see": "View ▼",
-        "amort_hide": "Hide ▲",
-        "amort_headers": {
-          "month": "Month",
-          "installment": "Installment",
-          "interest": "Interest",
-          "amort": "Amort.",
-          "balance": "Balance"
-        },
-        "edu_title": "Advanced Financial Education",
-        "edu_desc": "Learn the difference between simple and compound interest with real values from your simulation.",
-        "edu_label": "📚 FINANCIAL EDUCATION",
-        "edu_vs": "Simple vs Compound Interest",
-        "edu_simple": "Simple Interest",
-        "edu_compound": "Compound Interest",
-        "edu_total1": "Total = P(1 + i×n)",
-        "edu_total2": "Total = P(1+i)ⁿ",
-        "edu_tip": "💡 The formal market uses the Price system (equal installments), based on compound interest. The difference between the two models becomes significant at high rates like 30%/month."
-      },
-      "compare": {
-        "target_value": "Desired amount",
-        "term": "Term (Months)",
-        "cost_month": "Monthly Cost",
-        "total_pay": "Total payable",
-        "interest_only": "Interest only",
-        "exceeds": "🛑 Exceeds 1/3 Cap.",
-        "partner_bim_desc": "Fast, salary discount",
-        "partner_bci_desc": "Ideal for count-order clients",
-        "partner_micro_desc": "Easy approval, high risk",
-        "partner_xitique_desc": "No interest, depends on friends",
-        "verdict_title": "Binth Intelligence Verdict",
-        "verdict_desc_1": "For",
-        "verdict_desc_2": "in",
-        "verdict_desc_3": ", Xitique is the only zero-cost option. However,",
-        "verdict_desc_4": "is now the best formal credit alternative, saving you about",
-        "verdict_desc_5": "in interest compared to informal microcredit."
-      },
-      "consolidate": {
-        "no_debts": "No debts to consolidate!",
-        "sim_title": "CONSOLIDATION SIMULATOR (IS IT WORTH IT?)",
-        "current_debt": "Current Total Debt",
-        "current_pay": "You pay approx.",
-        "per_month_in": "/month in",
-        "debts": "debts.",
-        "new_install": "New Single Installment",
-        "single_bank": "In a single bank, term of",
-        "bank_select": "Consolidation Bank / Rate",
-        "term_select": "Desired New Term",
-        "worth_it": "✅ Worth consolidating!",
-        "worth_desc_1": "You gain an immediate breathing space of",
-        "worth_desc_2": "/month and also save",
-        "worth_desc_3": "in interest. Go to the bank.",
-        "alert_limit": "⚠️ Monthly relief, but limit reached",
-        "alert_desc_1": "The new installment of",
-        "alert_desc_2": "exceeds 1/3 of your salary",
-        "alert_desc_3": ". Try increasing the term to consolidate successfully and within banking rules.",
-        "not_worth": "🚫 Not worth consolidating",
-        "not_worth_desc": "This scenario is more expensive or offers no real savings. Keep current installments and focus on accelerated amortization."
-      },
-      "apply": {
-        "toast_success": "Credit request submitted successfully! The partner will analyze the documents.",
-        "toast_error": "Error submitting request. Try again later.",
-        "not_avail": "Credit not available",
-        "not_avail_desc_1": "Your current Nexo Score (",
-        "not_avail_desc_2": ") does not yet meet the minimum requirement for credit (500). Continue using Mwanga to manage your finances and increase your score.",
-        "steps": ["Verification", "Proposal", "Documents", "Review"],
-        "pre_title": "Pre-qualified!",
-        "pre_desc_1": "Based on your financial profile, Mwanga has pre-approved you for a credit of up to",
-        "pre_desc_2": "Score:",
-        "pre_grid_1": "Maximum approved",
-        "pre_grid_2": "Maximum installment",
-        "pre_grid_3": "Current commitment",
-        "pre_btn": "Continue with Request →",
-        "pre_disclaimer": "Pre-qualification is not a guarantee of final approval. The funding partner will make the final decision after analyzing the documents.",
-        "details_title": "CREDIT DETAILS",
-        "req_amount": "Requested amount",
-        "req_term": "Repayment term",
-        "req_purpose": "Credit purpose",
-        "choose_partner": "CHOOSE FUNDING PARTNER",
-        "partner_res_time": "⏱ Response:",
-        "summary_install": "Monthly installment",
-        "summary_total": "Total to repay",
-        "btn_back": "← Back",
-        "btn_next_docs": "Continue → Documents",
-        "docs_title": "REQUIRED DOCUMENTS",
-        "docs_crypto": "🔒 Your documents are encrypted and transmitted directly to the funding partner. Mwanga does not store copies after the analysis.",
-        "docs_status": "Click on each document to mark as uploaded ({count}/4 completed)",
-        "btn_next_review": "Continue → Review",
-        "review_title": "✦ FINAL REQUEST REVIEW",
-        "rev_amount": "Requested amount",
-        "rev_term": "Term",
-        "rev_rate": "Monthly rate (partner)",
-        "rev_install": "Monthly installment",
-        "rev_total": "Total to repay",
-        "rev_interest": "Total interest",
-        "rev_cet": "Approximate annual APR",
-        "rev_purpose": "Purpose",
-        "rev_partner": "Partner",
-        "rev_docs": "Documents sent",
-        "rev_disclaimer": "⚠️ By submitting, you confirm that you have read and accept the loan terms. Overdue installments generate a penalty of 2% per day. Upon approval, the amount is credited in 24–48 hours via M-Pesa or bank account.",
-        "btn_submitting": "⏳ Submitting...",
-        "btn_submit": "✅ Submit Request",
-        "sub_title": "Request sent!",
-        "sub_desc_1": "Your request for",
-        "sub_desc_2": "was sent to",
-        "sub_desc_3": ". You will receive a notification via SMS and in Mwanga in",
-        "sub_desc_4": "2–4 hours",
-        "sub_ref": "Reference",
-        "sub_status": "Status",
-        "sub_status_val": "Under review",
-        "btn_new": "New simulation",
-        "partner_a_name": "CapiMoz Microfinance",
-        "partner_b_name": "CrediFácil Mozambique",
-        "partner_c_name": "MicroFinance MZ"
-      },
-      "strategy": {
-        "strategy_title": "Payment Strategy",
-        "strategy_desc": "Debt Avalanche analysis and the Risk Map are exclusive to PRO users.",
-        "avalanche_title": "💡 BINTH CREDIT STRATEGY — AVALANCHE",
-        "avalanche_desc": "The Avalanche strategy pays off debts with the highest interest rate first. It saves more money in the long run vs the Snowball strategy.",
-        "current_interest": "Current monthly interest:",
-        "eliminated_in": "— could be eliminated in",
-        "in_progress": "ongoing",
-        "months": "months",
-        "remaining": "Remaining:",
-        "installment": "Installment:",
-        "per_month": "/month",
-        "risk_map_title": "🗺 FINANCIAL RISK MAP",
-        "risk_here": "← You are here",
-        "improve_title": "📈 HOW TO IMPROVE SCORE",
-        "reg_title": "⚖️ REGULATORY NOTE",
-        "reg_desc": "Mwanga Credit operates as a credit marketplace — it is not a financial institution. We act as pre-qualified intermediaries between users and microfinance institutions licensed by the Bank of Mozambique. All final credit decisions are made by the funding partners. Interest rates subject to current regulation. Responsible credit: only request what you can pay."
-      }
     },
     "available_balance": "Available Balance",
     "hide_balance": "Hide balance",
@@ -252,6 +280,10 @@
     "monthly_flow": "monthly flow",
     "income": "Income",
     "expenses": "Expenses",
+    "interactions": {
+      "toast_success": "Interaction recorded",
+      "toast_error": "Error recording interaction"
+    },
     "quick_actions": {
       "expense": "Expense",
       "expense_sub": "Log expense",
@@ -323,7 +355,7 @@
     "export_csv": "CSV",
     "toast_fill_desc": "⚠️ Please fill in description and value",
     "toast_added": "✅ Transaction added!",
-    "toast_exported": "📥 CSV exported!",
+    "toast_exported": "📥 CSV exportado!",
     "toast_removed": "🗑️ Removed",
     "all_transactions": "All Transactions",
     "records": "records",
@@ -341,6 +373,830 @@
       "despesa": "💸 Expense",
       "renda": "🏠 House Rent",
       "poupanca": "🏦 Savings"
+    },
+    "categories": {
+      "salary": "Salary",
+      "house_rent": "House Rent",
+      "food": "Food",
+      "transport": "Transport",
+      "health": "Health",
+      "education": "Education",
+      "energy_water": "Energy / Water",
+      "internet": "Internet",
+      "church_donations": "Church / Donations",
+      "leisure": "Leisure",
+      "investments": "Investments",
+      "savings": "Savings",
+      "other": "Others"
+    }
+  },
+  "sms_import": {
+    "title": "Smart SMS Analysis",
+    "description": "Paste or share bank messages to automatically log expenses and income with Binth's AI help.",
+    "input_header": "Message Text",
+    "mobile_tip": {
+      "title": "Mobile Tip",
+      "desc": "You can paste copied text or share the SMS directly to this page if you have the App installed."
+    },
+    "placeholder": "Paste your bank SMS text here (BIM, BCI, M-Pesa, etc.)...",
+    "btn_paste": "Paste from phone",
+    "btn_analyze": "Analyze Message",
+    "btn_analyzing": "Analyzing...",
+    "examples_header": "Try these examples",
+    "toasts": {
+      "parse_success": "Message analyzed successfully!",
+      "parse_timeout": "The analysis took too long. Check your internet and try again.",
+      "parse_error": "We couldn't process this message.",
+      "shared_received": "Message received in importer. Analyzing...",
+      "paste_info": "Use the 'Paste' gesture on your keyboard to insert the text.",
+      "paste_success": "Text pasted successfully.",
+      "paste_empty": "No text found to paste.",
+      "paste_blocked": "Clipboard access was blocked. Please paste manually.",
+      "paste_manual": "Paste manually (long press in the text box and choose Paste).",
+      "save_success": "Transaction recorded successfully!",
+      "save_error": "Error saving the transaction."
+    },
+    "result": {
+      "confidence_label": "Binth's certainty in this analysis",
+      "confidence_high": "HIGH",
+      "non_financial": "Non-financial message",
+      "labels": {
+        "bank": "Bank or Source",
+        "account_ref": "Mentioned account",
+        "tx_id": "Operation reference",
+        "datetime": "Date and time",
+        "balance_after": "Balance after operation",
+        "fee": "Service cost (Fee)",
+        "recipient": "Who received it",
+        "recipient_acc": "Destination account",
+        "agent": "Agent Code",
+        "description": "What happened"
+      },
+      "btn_confirm": "Confirm and Log to Account",
+      "save_hint": "The transaction will be logged with the SMS date and the original text will be kept in the notes."
+    }
+  },
+  "debts": {
+    "title": "Debt Management",
+    "subtitle": "Track and eliminate your financial obligations.",
+    "new_debt": "New Debt",
+    "total_debt": "Total in Debt",
+    "total_paid": "Total Paid",
+    "active_debts": "Active Debts",
+    "bible_principle_title": "Avoiding Excessive Debt",
+    "bible_principle_text": "Debt is a burden that limits your freedom. The goal is to reduce, not accumulate. Prioritize the debt with the highest interest and put a little extra on it each month.",
+    "form": {
+      "title": "Register Debt / Loan",
+      "creditor_label": "Creditor / Bank / Relative",
+      "creditor_placeholder": "e.g., Millennium BIM, Friend...",
+      "amount_label": "Disbursed Amount (MT)",
+      "amount_placeholder": "Principal amount received",
+      "date_label": "Due Date or Start Date",
+      "rate_label": "Monthly Interest Rate (%)",
+      "rate_placeholder": "e.g., 18 for 18%",
+      "months_label": "Term / Duration (Months)",
+      "months_placeholder": "Number of installments",
+      "simulation_title": "Loan Simulation",
+      "installment_label": "Estimated Price Installment",
+      "total_cost_label": "Total Cost (Global Debt)",
+      "cancel": "Cancel",
+      "save": "Save Debt"
+    },
+    "list_title": "Your Debts",
+    "empty_state": "No debts registered. Excellent financial health!",
+    "table": {
+      "debt": "Debt",
+      "total_value": "Total Value",
+      "remaining": "Remaining",
+      "due_date": "Due Date",
+      "actions": "Actions",
+      "no_date": "No date"
+    },
+    "actions": {
+      "pay": "Pay installment",
+      "delete": "Delete"
+    },
+    "delete_confirm": "Delete?",
+    "yes": "Yes",
+    "no": "No",
+    "payment": {
+      "title": "AMOUNT TO PAY",
+      "placeholder": "Amount...",
+      "method_label": "PAYMENT METHOD",
+      "no_account": "Do not deduct from balance",
+      "pay_btn": "Pay"
+    }
+  },
+  "budget": {
+    "set_limit_title": "Set Limit by Category",
+    "category_label": "Category",
+    "limit_label": "Monthly Limit (MT)",
+    "limit_placeholder": "e.g., 20000",
+    "set_btn": "Set",
+    "month_title": "Month's Budget",
+    "empty_title": "No budgets defined",
+    "empty_subtitle": "Set limits to control your expenses",
+    "bible_principle_title": "Contentment",
+    "bible_principle_text": "True wealth starts by knowing what is enough. Each budget limit you define is a wise choice of someone who governs their money with intentionality.",
+    "status": {
+      "over": "Over limit!",
+      "warning": "Warning",
+      "ok": "OK"
+    },
+    "spent": "{{amount}} spent",
+    "goal": "Target: {{amount}}",
+    "pct_used": "{{pct}}% used",
+    "remaining": "Remaining: {{amount}}",
+    "over_principle": "Principle of contentment: review what is essential in this category before the next expense.",
+    "toasts": {
+      "define_limit": "⚠️ Set a limit",
+      "budget_set": "✅ Budget set!",
+      "budget_removed": "🗑️ Budget removed"
+    }
+  },
+  "common": {
+    "categories": {
+      "Alimentação": "Food",
+      "Transporte": "Transport",
+      "Energia/Água": "Utilities",
+      "Internet": "Internet",
+      "Saúde": "Health",
+      "Educação": "Education",
+      "Igreja/Doações": "Church/Donations",
+      "Lazer": "Leisure",
+      "Investimentos": "Investments",
+      "Casa": "Housing",
+      "Outro": "Other"
+    }
+  },
+  "patrimony": {
+    "title": "Net Worth",
+    "subtitle": "Asset and debt management",
+    "total_assets": "Total Assets",
+    "total_liabilities": "Total Liabilities",
+    "net_worth": "Líquido",
+    "tiers": {
+      "debt": "In Debt",
+      "beginner": "Beginner",
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "diamond": "Diamond"
+    },
+    "accounts": {
+      "title": "Accounts",
+      "add": "Add",
+      "empty": "No accounts registered.",
+      "types": {
+        "bank": "Bank",
+        "mobile": "Mobile",
+        "cash": "Cash"
+      }
+    },
+    "assets": {
+      "title": "Assets",
+      "add": "Add",
+      "empty": "No assets registered.",
+      "types": {
+        "imóvel": "Real Estate",
+        "veiculo": "Vehicle",
+        "poupanca": "Savings",
+        "investimento": "Investment",
+        "outro": "Other"
+      }
+    },
+    "liabilities": {
+      "title": "Liabilities",
+      "add": "Add",
+      "empty": "No liabilities registered.",
+      "interest": "{{rate}}% interest",
+      "no_interest": "No interest",
+      "of_total": "of {{total}}"
+    },
+    "projections": {
+      "title": "Net Worth Projections",
+      "subtitle": "Retirement simulators and inflation impact",
+      "fire": {
+        "title": "FIRE Simulator (Retirement)",
+        "target_income": "Desired Retirement Income",
+        "return_rate": "Annual Return Rate (%)",
+        "monthly_savings": "Monthly Savings",
+        "potential": "Retirement Potential",
+        "in_years": "In {{years}} Years",
+        "goal_met": "Goal Met! 🎉",
+        "current": "Current: {{amount}}",
+        "target": "FIRE Target: {{amount}}"
+      },
+      "inflation": {
+        "title": "Inflation Simulator",
+        "years": "Projection Time (Years)",
+        "rate": "Average Inflation Rate (%)",
+        "description": "Your current net worth of {{amount}} will be worth in {{years}} years:",
+        "left_idle": "If left idle",
+        "if_invested": "If invested ({{rate}}%)"
+      }
+    },
+    "modals": {
+      "add_asset": "Add Asset",
+      "add_liability": "Add Liability",
+      "add_account": "Add Account",
+      "name_label": "Name",
+      "name_placeholder": "e.g., Pemba Land",
+      "type_label": "Type",
+      "value_label": "Value (MT)",
+      "liability_name_label": "Debt Name",
+      "liability_name_placeholder": "e.g., BCI Loan",
+      "total_amount_label": "Total Amount (MT)",
+      "remaining_amount_label": "Remaining (MT)",
+      "interest_rate_label": "Annual Interest Rate (%)",
+      "account_name_label": "Account Name",
+      "account_name_placeholder": "e.g., Millennium Bim / M-Pesa",
+      "initial_balance_label": "Initial Balance (MT)",
+      "cancel": "Cancel",
+      "add": "Add"
+    },
+    "toasts": {
+      "asset_added": "Asset successfully added!",
+      "liability_added": "Liability successfully added!",
+      "account_added": "Account successfully added!"
+    }
+  },
+  "housing": {
+    "title": "Housing",
+    "main_title": "Housing Management",
+    "description": "Centralize rent, loan, or maintenance in a single flow and quickly track the cost of housing in your monthly budget.",
+    "types": {
+      "rent": "Rent",
+      "own": "Own Home"
+    },
+    "stats": {
+      "current_month": "Current month",
+      "pending": "Pending records",
+      "last_record": "Last record",
+      "no_history": "No history"
+    },
+    "summary": {
+      "total_rent_year": "Total Rent (Year)",
+      "total_own_year": "Total Own Home (Year)",
+      "status": "Status: Up to date",
+      "next_payment": "Next pay.: {{date}}",
+      "next_month_01": "01 of next month",
+      "view_details": "View full details"
+    },
+    "insights": {
+      "committed_income": "Income Commitment",
+      "monthly_evolution": "Monthly Evolution",
+      "nexo_recommendation": "Nexo Recommendation",
+      "healthy": "Healthy",
+      "attention": "Attention",
+      "reduction": "Reduction",
+      "increase": "Increase",
+      "optimized_msg": "Housing costs are perfectly optimized within the 30% limit.",
+      "review_msg": "Consider reviewing your expenses. Housing is weighing on your budget."
+    },
+    "chart": {
+      "title": "Monthly Evolution",
+      "subtitle": "Housing cost history over the last year",
+      "no_data": "There is not yet enough history to show monthly evolution.",
+      "value_label": "Value"
+    },
+    "form": {
+      "new_rent": "Register New Rent",
+      "new_maintenance": "Register Maintenance / Installment",
+      "month_label": "Month/Year",
+      "value_label": "Value ({{currency}})",
+      "status_label": "Status",
+      "status_pago": "✅ Paid",
+      "status_pendente": "⏳ Pending",
+      "landlord_label": "Landlord / Beneficiary",
+      "landlord_placeholder": "Landlord name or entity",
+      "obs_label": "Observations (Optional)",
+      "obs_placeholder": "Additional details...",
+      "submit_btn": "Register Payment",
+      "recurrent_btn": "Make Recurrent"
+    },
+    "history": {
+      "title": "Spending History",
+      "all_years": "All Years",
+      "table_headers": {
+        "month": "Month",
+        "description": "Description",
+        "value": "Value",
+        "status": "Status",
+        "notes": "Notes",
+        "action": "Action"
+      },
+      "empty": "No records found.",
+      "delete_title": "Delete record"
+    },
+    "toasts": {
+      "save_defaults_error": "Fill in name and value to save as default",
+      "save_defaults_success": "Settings saved as default",
+      "rent_missing_fields": "Fill in landlord and value",
+      "own_missing_fields": "Fill in maintenance or installment value",
+      "rent_registered": "Rent registered",
+      "maintenance_registered": "Maintenance registered",
+      "profile_changed": "Profile changed to: {{type}}",
+      "removed": "🗑️ Removed"
+    }
+  },
+  "xitique": {
+    "title": "Xitique",
+    "description": "Community rotating savings management",
+    "btns": {
+      "new": "New Xitique",
+      "cancel": "Cancel",
+      "create": "Create Xitique Group"
+    },
+    "form": {
+      "group_name": "Group Name",
+      "group_name_placeholder": "e.g., Friends of Pemba",
+      "monthly_amount": "Monthly Amount ({{currency}})",
+      "monthly_amount_placeholder": "e.g., 5000",
+      "total_participants": "Total Participants",
+      "start_date": "Start Month",
+      "your_position": "Your Position"
+    },
+    "empty": {
+      "title": "No active Xitique",
+      "subtitle": "Create a new group to start saving in community."
+    },
+    "card": {
+      "monthly_payment": "Monthly Payment",
+      "participants": "Participants",
+      "your_turn": "Your Turn: Month {{position}}",
+      "total_contributed": "Total Contributed",
+      "total_to_receive": "Total to Receive"
+    },
+    "table": {
+      "cycle": "Cycle",
+      "expected_month": "Expected Month",
+      "receipt_status": "Receipt Status",
+      "payment_status": "Payment Status",
+      "actions": "Actions",
+      "month_label": "Month {{number}}",
+      "received": "✅ Received ({{date}})",
+      "your_turn_badge": "💎 Your Turn!",
+      "paid": "Paid",
+      "pending": "Pending",
+      "no_account": "No account linked",
+      "pay_btn": "Pay",
+      "receive_btn": "Receive {{amount}}"
+    }
+  },
+  "simulators": {
+    "title": "Simulators",
+    "description": "Practical projections for budgeting, investment, financial independence, and Xitique.",
+    "tabs": {
+      "budget": "Budget",
+      "invest": "Investment",
+      "fire": "Independence",
+      "xitique": "Xitique"
+    },
+    "pro_gate": {
+      "title": "FIRE Simulator",
+      "description": "Discover how much you need to invest per month to buy financial freedom with discipline.",
+      "btn": "Switch to PRO"
+    },
+    "budget": {
+      "title": "Budgeting Model",
+      "subtitle": "Adjust your salary and apply real limits to your budget.",
+      "salary_label": "Monthly salary",
+      "apply_btn": "Apply to budget",
+      "distribution_title": "Salary distribution",
+      "savings_projection": "Projected savings: <strong class=\"text-leaf\">{{pct}}%</strong>. If you apply this model, Mwanga creates base limits for food, transport, health, leisure, and savings.",
+      "toast_applied": "Base budget applied to your limits.",
+      "categories": {
+        "needs": "Needs",
+        "wants": "Wants",
+        "essencial": "Essential",
+        "lifestyle": "Lifestyle",
+        "future": "Future"
+      }
+    },
+    "invest": {
+      "title": "Compound Interest",
+      "subtitle": "Simulate the impact of initial value, monthly contributions, and annual rate.",
+      "placeholders": {
+        "principal": "Initial value",
+        "monthly": "Monthly contribution",
+        "rate": "Annual rate (%)",
+        "years": "Years"
+      },
+      "summary": {
+        "final_balance": "Final result",
+        "total_invested": "Total invested",
+        "gains": "Gains"
+      }
+    },
+    "fire": {
+      "title": "Financial Independence",
+      "subtitle": "Based on the 4% rule and an accumulation plan with compound interest.",
+      "placeholders": {
+        "monthly_need": "Desired monthly expense",
+        "current_invested": "Amount already invested",
+        "years_to_goal": "Years to goal",
+        "return_rate": "Annual return (%)"
+      },
+      "summary": {
+        "fire_number": "FIRE Number",
+        "fire_explainer": "This capital attempts to support about {{amount}} per month without depending on a salary."
+      },
+      "insight": {
+        "title": "Mwanga Insight",
+        "subtitle": "Personalized projection for your goal",
+        "progress": "Current progress",
+        "suggested_monthly": "Suggested monthly investment",
+        "projected_balance": "Projected balance",
+        "explainer": "To reach {{target}} in {{years}} years, the plan suggests contributions of <strong class=\"text-white\">{{monthly}}</strong> per month, assuming an annual return of {{rate}}%."
+      }
+    },
+    "xitique": {
+      "title": "Xitique Simulator",
+      "subtitle": "See the total liquidity of the circle and the benefit versus expensive bank credit.",
+      "labels": {
+        "monthly_contribution": "Monthly contribution",
+        "participants": "Participants",
+        "position": "Position to receive",
+        "position_suffix": "st/nd/rd/th"
+      },
+      "summary": {
+        "circle_amount": "Circle amount",
+        "months_to_receive": "Months until receipt",
+        "immediate_liquidity": "Immediate liquidity",
+        "avoided_interest": "Avoided interest"
+      },
+      "insights": {
+        "quick_read_title": "Quick read",
+        "quick_read_msg": "Receiving at position {{position}} means waiting {{months}} month{{plural}} to withdraw about <strong class=\"text-white\">{{amount}}</strong>. The sooner you receive it, the greater the cash advantage tends to be.",
+        "credit_comp_title": "Comparison with credit",
+        "credit_comp_msg": "In a bank scenario of 26% per year, a similar amount could cost approximately <strong class=\"text-white\">{{amount}}</strong> in interest over the same cycle."
+      }
+    },
+    "disclaimer": "These simulations are projections. Results depend on discipline, actual return, costs, and user context. <strong class=\"text-amber-500/80\"> Use Mwanga to make better decisions, but validate critical decisions with professional support when necessary.</strong>"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Personalize your experience and financial data",
+    "tabs": {
+      "perfil": "Profile",
+      "financas": "Finance",
+      "pref": "Preferences"
+    },
+    "hero": {
+      "default_user_name": "Financial Explorer",
+      "premium_account": "Nexo Vibe Premium Account",
+      "saving": "Saving...",
+      "synced": "Synced",
+      "currency_label": "Currency",
+      "cycle_label": "Cycle",
+      "day_label": "Day {{day}}"
+    },
+    "perfil": {
+      "title": "Personal Data",
+      "subtitle": "Your identity in the Mwanga ecosystem",
+      "personal_info": "Personal Information",
+      "user_name_label": "Your Name",
+      "user_name_placeholder": "How do you want to be called?",
+      "family_info": "My Family",
+      "household_name_label": "Household Name",
+      "household_name_placeholder": "e.g., Mwanga Family"
+    },
+    "financas": {
+      "title": "Financial Parameters",
+      "subtitle": "Configure the basis for your simulators",
+      "income_section": "Income",
+      "income_subtitle": "Monthly base",
+      "salary_label": "Base Monthly Salary",
+      "salary_tip": "💡 Used to generate 50/30/20 budget suggestions.",
+      "housing_section": "Housing",
+      "housing_subtitle": "Fixed costs",
+      "landlord_label": "Landlord Name",
+      "landlord_placeholder": "e.g., Mr. Manuel",
+      "rent_label": "Default Rent",
+      "rent_tip": "🏠 Pre-defined value in the Housing module."
+    },
+    "pref": {
+      "title": "Interface and Regional",
+      "subtitle": "Adjust Mwanga to your context",
+      "region_section": "Currency and Region",
+      "currency_label": "Display Currency",
+      "personalization_section": "Personalization",
+      "reset_day_label": "Reset Day",
+      "reset_day_option": "Day {{day}} of each month",
+      "dark_mode_label": "Dark Mode",
+      "push": {
+        "tag": "Push Engine ✦",
+        "title": "Intelligent Notifications",
+        "description": "Receive budget alerts, goals, and reminders even with the app closed.",
+        "btn_on": "On",
+        "btn_off": "Turn on Push",
+        "disable_btn": "Disable Notifications",
+        "daily_reminder": "Daily Summary",
+        "daily_reminder_tip": "Daily reminder time",
+        "commitments": "Commitments",
+        "period_start": "Start",
+        "period_end": "End",
+        "ai_sync": "Synced with Binth AI engine"
+      }
+    },
+    "sidebar": {
+      "account_status": "Account Status",
+      "security_level": "Security Level",
+      "security_value": "MILITARY",
+      "protection_title": "Mwanga 2.0 Protection",
+      "protection_subtitle": "Active Encryption",
+      "autosave_tag": "Autosave Active",
+      "autosave_desc": "Changes are saved instantly.",
+      "help_btn": "User Manual",
+      "sync_btn": "Sync Now",
+      "logout_btn": "Sign Out"
+    },
+    "toasts": {
+      "save_error": "Error saving settings",
+      "img_too_large": "The image is too large (max 2MB)",
+      "img_updated": "Photo updated! ✦",
+      "push_enabled": "Push enabled! ✦",
+      "push_error": "Error enabling notifications"
+    }
+  },
+  "pricing": {
+    "tag": "Mwanga Plans ✦",
+    "title": "Choose your level of <span style=\"color: var(--color-gold)\">Prosperity</span>",
+    "description": "Mwanga is more than expense control. It's your journey to wealth growth in Mozambique.",
+    "billing": {
+      "monthly": "Monthly",
+      "annual": "Annual",
+      "discount": "(-20%)",
+      "annual_total": "Billed annually ({{total}} MZN)"
+    },
+    "plans": {
+      "starter": {
+        "name": "Starter",
+        "desc": "For those starting to organize their home.",
+        "btn": "Current Plan",
+        "features": [
+          "1 Household",
+          "Up to 2 users",
+          "Essential Dashboard",
+          "Unlimited Transactions",
+          "1 Active Xitique",
+          "Simple Reports (PDF)",
+          "12-month history"
+        ]
+      },
+      "growth": {
+        "name": "Growth",
+        "desc": "The power of financial intelligence in your hand.",
+        "btn": "Upgrade to Growth",
+        "popular_badge": "Most Popular",
+        "features": [
+          "Unlimited Users",
+          "Unlimited Xitiques",
+          "Advanced Financial Score",
+          "Intelligent Simulators",
+          "Wealth Management",
+          "Excel/CSV Export",
+          "Proactive Alerts",
+          "Unlimited History"
+        ]
+      },
+      "legacy": {
+        "name": "Wealth",
+        "desc": "Master your legacy and secure the future.",
+        "btn": "Master Wealth",
+        "features": [
+          "Everything in Growth",
+          "Financial Projections (BI)",
+          "Compound Interest Simulator",
+          "Retirement Planning",
+          "24/7 Priority Support",
+          "FAM Audit Reports",
+          "Early Access to New Features"
+        ]
+      }
+    },
+    "includes": "What's included:",
+    "trust": {
+      "security_title": "Banking Security",
+      "security_desc": "End-to-end encrypted data.",
+      "moza_pride_title": "Mozambican Pride",
+      "moza_pride_desc": "Local technology for the world.",
+      "cancel_title": "Easy Cancellation",
+      "cancel_desc": "No contracts, cancel anytime."
+    }
+  },
+  "help": {
+    "hero": {
+      "title": "Mwanga <span class=\"text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-indigo-300\">Help Center</span>",
+      "description": "Everything you need to know to light your financial path and master the Mwanga 2.0 system.",
+      "search_placeholder": "Search manual..."
+    },
+    "sections": {
+      "intro": {
+        "title": "📱 First Steps",
+        "content": "Mwanga is a PWA application. This means you can install it on your phone without going to the Play Store or App Store.\n\n• On Android: Click on the 3 dots in Chrome and select \"Install Financial Messenger\".\n• On iPhone: Use the Share button and select \"Add to Home Screen\"."
+      },
+      "dashboard": {
+        "title": "📊 Dashboard",
+        "content": "The Dashboard offers a 360º view of your finances.\n\n• Radar Chart: Quickly identify if your spending is balanced with your earnings.\n• Widgets: Track the total balance of your accounts and the progress of your savings goals at a glance."
+      },
+      "finance": {
+        "title": "💰 Financial Management",
+        "content": "Master your money with budgeting tools.\n\n• Transactions: Record every metical that goes out or comes in. Separate by account (M-Pesa, Wallet, Bank).\n• 50/30/20 Rule: The system helps you meet the goal of spending 50% on needs, 30% on wants, and 20% for the future.\n• Goals: Set clear objectives (e.g., \"Motorcycle Purchase\") and let Mwanga calculate how much you need to save monthly."
+      },
+      "credit": {
+        "title": "⚖️ Intelligent Credit",
+        "content": "Before asking for a loan, consult our simulators.\n\n• Installment Simulator: Know exactly how much you will pay the bank per month.\n• Comparator: See if a bank loan, a Xitique, or waiting and saving is more worthwhile.\n• Consolidation: Learn to combine several debts into one to pay less total interest."
+      },
+      "community": {
+        "title": "🤝 Mwanga Community (VSLA)",
+        "content": "Save together with your family or friends.\n\n• Shares: In the Digital VSLA, you buy monthly \"shares\" that form the group's capital.\n• Internal Loans: Members can request loans from the group at rates decided by the community.\n• Profits: Accumulated interest is distributed equally at the end of the savings cycle."
+      },
+      "binth": {
+        "title": "🤖 Binth AI Assistant",
+        "content": "Binth is the brain of Mwanga.\n\n• Quick Diagnostics: Ask for advice on whether or not you should make a purchase.\n• Real Context: Binth analyzes your real spending (anonymously) to give precise answers."
+      },
+      "security": {
+        "title": "🛡️ Security and Alerts",
+        "content": "Your privacy is our focus.\n\n• Push Notifications: Enable reminders to never be caught by surprise by rent or installments.\n• Protected Data: We use military-grade encryption to protect your financial records."
+      }
+    },
+    "support": {
+      "title": "Still have questions?",
+      "description": "Binth is available 24/7 to answer specific questions about your financial context.",
+      "btn": "Talk to Binth"
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "summary_alert": "📊 Report based on {{count}} registered transactions.",
+    "btn_export": "Export",
+    "sections": {
+      "health": "Financial Health",
+      "distribution": "Expense Distribution (Current Month)",
+      "evolution": "Monthly Evolution",
+      "history": "Monthly History"
+    },
+    "metrics": {
+      "income": "Total Income",
+      "expenses": "Total Expenses",
+      "balance": "Monthly Balance",
+      "savings_rate": "Savings Rate",
+      "recommended": "Recommended: ≥ 20%",
+      "of_100": "out of 100"
+    },
+    "table": {
+      "month": "Month",
+      "income": "Income",
+      "expenses": "Expenses",
+      "housing": "Housing/Fallback",
+      "balance": "Balance",
+      "empty": "No data"
+    },
+    "chart": {
+      "income": "Income",
+      "expenses": "Consolidated Expenses"
+    },
+    "empty_state": "No expenses to analyze"
+  },
+  "insights": {
+    "title": "Binth Insights",
+    "subtitle": "Your personal financial mentor ✦",
+    "score_label": "Score",
+    "placeholder": "Ask Binth anything…",
+    "welcome_default": "Hello! I've read your financial context and I'm ready to help.",
+    "welcome_error": "I couldn't process your request. Please try again! 😊",
+    "btn_retry": "Try again",
+    "qa_defaults": ["How are my finances?", "Where am I spending most?", "How can I save more?", "Analyze my budget"],
+    "score_section": {
+      "title": "Biblical Financial Score"
+    }
+  },
+  "goals": {
+    "title": "Goals and Objectives 🎯",
+    "subtitle": "You have {{count}} active objectives at the moment.",
+    "stats": {
+      "accumulated": "Total Accumulated",
+      "final_target": "Final Target",
+      "global_progress": "Global Progress",
+      "completed": "Completed"
+    },
+    "form": {
+      "btn_new": "Create New Objective",
+      "name_label": "Goal Name",
+      "name_placeholder": "E.g. Emergency Fund",
+      "target_label": "Target Value ({{currency}})",
+      "saved_label": "Already Saved ({{currency}})",
+      "deadline_label": "Final Deadline",
+      "icon_label": "Representative Icon",
+      "btn_cancel": "Cancel",
+      "btn_save": "Create Goal",
+      "toast_required": "⚠️ Please fill in name and target value",
+      "toast_success": "🎯 Financial goal created!"
+    },
+    "card": {
+      "days_left": "{{count}} days",
+      "completed_badge": "Completed!",
+      "of": "/ {{amount}}",
+      "executed": "{{pct}}% Executed",
+      "remaining": "{{amount}} remaining",
+      "btn_deposit": "Deposit",
+      "btn_completed": "Goal Completed",
+      "delete_tooltip": "Delete goal"
+    },
+    "delete_modal": {
+      "title": "Delete Goal?",
+      "message": "Are you sure you want to delete the goal \"{{name}}\"? All saved progress will be lost.",
+      "btn_confirm": "Yes, Delete",
+      "btn_cancel": "No, Keep",
+      "toast_success": "Goal successfully removed",
+      "toast_error": "Error removing goal"
+    },
+    "deposit_modal": {
+      "title": "Make Deposit",
+      "meta_label": "Goal: {{name}}",
+      "amount_label": "How much do you want to save?",
+      "account_label": "Which account does the money come from?",
+      "btn_confirm": "Confirm Savings",
+      "toast_invalid": "⚠️ Enter a valid value",
+      "toast_no_account": "⚠️ Select a source account",
+      "toast_balance_warning": "The balance of account \"{{name}}\" ({{balance}}) is lower than the deposit value. Continue?",
+      "toast_success": "💰 {{amount}} added to the goal!",
+      "toast_error": "❌ Error updating goal",
+      "no_accounts_warning": "You have no registered accounts. Add an account in \"Patrimony\" to link savings."
+    },
+    "empty_state": {
+      "title": "No goals defined.",
+      "subtitle": "Start planning your financial future today."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Sign in to manage your finances.",
+      "email_label": "Email",
+      "password_label": "Password",
+      "btn_login": "Login",
+      "btn_processing": "Processing...",
+      "forgot_password": "I forgot my password",
+      "google_btn": "Sign in with Google",
+      "google_tip": "Continue with Google to sign in or create your account automatically on first access.",
+      "no_account": "Don't have an account?",
+      "register_link": "Register",
+      "or_divider": "OR",
+      "toasts": {
+        "success": "Welcome back!",
+        "google_failed": "Google authentication failed",
+        "google_unavailable": "Google login unavailable. Confirm the configuration of this origin: {{origin}}.",
+        "welcome_google": "Welcome via Google!"
+      }
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Create your account to start organizing your family's financial life.",
+      "name_label": "Full name",
+      "name_placeholder": "E.g. John Doe",
+      "password_tip": "Use at least 8 characters.",
+      "family_label": "Family name (optional)",
+      "family_placeholder": "E.g. Doe Family",
+      "btn_register": "Create account",
+      "already_have": "Already have an account?",
+      "login_link": "Log in",
+      "toasts": {
+        "success": "Account created successfully!",
+        "google_success": "Account created with Google and session started!"
+      }
+    },
+    "forgot": {
+      "title": "Recover password",
+      "subtitle": "Enter your email to receive a recovery link.",
+      "btn_send": "Send link",
+      "back_link": "Back",
+      "success_title": "Link sent!",
+      "success_desc": "If the email <strong>{{email}}</strong> is registered, you will receive reset instructions shortly.",
+      "btn_to_login": "Go to login",
+      "error_fallback": "Failed to process request"
+    },
+    "reset": {
+      "title": "New password",
+      "subtitle": "Create a strong password to protect your account.",
+      "btn_update": "Update password",
+      "success_title": "Password updated!",
+      "success_desc": "Your password has been successfully reset. You can now access your Mwanga account.",
+      "btn_to_login": "Log in",
+      "errors": {
+        "match": "Passwords do not match",
+        "length": "Password must be at least 8 characters",
+        "token": "Missing or invalid recovery token.",
+        "fallback": "Failed to reset password"
+      }
+    }
+  },
+  "common": {
+    "toasts": {
+      "csv_exported": "📥 CSV exported!",
+      "error_prefix": "Error: "
     }
   }
 }

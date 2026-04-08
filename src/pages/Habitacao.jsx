@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Building2, CalendarClock, Home, Key, Wallet } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import { fmt, getMonthKey } from '../utils/calculations';
@@ -11,6 +12,7 @@ import HousingInsights from '../components/housing/HousingInsights';
 import HousingSummaryCard from '../components/housing/HousingSummaryCard';
 
 export default function Habitacao() {
+  const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
   const { showToast } = useOutletContext();
@@ -28,25 +30,25 @@ export default function Habitacao() {
 
   function saveDefaults() {
     if (!form.proprietario || !form.valor) {
-      showToast('Preencha nome e valor para guardar como padrão');
+      showToast(t('housing.toasts.save_defaults_error'));
       return;
     }
 
     dispatch({ type: 'UPDATE_SETTING', payload: { key: 'landlord_name', value: form.proprietario } });
     dispatch({ type: 'UPDATE_SETTING', payload: { key: 'default_rent', value: parseFloat(form.valor) } });
-    showToast('Definições guardadas como padrão');
+    showToast(t('housing.toasts.save_defaults_success'));
   }
 
   function handleSubmit(e) {
     e.preventDefault();
 
     if (type === 'renda' && (!form.proprietario || !form.valor)) {
-      showToast('Preencha proprietário e valor');
+      showToast(t('housing.toasts.rent_missing_fields'));
       return;
     }
 
     if (type === 'propria' && !form.valor) {
-      showToast('Preencha o valor da manutenção ou prestação');
+      showToast(t('housing.toasts.own_missing_fields'));
       return;
     }
 
@@ -54,13 +56,13 @@ export default function Habitacao() {
       type: 'ADD_RENDA',
       payload: {
         ...form,
-        proprietario: type === 'propria' ? 'Casa Própria' : form.proprietario,
+        proprietario: type === 'propria' ? t('housing.labels.own_home') : form.proprietario,
         valor: parseFloat(form.valor)
       }
     });
 
     setForm({ ...form, proprietario: '', valor: '', obs: '' });
-    showToast(type === 'renda' ? 'Aluguer registado' : 'Manutenção registada');
+    showToast(type === 'renda' ? t('housing.toasts.rent_registered') : t('housing.toasts.maintenance_registered'));
   }
 
   function handleDelete(id) {
@@ -69,7 +71,7 @@ export default function Habitacao() {
 
   function toggleType(newType) {
     dispatch({ type: 'UPDATE_SETTING', payload: { key: 'housing_type', value: newType } });
-    showToast(`Perfil alterado para: ${newType === 'renda' ? 'Arrendamento' : 'Casa Própria'}`);
+    showToast(t('housing.toasts.profile_changed', { type: newType === 'renda' ? t('housing.types.rent') : t('housing.types.own') }));
   }
 
   const totalPago = state.rendas.filter(r => r.estado === 'pago').reduce((sum, r) => sum + r.valor, 0);
@@ -118,17 +120,17 @@ export default function Habitacao() {
 
   return (
     <div className="animate-fade-in pb-20 w-full max-w-none space-y-6">
-      <div className="relative overflow-hidden rounded-[28px] border border-black/5 bg-gradient-to-br from-white via-sky-50 to-cyan-50 p-6 shadow-sm dark:border-white/10 dark:from-[#11141d] dark:via-[#121827] dark:to-[#0d2230]">
+      <div className="relative overflow-hidden rounded-3xl border border-black/5 bg-linear-to-br from-white via-sky-50 to-cyan-50 p-6 shadow-sm dark:border-white/10 dark:from-[#11141d] dark:via-[#121827] dark:to-[#0d2230]">
         <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-ocean/10 blur-3xl" />
         <div className="absolute bottom-0 right-1/4 h-24 w-24 rounded-full bg-gold/10 blur-2xl" />
 
         <div className="relative flex flex-col gap-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
-              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Habitação</div>
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white md:text-3xl">Gestão de Habitação</h2>
+              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{t('housing.title')}</div>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white md:text-3xl">{t('housing.main_title')}</h2>
               <p className="mt-2 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-                Centralize renda, prestação ou manutenção num só fluxo e acompanhe rapidamente o peso da casa no seu orçamento mensal.
+                {t('housing.description')}
               </p>
             </div>
 
@@ -141,7 +143,7 @@ export default function Habitacao() {
                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
-                <Key size={16} /> Arrendamento
+                <Key size={16} /> {t('housing.types.rent')}
               </button>
               <button
                 onClick={() => toggleType('propria')}
@@ -151,15 +153,15 @@ export default function Habitacao() {
                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
-                <Home size={16} /> Casa Própria
+                <Home size={16} /> {t('housing.types.own')}
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <MiniStat icon={<Wallet size={16} />} label="Mês atual" value={fmt(totalMesAtual, currency)} tone="ocean" />
-            <MiniStat icon={<CalendarClock size={16} />} label="Registos pendentes" value={String(registosPendentes)} tone={registosPendentes > 0 ? 'gold' : 'leaf'} />
-            <MiniStat icon={<Building2 size={16} />} label="Último registo" value={latestRecord?.mes || 'Sem histórico'} tone="slate" />
+            <MiniStat icon={<Wallet size={16} />} label={t('housing.stats.current_month')} value={fmt(totalMesAtual, currency)} tone="ocean" />
+            <MiniStat icon={<CalendarClock size={16} />} label={t('housing.stats.pending')} value={String(registosPendentes)} tone={registosPendentes > 0 ? 'gold' : 'leaf'} />
+            <MiniStat icon={<Building2 size={16} />} label={t('housing.stats.last_record')} value={latestRecord?.mes || t('housing.stats.no_history')} tone="slate" />
           </div>
         </div>
       </div>

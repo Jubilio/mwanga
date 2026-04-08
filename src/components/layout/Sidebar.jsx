@@ -4,6 +4,7 @@ import { Settings, LogOut } from 'lucide-react';
 import { useFinance } from '../../hooks/useFinance';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
+import MwangaLogo from '../MwangaLogo';
 
 // ─── PRO Badge ───────────────────────────────────────────────────────────────
 // ... [rest of the component stays similar]
@@ -243,12 +244,8 @@ export default function Sidebar({ isOpen, onClose }) {
         {/* Logo and Language Switcher */}
         <div style={{ padding: '28px 24px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <img 
-                src="/logo-mwanga.png?v=2" 
-                alt="Mwanga Logo" 
-                style={{ height: 38, width: 'auto', objectFit: 'contain' }} 
-              />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <MwangaLogo variant="sidebar" />
             </div>
             
             <LanguageSwitcher />

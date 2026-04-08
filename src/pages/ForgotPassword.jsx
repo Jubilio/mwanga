@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
 
 export default function ForgotPassword() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -25,7 +27,7 @@ export default function ForgotPassword() {
       });
 
       const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'Falha ao processar pedido');
+      if (!resp.ok) throw new Error(data.error || t('auth.forgot.error_fallback'));
 
       setSent(true);
     } catch (err) {
@@ -45,23 +47,23 @@ export default function ForgotPassword() {
             background: 'none', border: 'none', color: 'var(--color-muted)',
             display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem'
           }}>
-            <ArrowLeft size={16} /> Voltar
+            <ArrowLeft size={16} /> {t('auth.forgot.back_link')}
           </button>
         </div>
 
         {!sent ? (
           <>
             <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-ocean)', marginBottom: '0.5rem' }}>
-              Recuperar senha
+              {t('auth.forgot.title')}
             </h1>
             <p style={{ color: 'var(--color-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              Introduza o seu email para receber um link de recuperação.
+              {t('auth.forgot.subtitle')}
             </p>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               <div>
                 <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Mail size={14} /> Email
+                  <Mail size={14} /> {t('auth.login.email_label')}
                 </label>
                 <input
                   type="email" required className="form-input"
@@ -74,9 +76,9 @@ export default function ForgotPassword() {
 
               <button
                 type="submit" disabled={loading} className="btn btn-primary"
-                style={{ width: '100%', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                style={{ width: '100%', height: '45px', display: 'flex', alignItems: 'center', justifyCenter: 'center', gap: '0.5rem' }}
               >
-                {loading ? 'A processar...' : <><Send size={18} /> Enviar link</>}
+                {loading ? t('auth.login.btn_processing') : <><Send size={18} /> {t('auth.forgot.btn_send')}</>}
               </button>
             </form>
           </>
@@ -86,13 +88,13 @@ export default function ForgotPassword() {
               <CheckCircle2 size={60} strokeWidth={1.5} style={{ margin: '0 auto' }} />
             </div>
             <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '0.8rem' }}>
-              Link enviado!
+              {t('auth.forgot.success_title')}
             </h2>
             <p style={{ color: 'var(--color-muted)', fontSize: '0.95rem', lineHeight: '1.5', marginBottom: '2rem' }}>
-              Se o email <strong>{email}</strong> estiver registado, receberá as instruções de redefinição em breve.
+              {t('auth.forgot.success_desc', { email })}
             </p>
             <Link to="/login" className="btn btn-primary" style={{ display: 'inline-block', padding: '12px 24px', textDecoration: 'none' }}>
-              Ir para o login
+              {t('auth.forgot.btn_to_login')}
             </Link>
           </div>
         )}

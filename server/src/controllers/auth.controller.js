@@ -71,6 +71,15 @@ const register = async (req, res, next) => {
   try {
     const { name, email, password, householdName, inviteCode } = registerSchema.parse(req.body);
 
+    // Pre-check: does this email already exist?
+    const existing = await db.execute({
+      sql: 'SELECT id FROM users WHERE email = $1',
+      args: [email]
+    });
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ error: 'Este email já está registado. Tente fazer login ou use outro email.' });
+    }
+
     let householdId = null;
 
     if (inviteCode) {
@@ -111,8 +120,9 @@ const register = async (req, res, next) => {
       return res.status(400).json(getValidationErrorPayload(error));
     }
 
-    if (error.message && (error.message.includes('UNIQUE constraint') || error.message.includes('duplicate key'))) {
-      return res.status(400).json({ error: 'Email ja existe' });
+    const msg = String(error.message || error.code || '').toLowerCase();
+    if (msg.includes('unique') || msg.includes('duplicate') || msg.includes('already exists')) {
+      return res.status(409).json({ error: 'Este email já está registado. Tente fazer login ou use outro email.' });
     }
 
     next(error);

@@ -1,21 +1,23 @@
+import { useTranslation } from 'react-i18next';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { fmt } from '../../utils/calculations';
 
 export default function HousingChart({ data, currency }) {
+  const { t } = useTranslation();
   const chartData = data || [];
 
   return (
     <div className="glass-card min-w-0 p-6 border-t-4 border-t-ocean/80">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Evolução Mensal</h3>
-          <p className="text-xs text-gray-500 mt-1">Histórico de custos habitacionais no último ano</p>
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white">{t('housing.chart.title')}</h3>
+          <p className="text-xs text-gray-500 mt-1">{t('housing.chart.subtitle')}</p>
         </div>
       </div>
       
       {chartData.length === 0 ? (
         <div className="h-[280px] rounded-2xl border border-dashed border-black/10 dark:border-white/10 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
-          Ainda não há histórico suficiente para mostrar a evolução mensal.
+          {t('housing.chart.no_data')}
         </div>
       ) : (
         <div style={{ width: '100%', height: 280, minHeight: 280, minWidth: 0 }}>
@@ -45,7 +47,7 @@ export default function HousingChart({ data, currency }) {
                   backdropFilter: 'blur(8px)',
                   boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
                 }}
-                formatter={(value) => [fmt(value, currency), 'Valor']}
+                formatter={(value) => [fmt(value, currency), t('housing.chart.value_label')]}
                 labelStyle={{ color: '#aaa', marginBottom: '4px' }}
               />
               <Bar
