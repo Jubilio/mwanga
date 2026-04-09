@@ -38,11 +38,6 @@ export default function Transactions() {
     { value: 'poupanca', label: t('transactions.types.poupanca') },
   ];
 
-  const getCategoryTranslation = (catName) => {
-    const cat = CATEGORIES.find(c => c.id === catName);
-    return cat ? t(`transactions.categories.${cat.key}`) : catName;
-  };
-
   const today = new Date().toISOString().split('T')[0];
   const [form, setForm] = useState({
     data: today, tipo: 'despesa', desc: '', valor: '', cat: 'Alimentação', nota: '', account_id: ''
@@ -69,7 +64,7 @@ export default function Transactions() {
     }
   }
 
-  const filtered = state.transacoes
+  const filtered = (state.transacoes || [])
     .filter(t => filterType === 'all' || t.tipo === filterType)
     .filter(t =>
       (t.desc || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -78,7 +73,7 @@ export default function Transactions() {
 
   return (
     <div className="animate-fade-in" style={{ paddingBottom: '5rem' }}>
-      {/* Add Transaction Form */}
+      {/* 1. Add Transaction Form */}
       <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
         <div className="section-title">
           <span>{t('transactions.add_transaction')}</span>
@@ -136,7 +131,11 @@ export default function Transactions() {
                 value={form.cat}
                 onChange={e => setForm({ ...form, cat: e.target.value })}
               >
-                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{t(`transactions.categories.${c.key}`)}</option>)}
+                {CATEGORIES.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {t(`transactions.categories.${c.key}`)}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
@@ -148,7 +147,9 @@ export default function Transactions() {
               >
                 <option value="">{t('transactions.none')}</option>
                 {state.contas?.map(acc => (
-                  <option key={acc.id} value={acc.id}>{acc.name} • {getPaymentMethodLabel(acc.type)} ({fmt(acc.current_balance, currency)})</option>
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name} • {getPaymentMethodLabel(acc.type)} ({fmt(acc.current_balance, currency)})
+                  </option>
                 ))}
               </select>
             </div>
@@ -163,7 +164,7 @@ export default function Transactions() {
         </form>
       </div>
 
-      {/* ─── 2. SEARCH & FILTERS ─── */}
+      {/* 2. SEARCH & FILTERS */}
       <div className="flex flex-col md:flex-row gap-3 mb-6">
         <div className="relative flex-1 group">
           <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-ocean transition-colors">
@@ -199,7 +200,7 @@ export default function Transactions() {
         </div>
       </div>
 
-      {/* ─── 3. TRANSACTIONS LIST ─── */}
+      {/* 3. TRANSACTIONS LIST */}
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="text-xs font-black uppercase tracking-widest text-gray-400">
           {filtered.length} {t('transactions.records')}
