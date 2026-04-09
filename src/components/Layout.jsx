@@ -115,10 +115,8 @@ export default function Layout() {
 
   const bottomNavItems = [
     { to: '/', icon: LayoutDashboard, label: t('layout.home') || 'Home' },
-    { to: '/transacoes', icon: ArrowRightLeft, label: t('layout.transactions') },
     { to: null, icon: Plus, label: t('layout.add') || 'Add', isFab: true },
     { to: '/dividas', icon: CreditCard, label: t('layout.debts') },
-    { to: '/insights', icon: Brain, label: t('layout.insights') },
   ];
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
