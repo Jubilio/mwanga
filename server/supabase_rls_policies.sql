@@ -101,6 +101,13 @@ FOR ALL TO authenticated USING (
     loan_id IN (SELECT id FROM vsla_loans WHERE member_id IN (SELECT id FROM vsla_members WHERE user_id = public.get_my_user_id()))
 );
 
+-- Table: settings
+DROP POLICY IF EXISTS "Household members can manage settings" ON public.settings;
+CREATE POLICY "Household members can manage settings" ON public.settings
+FOR ALL TO authenticated USING (
+    household_id = (SELECT household_id FROM public.users WHERE id = public.get_my_user_id())
+);
+
 -- ################################################################################
 -- RLS Policy Migration Completed.
 -- ################################################################################

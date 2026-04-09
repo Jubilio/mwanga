@@ -17,6 +17,7 @@ const webauthnRoutes = require('./routes/webauthn.routes');
 const feedbackRoutes = require('./routes/feedback.routes');
 const { getNotificationReadValue } = require('./services/notificationRead.service');
 const { initFeedbackTable } = require('./services/feedback.service');
+const { initHouseholdExtras } = require('./services/household.service');
 const logger = require('./utils/logger');
 const path = require('path');
 
@@ -24,6 +25,7 @@ const app = express();
 
 // Initialize tables
 initFeedbackTable();
+initHouseholdExtras();
 
 app.set('trust proxy', 1);
 

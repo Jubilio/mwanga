@@ -7,7 +7,7 @@ const { logAction } = require('../utils/audit');
 
 const transactionSchema = z.object({
   date: z.string().min(10).max(10),
-  type: z.enum(['receita', 'despesa', 'renda', 'poupanca']),
+  type: z.enum(['receita', 'despesa', 'renda', 'poupanca', 'levantamento', 'deposito']),
   description: z.string().max(255).trim().optional(),
   amount: z.coerce.number().positive(),
   category: z.string().max(100).trim().optional(),
@@ -99,10 +99,25 @@ const createTransaction = async (req, res, next) => {
     ];
 
     if (data.account_id) {
-      const balanceChange = (data.type === 'receita' || data.type === 'poupanca') ? data.amount : -data.amount;
+      const balanceChange = (data.type === 'receita' || data.type === 'poupanca' || data.type === 'deposito') ? data.amount : -data.amount;
       queries.push({
         sql: 'UPDATE accounts SET current_balance = current_balance + ? WHERE id = ? AND household_id = ?',
         args: [balanceChange, data.account_id, householdId],
+      });
+    }
+
+    // Cash Balance Reconciliation
+    if (data.type === 'levantamento') {
+      // Bank -> Cash: Bank decreases (above), Cash increases
+      queries.push({
+        sql: 'UPDATE households SET cash_balance = cash_balance + ? WHERE id = ?',
+        args: [data.amount, householdId]
+      });
+    } else if (data.type === 'deposito') {
+      // Cash -> Bank: Bank increases (above), Cash decreases
+      queries.push({
+        sql: 'UPDATE households SET cash_balance = cash_balance - ? WHERE id = ?',
+        args: [data.amount, householdId]
       });
     }
 
@@ -190,11 +205,24 @@ const deleteTransaction = async (req, res) => {
     ];
 
     if (tx.account_id) {
-      const originalChange = (tx.type === 'receita' || tx.type === 'poupanca') ? Number(tx.amount) : -Number(tx.amount);
+      const originalChange = (tx.type === 'receita' || tx.type === 'poupanca' || tx.type === 'deposito') ? Number(tx.amount) : -Number(tx.amount);
       const reversal = -originalChange;
       queries.push({
         sql: 'UPDATE accounts SET current_balance = current_balance + ? WHERE id = ? AND household_id = ?',
         args: [reversal, tx.account_id, householdId],
+      });
+    }
+
+    // Reverse Cash Balance Reconciliation
+    if (tx.type === 'levantamento') {
+      queries.push({
+        sql: 'UPDATE households SET cash_balance = cash_balance - ? WHERE id = ?',
+        args: [tx.amount, householdId]
+      });
+    } else if (tx.type === 'deposito') {
+      queries.push({
+        sql: 'UPDATE households SET cash_balance = cash_balance + ? WHERE id = ?',
+        args: [tx.amount, householdId]
       });
     }
 

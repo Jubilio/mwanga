@@ -34,6 +34,8 @@ const AdminUsers = lazy(() => import('./pages/AdminUsers'));
 const AdminSettings = lazy(() => import('./pages/AdminSettings'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
+import { useSmsSync } from './hooks/useSmsSync';
+
 function PageLoader() {
   return (
     <div className="loading-screen">
@@ -41,6 +43,11 @@ function PageLoader() {
       <div className="loading-text">Mwanga ✦</div>
     </div>
   );
+}
+
+function SmsManager() {
+  useSmsSync();
+  return null;
 }
 
 function RequireAuth({ children }) {
@@ -58,7 +65,12 @@ function RequireAuth({ children }) {
   );
   if (!token) return <Navigate to="/login" replace />;
   
-  return children;
+  return (
+    <>
+      <SmsManager />
+      {children}
+    </>
+  );
 }
 
 export default function App() {

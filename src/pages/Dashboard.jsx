@@ -170,19 +170,34 @@ export default function Dashboard() {
           </div>
 
           {/* Monthly Flow Badge */}
-          <motion.div 
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
-            className={`mt-4 flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full ${
-              totals.saldo >= 0 
-                ? 'bg-leaf/10 text-leaf dark:text-leaf-light' 
-                : 'bg-coral/10 text-coral'
-            }`}
-          >
-            {totals.saldo >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-            {totals.saldo >= 0 ? '+' : ''}{fmt(totals.saldo, currency)} {t('dashboard.monthly_flow')}
-          </motion.div>
+          <div className="flex flex-wrap justify-center gap-2 mt-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className={`flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full ${
+                totals.saldo >= 0 
+                  ? 'bg-leaf/10 text-leaf dark:text-leaf-light' 
+                  : 'bg-coral/10 text-coral'
+              }`}
+            >
+              {totals.saldo >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+              {totals.saldo >= 0 ? '+' : ''}{fmt(totals.saldo, currency)} {t('dashboard.monthly_flow')}
+            </motion.div>
+
+            {state.settings.cash_balance !== undefined && (
+              <motion.div 
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.4 }}
+                className="flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full bg-gold/10 text-gold-dark dark:text-gold-light border border-gold/20"
+                onClick={() => navigate('/settings')}
+              >
+                <Wallet size={14} />
+                {showBalance ? fmt(state.settings.cash_balance, currency) : '••••'} {t('dashboard.physical_cash')}
+              </motion.div>
+            )}
+          </div>
         </div>
 
         {/* Income vs Expense Mini Bar */}

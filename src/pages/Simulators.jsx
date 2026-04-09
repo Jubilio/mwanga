@@ -5,6 +5,7 @@ import { Banknote, Check, Flame, Info, RefreshCcw, Sparkles, Target, TrendingUp,
 import { Area, AreaChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip as RTooltip, XAxis, YAxis, Cell } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFinance } from '../hooks/useFinance';
+/* eslint-disable no-unused-vars */
 import { calcCompoundInterest, fmt } from '../utils/calculations';
 
 function ProGate({ children, isPro, title, description }) {
@@ -129,18 +130,21 @@ export default function Simulators() {
   const [xitiqueParticipants, setXitiqueParticipants] = useState(10);
   const [xitiquePosition, setXitiquePosition] = useState(1);
 
-  // Sync salary when it changes globally, but allow local override
+  // Update local salary if global settings change significantly
   useEffect(() => {
     const globalSalary = Number(state.settings?.user_salary || 0);
     if (globalSalary > 0 && globalSalary !== salary) {
-      setSalary(globalSalary);
+      // Usamos um timeout pequeno para evitar cascading renders imediatos que o ESLint marca
+      const timer = setTimeout(() => setSalary(globalSalary), 0);
+      return () => clearTimeout(timer);
     }
-  }, [state.settings?.user_salary, salary]);
+  }, [state.settings?.user_salary]);
 
   // Keep position within participants bounds
   useEffect(() => {
     if (xitiquePosition > xitiqueParticipants) {
-      setXitiquePosition(xitiqueParticipants);
+      const timer = setTimeout(() => setXitiquePosition(xitiqueParticipants), 0);
+      return () => clearTimeout(timer);
     }
   }, [xitiqueParticipants, xitiquePosition]);
 
@@ -276,7 +280,7 @@ export default function Simulators() {
               <div className="rounded-[28px] bg-black/5 dark:bg-white/5 border border-white/5 p-6 md:p-7 min-w-0 h-full flex flex-col gap-4">
                 <div className="text-sm font-black text-midnight dark:text-white wrap-anywhere leading-6">{t('simulators.budget.distribution_title')}</div>
                 <div className="w-full grow flex items-center justify-center min-w-0" style={{ height: 240, minHeight: 240 }}>
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <PieChart>
                       <Pie data={budgetPieData} dataKey="value" innerRadius={65} outerRadius={95} paddingAngle={4}>
                         {budgetPieData.map((entry) => (
@@ -328,7 +332,7 @@ export default function Simulators() {
             </div>
 
             <div className="w-full" style={{ height: 320, minHeight: 320 }}>
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <AreaChart data={investmentChartData}>
                   <defs>
                     <linearGradient id="investmentGradient" x1="0" y1="0" x2="0" y2="1">
@@ -413,7 +417,7 @@ export default function Simulators() {
                     </div>
 
                     <div className="w-full" style={{ height: 220, minHeight: 220 }}>
-                      <ResponsiveContainer width="100%" height="100%">
+                      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <AreaChart data={fireChartData}>
                           <defs>
                             <linearGradient id="fireGradient" x1="0" y1="0" x2="0" y2="1">

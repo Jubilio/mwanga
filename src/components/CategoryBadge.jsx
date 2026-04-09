@@ -48,7 +48,9 @@ export default function CategoryBadge({ category, className = "" }) {
     'Lazer': 'leisure',
     'Investimentos': 'investments',
     'Poupança': 'savings',
-    'Outro': 'other'
+    'Outro': 'other',
+    'Habitação': 'habitacao',
+    'housing': 'habitacao'
   };
 
   const key = categoryKeys[category] || category?.toLowerCase() || 'other';

@@ -105,6 +105,10 @@ export function usePushNotifications() {
       const permissionResult = await Notification.requestPermission();
       setPermission(permissionResult);
 
+      if (permissionResult === 'denied') {
+        throw new Error('BLOCKED_BY_BROWSER');
+      }
+
       if (permissionResult !== 'granted') {
         throw new Error('Notification permission was not granted.');
       }

@@ -86,8 +86,8 @@ function extractDateTime(text) {
 function detectTransactionType(lowerText) {
   if (/\btransferiste\b|\btransferiu\b|\benviou\b/.test(lowerText)) return 'transfer_out';
   if (/\brecebeste\b|\btransferencia recebida\b|\btransferência recebida\b/.test(lowerText)) return 'transfer_in';
-  if (/\blevantaste\b|\blevantamento\b/.test(lowerText)) return 'withdrawal';
-  if (/\bdepositaste\b|\bdeposito\b|\bdepósito\b/.test(lowerText)) return 'deposit';
+  if (/\blevantaste\b|\blevantamento\b/.test(lowerText)) return 'levantamento';
+  if (/\bdepositaste\b|\bdeposito\b|\bdepósito\b/.test(lowerText)) return 'deposito';
   if (/\bcreditad[oa]\b/.test(lowerText)) return 'credit';
   if (/\bpagamento\b|\bpagaste\b|\bcompra\b/.test(lowerText)) return 'payment';
   if (/\btaxa\b|\bcobranca\b|\bcobrança\b/.test(lowerText)) return 'fee';
@@ -229,7 +229,7 @@ Estrutura obrigatoria:
   "confidence_score": 0.0
 }
 
-transaction_type deve ser um de: debit, credit, transfer_out, transfer_in, withdrawal, deposit, payment, fee, unknown`;
+transaction_type deve ser um de: debit, credit, transfer_out, transfer_in, levantamento, deposito, payment, fee, unknown`;
 
 const parseWithLLM = async (text) => {
   try {

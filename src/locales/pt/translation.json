@@ -18,6 +18,7 @@
     "admin": "Painel Admin",
     "help": "Ajuda / Tutorial",
     "settings": "Definições",
+    "pricing": "Planos / Upgrade",
     "logout": "Terminar Sessão",
     "add": "Adicionar"
   },
@@ -277,6 +278,7 @@
       "evening": "Boa noite"
     },
     "available_balance": "Balanço Disponível",
+    "physical_cash": "Dinheiro em Mão (Wallet)",
     "hide_balance": "Ocultar saldo",
     "show_balance": "Mostrar saldo",
     "monthly_flow": "fluxo mensal",
@@ -338,6 +340,23 @@
     }
   },
   "transactions": {
+    "categories": {
+      "salary": "Salário",
+      "house_rent": "Renda Casa",
+      "food": "Alimentação",
+      "transport": "Transporte",
+      "health": "Saúde",
+      "education": "Educação",
+      "energy_water": "Energia/Água",
+      "internet": "Internet",
+      "church_donations": "Igreja/Doações",
+      "leisure": "Lazer",
+      "investments": "Investimentos",
+      "savings": "Poupança",
+      "other": "Outro",
+      "xitique": "Xitique",
+      "habitacao": "Habitação"
+    },
     "title": "Transações",
     "add_transaction": "Adicionar Transação",
     "date": "Data",
@@ -375,21 +394,6 @@
       "despesa": "💸 Despesa",
       "renda": "🏠 Renda da Casa",
       "poupanca": "🏦 Poupança"
-    },
-    "categories": {
-      "salary": "Salário",
-      "house_rent": "Renda Casa",
-      "food": "Alimentação",
-      "transport": "Transporte",
-      "health": "Saúde",
-      "education": "Educação",
-      "energy_water": "Energia / Água",
-      "internet": "Internet",
-      "church_donations": "Igreja / Doações",
-      "leisure": "Lazer",
-      "investments": "Investimentos",
-      "savings": "Poupança",
-      "other": "Outros"
     }
   },
   "sms_import": {
@@ -880,7 +884,13 @@
       "landlord_label": "Nome do Senhorio",
       "landlord_placeholder": "Ex: Sr. Manuel",
       "rent_label": "Renda Padrão",
-      "rent_tip": "🏠 Valor pré-definido no módulo de Habitação."
+      "rent_tip": "🏠 Valor pré-definido no módulo de Habitação.",
+      "automation_section": "Automação SMS (M-Pesa & BIM)",
+      "automation_subtitle": "Sincronização inteligente com o seu telemóvel.",
+      "cash_balance_label": "Dinheiro Físico Inicial (Cash)",
+      "cash_balance_tip": "Introduza o valor que tem fisicamente consigo para iniciar a reconciliação.",
+      "sms_sync_tag": "Sincronização Activa",
+      "sms_sync_label": "Ativar leitura automática de SMS financeiros"
     },
     "pref": {
       "title": "Interface e Regional",
@@ -903,7 +913,10 @@
         "commitments": "Compromissos",
         "period_start": "Início",
         "period_end": "Fim",
-        "ai_sync": "Sincronizado com o motor Binth AI"
+        "ai_sync": "Sincronizado com o motor Binth AI",
+        "blocked_title": "Notificações Bloqueadas",
+        "blocked_desc": "O navegador bloqueou os alertas. Para ativar, clica no ícone de ajustes (ou cadeado) na barra de endereços acima e altera 'Notificações' para 'Permitir'.",
+        "blocked_btn": "Ver Como Desbloquear"
       }
     },
     "sidebar": {
@@ -923,12 +936,13 @@
       "img_too_large": "A imagem é muito grande (máx 2MB)",
       "img_updated": "Foto actualizada! ✦",
       "push_enabled": "Push ativado! ✦",
-      "push_error": "Erro ao ativar notificações"
+      "push_error": "Erro ao ativar notificações",
+      "push_blocked": "Permissão bloqueada pelo navegador. Reset as permissões no URL."
     }
   },
   "pricing": {
     "tag": "Planos Mwanga ✦",
-    "title": "Escolha o seu nível de <span style=\"color: var(--color-gold)\">Prosperidade</span>",
+    "title": "Escolha o seu nível de <span>Prosperidade</span>",
     "description": "Mwanga é mais que controle de gastos. É a sua jornada para o crescimento patrimonial em Moçambique.",
     "billing": {
       "monthly": "Mensal",
@@ -994,7 +1008,7 @@
   },
   "help": {
     "hero": {
-      "title": "Centro de <span className=\"text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-indigo-300\">Ajuda Mwanga</span>",
+      "title": "Centro de <span>Ajuda Mwanga</span>",
       "description": "Tudo o que precisa de saber para iluminar o seu caminho financeiro e dominar o sistema Mwanga 2.0.",
       "search_placeholder": "Pesquisar manual..."
     },

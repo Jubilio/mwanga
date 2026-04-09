@@ -9,7 +9,7 @@ import {
   Banknote, Calendar, Globe, Mail, CreditCard, Chrome,
   Sun, Moon, Calculator, Check, ChevronRight, Sparkles, Zap,
   Loader2, CloudCheck, Home as HomeIcon, Heart, TrendingUp,
-  HelpCircle
+  HelpCircle, AlertTriangle
 } from 'lucide-react';
 
 const AVATARS = [
@@ -30,6 +30,7 @@ export default function Settings() {
     isLoading: isPushLoading,
     isSubscribed,
     isSupported,
+    permission,
   } = usePushNotifications();
   const [activeTab, setActiveTab] = useState('perfil');
   const [showAvatarGallery, setShowAvatarGallery] = useState(false);
@@ -51,6 +52,8 @@ export default function Settings() {
     monthly_due_reminder_enabled: state.settings.monthly_due_reminder_enabled ?? true,
     monthly_due_reminder_time: state.settings.monthly_due_reminder_time || '08:00',
     monthly_due_reminder_period: state.settings.monthly_due_reminder_period || 'inicio',
+    cash_balance: state.settings.cash_balance || 0,
+    sms_automation_enabled: state.settings.sms_automation_enabled === 'true' || state.settings.sms_automation_enabled === true,
   });
 
   const saveTimeoutRef = useRef(null);
@@ -71,8 +74,8 @@ export default function Settings() {
         updates.push(dispatch({ type: 'UPDATE_SETTING', payload: { key, value } }))
       );
 
-      if (form.household_name !== state.settings.household_name) {
-        updates.push(dispatch({ type: 'UPDATE_HOUSEHOLD', payload: { name: form.household_name } }));
+      if (form.household_name !== state.settings.household_name || form.cash_balance !== state.settings.cash_balance) {
+        updates.push(dispatch({ type: 'UPDATE_HOUSEHOLD', payload: { name: form.household_name, cash_balance: form.cash_balance } }));
       }
 
       await Promise.all(updates);
@@ -82,7 +85,7 @@ export default function Settings() {
     } finally {
       setTimeout(() => setIsSaving(false), 500);
     }
-  }, [form, state.user?.name, state.settings.household_name, dispatch, showToast, t]);
+  }, [form, state.user?.name, state.settings.household_name, state.settings.cash_balance, dispatch, showToast, t]);
 
   const handleImageUpload = (file) => {
     if (file) {
@@ -407,6 +410,56 @@ export default function Settings() {
                         </div>
                       </div>
                     </div>
+
+                    {/* ═══ SMS AUTOMATION & WALLET ═══ */}
+                    <div className="mt-12 pt-12 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-3 mb-8">
+                        <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-500">
+                          <Zap size={20} />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-black text-slate-800 tracking-tight">{t('settings.financas.automation_section')}</h3>
+                          <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">{t('settings.financas.automation_subtitle')}</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                         <div className="group">
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t('settings.financas.cash_balance_label')}</label>
+                            <div className="relative">
+                              <input 
+                                type="number" 
+                                value={form.cash_balance}
+                                onChange={(e) => setForm({ ...form, cash_balance: e.target.value })}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-xl font-serif text-indigo-600 outline-none focus:border-indigo-500/40 transition-all shadow-inner"
+                              />
+                              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
+                                {form.currency}
+                              </div>
+                            </div>
+                            <p className="text-[9px] text-slate-400 mt-2 italic px-1">{t('settings.financas.cash_balance_tip')}</p>
+                         </div>
+
+                         <div 
+                          onClick={() => setForm({ ...form, sms_automation_enabled: !form.sms_automation_enabled })}
+                          className="flex items-center justify-between p-6 rounded-2xl bg-indigo-50 border border-indigo-100/50 cursor-pointer hover:bg-white transition-all group shadow-sm h-fit"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className={`p-3 rounded-xl ${form.sms_automation_enabled ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                              <Sparkles size={20} />
+                            </div>
+                            <div>
+                               <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">{t('settings.financas.sms_sync_tag')}</p>
+                               <span className="text-xs font-bold text-slate-700">{t('settings.financas.sms_sync_label')}</span>
+                            </div>
+                          </div>
+                          <div className={`w-12 h-6 rounded-full p-1 relative transition-colors ${form.sms_automation_enabled ? 'bg-indigo-500' : 'bg-slate-300'}`}>
+                            <div className={`w-4 h-4 rounded-full bg-white transition-all ${form.sms_automation_enabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
               )}
@@ -506,9 +559,13 @@ export default function Settings() {
                               onClick={async () => {
                                 try {
                                   await enablePush();
-                                  showToast(t('settings.toasts.push_enabled'));
-                                } catch {
-                                  showToast(t('settings.toasts.push_error'));
+                                  showToast(t('settings.toasts.push_enabled'), 'success');
+                                } catch (error) {
+                                  if (error.message === 'BLOCKED_BY_BROWSER') {
+                                    showToast(t('settings.toasts.push_blocked'), 'error');
+                                  } else {
+                                    showToast(t('settings.toasts.push_error'), 'error');
+                                  }
                                 }
                               }}
                               className="rounded-2xl bg-white px-6 py-3 text-xs font-black uppercase tracking-widest text-ocean hover:bg-slate-50 transition-all disabled:opacity-50 shadow-xl"
@@ -526,6 +583,22 @@ export default function Settings() {
                             )}
                           </div>
                         </div>
+
+                        {permission === 'denied' && (
+                          <div className="mb-8 flex items-start gap-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 p-5 text-white animate-pulse-slow">
+                            <div className="shrink-0 p-3 rounded-xl bg-amber-500/20 text-amber-300">
+                              <AlertTriangle size={20} />
+                            </div>
+                            <div>
+                               <h6 className="text-[12px] font-black uppercase tracking-widest text-amber-200 mb-1">
+                                 {t('settings.pref.push.blocked_title')}
+                               </h6>
+                               <p className="text-[11px] text-white/80 leading-relaxed font-medium">
+                                 {t('settings.pref.push.blocked_desc')}
+                               </p>
+                            </div>
+                          </div>
+                        )}
 
                         {/* ═══ GRANULAR CONTROLS ═══ */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-white/10 pt-6">

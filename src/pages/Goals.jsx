@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { fmt, daysUntil } from '../utils/calculations';
 import BinthContextual from '../components/BinthContextual';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Icon mapping for goals
 const GOAL_ICONS = {
@@ -243,7 +244,7 @@ export default function Goals() {
               <div className="space-y-2">
                 <label className="text-[10px] uppercase font-bold text-gray-500 ml-1">{t('goals.form.icon_label')}</label>
                 <div className="flex flex-wrap gap-2">
-                  {Object.entries(GOAL_ICONS).map(([key]) => (
+                  {Object.entries(GOAL_ICONS).map(([key, IconComp]) => (
                     <button
                       key={key}
                       type="button"

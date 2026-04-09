@@ -18,6 +18,7 @@
     "admin": "Admin Panel",
     "help": "Help / Tutorial",
     "settings": "Settings",
+    "pricing": "Plans / Upgrade",
     "logout": "Log Out",
     "add": "Add"
   },
@@ -277,6 +278,7 @@
       "evening": "Good evening"
     },
     "available_balance": "Available Balance",
+    "physical_cash": "Physical Cash (Wallet)",
     "hide_balance": "Hide balance",
     "show_balance": "Show balance",
     "monthly_flow": "monthly flow",
@@ -389,7 +391,9 @@
       "leisure": "Leisure",
       "investments": "Investments",
       "savings": "Savings",
-      "other": "Others"
+      "other": "Others",
+      "xitique": "Xitique",
+      "habitacao": "Housing"
     }
   },
   "sms_import": {
@@ -880,7 +884,13 @@
       "landlord_label": "Landlord Name",
       "landlord_placeholder": "e.g., Mr. Manuel",
       "rent_label": "Default Rent",
-      "rent_tip": "🏠 Pre-defined value in the Housing module."
+      "rent_tip": "🏠 Pre-defined value in the Housing module.",
+      "automation_section": "SMS Automation (M-Pesa & Banks)",
+      "automation_subtitle": "Intelligent sync with your mobile phone.",
+      "cash_balance_label": "Initial Physical Cash",
+      "cash_balance_tip": "Enter the amount you have physically with you to start reconciliation.",
+      "sms_sync_tag": "Sync Active",
+      "sms_sync_label": "Enable automatic reading of financial SMS"
     },
     "pref": {
       "title": "Interface and Regional",
@@ -903,7 +913,10 @@
         "commitments": "Commitments",
         "period_start": "Start",
         "period_end": "End",
-        "ai_sync": "Synced with Binth AI engine"
+        "ai_sync": "Synced with Binth AI engine",
+        "blocked_title": "Notifications Blocked",
+        "blocked_desc": "The browser blocked alerts. To enable, click the settings (or lock) icon in the address bar above and change 'Notifications' to 'Allow'.",
+        "blocked_btn": "See How to Unblock"
       }
     },
     "sidebar": {
@@ -923,12 +936,13 @@
       "img_too_large": "The image is too large (max 2MB)",
       "img_updated": "Photo updated! ✦",
       "push_enabled": "Push enabled! ✦",
-      "push_error": "Error enabling notifications"
+      "push_error": "Error enabling notifications",
+      "push_blocked": "Permission blocked by browser. Reset permissions in URL bar."
     }
   },
   "pricing": {
     "tag": "Mwanga Plans ✦",
-    "title": "Choose your level of <span style=\"color: var(--color-gold)\">Prosperity</span>",
+    "title": "Choose your level of <span>Prosperity</span>",
     "description": "Mwanga is more than expense control. It's your journey to wealth growth in Mozambique.",
     "billing": {
       "monthly": "Monthly",
