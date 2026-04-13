@@ -1,9 +1,0 @@
-{
-  "appId": "app.mwanga.finance",
-  "appName": "Mwanga Finance",
-  "webDir": "dist",
-  "server": {
-    "url": "https://mwanga-z1f4.onrender.com",
-    "cleartext": true
-  }
-}

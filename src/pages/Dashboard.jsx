@@ -49,13 +49,15 @@ export default function Dashboard() {
   const score = calcFinancialScore(state.transacoes, state.budgets, monthKey, state.rendas, startDay);
   const risk = calcRiskLevel(score);
   const savingsRate = calcSavingsRate(totals.totalIncome, totals.totalExpenses);
+
   const totalContas = state.contas?.reduce((acc, curr) => acc + Number(curr.current_balance || 0), 0) || 0;
-  const realBalance = totalContas + totals.unlinkedSaldo;
+  const cashSetting = Number(state.settings.cash_balance || 0);
+  const realBalance = totalContas + cashSetting;
   const pendingHousing = state.rendas.filter(r => r.estado === 'pendente').length;
   const pendingDebts = state.dividas.filter(d => Number(d.remaining_amount || 0) > 0).length;
   const totalAlerts = pendingDebts + pendingHousing;
 
-  const latestTransactions = useMemo(() => 
+  const latestTransactions = useMemo(() =>
     [...state.transacoes]
       .sort((a, b) => `${b.data || ''}`.localeCompare(`${a.data || ''}`) || Number(b.id || 0) - Number(a.id || 0))
       .slice(0, 5),
@@ -132,9 +134,9 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-5" style={{ paddingBottom: '7rem' }}>
-      
+
       {/* ─── 1. BALANCE HERO ─── */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -143,7 +145,7 @@ export default function Dashboard() {
         {/* Greeting */}
         <div className="text-center mb-1 flex items-center justify-center gap-2">
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 pl-6">{greeting} ✨</span>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="p-1.5 text-gray-400 hover:text-gold transition-colors"
             title="Recarregar"
@@ -155,13 +157,13 @@ export default function Dashboard() {
         {/* Balance */}
         <div className="relative flex flex-col items-center">
           <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 dark:text-gray-400 mb-1">{t('dashboard.available_balance')}</span>
-          
+
           <div className="dashboard-balance-row">
             <div className="dashboard-balance-value text-midnight dark:text-white truncate max-w-[80vw]">
               {showBalance ? fmt(realBalance, currency) : '••••••'}
             </div>
-            <button 
-              onClick={() => setShowBalance(!showBalance)} 
+            <button
+              onClick={() => setShowBalance(!showBalance)}
               className="dashboard-balance-toggle p-2.5 rounded-full bg-black/5 dark:bg-white/5 text-gray-400 hover:text-ocean dark:hover:text-sky transition-all active:scale-90"
               aria-label={showBalance ? t('dashboard.hide_balance') : t('dashboard.show_balance')}
             >
@@ -171,22 +173,21 @@ export default function Dashboard() {
 
           {/* Monthly Flow Badge */}
           <div className="flex flex-wrap justify-center gap-2 mt-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.4 }}
-              className={`flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full ${
-                totals.saldo >= 0 
-                  ? 'bg-leaf/10 text-leaf dark:text-leaf-light' 
+              className={`flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full ${totals.saldo >= 0
+                  ? 'bg-leaf/10 text-leaf dark:text-leaf-light'
                   : 'bg-coral/10 text-coral'
-              }`}
+                }`}
             >
               {totals.saldo >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
               {totals.saldo >= 0 ? '+' : ''}{fmt(totals.saldo, currency)} {t('dashboard.monthly_flow')}
             </motion.div>
 
             {state.settings.cash_balance !== undefined && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.35, duration: 0.4 }}
@@ -212,13 +213,13 @@ export default function Dashboard() {
             <span className="text-coral dark:text-coral-light">↓ {t('dashboard.expenses')} {fmt(totals.totalExpenses, currency)}</span>
           </div>
           <div className="h-2 rounded-full overflow-hidden bg-black/5 dark:bg-white/5 flex">
-            <motion.div 
+            <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${incomePercent}%` }}
               transition={{ delay: 0.6, duration: 0.8, ease: 'easeOut' }}
               className="h-full bg-linear-to-r from-leaf to-leaf-light rounded-full"
             />
-            <motion.div 
+            <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${100 - incomePercent}%` }}
               transition={{ delay: 0.7, duration: 0.8, ease: 'easeOut' }}
@@ -229,9 +230,9 @@ export default function Dashboard() {
       </motion.div>
 
       {/* ─── 2. QUICK ACTIONS (Centered Grid) ─── */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }} 
-        animate={{ opacity: 1, y: 0 }} 
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15, duration: 0.4 }}
       >
         <div className="dashboard-quick-actions">
@@ -255,14 +256,14 @@ export default function Dashboard() {
       </motion.div>
 
       {/* ─── 3. HEALTH + ALERTS (Side by Side on Desktop) ─── */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }} 
-        animate={{ opacity: 1, y: 0 }} 
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25, duration: 0.4 }}
         className="grid grid-cols-1 sm:grid-cols-2 gap-4"
       >
         {/* Financial Health Score */}
-        <div 
+        <div
           onClick={() => navigate('/insights')}
           className="glass-card p-5 cursor-pointer active:scale-[0.98] transition-all group"
         >
@@ -277,7 +278,7 @@ export default function Dashboard() {
             </div>
             <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 group-hover:text-ocean dark:group-hover:text-sky transition-colors" />
           </div>
-          
+
           <div className="flex items-end justify-between">
             <div>
               <div className={`text-3xl font-black ${scoreColor}`}>{score}<span className="text-lg">/ 100</span></div>
@@ -295,31 +296,29 @@ export default function Dashboard() {
 
           {/* Score bar */}
           <div className="mt-3 h-1.5 rounded-full bg-black/5 dark:bg-white/5 overflow-hidden">
-            <motion.div 
+            <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${score}%` }}
               transition={{ delay: 0.5, duration: 1, ease: 'easeOut' }}
-              className={`h-full rounded-full ${
-                score > 70 ? 'bg-linear-to-r from-leaf to-leaf-light' 
-                : score > 40 ? 'bg-linear-to-r from-gold to-gold-light' 
-                : 'bg-linear-to-r from-coral to-coral-light'
-              }`}
+              className={`h-full rounded-full ${score > 70 ? 'bg-linear-to-r from-leaf to-leaf-light'
+                  : score > 40 ? 'bg-linear-to-r from-gold to-gold-light'
+                    : 'bg-linear-to-r from-coral to-coral-light'
+                }`}
             />
           </div>
         </div>
 
         {/* Alerts Card */}
-        <div 
+        <div
           onClick={() => navigate(pendingDebts > 0 ? '/dividas' : '/habitacao')}
           className="glass-card p-5 cursor-pointer active:scale-[0.98] transition-all group"
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-md ${
-                totalAlerts > 0 
-                  ? 'bg-linear-to-br from-coral to-coral-light animate-pulse' 
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-md ${totalAlerts > 0
+                  ? 'bg-linear-to-br from-coral to-coral-light animate-pulse'
                   : 'bg-linear-to-br from-leaf to-leaf-light'
-              }`}>
+                }`}>
                 <Bell size={18} />
               </div>
               <span className="text-xs uppercase tracking-widest font-bold text-gray-500">{t('dashboard.alerts.title')}</span>
@@ -359,14 +358,14 @@ export default function Dashboard() {
       </motion.div>
 
       {/* ─── 4. CASHFLOW + ACCOUNTS (Side by Side on Desktop) ─── */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }} 
-        animate={{ opacity: 1, y: 0 }} 
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.4 }}
         className="grid grid-cols-1 sm:grid-cols-2 gap-4"
       >
         {/* Cashflow Card */}
-        <div 
+        <div
           onClick={() => navigate('/transacoes')}
           className="glass-card p-5 cursor-pointer active:scale-[0.98] transition-all group"
         >
@@ -409,7 +408,7 @@ export default function Dashboard() {
         </div>
 
         {/* Active Accounts Card */}
-        <div 
+        <div
           onClick={() => navigate('/patrimonio')}
           className="glass-card p-5 cursor-pointer active:scale-[0.98] transition-all group"
         >
@@ -425,7 +424,7 @@ export default function Dashboard() {
 
           <div className="text-2xl font-black text-ocean dark:text-sky">{fmt(totalContas, currency)}</div>
           <div className="text-[10px] uppercase font-bold text-gray-400 mt-1">{t('dashboard.accounts.total_in')} {state.contas?.length || 0} {(state.contas?.length || 0) !== 1 ? t('dashboard.accounts.accounts') : t('dashboard.accounts.account')}</div>
-          
+
           {/* Mini account list */}
           {state.contas && state.contas.length > 0 && (
             <div className="mt-3 space-y-1.5">
@@ -454,7 +453,7 @@ export default function Dashboard() {
           <h2 className="text-base font-bold dark:text-white flex items-center gap-2">
             {t('dashboard.latest_transactions.title')}
           </h2>
-          <button 
+          <button
             onClick={() => navigate('/transacoes')}
             className="text-[10px] font-bold text-ocean dark:text-sky uppercase tracking-wider hover:underline flex items-center gap-1"
           >
@@ -467,7 +466,7 @@ export default function Dashboard() {
               <div className="text-3xl mb-2">📝</div>
               <div className="text-sm font-bold text-gray-400 dark:text-gray-500">{t('dashboard.latest_transactions.empty')}</div>
               <div className="text-[10px] text-gray-400 mt-1">{t('dashboard.latest_transactions.empty_sub')}</div>
-              <button 
+              <button
                 onClick={() => navigate('/transacoes', { state: { openModal: true } })}
                 className="mt-4 text-xs font-bold text-ocean dark:text-sky bg-ocean/10 dark:bg-sky/10 px-4 py-2 rounded-full hover:bg-ocean/20 dark:hover:bg-sky/20 transition-colors"
               >
@@ -477,19 +476,18 @@ export default function Dashboard() {
           ) : (
             <div className="divide-y divide-black/5 dark:divide-white/5">
               {latestTransactions.map((t, idx) => (
-                <motion.div 
-                  key={t.id} 
+                <motion.div
+                  key={t.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.45 + idx * 0.05, duration: 0.3 }}
                   className="p-4 flex items-center justify-between hover:bg-black/2 dark:hover:bg-white/2 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
-                      t.tipo === 'despesa' 
-                        ? 'bg-coral/10 text-coral' 
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${t.tipo === 'despesa'
+                        ? 'bg-coral/10 text-coral'
                         : 'bg-leaf/10 text-leaf dark:text-leaf-light'
-                    }`}>
+                      }`}>
                       {t.tipo === 'despesa' ? <ArrowDownToLine size={16} /> : <ArrowUpRight size={16} />}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -500,11 +498,10 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className={`font-bold text-sm tabular-nums ${
-                    t.tipo === 'despesa' 
-                      ? 'text-gray-900 dark:text-white' 
+                  <div className={`font-bold text-sm tabular-nums ${t.tipo === 'despesa'
+                      ? 'text-gray-900 dark:text-white'
                       : 'text-leaf dark:text-leaf-light'
-                  }`}>
+                    }`}>
                     {t.tipo === 'despesa' ? '-' : '+'}{fmt(t.valor, currency)}
                   </div>
                 </motion.div>
