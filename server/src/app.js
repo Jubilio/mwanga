@@ -37,10 +37,10 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      "img-src": ["'self'", "data:", "blob:", "http://localhost:3001", "https://mwanga-opal.vercel.app", "https://ui-avatars.com"],
-      "script-src": ["'self'", "https://accounts.google.com", "https://mwanga-opal.vercel.app"],
+      "img-src": ["'self'", "data:", "blob:", "http://localhost:3001", "https://mwanga-opal.vercel.app", "https://mwangafin.netlify.app", "https://ui-avatars.com"],
+      "script-src": ["'self'", "https://accounts.google.com", "https://mwanga-opal.vercel.app", "https://mwangafin.netlify.app"],
       "frame-src": ["'self'", "https://accounts.google.com"],
-      "connect-src": ["'self'", "https://accounts.google.com", "https://mwanga-opal.vercel.app", "https://topical-jaguar-71639.upstash.io"],
+      "connect-src": ["'self'", "https://accounts.google.com", "https://mwanga-opal.vercel.app", "https://mwangafin.netlify.app", "https://topical-jaguar-71639.upstash.io"],
     },
   },
 }));
@@ -50,6 +50,7 @@ app.use(cors({
   origin: [
     'https://mwanga-opal.vercel.app',
     'https://mwanga-qdsmbf6ck-jubilio-projects.vercel.app',
+    'https://mwangafin.netlify.app',
     'http://localhost:5173',
     'http://localhost:3000'
   ],
@@ -63,7 +64,7 @@ app.use(compression());
 
 // 4. Rate Limiting (JSON fixed)
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
+  windowMs: 15 * 60 * 1000,
   max: 5000,
   handler: (req, res) => {
     res.status(429).json({
