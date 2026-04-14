@@ -121,9 +121,12 @@ export default function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const userName   = state.user?.name || 'Utilizador';
+  const userName = state.user?.name || 'Utilizador';
   const familyName = state.settings?.household_name || 'Mwanga';
   const userInitial = userName.charAt(0).toUpperCase();
+
+  // Check if user has Pro subscription
+  const isPro = state.settings?.subscription_tier === 'pro' || state.settings?.subscription_tier === 'legacy';
 
   const handleLogout = () => {
     localStorage.removeItem('mwanga-token');
@@ -134,35 +137,35 @@ export default function Sidebar({ isOpen, onClose }) {
     {
       section: 'GESTÃO FINANCEIRA',
       items: [
-        { icon: '▦', label: t('layout.dashboard'),          to: '/',            end: true },
-        { icon: '↕', label: t('layout.transactions'),        to: '/transacoes' },
-        { icon: '◎', label: t('layout.budget'),              to: '/orcamento' },
+        { icon: '▦', label: t('layout.dashboard'), to: '/', end: true },
+        { icon: '↕', label: t('layout.transactions'), to: '/transacoes' },
+        { icon: '◎', label: t('layout.budget'), to: '/orcamento' },
       ],
     },
     {
       section: 'FINANCIAMENTO',
       items: [
-        { icon: '💸', label: t('layout.credit'),            to: '/credito' },
-        { icon: '⊟', label: t('layout.debts'),              to: '/dividas' },
-        { icon: '⌂', label: t('layout.housing'),            to: '/habitacao' },
+        { icon: '💸', label: t('layout.credit'), to: '/credito' },
+        { icon: '⊟', label: t('layout.debts'), to: '/dividas' },
+        { icon: '⌂', label: t('layout.housing'), to: '/habitacao' },
       ],
     },
     {
       section: 'POUPANÇA & METAS',
       items: [
-        { icon: '✦', label: t('layout.xitique'),            to: '/xitique' },
-        { icon: '◉', label: t('layout.goals'),              to: '/metas' },
-        { icon: '🗺', label: t('layout.nexovibe'),          to: '/nexovibe' },
+        { icon: '✦', label: t('layout.xitique'), to: '/xitique' },
+        { icon: '◉', label: t('layout.goals'), to: '/metas' },
+        { icon: '🗺', label: t('layout.nexovibe'), to: '/nexovibe' },
       ],
     },
     {
       section: 'INTELIGÊNCIA PRO',
       items: [
-        { icon: '◈', label: t('layout.insights'),           to: '/insights',    pro: true },
-        { icon: '⇩', label: t('layout.sms_import'),         to: '/sms-import',  pro: true, highlight: true },
-        { icon: '◧', label: t('layout.patrimony'),          to: '/patrimonio',  pro: true },
-        { icon: '⧉', label: t('layout.simulators'),         to: '/simuladores', pro: true },
-        { icon: '↗', label: t('layout.report'),             to: '/relatorio',   pro: true },
+        { icon: '◈', label: t('layout.insights'), to: '/insights', pro: true },
+        { icon: '⇩', label: t('layout.sms_import'), to: '/sms-import', pro: true, highlight: true },
+        { icon: '◧', label: t('layout.patrimony'), to: '/patrimonio', pro: true },
+        { icon: '⧉', label: t('layout.simulators'), to: '/simuladores', pro: true },
+        { icon: '↗', label: t('layout.report'), to: '/relatorio', pro: true },
       ],
     },
   ];
@@ -171,7 +174,7 @@ export default function Sidebar({ isOpen, onClose }) {
     {
       section: 'ADMINISTRAÇÃO',
       items: [
-        { icon: '⚙', label: t('layout.admin'),      to: '/admin' },
+        { icon: '⚙', label: t('layout.admin'), to: '/admin' },
       ],
     },
   ];
@@ -247,9 +250,9 @@ export default function Sidebar({ isOpen, onClose }) {
             <div style={{ flex: 1, minWidth: 0 }}>
               <MwangaLogo variant="sidebar" />
             </div>
-            
+
             <LanguageSwitcher />
-            
+
           </div>
         </div>
 
@@ -294,7 +297,7 @@ export default function Sidebar({ isOpen, onClose }) {
                             color: isActive ? '#F59E0B' : item.highlight ? '#e0a840' : '#4a5568',
                             fontWeight: isActive ? 600 : item.highlight ? 500 : 400,
                           }}>{item.label}</span>
-                          <ProBadge />
+                          {!isPro && <ProBadge />}
                         </>
                       )}
                     </NavLink>
@@ -340,7 +343,7 @@ export default function Sidebar({ isOpen, onClose }) {
           {/* Admin Nav */}
           {state.user?.role === 'admin' && ADMIN_NAV.map((group, gi) => (
             <div key={gi}>
-               <div style={{
+              <div style={{
                 fontSize: 10, fontWeight: 700, letterSpacing: '0.14em',
                 color: '#4a5568', padding: '14px 6px 8px', textTransform: 'uppercase',
               }}>{group.section}</div>
@@ -365,26 +368,28 @@ export default function Sidebar({ isOpen, onClose }) {
           ))}
         </nav>
 
-        {/* Premium CTA */}
-        <div style={{ padding: '0 16px 20px' }}>
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(249,115,22,0.08))',
-            border: '1px solid rgba(245,158,11,0.2)', borderRadius: 16, padding: '18px 18px 16px',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 15 }}>👑</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#F59E0B', letterSpacing: '0.04em' }}>
-                NEXO VIBE PREMIUM
-              </span>
+        {/* Premium CTA — Only show if NOT Pro */}
+        {!isPro && (
+          <div style={{ padding: '0 16px 20px' }}>
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(249,115,22,0.08))',
+              border: '1px solid rgba(245,158,11,0.2)', borderRadius: 16, padding: '18px 18px 16px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: 15 }}>👑</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#F59E0B', letterSpacing: '0.04em' }}>
+                  NEXO VIBE PREMIUM
+                </span>
+              </div>
+              <p style={{ fontSize: 12.5, color: '#7a8fa8', lineHeight: 1.6, marginBottom: 14 }}>
+                Desbloqueie Inteligência Avançada, Relatórios Detalhados e Simuladores Exclusivos.
+              </p>
+              <button className="sb-upgrade-btn" onClick={() => navigate('/pricing')}>
+                ✦ Fazer Upgrade
+              </button>
             </div>
-            <p style={{ fontSize: 12.5, color: '#7a8fa8', lineHeight: 1.6, marginBottom: 14 }}>
-              Desbloqueie Inteligência Avançada, Relatórios Detalhados e Simuladores Exclusivos.
-            </p>
-            <button className="sb-upgrade-btn" onClick={() => navigate('/pricing')}>
-              ✦ Fazer Upgrade
-            </button>
           </div>
-        </div>
+        )}
 
         <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 20px' }} />
 

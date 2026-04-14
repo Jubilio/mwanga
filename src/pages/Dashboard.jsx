@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import {
   Bell,
   Wallet,
@@ -19,7 +18,7 @@ import {
   PiggyBank,
   RefreshCw
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -146,7 +145,7 @@ export default function Dashboard() {
         <div className="text-center mb-1 flex items-center justify-center gap-2">
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 pl-6">{greeting} ✨</span>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => globalThis.location.reload()}
             className="p-1.5 text-gray-400 hover:text-gold transition-colors"
             title="Recarregar"
           >
@@ -178,8 +177,8 @@ export default function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.4 }}
               className={`flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full ${totals.saldo >= 0
-                  ? 'bg-leaf/10 text-leaf dark:text-leaf-light'
-                  : 'bg-coral/10 text-coral'
+                ? 'bg-leaf/10 text-leaf dark:text-leaf-light'
+                : 'bg-coral/10 text-coral'
                 }`}
             >
               {totals.saldo >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
@@ -301,8 +300,8 @@ export default function Dashboard() {
               animate={{ width: `${score}%` }}
               transition={{ delay: 0.5, duration: 1, ease: 'easeOut' }}
               className={`h-full rounded-full ${score > 70 ? 'bg-linear-to-r from-leaf to-leaf-light'
-                  : score > 40 ? 'bg-linear-to-r from-gold to-gold-light'
-                    : 'bg-linear-to-r from-coral to-coral-light'
+                : score > 40 ? 'bg-linear-to-r from-gold to-gold-light'
+                  : 'bg-linear-to-r from-coral to-coral-light'
                 }`}
             />
           </div>
@@ -316,8 +315,8 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-md ${totalAlerts > 0
-                  ? 'bg-linear-to-br from-coral to-coral-light animate-pulse'
-                  : 'bg-linear-to-br from-leaf to-leaf-light'
+                ? 'bg-linear-to-br from-coral to-coral-light animate-pulse'
+                : 'bg-linear-to-br from-leaf to-leaf-light'
                 }`}>
                 <Bell size={18} />
               </div>
@@ -485,8 +484,8 @@ export default function Dashboard() {
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${t.tipo === 'despesa'
-                        ? 'bg-coral/10 text-coral'
-                        : 'bg-leaf/10 text-leaf dark:text-leaf-light'
+                      ? 'bg-coral/10 text-coral'
+                      : 'bg-leaf/10 text-leaf dark:text-leaf-light'
                       }`}>
                       {t.tipo === 'despesa' ? <ArrowDownToLine size={16} /> : <ArrowUpRight size={16} />}
                     </div>
@@ -499,8 +498,8 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className={`font-bold text-sm tabular-nums ${t.tipo === 'despesa'
-                      ? 'text-gray-900 dark:text-white'
-                      : 'text-leaf dark:text-leaf-light'
+                    ? 'text-gray-900 dark:text-white'
+                    : 'text-leaf dark:text-leaf-light'
                     }`}>
                     {t.tipo === 'despesa' ? '-' : '+'}{fmt(t.valor, currency)}
                   </div>

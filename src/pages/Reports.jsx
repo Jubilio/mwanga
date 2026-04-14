@@ -38,6 +38,22 @@ export default function Reports() {
   const categories = calcCategoryBreakdown(state.transacoes, 'despesa', monthKey, state.rendas, startDay);
   const history = calcMonthlyHistory(state.transacoes, state.rendas, startDay).slice(0, 12).reverse();
 
+  // Helper to get category display name
+  const getCategoryLabel = (categoryName) => {
+    // Remove full translation key path if present
+    let cleanName = categoryName;
+    if (categoryName.startsWith('transactions.categories.')) {
+      cleanName = categoryName.replace('transactions.categories.', '');
+    }
+
+    // Try to translate using the clean name
+    const translationKey = `transactions.categories.${cleanName.toLowerCase().replace(/\s+/g, '_')}`;
+    const translated = t(translationKey);
+
+    // If translation exists (doesn't match the key), return it; otherwise return the clean name
+    return translated !== translationKey ? translated : cleanName;
+  };
+
   return (
     <div className="animate-fade-in" style={{ paddingBottom: '5rem' }}>
       <div className="alert alert-ok" style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -134,7 +150,7 @@ export default function Reports() {
             {categories.map(category => (
               <div key={category.category}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.3rem' }}>
-                  <span style={{ fontWeight: 500 }}>{t(`transactions.categories.${category.category.toLowerCase().replace(/\s+/g, '_')}`) || category.category}</span>
+                  <span style={{ fontWeight: 500 }}>{getCategoryLabel(category.category)}</span>
                   <span style={{ color: 'var(--color-muted)' }}>{fmt(category.amount, currency)} ({category.percent}%)</span>
                 </div>
                 <div className="progress-bar-track" style={{ height: '8px' }}>

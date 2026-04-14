@@ -279,7 +279,7 @@ export default function Simulators() {
 
               <div className="rounded-[28px] bg-black/5 dark:bg-white/5 border border-white/5 p-6 md:p-7 min-w-0 h-full flex flex-col gap-4">
                 <div className="text-sm font-black text-midnight dark:text-white wrap-anywhere leading-6">{t('simulators.budget.distribution_title')}</div>
-                <div className="w-full grow flex items-center justify-center min-w-0" style={{ height: 240, minHeight: 240 }}>
+                <div className="w-full grow flex items-center justify-center min-w-0 flex-1" style={{ height: 240, minHeight: 240 }}>
                   <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <PieChart>
                       <Pie data={budgetPieData} dataKey="value" innerRadius={65} outerRadius={95} paddingAngle={4}>
@@ -331,7 +331,7 @@ export default function Simulators() {
               </div>
             </div>
 
-            <div className="w-full" style={{ height: 320, minHeight: 320 }}>
+            <div className="w-full min-w-0 flex flex-col" style={{ height: 320, minHeight: 320 }}>
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <AreaChart data={investmentChartData}>
                   <defs>
@@ -397,7 +397,7 @@ export default function Simulators() {
                         </div>
                       </div>
 
-                  <div className="grid md:grid-cols-2 gap-4 min-w-0">
+                      <div className="grid md:grid-cols-2 gap-4 min-w-0">
                         <div className="rounded-2xl bg-white/5 border border-white/5 p-4">
                           <div className="text-[10px] font-black uppercase text-gray-400 mb-1">{t('simulators.fire.insight.suggested_monthly')}</div>
                           <div className="text-2xl font-black text-white">{fmt(fireMonthlyNeeded, currency)}</div>
@@ -409,14 +409,14 @@ export default function Simulators() {
                       </div>
 
                       <div className="text-sm text-gray-400 leading-7">
-                        <Trans i18nKey="simulators.fire.insight.explainer" 
-                          values={{ target: fmt(fireTarget, currency), years: fireYearsToGoal, monthly: fmt(fireMonthlyNeeded, currency), rate: fireReturnRate }} 
-                          components={{ strong: <strong className="text-white" /> }} 
+                        <Trans i18nKey="simulators.fire.insight.explainer"
+                          values={{ target: fmt(fireTarget, currency), years: fireYearsToGoal, monthly: fmt(fireMonthlyNeeded, currency), rate: fireReturnRate }}
+                          components={{ strong: <strong className="text-white" /> }}
                         />
                       </div>
                     </div>
 
-                    <div className="w-full" style={{ height: 220, minHeight: 220 }}>
+                    <div className="w-full min-w-0 flex flex-col" style={{ height: 220, minHeight: 220 }}>
                       <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <AreaChart data={fireChartData}>
                           <defs>
@@ -490,10 +490,10 @@ export default function Simulators() {
                     <div>
                       <div className="text-lg font-black dark:text-white">{t('simulators.xitique.insights.quick_read_title')}</div>
                       <div className="text-sm text-gray-500 dark:text-gray-400 leading-7">
-                        <Trans 
-                          i18nKey="simulators.xitique.insights.quick_read_msg" 
-                          values={{ position: xitiquePosition, months: xitiqueMonthsUntilReceive, plural: xitiqueMonthsUntilReceive === 1 ? '' : 'es', amount: fmt(xitiquePool, currency) }} 
-                          components={{ strong: <strong className="text-white" /> }} 
+                        <Trans
+                          i18nKey="simulators.xitique.insights.quick_read_msg"
+                          values={{ position: xitiquePosition, months: xitiqueMonthsUntilReceive, plural: xitiqueMonthsUntilReceive === 1 ? '' : 'es', amount: fmt(xitiquePool, currency) }}
+                          components={{ strong: <strong className="text-white" /> }}
                         />
                       </div>
                     </div>
@@ -503,10 +503,10 @@ export default function Simulators() {
                     <div>
                       <div className="text-lg font-black dark:text-white">{t('simulators.xitique.insights.credit_comp_title')}</div>
                       <div className="text-sm text-gray-500 dark:text-gray-400 leading-7">
-                        <Trans 
-                          i18nKey="simulators.xitique.insights.credit_comp_msg" 
-                          values={{ amount: fmt(xitiqueEquivalentBankInterest, currency) }} 
-                          components={{ strong: <strong className="text-white" /> }} 
+                        <Trans
+                          i18nKey="simulators.xitique.insights.credit_comp_msg"
+                          values={{ amount: fmt(xitiqueEquivalentBankInterest, currency) }}
+                          components={{ strong: <strong className="text-white" /> }}
                         />
                       </div>
                     </div>

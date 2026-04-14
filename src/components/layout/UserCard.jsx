@@ -11,7 +11,7 @@ export default function UserCard() {
 
   const handleLogout = () => {
     localStorage.removeItem('mwanga-token');
-    window.location.reload();
+    globalThis.location.reload();
   };
 
   return (
