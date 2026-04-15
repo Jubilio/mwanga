@@ -53,6 +53,7 @@ function SmsManager() {
 
 function RequireAuth({ children }) {
   const { state } = useFinance();
+  const loc = useLocation();
   const token = localStorage.getItem('mwanga-token');
   
   if (state.loading) return (
@@ -66,7 +67,6 @@ function RequireAuth({ children }) {
   );
   if (!token) return <Navigate to="/login" replace />;
   
-  const loc = useLocation();
   if (state.settings && !state.settings.onboarding_completed && loc.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
