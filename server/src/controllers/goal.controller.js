@@ -58,20 +58,6 @@ const updateGoalProgress = async (req, res) => {
   ];
 
   // If incrementing from an account, subtract from account balance
-  if (account_id && numIncrement > 0) {
-    queries.push({
-      sql: 'UPDATE accounts SET current_balance = current_balance - ? WHERE id = ? AND household_id = ?',
-      args: [numIncrement, account_id, householdId]
-    });
-    
-    // Optional: Log a virtual transaction for history if needed
-    // For now, we focus on balance consistency.
-  }
-
-  await db.batch(queries, 'write');
-
-  // 3. Notify for milestones (using finalSavedAmount)
-  const oldPct = (Number(goal.saved_amount) / Number(goal.target_amount)) * 100;
   const newPct = (finalSavedAmount / Number(goal.target_amount)) * 100;
 
   if (oldPct < 50 && newPct >= 50 && newPct < 100) {

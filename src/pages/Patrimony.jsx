@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFinance } from '../hooks/useFinance';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TrendingUp, TrendingDown, Medal, Plus, Trash2, Home, Car, Smartphone, Briefcase, Star, Shield, Zap, Flame, Target, Info, ArrowRight, ShieldAlert, Wallet } from 'lucide-react';
 import { fmt } from '../utils/calculations';
@@ -52,7 +52,8 @@ export default function Patrimony() {
   const [inflationRate, setInflationRate] = useState(7);
 
   const totalAssets = state.activos?.reduce((s, a) => s + a.value, 0) || 0;
-  const totalLiabilities = state.passivos?.reduce((s, p) => s + p.restante, 0) || 0;
+  const activeDebts = state.dividas?.filter(d => d.status !== 'paid') || [];
+  const totalLiabilities = activeDebts.reduce((s, d) => s + (d.remaining_amount || 0), 0);
   const netWorth = totalAssets - totalLiabilities;
 
   const getNetWorthTier = (amount) => {
@@ -335,45 +336,41 @@ export default function Patrimony() {
         <div>
           <div className="sh">
             <h2 className="st">{t('patrimony.liabilities.title')}</h2>
-            <button className="btn btn-secondary py-1 px-3 text-sm" onClick={() => setShowLiabilityModal(true)}>
-              <Plus size={16} /> {t('patrimony.liabilities.add')}
-            </button>
+            <Link to="/dividas" className="btn btn-secondary py-1 px-3 text-sm flex items-center gap-1">
+              <span>Gerir Dívidas</span> <ArrowRight size={14} />
+            </Link>
           </div>
 
           <div className="glass-card overflow-hidden">
-            {state.passivos?.length > 0 ? (
-              <div className="divide-y divide-slate-100">
-                {state.passivos.map((p, idx) => (
-                  <div key={p.id || `liab-${idx}`} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+            {activeDebts.length > 0 ? (
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                {activeDebts.map((d, idx) => (
+                  <div key={d.id || `debt-${idx}`} className="p-4 flex items-center justify-between hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                      <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
                         <TrendingDown size={18} />
                       </div>
                       <div>
-                        <div className="font-semibold text-slate-800">{p.name}</div>
+                        <div className="font-semibold text-slate-800 dark:text-slate-200">{d.creditor_name}</div>
                         <div className="text-xs text-slate-500">
-                          {p.interestRate ? t('patrimony.liabilities.interest', { rate: p.interestRate }) : t('patrimony.liabilities.no_interest')}
+                           Dívida Ativa
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <div className="font-bold text-rose-600">{fmt(p.restante)}</div>
-                        <div className="text-[10px] text-slate-400">{t('patrimony.liabilities.of_total', { total: fmt(p.total) })}</div>
+                        <div className="font-bold text-rose-600">{fmt(d.remaining_amount, currency)}</div>
+                        <div className="text-[10px] text-slate-400">Total: {fmt(d.total_amount, currency)}</div>
                       </div>
-                      <button 
-                        className="text-slate-300 hover:text-rose-500 transition-colors"
-                        onClick={() => dispatch({ type: 'DELETE_LIABILITY', payload: p.id })}
-                      >
-                        <Trash2 size={16} />
-                      </button>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-8 text-center text-slate-400">
-                <p>{t('patrimony.liabilities.empty')}</p>
+              <div className="border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-8 text-center text-slate-400 m-4">
+                <ShieldAlert size={32} className="mx-auto mb-3 opacity-50" />
+                <p className="text-sm font-semibold">Sem Dívidas Ativas</p>
+                <p className="text-xs mt-1 opacity-70">Excelente trabalho!</p>
               </div>
             )}
           </div>
@@ -506,49 +503,7 @@ export default function Patrimony() {
         </div>
       )}
 
-      {showLiabilityModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="card-glass p-6 w-full max-w-md animate-in fade-in zoom-in duration-200">
-            <h3 className="text-lg font-bold font-serif mb-4">{t('patrimony.modals.add_liability')}</h3>
-            <form onSubmit={handleAddLiability} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.liability_name_label')}</label>
-                <input 
-                  type="text" className="w-full" placeholder={t('patrimony.modals.liability_name_placeholder')} required
-                  value={liabilityForm.name} onChange={e => setLiabilityForm({...liabilityForm, name: e.target.value})}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.total_amount_label')}</label>
-                  <input 
-                    type="number" className="w-full" placeholder="0" required
-                    value={liabilityForm.totalAmount} onChange={e => setLiabilityForm({...liabilityForm, totalAmount: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.remaining_amount_label')}</label>
-                  <input 
-                    type="number" className="w-full" placeholder="0" required
-                    value={liabilityForm.remainingAmount} onChange={e => setLiabilityForm({...liabilityForm, remainingAmount: e.target.value})}
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.interest_rate_label')}</label>
-                <input 
-                  type="number" className="w-full" placeholder={t('patrimony.modals.interest_rate_placeholder', { defaultValue: 'Ex: 18' })}
-                  value={liabilityForm.interestRate} onChange={e => setLiabilityForm({...liabilityForm, interestRate: e.target.value})}
-                />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" className="btn btn-secondary flex-1" onClick={() => setShowLiabilityModal(false)}>{t('patrimony.modals.cancel')}</button>
-                <button type="submit" className="btn btn-primary flex-1">{t('patrimony.modals.add')}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+
 
       {showAccountModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
