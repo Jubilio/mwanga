@@ -1,0 +1,1240 @@
+{
+  "layout": {
+    "home": "Início",
+    "dashboard": "Dashboard Principal",
+    "transactions": "Transações",
+    "budget": "Orçamento",
+    "housing": "Habitação",
+    "goals": "Metas / Poupanças",
+    "xitique": "Módulo Xitique",
+    "debts": "Dívidas",
+    "credit": "Crédito Bancário",
+    "simulators": "Simuladores IA",
+    "report": "Relatório Mensal",
+    "patrimony": "Património",
+    "sms_import": "Importador SMS",
+    "nexovibe": "NexoVibe Analytics",
+    "insights": "Insights",
+    "admin": "Painel Admin",
+    "help": "Ajuda / Tutorial",
+    "settings": "Definições",
+    "pricing": "Planos / Upgrade",
+    "logout": "Terminar Sessão",
+    "add": "Adicionar"
+  },
+  "credit": {
+    "header": {
+      "title": "Crédito",
+      "subtitle": "Microcrédito inteligente · Powered by Binth",
+      "refresh_title": "Actualizar aplicação",
+      "score_label": "Score actual",
+      "pro": "👑 PRO",
+      "basic": "BASIC"
+    },
+    "tabs": {
+      "overview": "Visão Geral",
+      "community": "Comunidade",
+      "simulator": "Simulador",
+      "compare": "Comparar",
+      "consolidate": "Consolidar",
+      "apply": "Solicitar",
+      "strategy": "Estratégia 👑"
+    },
+    "pro_gate": {
+      "title": "Funcionalidade PRO",
+      "desc": "Faz o upgrade para desbloqueares esta análise avançada.",
+      "btn": "Upgrade para PRO →"
+    },
+    "overview": {
+      "score_title": "PONTUAÇÃO DE CRÉDITO",
+      "eligible": "Elegível até",
+      "not_eligible": "Não elegível no momento",
+      "capacity_title": "CAPACIDADE DE CRÉDITO",
+      "current_commitment": "Comprometimento atual",
+      "available_margin": "Margem disponível",
+      "max_safe_installment": "Parcela máxima segura",
+      "per_month": "por mês",
+      "factors_detail_title": "Fatores de Score Detalhados",
+      "factors_detail_desc": "Vê exatamente quais os 5 critérios que definem o teu Nexo Score e como melhorar cada um.",
+      "score_factors": "FATORES DE SCORE BINTH",
+      "integrated_score": "Score Integrado",
+      "capacity_factor": "Fator de Capacidade",
+      "burden_factor": "Fator de Carga",
+      "transparency_title": "Transparência Total de Taxas",
+      "transparency_desc": "O Mwanga Credit funciona como um marketplace — ligamos-te a instituições de microfinanças parceiras. As taxas cobradas pelos nossos parceiros variam entre 5% a 30% ao mês. Antes de qualquer contrato, verás o custo total, a parcela mensal e o impacto no teu orçamento. O Mwanga não cobra taxa de abertura. A receita é gerada via comissão do parceiro financiador.",
+      "history_title": "HISTÓRICO DE EMPRÉSTIMOS",
+      "history_paid": "✓ Pago",
+      "history_ongoing": "Em curso",
+      "history_rate": "Taxa",
+      "history_installment": "Parcela",
+      "history_months": "meses",
+      "cta_apply": "💸 Solicitar Microcrédito",
+      "insufficient_score": "Score insuficiente para crédito",
+      "insufficient_desc": "Precisas de pelo menos 55 pontos para aceder ao microcrédito. Aumenta o teu score completando mais ciclos de Xitique, aumentando a tua taxa de poupança e reduzindo dívidas existentes."
+    },
+    "simulator": {
+      "alert_exceeded_title": "Capacidade Excedida (Regra 1/3)",
+      "alert_exceeded_desc_1": "O banco não permite uma prestação de",
+      "alert_exceeded_desc_2": "com o teu salário actual",
+      "alert_exceeded_desc_3": ". Para pedires",
+      "alert_exceeded_desc_4": ", precisas de estender o prazo para",
+      "alert_exceeded_desc_5": "para seres aprovado.",
+      "alert_adjust_btn": "Ajustar para",
+      "alert_tip_title": "Dica Mwanga Finance",
+      "alert_tip_desc": "Define o teu salário no perfil para teres uma análise real de elegibilidade bancária (regra dos 33%).",
+      "config_title": "CONFIGURAR SIMULAÇÃO",
+      "amount_req": "Valor desejado",
+      "term": "Prazo",
+      "months": "meses",
+      "month_single": "mês",
+      "partner_rate": "Parceiro / Taxa Mensal",
+      "partner_micro": "Microcrédito Informal",
+      "compare_title": "Comparar Parceiros",
+      "compare_desc": "Acede ao comparador completo de taxas de todos os parceiros financiadores e escolhe a melhor oferta para o teu perfil.",
+      "result_title": "RESULTADO DA SIMULAÇÃO",
+      "monthly_installment": "Parcela mensal",
+      "total_payable": "Total a pagar",
+      "total_interest": "Total em juros",
+      "stamp_duty": "Imposto de Selo",
+      "effective_rate": "Taxa Efectiva (AA)",
+      "commitment": "Comprometimento",
+      "impact_title": "Comprometimento com este crédito",
+      "impact_max": "/ 40% máx",
+      "debt_warning_title": "Evita o Sobre-endividamento",
+      "debt_warning_desc_1": "A taxa de",
+      "debt_warning_desc_2": "ao mês é muito elevada. Por",
+      "debt_warning_desc_3": ", vais pagar um adicional de",
+      "debt_warning_desc_4": "apenas em juros. O prudente conta o custo antes de assumir o peso. Considera um prazo menor ou poupar antes de gastar.",
+      "capacity_block": "🚫 A parcela de",
+      "capacity_block_2": "excede a tua capacidade máxima de",
+      "amort_title": "Tabela de Amortização Price",
+      "amort_desc": "Vê o detalhe mês a mês de cada prestação: quanto vai para juros, quanto amortiza o capital e o saldo devedor.",
+      "amort_table_title": "📊 Tabela de Amortização Price",
+      "amort_see": "Ver ▼",
+      "amort_hide": "Ocultar ▲",
+      "amort_headers": {
+        "month": "Mês",
+        "installment": "Prestação",
+        "interest": "Juros",
+        "amort": "Amort.",
+        "balance": "Saldo"
+      },
+      "edu_title": "Educação Financeira Avançada",
+      "edu_desc": "Aprende a diferença entre juros simples e compostos com valores reais da tua simulação.",
+      "edu_label": "📚 EDUCAÇÃO FINANCEIRA",
+      "edu_vs": "Juros Simples vs Compostos",
+      "edu_simple": "Juros Simples",
+      "edu_compound": "Juros Compostos",
+      "edu_total1": "Total = P(1 + i×n)",
+      "edu_total2": "Total = P(1+i)ⁿ",
+      "edu_tip": "💡 O mercado formal usa o sistema Price (prestações iguais), baseado em juros compostos. A diferença entre os dois modelos torna-se pesada em taxas altas como 30%/mês."
+    },
+    "compare": {
+      "target_value": "Valor desejado",
+      "term": "Prazo (Meses)",
+      "cost_month": "Custo Mensal",
+      "total_pay": "Total a pagar",
+      "interest_only": "Só em juros",
+      "exceeds": "🛑 Excede Cap. 1/3",
+      "partner_bim_desc": "Rápido, desconto em folha",
+      "partner_bci_desc": "Ideal para clientes conta-ordem",
+      "partner_micro_desc": "Aprovação fácil, risco alto",
+      "partner_xitique_desc": "Sem juros, depende de amigos",
+      "verdict_title": "Veredicto Inteligência Binth",
+      "verdict_desc_1": "Para",
+      "verdict_desc_2": "em",
+      "verdict_desc_3": ", o Xitique é a única opção de custo zero. Contudo, o",
+      "verdict_desc_4": "é agora a melhor alternativa de crédito formal, poupando-te cerca de",
+      "verdict_desc_5": "em juros face ao microcrédito informal."
+    },
+    "consolidate": {
+      "no_debts": "Sem dívidas para consolidar!",
+      "sim_title": "SIMULADOR DE CONSOLIDAÇÃO (VALE A PENA?)",
+      "current_debt": "Dívida Total Actual",
+      "current_pay": "Pagas aprox.",
+      "per_month_in": "/mês em",
+      "debts": "dívidas.",
+      "new_install": "Nova Parcela Única",
+      "single_bank": "Num único banco, prazo de",
+      "bank_select": "Banco de Consolidação / Taxa",
+      "term_select": "Novo Prazo Desejado",
+      "worth_it": "✅ Vale a pena consolidar!",
+      "worth_desc_1": "Ganhas um respiro imediato de",
+      "worth_desc_2": "/mês e ainda poupas",
+      "worth_desc_3": "em juros totais. Vai ao banco.",
+      "alert_limit": "⚠️ Alívio mensal, mas no limite",
+      "alert_desc_1": "A nova parcela de",
+      "alert_desc_2": "excede 1/3 do teu salário",
+      "alert_desc_3": ". Tente aumentar o prazo para conseguir consolidar com sucesso e dentro das regras bancárias.",
+      "not_worth": "🚫 Sem vantagem em consolidar",
+      "not_worth_desc": "Este cenário fica mais caro ou não oferece folga real. Mantém as parcelas actuais e foca-te na amortização acelerada."
+    },
+    "apply": {
+      "toast_success": "Pedido de crédito submetido com sucesso! O parceiro irá analisar os documentos.",
+      "toast_error": "Erro ao submeter pedido. Tente novamente mais tarde.",
+      "not_avail": "Crédito indisponível",
+      "not_avail_desc_1": "O teu Nexo Score actual (",
+      "not_avail_desc_2": ") ainda não atinge o requisito mínimo para crédito (500). Continue a usar o Mwanga para gerir as suas finanças e subir o seu score.",
+      "steps": ["Verificação", "Proposta", "Documentos", "Revisão"],
+      "pre_title": "Pré-qualificado!",
+      "pre_desc_1": "Com base no teu perfil financeiro, o Mwanga pré-aprovou-te para um crédito de até",
+      "pre_desc_2": "Score:",
+      "pre_grid_1": "Máximo aprovado",
+      "pre_grid_2": "Parcela máxima",
+      "pre_grid_3": "Comprometimento actual",
+      "pre_btn": "Continuar com a Solicitação →",
+      "pre_disclaimer": "A pré-qualificação não é garantia de aprovação final. O parceiro financiador tomará a decisão definitiva após análise dos documentos.",
+      "details_title": "DETALHES DO CRÉDITO",
+      "req_amount": "Valor da solicitação",
+      "req_term": "Prazo de reembolso",
+      "req_purpose": "Finalidade do crédito",
+      "purpose_capital": "Capital de giro",
+      "purpose_school": "Material escolar",
+      "purpose_medical": "Despesas médicas",
+      "purpose_home": "Reforma da casa",
+      "purpose_equip": "Equipamento",
+      "purpose_other": "Outro",
+      "choose_partner": "ESCOLHE O PARCEIRO FINANCIADOR",
+      "partner_res_time": "⏱ Resposta:",
+      "summary_install": "Parcela mensal",
+      "summary_total": "Total a reembolsar",
+      "btn_back": "← Voltar",
+      "btn_next_docs": "Continuar → Documentos",
+      "docs_title": "DOCUMENTOS OBRIGATÓRIOS",
+      "doc_bi_label": "Bilhete de Identidade (BI)",
+      "doc_bi_desc": "Frente e verso, foto nítida",
+      "doc_res_label": "Comprovativo de Residência",
+      "doc_res_desc": "Conta de electricidade ou água",
+      "doc_rent_label": "Comprovativo de Renda",
+      "doc_rent_desc": "Recibo de vencimento ou extracto bancário",
+      "doc_selfie_label": "Selfie com BI",
+      "doc_selfie_desc": "Foto segurando o documento aberto",
+      "docs_crypto": "🔒 Os teus documentos são encriptados e transmitidos directamente ao parceiro financiador. O Mwanga não guarda cópias após a análise.",
+      "docs_status": "Clica em cada documento para marcar como enviado ({count}/4 concluídos)",
+      "btn_next_review": "Continuar → Revisão",
+      "review_title": "✦ REVISÃO FINAL DO PEDIDO",
+      "rev_amount": "Valor solicitado",
+      "rev_term": "Prazo",
+      "rev_rate": "Taxa mensal (parceiro)",
+      "rev_install": "Parcela mensal",
+      "rev_total": "Total a pagar",
+      "rev_interest": "Total em juros",
+      "rev_cet": "Custo Efectivo Anual (TAEG)",
+      "rev_purpose": "Finalidade",
+      "rev_partner": "Parceiro",
+      "rev_docs": "Documentos enviados",
+      "rev_disclaimer": "⚠️ Ao submeter, confirmas que leste e aceitas os termos do empréstimo. Parcelas em atraso geram multa de 2% ao dia. Após aprovação, o valor é creditado em 24–48h via M-Pesa ou conta bancária.",
+      "btn_submitting": "⏳ A submeter...",
+      "btn_submit": "✅ Submeter Solicitação",
+      "sub_title": "Solicitação enviada!",
+      "sub_desc_1": "O teu pedido de",
+      "sub_desc_2": "foi enviado para a",
+      "sub_desc_3": ". Receberás uma notificação via SMS e no Mwanga em",
+      "sub_desc_4": "2–4 horas",
+      "sub_ref": "Referência",
+      "sub_status": "Estado",
+      "sub_status_val": "Em análise",
+      "btn_new": "Nova simulação",
+      "partner_a_name": "CapiMoz Microfinanças",
+      "partner_b_name": "CrediFácil Moçambique",
+      "partner_c_name": "MicroFinance MZ"
+    },
+    "strategy": {
+      "strategy_title": "Estratégia de Pagamento",
+      "strategy_desc": "A análise Avalanche de dívidas e o Mapa de Risco são exclusivos para utilizadores PRO.",
+      "avalanche_title": "💡 ESTRATÉGIA CRÉDITO BINTH — AVALANCHE",
+      "avalanche_desc": "A estratégia Avalanche foca em liquidar primeiro as dívidas com a taxa de juro mais alta. É a que mais poupa dinheiro a longo prazo vs Bola de Neve.",
+      "current_interest": "Juros mensais actuais:",
+      "eliminated_in": "— pode ser eliminada em",
+      "in_progress": "em curso",
+      "remaining": "Falta pagar:",
+      "installment": "Parcela:",
+      "per_month": "/mês",
+      "risk_map_title": "🗺 MAPA DE RISCO FINANCEIRO",
+      "risk_green_label": "Zona Verde",
+      "risk_green_desc": "Crédito saudável, pagamentos em dia, score acima de 70",
+      "risk_yellow_label": "Zona Amarela",
+      "risk_yellow_desc": "Comprometimento entre 30–40%, atenção redobrada necessária",
+      "risk_red_label": "Zona Vermelha",
+      "risk_red_desc": "Score abaixo de 55, crédito negado, risco de incumprimento",
+      "risk_here": "← Estás aqui",
+      "improve_title": "📈 COMO SUBIR O SCORE",
+      "tip_xitique": "Completar mais ciclos de Xitique",
+      "tip_savings": "Aumentar taxa de poupança para 25%+",
+      "tip_card": "Quitar o Cartão Millennium",
+      "tip_logging": "Manter registo de transações no Mwanga",
+      "term_1_month": "1 mês",
+      "term_2_months": "2 meses",
+      "term_3_6_months": "3–6 meses",
+      "term_6_months": "6 meses",
+      "reg_title": "⚖️ NOTA REGULATÓRIA",
+      "reg_desc": "O Mwanga Credit opera como um marketplace de crédito — não é uma instituição financeira. Atuamos como intermediários pré-qualificadores entre utilizadores e instituições de microfinanças licenciadas pelo Banco de Moçambique. Todas as decisões finais de crédito são tomadas pelos parceiros financiadores. Taxas de juro sujeitas à regulamentação em vigor. Crédito responsável: peça apenas o que pode pagar."
+    }
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Bom dia",
+      "afternoon": "Boa tarde",
+      "evening": "Boa noite"
+    },
+    "available_balance": "Balanço Disponível",
+    "physical_cash": "Dinheiro em Mão (Wallet)",
+    "hide_balance": "Ocultar saldo",
+    "show_balance": "Mostrar saldo",
+    "monthly_flow": "fluxo mensal",
+    "income": "Receitas",
+    "expenses": "Despesas",
+    "interactions": {
+      "toast_success": "Interação registada",
+      "toast_error": "Erro ao registar interação"
+    },
+    "quick_actions": {
+      "expense": "Despesa",
+      "expense_sub": "Registar gasto",
+      "income": "Receita",
+      "income_sub": "Registar ganho",
+      "transactions": "Transações",
+      "transactions_sub": "Ver histórico",
+      "xitique": "Xitique",
+      "xitique_sub": "Poupança coletiva",
+      "credit": "Crédito",
+      "credit_sub": "Simular empréstimo",
+      "goals": "Metas",
+      "goals_sub": "Objectivos"
+    },
+    "health": {
+      "title": "Saúde Financeira",
+      "excellent": "Excelente",
+      "moderate": "Moderado",
+      "attention": "Atenção",
+      "risk": "Risco",
+      "savings": "Poupança"
+    },
+    "alerts": {
+      "title": "Alertas",
+      "pending_actions": "Ações pendentes",
+      "debt_pending": "dívida pendente",
+      "debts_pending": "dívidas pendentes",
+      "rent_pending": "renda pendente",
+      "rents_pending": "rendas pendentes",
+      "all_clear": "Tudo em dia ✓",
+      "no_alerts": "Sem alertas ou pendências. Continue assim!"
+    },
+    "cashflow": {
+      "title": "Fluxo de Caixa",
+      "monthly_balance": "Saldo mensal"
+    },
+    "accounts": {
+      "title": "Contas Activas",
+      "total_in": "Total em",
+      "account": "conta",
+      "accounts": "contas",
+      "more": "mais"
+    },
+    "latest_transactions": {
+      "title": "Últimas Transações",
+      "view_all": "Ver Todas",
+      "empty": "Sem transações recentes",
+      "empty_sub": "Registre sua primeira transação",
+      "add_new": "+ Adicionar"
+    }
+  },
+  "transactions": {
+    "categories": {
+      "salary": "Salário",
+      "house_rent": "Renda Casa",
+      "food": "Alimentação",
+      "transport": "Transporte",
+      "health": "Saúde",
+      "education": "Educação",
+      "energy_water": "Energia/Água",
+      "internet": "Internet",
+      "church_donations": "Igreja/Doações",
+      "leisure": "Lazer",
+      "investments": "Investimentos",
+      "savings": "Poupança",
+      "other": "Outro",
+      "xitique": "Xitique",
+      "habitacao": "Habitação"
+    },
+    "title": "Transações",
+    "add_transaction": "Adicionar Transação",
+    "date": "Data",
+    "type": "Tipo",
+    "description": "Descrição",
+    "desc_placeholder": "Ex: Supermercado, Salário...",
+    "value": "Valor",
+    "value_mt": "Valor",
+    "category": "Categoria",
+    "payment_method": "Meio de Pagamento (Opcional)",
+    "none": "Nenhum",
+    "notes": "Notas",
+    "notes_placeholder": "Observação...",
+    "add_btn": "Adicionar",
+    "search_placeholder": "Pesquisar transações...",
+    "all_types": "Todos os tipos",
+    "export_csv": "CSV",
+    "toast_fill_desc": "⚠️ Preencha descrição e valor",
+    "toast_added": "✅ Transação adicionada!",
+    "toast_exported": "📥 CSV exportado!",
+    "toast_removed": "🗑️ Removido",
+    "all_transactions": "Todas as Transações",
+    "records": "registos",
+    "table": {
+      "date": "Data",
+      "description": "Descrição",
+      "category": "Categoria",
+      "type": "Tipo",
+      "value": "Valor"
+    },
+    "empty": "Sem transações",
+    "empty_sub": "Adicione a primeira transação acima",
+    "types": {
+      "receita": "💰 Receita",
+      "despesa": "💸 Despesa",
+      "renda": "🏠 Renda da Casa",
+      "poupanca": "🏦 Poupança"
+    }
+  },
+  "sms_import": {
+    "title": "Análise Inteligente de SMS",
+    "description": "Cole ou partilhe mensagens bancárias para registar despesas e receitas automaticamente com a ajuda da IA.",
+    "input_header": "Texto da Mensagem",
+    "mobile_tip": {
+      "title": "Dica para Telemóvel",
+      "desc": "Pode colar o texto copiado ou partilhar o SMS diretamente para esta página se tiver a App instalada."
+    },
+    "placeholder": "Cole aqui o texto do seu SMS bancário (BIM, BCI, M-Pesa, etc.)...",
+    "btn_paste": "Colar do telemóvel",
+    "btn_analyze": "Analisar Mensagem",
+    "btn_analyzing": "A analisar...",
+    "examples_header": "Exemplos para testar",
+    "toasts": {
+      "parse_success": "Mensagem analisada com sucesso!",
+      "parse_timeout": "A análise demorou demasiado. Verifique a sua internet e tente novamente.",
+      "parse_error": "Não conseguimos processar esta mensagem.",
+      "shared_received": "Mensagem recebida no importador. A analisar...",
+      "paste_info": "Use o gesto 'Colar' do seu teclado para inserir o texto.",
+      "paste_success": "Texto colado com sucesso.",
+      "paste_empty": "Não encontrámos texto para colar.",
+      "paste_blocked": "O acesso ao clipboard foi bloqueado. Cole manualmente.",
+      "paste_manual": "Cole manualmente (toque longo na caixa de texto e escolha Colar).",
+      "save_success": "Transação registada com sucesso!",
+      "save_error": "Erro ao guardar a transação."
+    },
+    "result": {
+      "confidence_label": "Certeza da Binth na análise",
+      "confidence_high": "ALTA",
+      "non_financial": "Mensagem não financeira",
+      "labels": {
+        "bank": "Banco ou Origem",
+        "account_ref": "Conta mencionada",
+        "tx_id": "Referência da operação",
+        "datetime": "Data e hora",
+        "balance_after": "Saldo após operação",
+        "fee": "Custo do serviço (Taxa)",
+        "recipient": "Quem recebeu",
+        "recipient_acc": "Conta de destino",
+        "agent": "Código do Agente",
+        "description": "O que aconteceu"
+      },
+      "btn_confirm": "Confirmar e Registar na Conta",
+      "save_hint": "A transação será registada com a data do SMS e o texto original ficará guardado nas notas."
+    }
+  },
+  "debts": {
+    "title": "Gestão de Dívidas",
+    "subtitle": "Controle e elimine as suas obrigações financeiras.",
+    "new_debt": "Nova Dívida",
+    "total_debt": "Total em Dívida",
+    "total_paid": "Total Pago",
+    "active_debts": "Dívidas Activas",
+    "bible_principle_title": "Evitar Dívidas Excessivas",
+    "bible_principle_text": "A dívida é um peso que limita a tua liberdade. O objetivo é reduzir, não acumular. Prioriza a dívida com maior juro e põe um bocado extra nela cada mês.",
+    "form": {
+      "title": "Registar Dívida / Empréstimo",
+      "creditor_label": "Credor / Banco / Familiar",
+      "creditor_placeholder": "Ex: Millennium BIM, Amigo...",
+      "amount_label": "Valor Desembolsado (MT)",
+      "amount_placeholder": "Capital principal recebido",
+      "date_label": "Data Limite ou Início",
+      "rate_label": "Taxa Juro Mensal (%)",
+      "rate_placeholder": "Ex: 18 para 18%",
+      "months_label": "Prazo / Duração (Meses)",
+      "months_placeholder": "Número de parcelas",
+      "simulation_title": "Simulação do Empréstimo",
+      "installment_label": "Parcela Price Estimada",
+      "total_cost_label": "Custo Total (Dívida Global)",
+      "cancel": "Cancelar",
+      "save": "Gravar Dívida"
+    },
+    "list_title": "As Suas Dívidas",
+    "empty_state": "Nenhuma dívida registada. Excelente saúde financeira!",
+    "table": {
+      "debt": "Dívida",
+      "total_value": "Valor Total",
+      "remaining": "Restante",
+      "due_date": "Vencimento",
+      "actions": "Acções",
+      "no_date": "Sem data"
+    },
+    "actions": {
+      "pay": "Pagar parcela",
+      "delete": "Eliminar"
+    },
+    "delete_confirm": "Eliminar?",
+    "yes": "Sim",
+    "no": "Não",
+    "payment": {
+      "title": "VALOR A PAGAR",
+      "placeholder": "Quantia...",
+      "method_label": "MEIO DE PAGAMENTO",
+      "no_account": "Não descontar de saldo",
+      "pay_btn": "Pagar"
+    }
+  },
+  "budget": {
+    "set_limit_title": "Definir Limite por Categoria",
+    "category_label": "Categoria",
+    "limit_label": "Limite Mensal (MT)",
+    "limit_placeholder": "Ex: 20000",
+    "set_btn": "Definir",
+    "month_title": "Orçamento do Mês",
+    "empty_title": "Sem orçamentos definidos",
+    "empty_subtitle": "Defina limites para controlar as suas despesas",
+    "bible_principle_title": "Contentamento",
+    "bible_principle_text": "A riqueza real começa por saber o que é suficiente. Cada limite de orçamento que defines é uma escolha sábia de quem governa o seu dinheiro com intencionalidade.",
+    "status": {
+      "over": "Excedido!",
+      "warning": "Atenção",
+      "ok": "OK"
+    },
+    "spent": "{{amount}} gasto",
+    "goal": "Meta: {{amount}}",
+    "pct_used": "{{pct}}% utilizado",
+    "remaining": "Restam: {{amount}}",
+    "over_principle": "Princípio do contentamento: reveja o que é essencial nesta categoria antes do próximo gasto.",
+    "toasts": {
+      "define_limit": "⚠️ Defina um limite",
+      "budget_set": "✅ Orçamento definido!",
+      "budget_removed": "🗑️ Orçamento removido"
+    }
+  },
+  "common": {
+    "categories": {
+      "Alimentação": "Alimentação",
+      "Transporte": "Transporte",
+      "Energia/Água": "Energia/Água",
+      "Internet": "Internet",
+      "Saúde": "Saúde",
+      "Educação": "Educação",
+      "Igreja/Doações": "Igreja/Doações",
+      "Lazer": "Lazer",
+      "Investimentos": "Investimentos",
+      "Casa": "Casa",
+      "Outro": "Outro"
+    },
+    "toasts": {
+      "csv_exported": "📥 CSV exportado!",
+      "error_prefix": "Erro: "
+    }
+  },
+  "patrimony": {
+    "title": "Património",
+    "subtitle": "Gestão de bens e dívidas",
+    "total_assets": "Total Activos",
+    "total_liabilities": "Total Passivos",
+    "net_worth": "Líquido",
+    "tiers": {
+      "debt": "Em Dívida",
+      "beginner": "Iniciante",
+      "bronze": "Bronze",
+      "silver": "Prata",
+      "gold": "Ouro",
+      "diamond": "Diamante"
+    },
+    "accounts": {
+      "title": "Contas",
+      "add": "Adicionar",
+      "empty": "Nenhuma conta registada.",
+      "types": {
+        "bank": "Banco",
+        "mobile": "Móvel",
+        "cash": "Físico"
+      }
+    },
+    "assets": {
+      "title": "Activos",
+      "add": "Adicionar",
+      "empty": "Nenhum activo registado.",
+      "types": {
+        "imóvel": "Imóvel",
+        "veiculo": "Veículo",
+        "poupanca": "Poupança",
+        "investimento": "Investimento",
+        "outro": "Outro"
+      }
+    },
+    "liabilities": {
+      "title": "Passivos",
+      "add": "Adicionar",
+      "empty": "Nenhum passivo registado.",
+      "interest": "{{rate}}% juro",
+      "no_interest": "Sem juros",
+      "of_total": "de {{total}}"
+    },
+    "projections": {
+      "title": "Projeções de Património",
+      "subtitle": "Simuladores de reforma e impacto inflacionário",
+      "fire": {
+        "title": "Simulador FIRE (Reforma)",
+        "target_income": "Renda Desejada na Reforma",
+        "return_rate": "Taxa de Retorno Anual (%)",
+        "monthly_savings": "Poupança Mensal",
+        "potential": "Potencial de Reforma",
+        "in_years": "Em {{years}} Anos",
+        "goal_met": "Meta Atingida! 🎉",
+        "current": "Atual: {{amount}}",
+        "target": "Alvo FIRE: {{amount}}"
+      },
+      "inflation": {
+        "title": "Simulador de Inflação",
+        "years": "Tempo de Projeção (Anos)",
+        "rate": "Taxa de Inflação Média (%)",
+        "description": "Seu património líquido atual de {{amount}} valerá em {{years}} anos:",
+        "left_idle": "Se deixado parado",
+        "if_invested": "Se investido ({{rate}}%)"
+      }
+    },
+    "modals": {
+      "add_asset": "Adicionar Activo",
+      "add_liability": "Adicionar Passivo",
+      "add_account": "Adicionar Conta",
+      "name_label": "Nome",
+      "name_placeholder": "Ex: Terreno Pemba",
+      "type_label": "Tipo",
+      "value_label": "Valor (MT)",
+      "liability_name_label": "Nome da Dívida",
+      "liability_name_placeholder": "Ex: Crédito BCI",
+      "total_amount_label": "Valor Total (MT)",
+      "remaining_amount_label": "Restante (MT)",
+      "interest_rate_label": "Taxa Juro Anual (%)",
+      "account_name_label": "Nome da Conta",
+      "account_name_placeholder": "Ex: Millennium Bim / M-Pesa",
+      "initial_balance_label": "Saldo Inicial (MT)",
+      "cancel": "Cancelar",
+      "add": "Adicionar"
+    },
+    "toasts": {
+      "asset_added": "Activo adicionado com sucesso!",
+      "liability_added": "Passivo adicionado com sucesso!",
+      "account_added": "Conta adicionada com sucesso!"
+    }
+  },
+  "housing": {
+    "title": "Habitação",
+    "main_title": "Gestão de Habitação",
+    "description": "Centralize renda, prestação ou manutenção num só fluxo e acompanhe rapidamente o peso da casa no seu orçamento mensal.",
+    "types": {
+      "rent": "Arrendamento",
+      "own": "Casa Própria"
+    },
+    "stats": {
+      "current_month": "Mês atual",
+      "pending": "Registos pendentes",
+      "last_record": "Último registo",
+      "no_history": "Sem histórico"
+    },
+    "summary": {
+      "total_rent_year": "Total Arrendamento (Ano)",
+      "total_own_year": "Total Casa Própria (Ano)",
+      "status": "Estado: Em dia",
+      "next_payment": "Próximo pag.: {{date}}",
+      "next_month_01": "01 do próximo mês",
+      "view_details": "Ver detalhes completos"
+    },
+    "insights": {
+      "committed_income": "Cometimento do Rendimento",
+      "monthly_evolution": "Evolução Mensal",
+      "nexo_recommendation": "Recomendação Nexo",
+      "healthy": "Saudável",
+      "attention": "Atenção",
+      "reduction": "Redução",
+      "increase": "Aumento",
+      "optimized_msg": "Custos de habitação estão perfeitamente otimizados dentro do limite dos 30%.",
+      "review_msg": "Considere rever as suas despesas. A habitação está a pesar no orçamento."
+    },
+    "chart": {
+      "title": "Evolução Mensal",
+      "subtitle": "Histórico de custos habitacionais no último ano",
+      "no_data": "Ainda não há histórico suficiente para mostrar a evolução mensal.",
+      "value_label": "Valor"
+    },
+    "form": {
+      "new_rent": "Registar Novo Aluguer",
+      "new_maintenance": "Registar Manutenção / Prestação",
+      "month_label": "Mês/Ano",
+      "value_label": "Valor ({{currency}})",
+      "status_label": "Estado",
+      "status_pago": "✅ Pago",
+      "status_pendente": "⏳ Pendente",
+      "landlord_label": "Proprietário / Beneficiário",
+      "landlord_placeholder": "Nome do senhorio ou entidade",
+      "obs_label": "Observações (Opcional)",
+      "obs_placeholder": "Detalhes adicionais...",
+      "submit_btn": "Registrar Pagamento",
+      "recurrent_btn": "Tornar Recorrente"
+    },
+    "history": {
+      "title": "Histórico de Gastos",
+      "all_years": "Todos os Anos",
+      "table_headers": {
+        "month": "Mês",
+        "description": "Descrição",
+        "value": "Valor",
+        "status": "Estado",
+        "notes": "Notas",
+        "action": "Ação"
+      },
+      "empty": "Nenhum registo encontrado.",
+      "delete_title": "Excluir registo"
+    },
+    "toasts": {
+      "save_defaults_error": "Preencha nome e valor para guardar como padrão",
+      "save_defaults_success": "Definições guardadas como padrão",
+      "rent_missing_fields": "Preencha proprietário e valor",
+      "own_missing_fields": "Preencha o valor da manutenção ou prestação",
+      "rent_registered": "Aluguer registado",
+      "maintenance_registered": "Manutenção registada",
+      "profile_changed": "Perfil alterado para: {{type}}",
+      "removed": "🗑️ Removido"
+    }
+  },
+  "xitique": {
+    "title": "Xitique",
+    "description": "Gestão de poupança rotativa comunitária",
+    "btns": {
+      "new": "Novo Xitique",
+      "cancel": "Cancelar",
+      "create": "Criar Grupo de Xitique"
+    },
+    "form": {
+      "group_name": "Nome do Grupo",
+      "group_name_placeholder": "Ex: Amigos de Pemba",
+      "monthly_amount": "Valor Mensal ({{currency}})",
+      "monthly_amount_placeholder": "Ex: 5000",
+      "total_participants": "Total Participantes",
+      "start_date": "Mês de Início",
+      "your_position": "Sua Posição"
+    },
+    "empty": {
+      "title": "Nenhum Xitique ativo",
+      "subtitle": "Crie um novo grupo para começar a poupar em comunidade."
+    },
+    "card": {
+      "monthly_payment": "Mensalidade",
+      "participants": "Participantes",
+      "your_turn": "Sua Vez: Mês {{position}}",
+      "total_contributed": "Total Contribuído",
+      "total_to_receive": "Total a Receber"
+    },
+    "table": {
+      "cycle": "Ciclo",
+      "expected_month": "Mês Esperado",
+      "receipt_status": "Estado Recebimento",
+      "payment_status": "Estado Pagamento",
+      "actions": "Ações",
+      "month_label": "Mes {{number}}",
+      "received": "✅ Recebido ({{date}})",
+      "your_turn_badge": "💎 Sua Vez!",
+      "paid": "Pago",
+      "pending": "Pendente",
+      "no_account": "Sem meio associado",
+      "pay_btn": "Pagar",
+      "receive_btn": "Receber {{amount}}"
+    }
+  },
+  "simulators": {
+    "title": "Simuladores",
+    "description": "Projeções práticas para orçamento, investimento, independência financeira e Xitique.",
+    "tabs": {
+      "budget": "Orçamento",
+      "invest": "Investimento",
+      "fire": "Independência",
+      "xitique": "Xitique"
+    },
+    "pro_gate": {
+      "title": "Simulador FIRE",
+      "description": "Descubra quanto precisa investir por mês para comprar liberdade financeira com disciplina.",
+      "btn": "Mudar para PRO"
+    },
+    "budget": {
+      "title": "Modelo de orçamento",
+      "subtitle": "Ajuste o salário e aplique limites reais ao seu orçamento.",
+      "salary_label": "Salário mensal",
+      "apply_btn": "Aplicar ao orçamento",
+      "distribution_title": "Distribuição do salário",
+      "savings_projection": "Poupança projetada: <strong className=\"text-leaf\">{{pct}}%</strong>. Se aplicar este modelo, o Mwanga cria limites base para alimentação, transporte, saúde, lazer e poupança.",
+      "toast_applied": "Orçamento base aplicado aos seus limites.",
+      "categories": {
+        "needs": "Necessidades",
+        "wants": "Desejos",
+        "essencial": "Essencial",
+        "lifestyle": "Estilo de vida",
+        "future": "Futuro"
+      }
+    },
+    "invest": {
+      "title": "Juros compostos",
+      "subtitle": "Simule o impacto do valor inicial, reforços mensais e taxa anual.",
+      "placeholders": {
+        "principal": "Valor inicial",
+        "monthly": "Aporte mensal",
+        "rate": "Taxa anual (%)",
+        "years": "Anos"
+      },
+      "summary": {
+        "final_balance": "Resultado final",
+        "total_invested": "Total investido",
+        "gains": "Ganhos"
+      }
+    },
+    "fire": {
+      "title": "Independência financeira",
+      "subtitle": "Baseado na regra dos 4% e num plano de acumulação com juros compostos.",
+      "placeholders": {
+        "monthly_need": "Despesa mensal desejada",
+        "current_invested": "Valor já investido",
+        "years_to_goal": "Anos até à meta",
+        "return_rate": "Retorno anual (%)"
+      },
+      "summary": {
+        "fire_number": "Número FIRE",
+        "fire_explainer": "Este capital tenta sustentar cerca de {{amount}} por mês sem depender de salário."
+      },
+      "insight": {
+        "title": "Insight do Mwanga",
+        "subtitle": "Projeção personalizada para o seu objetivo",
+        "progress": "Progresso atual",
+        "suggested_monthly": "Investimento mensal sugerido",
+        "projected_balance": "Saldo projetado",
+        "explainer": "Para chegar a {{target}} em {{years}} anos, o plano sugere reforços de <strong className=\"text-white\">{{monthly}}</strong> por mês, assumindo um retorno anual de {{rate}}%."
+      }
+    },
+    "xitique": {
+      "title": "Simulador de Xitique",
+      "subtitle": "Veja a liquidez total do círculo e o benefício versus crédito bancário caro.",
+      "labels": {
+        "monthly_contribution": "Contribuição mensal",
+        "participants": "Participantes",
+        "position": "Posição para receber",
+        "position_suffix": "ª"
+      },
+      "summary": {
+        "circle_amount": "Montante do círculo",
+        "months_to_receive": "Meses até receber",
+        "immediate_liquidity": "Liquidez imediata",
+        "avoided_interest": "Juros evitados"
+      },
+      "insights": {
+        "quick_read_title": "Leitura rápida",
+        "quick_read_msg": "Receber na posição {{position}}ª significa esperar {{months}} mês{{plural}} para levantar cerca de <strong className=\"text-white\">{{amount}}</strong>. Quanto mais cedo receber, maior tende a ser a vantagem de caixa.",
+        "credit_comp_title": "Comparação com crédito",
+        "credit_comp_msg": "Num cenário bancário de 26% ao ano, um valor semelhante poderia custar aproximadamente <strong className=\"text-white\">{{amount}}</strong> em juros ao longo do mesmo ciclo."
+      }
+    },
+    "disclaimer": "Estas simulações são projeções. Os resultados dependem de disciplina, retorno real, custos e contexto do utilizador. <strong className=\"text-amber-500/80\"> Use o Mwanga para decidir melhor, mas valide decisões críticas com apoio profissional quando necessário.</strong>"
+  },
+  "settings": {
+    "title": "Configurações",
+    "description": "Personalize a sua experiência e dados financeiros",
+    "tabs": {
+      "perfil": "Perfil",
+      "financas": "Finanças",
+      "pref": "Preferências"
+    },
+    "hero": {
+      "default_user_name": "Explorador Financeiro",
+      "premium_account": "Conta Premium Nexo Vibe",
+      "saving": "Guardando...",
+      "synced": "Sincronizado",
+      "currency_label": "Moeda",
+      "cycle_label": "Ciclo",
+      "day_label": "Dia {{day}}"
+    },
+    "perfil": {
+      "title": "Dados Pessoais",
+      "subtitle": "A sua identidade no ecossistema Mwanga",
+      "personal_info": "Informação Pessoal",
+      "user_name_label": "O Seu Nome",
+      "user_name_placeholder": "Como quer ser chamado?",
+      "family_info": "A Minha Família",
+      "household_name_label": "Nome do Agregado",
+      "household_name_placeholder": "Ex: Família Mwanga"
+    },
+    "financas": {
+      "title": "Parâmetros Financeiros",
+      "subtitle": "Configure as bases dos seus simuladores",
+      "income_section": "Receitas",
+      "income_subtitle": "Base mensal",
+      "salary_label": "Salário Mensal Base",
+      "salary_tip": "💡 Usado para gerar sugestões de orçamento 50/30/20.",
+      "housing_section": "Habitação",
+      "housing_subtitle": "Custos fixos",
+      "landlord_label": "Nome do Senhorio",
+      "landlord_placeholder": "Ex: Sr. Manuel",
+      "rent_label": "Renda Padrão",
+      "rent_tip": "🏠 Valor pré-definido no módulo de Habitação.",
+      "automation_section": "Automação SMS (M-Pesa & BIM)",
+      "automation_subtitle": "Sincronização inteligente com o seu telemóvel.",
+      "cash_balance_label": "Dinheiro Físico Inicial (Cash)",
+      "cash_balance_tip": "Introduza o valor que tem fisicamente consigo para iniciar a reconciliação.",
+      "sms_sync_tag": "Sincronização Activa",
+      "sms_sync_label": "Ativar leitura automática de SMS financeiros"
+    },
+    "pref": {
+      "title": "Interface e Regional",
+      "subtitle": "Ajuste Mwanga ao seu contexto",
+      "region_section": "Moeda e Região",
+      "currency_label": "Moeda de Exibição",
+      "personalization_section": "Personalização",
+      "reset_day_label": "Dia de Reinício",
+      "reset_day_option": "Dia {{day}} de cada mês",
+      "dark_mode_label": "Modo Escuro",
+      "push": {
+        "tag": "Push Engine ✦",
+        "title": "Notificações Inteligentes",
+        "description": "Receba alertas de orçamento, metas e lembretes mesmo com a aplicação fechada.",
+        "btn_on": "Ligado",
+        "btn_off": "Ligar Push",
+        "disable_btn": "Desativar Notificações",
+        "daily_reminder": "Resumo Diário",
+        "daily_reminder_tip": "Hora do lembrete diário",
+        "commitments": "Compromissos",
+        "period_start": "Início",
+        "period_end": "Fim",
+        "ai_sync": "Sincronizado com o motor Binth AI",
+        "blocked_title": "Notificações Bloqueadas",
+        "blocked_desc": "O navegador bloqueou os alertas. Para ativar, clica no ícone de ajustes (ou cadeado) na barra de endereços acima e altera 'Notificações' para 'Permitir'.",
+        "blocked_btn": "Ver Como Desbloquear"
+      }
+    },
+    "sidebar": {
+      "account_status": "Estado da Conta",
+      "security_level": "Segurança Nível",
+      "security_value": "MILITAR",
+      "protection_title": "Proteção Mwanga 2.0",
+      "protection_subtitle": "Encriptação Activa",
+      "autosave_tag": "Autosave Ativo",
+      "autosave_desc": "As alterações são gravadas instantaneamente.",
+      "help_btn": "Manual do Utilizador",
+      "sync_btn": "Sincronizar Agora",
+      "logout_btn": "Terminar Sessão"
+    },
+    "toasts": {
+      "save_error": "Erro ao guardar definições",
+      "img_too_large": "A imagem é muito grande (máx 2MB)",
+      "img_updated": "Foto actualizada! ✦",
+      "push_enabled": "Push ativado! ✦",
+      "push_error": "Erro ao ativar notificações",
+      "push_blocked": "Permissão bloqueada pelo navegador. Reset as permissões no URL."
+    }
+  },
+  "pricing": {
+    "tag": "Planos Mwanga ✦",
+    "title": "Escolha o seu nível de <span>Prosperidade</span>",
+    "description": "Mwanga é mais que controle de gastos. É a sua jornada para o crescimento patrimonial em Moçambique.",
+    "billing": {
+      "monthly": "Mensal",
+      "annual": "Anual",
+      "discount": "(-20%)",
+      "annual_total": "Cobrado anualmente ({{total}} MZN)"
+    },
+    "plans": {
+      "starter": {
+        "name": "Starter",
+        "desc": "Para quem está a começar a organizar a casa.",
+        "btn": "Plano Actual",
+        "features": [
+          "1 Agregado Familiar",
+          "Até 2 utilizadores",
+          "Dashboard Essencial",
+          "Transações Ilimitadas",
+          "1 Xitique Ativo",
+          "Relatórios Simples (PDF)",
+          "Histórico de 12 meses"
+        ]
+      },
+      "growth": {
+        "name": "Crescimento",
+        "desc": "O poder da inteligência financeira na sua mão.",
+        "btn": "Evoluir para Crescimento",
+        "popular_badge": "Mais Popular",
+        "features": [
+          "Utilizadores Ilimitados",
+          "Xitiques Ilimitados",
+          "Score Financeiro Avançado",
+          "Simuladores Inteligentes",
+          "Gestão de Património",
+          "Exportação Excel/CSV",
+          "Alertas Proactivos",
+          "Histórico Ilimitado"
+        ]
+      },
+      "legacy": {
+        "name": "Património",
+        "desc": "Domine o seu legado e garanta o futuro.",
+        "btn": "Dominar Património",
+        "features": [
+          "Tudo do plano Crescimento",
+          "Projeções Financeiras (BI)",
+          "Simulador de Juros Compostos",
+          "Planeamento de Reforma",
+          "Suporte Prioritário 24/7",
+          "Relatórios de Auditoria FAM",
+          "Acesso Antecipado a Novas Funcionalidades"
+        ]
+      }
+    },
+    "includes": "O que inclui:",
+    "trust": {
+      "security_title": "Segurança Bancária",
+      "security_desc": "Dados encriptados de ponta a ponta.",
+      "moza_pride_title": "Orgulho Moçambicano",
+      "moza_pride_desc": "Tecnologia local para o mundo.",
+      "cancel_title": "Cancelamento Fácil",
+      "cancel_desc": "Sem contratos, cancele quando quiser."
+    }
+  },
+  "help": {
+    "hero": {
+      "title": "Centro de <span>Ajuda Mwanga</span>",
+      "description": "Tudo o que precisa de saber para iluminar o seu caminho financeiro e dominar o sistema Mwanga 2.0.",
+      "search_placeholder": "Pesquisar manual..."
+    },
+    "sections": {
+      "intro": {
+        "title": "📱 Primeiros Passos",
+        "content": "O Mwanga é uma aplicação PWA. Isso significa que pode instalá-lo no seu telemóvel sem ir à Play Store ou App Store.\n\n• No Android: Clique nos 3 pontos do Chrome e selecione \"Instalar Mensageiro Financeiro\".\n• No iPhone: Use o botão Partilhar e selecione \"Adicionar ao Ecrã Principal\"."
+      },
+      "dashboard": {
+        "title": "📊 Painel de Controlo",
+        "content": "O Dashboard oferece uma visão 360º das suas finanças.\n\n• Gráfico de Radar: Identifique rapidamente se os seus gastos estão equilibrados com os ganhos.\n• Widgets: Acompanhe o saldo total das suas contas e o progresso das suas metas de poupança num relance."
+      },
+      "finance": {
+        "title": "💰 Gestão Financeira",
+        "content": "Domine o seu dinheiro com as ferramentas de orçamento.\n\n• Transações: Registe cada metical que sai ou entra. Separe por conta (M-Pesa, Carteira, Banco).\n• Regra 50/30/20: O sistema ajuda-o a cumprir a meta de gastar 50% em necessidades, 30% em desejos e 20% para o futuro.\n• Metas: Defina objetivos claros (ex: \"Compra de Moto\") e deixe o Mwanga calcular quanto precisa de poupar mensalmente."
+      },
+      "credit": {
+        "title": "⚖️ Crédito Inteligente",
+        "content": "Antes de pedir um empréstimo, consulte os nossos simuladores.\n\n• Simulador de Prestação: Saiba exatamente quanto vai pagar ao banco por mês.\n• Comparador: Veja se compensa mais um empréstimo bancário, um Xitique ou esperar e poupar.\n• Consolidação: Aprenda a juntar várias dívidas numa só para pagar menos juros totais."
+      },
+      "community": {
+        "title": "🤝 Mwanga Community (VSLA)",
+        "content": "Poupe em conjunto com a sua família ou amigos.\n\n• Shares: No Digital VSLA, você compra \"shares\" mensais que formam o capital do grupo.\n• Empréstimos Internos: Os membros podem pedir empréstimos ao grupo a taxas decididas pela comunidade.\n• Lucros: Os juros acumulados são distribuídos equitativamente no final do ciclo de pouça."
+      },
+      "binth": {
+        "title": "🤖 Assistente Binth IA",
+        "content": "O Binth é o cérebro do Mwanga.\n\n• Diagnósticos Rápidos: Peça conselhos sobre se deve ou não fazer uma compra.\n• Contexto Real: O Binth analisa os seus gastos reais (anonimamente) para dar respostas precisas."
+      },
+      "security": {
+        "title": "🛡️ Segurança e Alertas",
+        "content": "A sua privacidade é o nosso foco.\n\n• Notificações Push: Ative os lembretes para nunca ser apanhado de surpresa pela renda ou prestações.\n• Dados Protegidos: Usamos encriptação de nível militar para proteger os seus registos financeiros."
+      }
+    },
+    "support": {
+      "title": "Ainda tem dúvidas?",
+      "description": "O Binth está disponível 24/7 para responder a questões específicas sobre o seu contexto financeiro.",
+      "btn": "Falar com o Binth"
+    }
+  },
+  "reports": {
+    "title": "Relatórios",
+    "summary_alert": "📊 Relatório baseado nas {{count}} transações registadas.",
+    "btn_export": "Exportar",
+    "sections": {
+      "health": "Saúde Financeira",
+      "distribution": "Distribuição de Despesas (Mês Actual)",
+      "evolution": "Evolução Mensal",
+      "history": "Histórico Mensal"
+    },
+    "metrics": {
+      "income": "Receitas Totais",
+      "expenses": "Despesas Totais",
+      "balance": "Saldo do Mês",
+      "savings_rate": "Taxa de Poupança",
+      "recommended": "Recomendado: ≥ 20%",
+      "of_100": "de 100"
+    },
+    "table": {
+      "month": "Mês",
+      "income": "Receitas",
+      "expenses": "Despesas",
+      "housing": "Habitação/Fallback",
+      "balance": "Saldo",
+      "empty": "Sem dados"
+    },
+    "chart": {
+      "income": "Receitas",
+      "expenses": "Despesas Consolidadas"
+    },
+    "empty_state": "Sem despesas para analisar"
+  },
+  "insights": {
+    "title": "Binth Insights",
+    "subtitle": "A tua mentora financeira pessoal ✦",
+    "score_label": "Score",
+    "placeholder": "Pergunta algo à Binth…",
+    "welcome_default": "Olá! Já li o teu contexto financeiro e estou pronta para te ajudar.",
+    "welcome_error": "Não consegui processar o teu pedido. Tenta novamente! 😊",
+    "btn_retry": "Tentar novamente",
+    "qa_defaults": ["Como estao as minhas financas?", "Onde estou a gastar mais?", "Como posso poupar mais?", "Analisa o meu orcamento"],
+    "score_section": {
+      "title": "Score Financeiro Bíblico"
+    }
+  },
+  "goals": {
+    "title": "Metas e Objectivos 🎯",
+    "subtitle": "Tens {{count}} objectivos ativos neste momento.",
+    "stats": {
+      "accumulated": "Total Acumulado",
+      "final_target": "Objectivo Final",
+      "global_progress": "Progresso Global",
+      "completed": "Concluído"
+    },
+    "form": {
+      "btn_new": "Criar Novo Objectivo",
+      "name_label": "Nome da Meta",
+      "name_placeholder": "Ex: Fundo de Emergência",
+      "target_label": "Valor Alvo ({{currency}})",
+      "saved_label": "Já Poupado ({{currency}})",
+      "deadline_label": "Prazo Final",
+      "icon_label": "Ícone Representativo",
+      "btn_cancel": "Cancelar",
+      "btn_save": "Criar Meta",
+      "toast_required": "⚠️ Preencha nome e valor alvo",
+      "toast_success": "🎯 Meta financeira criada!"
+    },
+    "card": {
+      "days_left": "{{count}} dias",
+      "completed_badge": "Concluído!",
+      "of": "/ {{amount}}",
+      "executed": "{{pct}}% Executado",
+      "remaining": "Faltam {{amount}}",
+      "btn_deposit": "Depositar",
+      "btn_completed": "Meta Concluída",
+      "delete_tooltip": "Apagar meta"
+    },
+    "delete_modal": {
+      "title": "Apagar Meta?",
+      "message": "Tens a certeza que queres eliminar a meta \"{{name}}\"? Todo o progresso poupado será perdido.",
+      "btn_confirm": "Sim, Eliminar",
+      "btn_cancel": "Não, Manter",
+      "toast_success": "Meta removida com sucesso",
+      "toast_error": "Erro ao remover meta"
+    },
+    "deposit_modal": {
+      "title": "Fazer Depósito",
+      "meta_label": "Meta: {{name}}",
+      "amount_label": "Quanto queres poupar?",
+      "account_label": "De qual conta sai o dinheiro?",
+      "btn_confirm": "Confirmar Poupança",
+      "toast_invalid": "⚠️ Introduza um valor válido",
+      "toast_no_account": "⚠️ Selecione uma conta de origem",
+      "toast_balance_warning": "O saldo da conta \"{{name}}\" ({{balance}}) é inferior ao valor do depósito. Continuar?",
+      "toast_success": "💰 {{amount}} adicionados à meta!",
+      "toast_error": "❌ Erro ao atualizar meta",
+      "no_accounts_warning": "Não tens contas registadas. Adiciona uma conta em \"Património\" para vincular poupanças."
+    },
+    "empty_state": {
+      "title": "Nenhuma meta definida.",
+      "subtitle": "Começa hoje a planear o teu futuro financeiro."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Entrar",
+      "subtitle": "Entre para gerir as suas finanças.",
+      "email_label": "Email",
+      "password_label": "Senha",
+      "btn_login": "Entrar",
+      "btn_processing": "A processar...",
+      "forgot_password": "Esqueci-me da senha",
+      "google_btn": "Entrar com Google",
+      "google_tip": "Continue com Google para entrar ou criar a sua conta automaticamente no primeiro acesso.",
+      "no_account": "Não tem uma conta?",
+      "register_link": "Registe-se",
+      "or_divider": "OU",
+      "toasts": {
+        "success": "Bem-vindo de volta!",
+        "google_failed": "Autenticação com Google falhou",
+        "google_unavailable": "Login com Google indisponível. Confirme a configuração dessa origem: {{origin}}.",
+        "welcome_google": "Bem-vindo via Google!"
+      }
+    },
+    "register": {
+      "title": "Criar conta",
+      "subtitle": "Crie a sua conta para começar a organizar a vida financeira da família.",
+      "name_label": "Nome completo",
+      "name_placeholder": "Ex: João Silva",
+      "password_tip": "Use pelo menos 8 caracteres.",
+      "family_label": "Nome da família (opcional)",
+      "family_placeholder": "Ex: Família Silva",
+      "btn_register": "Criar conta",
+      "already_have": "Já tem uma conta?",
+      "login_link": "Faça login",
+      "toasts": {
+        "success": "Conta criada com sucesso!",
+        "google_success": "Conta criada com Google e sessão iniciada!"
+      }
+    },
+    "forgot": {
+      "title": "Recuperar senha",
+      "subtitle": "Introduza o seu email para receber um link de recuperação.",
+      "btn_send": "Enviar link",
+      "back_link": "Voltar",
+      "success_title": "Link enviado!",
+      "success_desc": "Se o email <strong>{{email}}</strong> estiver registado, receberá as instruções de redefinição em breve.",
+      "btn_to_login": "Ir para o login",
+      "error_fallback": "Falha ao processar pedido"
+    },
+    "reset": {
+      "title": "Nova senha",
+      "subtitle": "Crie uma senha forte para proteger a sua conta.",
+      "btn_update": "Atualizar senha",
+      "success_title": "Senha atualizada!",
+      "success_desc": "A sua senha foi redefinida com sucesso. Já pode aceder à sua conta Mwanga.",
+      "btn_to_login": "Fazer login",
+      "errors": {
+        "match": "As senhas não coincidem",
+        "length": "A senha deve ter pelo menos 8 caracteres",
+        "token": "Token de recuperação em falta ou inválido.",
+        "fallback": "Falha ao redefinir senha"
+      }
+    }
+  },
+  "quick_add": {
+    "title": "Ação Rápida",
+    "header": "Fecha o dia em menos de 20 segundos",
+    "desc": "O Mwanga abriu diretamente a ação do lembrete. Regista uma despesa ou receita sem perder o teu ritmo.",
+    "toast_fill": "Preenche descrição e valor para fechar o dia.",
+    "toast_success": "Registo feito. Sequência financeira protegida.",
+    "fields": {
+      "date": "Data",
+      "value": "Valor",
+      "description": "Descrição",
+      "category": "Categoria",
+      "account": "Conta",
+      "note": "Nota opcional",
+      "no_account": "Sem conta ligada",
+      "desc_placeholder_inc": "Ex: Salário, Freelance",
+      "desc_placeholder_exp": "Ex: Supermercado, Transporte",
+      "note_placeholder": "Ex: pago com M-Pesa"
+    },
+    "entry_fast": "Entrada rápida",
+    "exit_fast": "Saída rápida",
+    "habit_hint": "Cada pequeno registo reforça o teu hábito e melhora a qualidade das recomendações do Mwanga.",
+    "saving": "A guardar...",
+    "save": "Guardar agora"
+  }
+}

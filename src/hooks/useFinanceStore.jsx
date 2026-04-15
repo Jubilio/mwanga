@@ -146,6 +146,63 @@ function mapXitique(x) {
   };
 }
 
+// Run up to `concurrency` fetches at a time to avoid HTTP/2 stream exhaustion
+// on the Render.com free-tier server which rejects too many parallel streams.
+async function batchFetch(tasks, concurrency = 5) {
+  const results = new Array(tasks.length);
+  let idx = 0;
+  async function worker() {
+    while (idx < tasks.length) {
+      const i = idx++;
+      results[i] = await tasks[i]();
+    }
+  }
+  const workers = Array.from({ length: Math.min(concurrency, tasks.length) }, worker);
+  await Promise.all(workers);
+  return results;
+}
+
+async function fetchAllData(headers, dispatch) {
+  const SF = async (url) => {
+    try {
+      const res = await fetch(url, { headers });
+      if (res.status === 401) {
+        localStorage.removeItem('mwanga-token');
+        dispatch({ type: 'RESET_SESSION' });
+        return [];
+      }
+      if (!res.ok) return [];
+      const ct = res.headers.get('content-type');
+      if (!ct || !ct.includes('application/json')) return [];
+      return await res.json();
+    } catch {
+      return [];
+    }
+  };
+
+  // Batch: 5 concurrent at a time (avoids HTTP/2 stream exhaustion on free-tier)
+  const endpoints = [
+    `${FINANCE_API_URL}/transactions`,
+    `${FINANCE_API_URL}/rentals`,
+    `${FINANCE_API_URL}/goals`,
+    `${FINANCE_API_URL}/budgets`,
+    `${FINANCE_API_URL}/assets`,
+    `${FINANCE_API_URL}/liabilities`,
+    `${FINANCE_API_URL}/xitiques`,
+    `${FINANCE_API_URL}/settings`,
+    `${FINANCE_API_URL}/auth/me`,
+    `${FINANCE_API_URL}/debts`,
+    `${FINANCE_API_URL}/accounts`,
+    `${FINANCE_API_URL}/credit/applications`,
+    `${FINANCE_API_URL}/credit/loans`,
+  ];
+
+  const [ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans] =
+    await batchFetch(endpoints.map(url => () => SF(url)));
+
+  return { ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans };
+}
+
 async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
   const token = localStorage.getItem('mwanga-token');
   if (!token) {
@@ -155,40 +212,9 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
 
   const headers = { Authorization: `Bearer ${token}` };
 
-  const safeFetch = async (url) => {
-    try {
-      const res = await fetch(url, { headers });
-      if (res.status === 401) {
-        localStorage.removeItem('mwanga-token');
-        dispatch({ type: 'RESET_SESSION' });
-        return [];
-      }
-      if (res.status === 429) return [];
-      if (!res.ok) return [];
-      const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) return [];
-      return await res.json();
-    } catch {
-      return [];
-    }
-  };
-
   try {
-    const [ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans] = await Promise.all([
-      safeFetch(`${FINANCE_API_URL}/transactions`),
-      safeFetch(`${FINANCE_API_URL}/rentals`),
-      safeFetch(`${FINANCE_API_URL}/goals`),
-      safeFetch(`${FINANCE_API_URL}/budgets`),
-      safeFetch(`${FINANCE_API_URL}/assets`),
-      safeFetch(`${FINANCE_API_URL}/liabilities`),
-      safeFetch(`${FINANCE_API_URL}/xitiques`),
-      safeFetch(`${FINANCE_API_URL}/settings`),
-      safeFetch(`${FINANCE_API_URL}/auth/me`),
-      safeFetch(`${FINANCE_API_URL}/debts`),
-      safeFetch(`${FINANCE_API_URL}/accounts`),
-      safeFetch(`${FINANCE_API_URL}/credit/applications`),
-      safeFetch(`${FINANCE_API_URL}/credit/loans`),
-    ]);
+    const { ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans } =
+      await fetchAllData(headers, dispatch);
 
     const mergedSettings = normalizeSettings(
       settingsResp && !Array.isArray(settingsResp) ? settingsResp : {}
@@ -335,6 +361,9 @@ export function FinanceProvider({ children }) {
 
   // Initial Fetch from API
   useEffect(() => {
+    // Guard flag to handle React StrictMode double-invoke
+    let aborted = false;
+
     async function fetchData() {
       const token = localStorage.getItem('mwanga-token');
       if (!token) {
@@ -344,52 +373,12 @@ export function FinanceProvider({ children }) {
 
       const headers = { 'Authorization': `Bearer ${token}` };
 
-      const safeFetch = async (url) => {
-        try {
-          const res = await fetch(url, { headers });
-          if (res.status === 401) {
-            // Session expired or invalid — clear token so user is redirected to login
-            console.warn(`Session expired (401): ${url}. Clearing token.`);
-            localStorage.removeItem('mwanga-token');
-            dispatch({ type: 'SET_DATA', payload: { loading: false } });
-            return [];
-          }
-          if (res.status === 429) {
-            console.warn(`Rate limited: ${url}`);
-            return [];
-          }
-          if (!res.ok) {
-            console.warn(`Failed fetch (${res.status}): ${url}`);
-            return [];
-          }
-          const contentType = res.headers.get('content-type');
-          if (!contentType || !contentType.includes('application/json')) {
-            return [];
-          }
-          return await res.json();
-        } catch (err) {
-          console.warn(`Fetch failed for ${url}:`, err.message);
-          return [];
-        }
-      };
-
       try {
         console.log('Fetching initial data from:', FINANCE_API_URL);
-        const [ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans] = await Promise.all([
-          safeFetch(`${FINANCE_API_URL}/transactions`),
-          safeFetch(`${FINANCE_API_URL}/rentals`),
-          safeFetch(`${FINANCE_API_URL}/goals`),
-          safeFetch(`${FINANCE_API_URL}/budgets`),
-          safeFetch(`${FINANCE_API_URL}/assets`),
-          safeFetch(`${FINANCE_API_URL}/liabilities`),
-          safeFetch(`${FINANCE_API_URL}/xitiques`),
-          safeFetch(`${FINANCE_API_URL}/settings`),
-          safeFetch(`${FINANCE_API_URL}/auth/me`),
-          safeFetch(`${FINANCE_API_URL}/debts`),
-          safeFetch(`${FINANCE_API_URL}/accounts`),
-          safeFetch(`${FINANCE_API_URL}/credit/applications`),
-          safeFetch(`${FINANCE_API_URL}/credit/loans`),
-        ]);
+        const { ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans } =
+          await fetchAllData(headers, dispatch);
+
+        if (aborted) return; // StrictMode cleanup fired — discard stale results
 
         const mergedSettings = normalizeSettings(
           settingsResp && !Array.isArray(settingsResp) ? settingsResp : {}
@@ -432,12 +421,15 @@ export function FinanceProvider({ children }) {
         if (user) dispatch({ type: 'SET_USER', payload: user });
 
       } catch (e) {
+        if (aborted) return;
         console.error('API Fetch failed, using demo data:', e);
         const demo = generateDemoData();
         dispatch({ type: 'SET_DATA', payload: { ...demo, loading: false } });
       }
     }
+
     fetchData();
+    return () => { aborted = true; };
   }, []);
 
   // Persist dark mode

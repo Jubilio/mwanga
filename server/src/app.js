@@ -52,7 +52,8 @@ app.use(cors({
     'https://mwanga-qdsmbf6ck-jubilio-projects.vercel.app',
     'https://mwangafin.netlify.app',
     'http://localhost:5173',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'http://localhost:8081'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

@@ -89,31 +89,26 @@ async function getUserNotificationSettings(userId, householdId) {
 }
 
 async function getAllUserNotificationSettings() {
-  const result = await db.execute({
-    sql: `
-      SELECT
-        u.id AS user_id,
-        u.household_id,
-        COALESCE(MAX(CASE WHEN s.key = 'daily_entry_reminder_enabled' THEN s.value END), 'true') AS daily_entry_reminder_enabled,
-        COALESCE(MAX(CASE WHEN s.key = 'daily_entry_reminder_time' THEN s.value END), '20:00') AS daily_entry_reminder_time,
-        COALESCE(MAX(CASE WHEN s.key = 'monthly_due_reminder_enabled' THEN s.value END), 'true') AS monthly_due_reminder_enabled,
-        COALESCE(MAX(CASE WHEN s.key = 'monthly_due_reminder_time' THEN s.value END), '08:00') AS monthly_due_reminder_time,
-        COALESCE(MAX(CASE WHEN s.key = 'monthly_due_reminder_period' THEN s.value END), 'inicio') AS monthly_due_reminder_period
-      FROM users u
-      LEFT JOIN settings s
-        ON s.household_id = u.household_id
-      GROUP BY u.id, u.household_id
-    `,
+  // Step 1: Get all users with their household IDs
+  const usersResult = await db.execute({
+    sql: 'SELECT id, household_id FROM users WHERE household_id IS NOT NULL',
     args: [],
   });
 
-  return result.rows.map((row) => ({
-    ...row,
-    daily_entry_reminder_enabled: parseBoolean(row.daily_entry_reminder_enabled, true),
-    monthly_due_reminder_enabled: parseBoolean(row.monthly_due_reminder_enabled, true),
-    monthly_due_reminder_period: row.monthly_due_reminder_period === 'fim' ? 'fim' : 'inicio',
-  }));
+  // Step 2: For each user, fetch their settings using the reliable per-user function
+  const allSettings = [];
+  for (const user of usersResult.rows) {
+    try {
+      const settings = await getUserNotificationSettings(user.id, user.household_id);
+      allSettings.push(settings);
+    } catch (err) {
+      logger.warn(`Skipping notification settings for user ${user.id}: ${err.message}`);
+    }
+  }
+
+  return allSettings;
 }
+
 
 async function createNotificationEvent(userId, eventType, entityType, entityId, eventData = {}) {
   const result = await db.execute({

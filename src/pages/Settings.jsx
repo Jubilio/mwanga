@@ -87,6 +87,17 @@ export default function Settings() {
     }
   }, [form, state.user?.name, state.settings.household_name, state.settings.cash_balance, dispatch, showToast, t]);
 
+  // isDirtyRef is set to true only when the user edits a field.
+  // This prevents the auto-save effect from re-firing when state.settings
+  // is updated by the API response, which would create an infinite loop.
+  const isDirtyRef = useRef(false);
+
+  // Wrap setForm so that any field change marks the form as dirty.
+  const setFormDirty = useCallback((updater) => {
+    isDirtyRef.current = true;
+    setForm(updater);
+  }, []);
+
   const handleImageUpload = (file) => {
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
@@ -105,30 +116,23 @@ export default function Settings() {
   };
 
   useEffect(() => {
+    // Only auto-save when the user has actually changed something.
+    if (!isDirtyRef.current) return;
+
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
-    const hasChanged = JSON.stringify(form) !== JSON.stringify({
-      user_salary: state.settings.user_salary || 50000,
-      default_rent: state.settings.default_rent || 15000,
-      landlord_name: state.settings.landlord_name || '',
-      household_name: state.settings.household_name || 'A Minha Família',
-      user_name: state.user?.name || '',
-      currency: state.settings.currency || 'MT',
-      cycle_start: state.settings.cycle_start || '1',
-      profile_pic: state.settings.profile_pic || AVATARS[0],
-      daily_entry_reminder_enabled: state.settings.daily_entry_reminder_enabled ?? true,
-      daily_entry_reminder_time: state.settings.daily_entry_reminder_time || '20:00',
-      monthly_due_reminder_enabled: state.settings.monthly_due_reminder_enabled ?? true,
-      monthly_due_reminder_time: state.settings.monthly_due_reminder_time || '08:00',
-      monthly_due_reminder_period: state.settings.monthly_due_reminder_period || 'inicio',
-    });
+    saveTimeoutRef.current = setTimeout(() => {
+      isDirtyRef.current = false;
+      handleSaveAll();
+    }, 1500);
 
-    if (hasChanged) {
-      saveTimeoutRef.current = setTimeout(() => {
-        handleSaveAll();
-      }, 1500);
-    }
-  }, [form, handleSaveAll, state.settings, state.user?.name]);
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+    // Intentionally omitting state.settings from deps — we don't want
+    // API responses updating state.settings to trigger another save.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form]);
 
   const tabs = [
     { id: 'perfil', label: t('settings.tabs.perfil'), icon: User, color: 'indigo' },
@@ -169,7 +173,7 @@ export default function Settings() {
                       <button
                         key={i}
                         onClick={() => {
-                          setForm({ ...form, profile_pic: url });
+                          setFormDirty({ ...form, profile_pic: url });
                           setShowAvatarGallery(false);
                           dispatch({ type: 'UPDATE_SETTING', payload: { key: 'profile_pic', value: url } });
                         }}
@@ -305,7 +309,7 @@ export default function Settings() {
                           <input
                             type="text"
                             value={form.user_name}
-                            onChange={(e) => setForm({ ...form, user_name: e.target.value })}
+                            onChange={(e) => setFormDirty({ ...form, user_name: e.target.value })}
                             className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-slate-200 outline-none focus:border-teal-500/50 focus:bg-white/10 transition-all font-medium"
                             placeholder={t('settings.perfil.user_name_placeholder')}
                           />
@@ -330,7 +334,7 @@ export default function Settings() {
                           <input
                             type="text"
                             value={form.household_name}
-                            onChange={(e) => setForm({ ...form, household_name: e.target.value })}
+                            onChange={(e) => setFormDirty({ ...form, household_name: e.target.value })}
                             className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-slate-200 outline-none focus:border-sky-500/50 focus:bg-white/10 transition-all font-medium"
                             placeholder={t('settings.perfil.household_name_placeholder')}
                           />
@@ -377,7 +381,7 @@ export default function Settings() {
                             <input
                               type="number"
                               value={form.user_salary}
-                              onChange={(e) => setForm({ ...form, user_salary: e.target.value })}
+                              onChange={(e) => setFormDirty({ ...form, user_salary: e.target.value })}
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-xl font-serif text-teal-600 outline-none focus:border-teal-500/40 transition-all shadow-inner"
                             />
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
@@ -406,7 +410,7 @@ export default function Settings() {
                           <input
                             type="text"
                             value={form.landlord_name}
-                            onChange={(e) => setForm({ ...form, landlord_name: e.target.value })}
+                            onChange={(e) => setFormDirty({ ...form, landlord_name: e.target.value })}
                             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-amber-500/40 transition-all font-medium"
                             placeholder={t('settings.financas.landlord_placeholder')}
                           />
@@ -417,7 +421,7 @@ export default function Settings() {
                             <input
                               type="number"
                               value={form.default_rent}
-                              onChange={(e) => setForm({ ...form, default_rent: e.target.value })}
+                              onChange={(e) => setFormDirty({ ...form, default_rent: e.target.value })}
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-xl font-serif text-amber-600 outline-none focus:border-amber-500/40 transition-all shadow-inner"
                             />
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
@@ -449,7 +453,7 @@ export default function Settings() {
                           <input
                             type="number"
                             value={form.cash_balance}
-                            onChange={(e) => setForm({ ...form, cash_balance: e.target.value })}
+                            onChange={(e) => setFormDirty({ ...form, cash_balance: e.target.value })}
                             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-xl font-serif text-indigo-600 outline-none focus:border-indigo-500/40 transition-all shadow-inner"
                           />
                           <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
@@ -460,7 +464,7 @@ export default function Settings() {
                       </div>
 
                       <div
-                        onClick={() => setForm({ ...form, sms_automation_enabled: !form.sms_automation_enabled })}
+                        onClick={() => setFormDirty({ ...form, sms_automation_enabled: !form.sms_automation_enabled })}
                         className="flex items-center justify-between p-6 rounded-2xl bg-indigo-50 border border-indigo-100/50 cursor-pointer hover:bg-white transition-all group shadow-sm h-fit"
                       >
                         <div className="flex items-center gap-4">
@@ -509,7 +513,7 @@ export default function Settings() {
                         <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t('settings.pref.currency_label')}</label>
                         <select
                           value={form.currency}
-                          onChange={(e) => setForm({ ...form, currency: e.target.value })}
+                          onChange={(e) => setFormDirty({ ...form, currency: e.target.value })}
                           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-teal-500/40 transition-all appearance-none cursor-pointer font-medium"
                         >
                           <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="MT">MT — Metical Moçambicano</option>
@@ -532,7 +536,7 @@ export default function Settings() {
                         <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t('settings.pref.reset_day_label')}</label>
                         <select
                           value={form.cycle_start}
-                          onChange={(e) => setForm({ ...form, cycle_start: e.target.value })}
+                          onChange={(e) => setFormDirty({ ...form, cycle_start: e.target.value })}
                           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-indigo-500/40 transition-all appearance-none cursor-pointer font-medium"
                         >
                           {[...Array(31)].map((_, i) => (
@@ -631,7 +635,7 @@ export default function Settings() {
                             <input
                               type="checkbox"
                               checked={form.daily_entry_reminder_enabled}
-                              onChange={(e) => setForm({ ...form, daily_entry_reminder_enabled: e.target.checked })}
+                              onChange={(e) => setFormDirty({ ...form, daily_entry_reminder_enabled: e.target.checked })}
                               className="w-4 h-4 rounded border-white/20 bg-transparent text-teal-500 focus:ring-teal-500"
                             />
                           </div>
@@ -639,7 +643,7 @@ export default function Settings() {
                             <input
                               type="time"
                               value={form.daily_entry_reminder_time}
-                              onChange={(e) => setForm({ ...form, daily_entry_reminder_time: e.target.value })}
+                              onChange={(e) => setFormDirty({ ...form, daily_entry_reminder_time: e.target.value })}
                               disabled={!form.daily_entry_reminder_enabled}
                               className="bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white outline-none focus:border-teal-400 disabled:opacity-30"
                             />
@@ -657,7 +661,7 @@ export default function Settings() {
                             <input
                               type="checkbox"
                               checked={form.monthly_due_reminder_enabled}
-                              onChange={(e) => setForm({ ...form, monthly_due_reminder_enabled: e.target.checked })}
+                              onChange={(e) => setFormDirty({ ...form, monthly_due_reminder_enabled: e.target.checked })}
                               className="w-4 h-4 rounded border-white/20 bg-transparent text-teal-500 focus:ring-teal-500"
                             />
                           </div>
@@ -665,13 +669,13 @@ export default function Settings() {
                             <input
                               type="time"
                               value={form.monthly_due_reminder_time}
-                              onChange={(e) => setForm({ ...form, monthly_due_reminder_time: e.target.value })}
+                              onChange={(e) => setFormDirty({ ...form, monthly_due_reminder_time: e.target.value })}
                               disabled={!form.monthly_due_reminder_enabled}
                               className="flex-1 bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white outline-none focus:border-teal-400 disabled:opacity-30"
                             />
                             <select
                               value={form.monthly_due_reminder_period}
-                              onChange={(e) => setForm({ ...form, monthly_due_reminder_period: e.target.value })}
+                              onChange={(e) => setFormDirty({ ...form, monthly_due_reminder_period: e.target.value })}
                               disabled={!form.monthly_due_reminder_enabled}
                               className="flex-1 bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-[10px] font-bold text-white outline-none focus:border-teal-400 disabled:opacity-30 uppercase tracking-tighter"
                             >

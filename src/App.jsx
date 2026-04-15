@@ -55,7 +55,10 @@ function RequireAuth({ children }) {
   const { state } = useFinance();
   const loc = useLocation();
   const token = localStorage.getItem('mwanga-token');
-  
+  // Fast synchronous check — written by Onboarding on completion.
+  // This prevents a flash-redirect while the API is still loading.
+  const hasOnboarded = localStorage.getItem('mwanga-onboarded') === 'true';
+
   if (state.loading) return (
     <div className="loading-screen">
       <div className="loading-logo">M</div>
@@ -66,11 +69,21 @@ function RequireAuth({ children }) {
     </div>
   );
   if (!token) return <Navigate to="/login" replace />;
-  
-  if (state.settings && !state.settings.onboarding_completed && loc.pathname !== '/onboarding') {
+
+  // Redirect to onboarding only when:
+  // 1. The localStorage sentinel is NOT set (fast check), AND
+  // 2. The API has loaded and explicitly says onboarding is incomplete
+  const apiSaysIncomplete = state.settings && state.settings.onboarding_completed === false;
+  if (!hasOnboarded && apiSaysIncomplete && loc.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
-  
+
+  // Backfill: if the API confirms onboarding is done, persist the sentinel
+  // so future page loads skip the API check entirely.
+  if (!hasOnboarded && state.settings && state.settings.onboarding_completed === true) {
+    localStorage.setItem('mwanga-onboarded', 'true');
+  }
+
   return (
     <>
       <SmsManager />
