@@ -49,7 +49,6 @@ export default function Dashboard() {
   const risk = calcRiskLevel(score);
   const savingsRate = calcSavingsRate(totals.totalIncome, totals.totalExpenses);
 
-<<<<<<< HEAD
   // Cumulative unlinked balance (transactions not tied to any account)
   const totalUnlinked = useMemo(() => 
     state.transacoes
@@ -66,11 +65,6 @@ export default function Dashboard() {
   const totalContas = state.contas?.reduce((acc, curr) => acc + Number(curr.current_balance || 0), 0) || 0;
   const cashSetting = Number(state.settings.cash_balance || 0);
   const realBalance = totalContas + cashSetting + totalUnlinked;
-=======
-  const totalContas = state.contas?.reduce((acc, curr) => acc + Number(curr.current_balance || 0), 0) || 0;
-  const cashSetting = Number(state.settings.cash_balance || 0);
-  const realBalance = totalContas + cashSetting;
->>>>>>> bd2e84a7f09d5d2b1e1a662de6e485691c080344
   const pendingHousing = state.rendas.filter(r => r.estado === 'pendente').length;
   const pendingDebts = state.dividas.filter(d => Number(d.remaining_amount || 0) > 0).length;
   const totalAlerts = pendingDebts + pendingHousing;
