@@ -49,8 +49,23 @@ export default function Dashboard() {
   const score = calcFinancialScore(state.transacoes, state.budgets, monthKey, state.rendas, startDay);
   const risk = calcRiskLevel(score);
   const savingsRate = calcSavingsRate(totals.totalIncome, totals.totalExpenses);
+
+  // Cumulative unlinked balance (transactions not tied to any account)
+  const totalUnlinked = useMemo(() => 
+    state.transacoes
+      .filter(t => !t.account_id)
+      .reduce((sum, t) => {
+        const val = Number(t.valor || 0);
+        if (t.tipo === 'receita') return sum + val;
+        if (t.tipo === 'despesa' || t.tipo === 'renda') return sum - val;
+        return sum;
+      }, 0),
+    [state.transacoes]
+  );
+
   const totalContas = state.contas?.reduce((acc, curr) => acc + Number(curr.current_balance || 0), 0) || 0;
-  const realBalance = totalContas + totals.unlinkedSaldo;
+  const cashSetting = Number(state.settings.cash_balance || 0);
+  const realBalance = totalContas + cashSetting + totalUnlinked;
   const pendingHousing = state.rendas.filter(r => r.estado === 'pendente').length;
   const pendingDebts = state.dividas.filter(d => Number(d.remaining_amount || 0) > 0).length;
   const totalAlerts = pendingDebts + pendingHousing;
@@ -157,8 +172,16 @@ export default function Dashboard() {
           <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 dark:text-gray-400 mb-1">{t('dashboard.available_balance')}</span>
           
           <div className="dashboard-balance-row">
-            <div className="dashboard-balance-value text-midnight dark:text-white truncate max-w-[80vw]">
-              {showBalance ? fmt(realBalance, currency) : '••••••'}
+            <div className="dashboard-balance-value text-midnight dark:text-white truncate max-w-[80vw] flex items-baseline justify-center gap-0.5">
+              {showBalance ? (
+                <>
+                  <span className="font-black">{fmt(realBalance, '').split(',')[0]}</span>
+                  <span className="text-[0.45em] opacity-50 font-bold">,{fmt(realBalance, '').split(',')[1].trim()}</span>
+                  <span className="text-[0.35em] uppercase tracking-[0.2em] ml-1.5 font-black text-gold dark:text-gold-light">{currency}</span>
+                </>
+              ) : (
+                <span className="opacity-20 tracking-[0.3em]">••••••</span>
+              )}
             </div>
             <button 
               onClick={() => setShowBalance(!showBalance)} 

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import { FinanceProvider } from './hooks/useFinanceStore';
 import Layout from './components/Layout';
@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 
 // Lazy-loaded pages — only downloaded when navigated to
+const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Transactions = lazy(() => import('./pages/Transactions'));
 const Budget = lazy(() => import('./pages/Budget'));
 const Habitacao = lazy(() => import('./pages/Habitacao'));
@@ -65,6 +66,11 @@ function RequireAuth({ children }) {
   );
   if (!token) return <Navigate to="/login" replace />;
   
+  const loc = useLocation();
+  if (state.settings && !state.settings.onboarding_completed && loc.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
+  }
+  
   return (
     <>
       <SmsManager />
@@ -80,6 +86,8 @@ export default function App() {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* ── Main App (financial) ── */}
+            <Route path="onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
+            
             <Route element={<RequireAuth><Layout /></RequireAuth>}>
               <Route index element={<Dashboard />} />
               <Route path="transacoes" element={<Transactions />} />

@@ -2,8 +2,8 @@
 
 export function fmt(n, currency = 'MT') {
   return Number(n || 0).toLocaleString('pt-MZ', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
   }) + ' ' + currency;
 }
 

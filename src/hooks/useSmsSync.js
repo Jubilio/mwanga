@@ -1,10 +1,10 @@
 import { useEffect, useCallback } from 'react';
-import { Capacitor } from '@capacitor/core';
 import { useFinance } from './useFinance';
 
 /**
  * Hook to listen for SMS events from the native Android bridge
  * and trigger automated parsing and reconciliation.
+ * (Native bridge removed - keeping hook for potential Web Share Target integration)
  */
 export function useSmsSync() {
   const { state, dispatch, reloadData } = useFinance();
@@ -19,7 +19,7 @@ export function useSmsSync() {
 
     try {
       const { sender, body } = typeof event.detail === 'string' ? JSON.parse(event.detail) : event.detail;
-      console.log('SMS received from bridge:', sender);
+      console.log('SMS received:', sender);
 
       // 2. Call backend to parse the SMS
       const token = localStorage.getItem('mwanga-token');
@@ -76,9 +76,8 @@ export function useSmsSync() {
   }, [settings, dispatch, reloadData]);
 
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
-
-    // Listen for the custom event from MainActivity.java
+    // Note: On web/pwa, 'smsReceived' is not a standard event.
+    // This hook is currently inactive but kept for future web-based integrations.
     window.addEventListener('smsReceived', handleSmsDetected);
 
     return () => {

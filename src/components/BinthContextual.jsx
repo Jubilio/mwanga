@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight, RefreshCw } from 'lucide-react';
+import { useFinance } from '../hooks/useFinance';
+import { generateLocalBinthInsight } from '../utils/binthLogic';
 
 export default function BinthContextual({ page }) {
+  const { state } = useFinance();
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -20,10 +23,13 @@ export default function BinthContextual({ page }) {
           'Authorization': `Bearer ${localStorage.getItem('mwanga-token')}`
         }
       });
+      if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setInsight(data);
     } catch (err) {
-      console.error('Error fetching Binth insight:', err);
+      console.log('Using local Binth insights fallback due to API error/offline.');
+      const localInsight = generateLocalBinthInsight(state, page);
+      setInsight(localInsight);
     } finally {
       setLoading(false);
     }
