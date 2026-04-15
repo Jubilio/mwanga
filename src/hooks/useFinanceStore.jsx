@@ -30,7 +30,8 @@ const defaultState = {
     daily_entry_reminder_time: '20:00',
     monthly_due_reminder_enabled: true,
     monthly_due_reminder_time: '08:00',
-    monthly_due_reminder_period: 'inicio'
+    monthly_due_reminder_period: 'inicio',
+    subscription_tier: 'pro' // 'free' | 'growth' | 'pro'
   },
   user: null,
   darkMode: true,
@@ -67,7 +68,8 @@ function normalizeSettings(rawSettings = {}) {
     ),
     monthly_due_reminder_time: rawSettings.monthly_due_reminder_time || defaultState.settings.monthly_due_reminder_time,
     monthly_due_reminder_period:
-      rawSettings.monthly_due_reminder_period === 'fim' ? 'fim' : defaultState.settings.monthly_due_reminder_period
+      rawSettings.monthly_due_reminder_period === 'fim' ? 'fim' : defaultState.settings.monthly_due_reminder_period,
+    subscription_tier: rawSettings.subscription_tier || 'pro' // Default to 'pro' for development
   };
 }
 
@@ -123,23 +125,23 @@ function mapXitique(x) {
     your_position: Number(x.your_position || 0),
     cycles: Array.isArray(x.cycles)
       ? x.cycles.map(cycle => ({
-          ...cycle,
-          cycle_number: Number(cycle.cycle_number || 0),
-          receiver_position: Number(cycle.receiver_position || 0)
-        }))
+        ...cycle,
+        cycle_number: Number(cycle.cycle_number || 0),
+        receiver_position: Number(cycle.receiver_position || 0)
+      }))
       : [],
     contributions: Array.isArray(x.contributions)
       ? x.contributions.map(contribution => ({
-          ...contribution,
-          amount: Number(contribution.amount || 0),
-          paid: contribution.paid === true || contribution.paid === 1 || contribution.paid === '1'
-        }))
+        ...contribution,
+        amount: Number(contribution.amount || 0),
+        paid: contribution.paid === true || contribution.paid === 1 || contribution.paid === '1'
+      }))
       : [],
     receipts: Array.isArray(x.receipts)
       ? x.receipts.map(receipt => ({
-          ...receipt,
-          total_received: Number(receipt.total_received || 0)
-        }))
+        ...receipt,
+        total_received: Number(receipt.total_received || 0)
+      }))
       : []
   };
 }
@@ -239,16 +241,16 @@ function reducer(state, action) {
 
     case 'RESET_SESSION':
       return { ...createInitialState(state.darkMode), loading: false };
-    
+
     case 'SET_USER':
       return { ...state, user: action.payload };
-    
+
     case 'ADD_TRANSACTION':
       return { ...state, transacoes: [action.payload, ...state.transacoes] };
     case 'DELETE_TRANSACTION':
       return { ...state, transacoes: state.transacoes.filter(t => t.id !== action.payload) };
 
-    case 'ADD_RENDA': 
+    case 'ADD_RENDA':
       return { ...state, rendas: [action.payload, ...state.rendas] };
     case 'DELETE_RENDA':
       return { ...state, rendas: state.rendas.filter(r => r.id !== action.payload) };
@@ -278,9 +280,9 @@ function reducer(state, action) {
       };
 
     case 'UPDATE_SETTING':
-      return { 
-        ...state, 
-        settings: { ...state.settings, [action.payload.key]: action.payload.value } 
+      return {
+        ...state,
+        settings: { ...state.settings, [action.payload.key]: action.payload.value }
       };
     case 'UPDATE_USER':
       return {
@@ -318,7 +320,7 @@ function reducer(state, action) {
 
     case 'TOGGLE_DARK_MODE':
       return { ...state, darkMode: !state.darkMode };
-    
+
     default:
       return state;
   }
@@ -401,12 +403,12 @@ export function FinanceProvider({ children }) {
             metas: Array.isArray(metas) ? metas.map(mapGoal) : [],
             budgets: Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: b.category, limit: Number(b.limit_amount || 0) })) : [],
             activos: Array.isArray(assets) ? assets.map(a => ({ id: a.id, name: a.name, type: a.type, value: Number(a.value || 0) })) : [],
-            passivos: Array.isArray(liabs) ? liabs.map(l => ({ 
-              id: l.id, 
-              name: l.name, 
-              total: Number(l.total_amount || 0), 
-              restante: Number(l.remaining_amount || 0), 
-              interestRate: Number(l.interest_rate || 0) 
+            passivos: Array.isArray(liabs) ? liabs.map(l => ({
+              id: l.id,
+              name: l.name,
+              total: Number(l.total_amount || 0),
+              restante: Number(l.remaining_amount || 0),
+              interestRate: Number(l.interest_rate || 0)
             })) : [],
             xitiques: Array.isArray(xitiques) ? xitiques.map(mapXitique) : [],
             dividas: Array.isArray(debts) ? debts.map(d => ({
@@ -447,7 +449,7 @@ export function FinanceProvider({ children }) {
   // apiDispatch wrapper for persistence
   const apiDispatch = async (action) => {
     const token = localStorage.getItem('mwanga-token');
-    const headers = { 
+    const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     };
@@ -471,7 +473,7 @@ export function FinanceProvider({ children }) {
             body: JSON.stringify(txBody)
           });
           if (!resp.ok) throw new Error('Failed to add transaction');
-          
+
           // Re-fetch transactions AND accounts to ensure perfect sync
           const [refreshT, refreshAccounts] = await Promise.all([
             fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
@@ -491,7 +493,7 @@ export function FinanceProvider({ children }) {
           return;
         }
         case 'DELETE_TRANSACTION': {
-          await fetch(`${FINANCE_API_URL}/transactions/${action.payload}`, { 
+          await fetch(`${FINANCE_API_URL}/transactions/${action.payload}`, {
             method: 'DELETE',
             headers
           });
@@ -542,7 +544,7 @@ export function FinanceProvider({ children }) {
           return data;
         }
         case 'DELETE_RENDA': {
-          await fetch(`${FINANCE_API_URL}/rentals/${action.payload}`, { 
+          await fetch(`${FINANCE_API_URL}/rentals/${action.payload}`, {
             method: 'DELETE',
             headers
           });
@@ -587,13 +589,13 @@ export function FinanceProvider({ children }) {
             headers,
             body: JSON.stringify(updateBody)
           });
-          
+
           // Re-fetch everything to ensure perfect sync
           const [refreshGoals, refreshAccs] = await Promise.all([
             fetch(`${FINANCE_API_URL}/goals`, { headers }).then(r => r.json()),
             fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
           ]);
-          
+
           dispatch({
             type: 'SET_DATA',
             payload: {
@@ -604,7 +606,7 @@ export function FinanceProvider({ children }) {
           return;
         }
         case 'DELETE_META':
-          await fetch(`${FINANCE_API_URL}/goals/${action.payload}`, { 
+          await fetch(`${FINANCE_API_URL}/goals/${action.payload}`, {
             method: 'DELETE',
             headers
           });
@@ -625,10 +627,10 @@ export function FinanceProvider({ children }) {
               payload: {
                 budgets: Array.isArray(refreshBudgets)
                   ? refreshBudgets.map(b => ({
-                      id: b.id,
-                      category: b.category,
-                      limit: Number(b.limit_amount || 0)
-                    }))
+                    id: b.id,
+                    category: b.category,
+                    limit: Number(b.limit_amount || 0)
+                  }))
                   : []
               }
             });
@@ -645,10 +647,10 @@ export function FinanceProvider({ children }) {
             payload: {
               budgets: Array.isArray(refreshBudgets)
                 ? refreshBudgets.map(b => ({
-                    id: b.id,
-                    category: b.category,
-                    limit: Number(b.limit_amount || 0)
-                  }))
+                  id: b.id,
+                  category: b.category,
+                  limit: Number(b.limit_amount || 0)
+                }))
                 : []
             }
           });
@@ -664,7 +666,7 @@ export function FinanceProvider({ children }) {
           break;
         }
         case 'DELETE_ASSET':
-          await fetch(`${FINANCE_API_URL}/assets/${action.payload}`, { 
+          await fetch(`${FINANCE_API_URL}/assets/${action.payload}`, {
             method: 'DELETE',
             headers
           });
@@ -685,12 +687,12 @@ export function FinanceProvider({ children }) {
           break;
         }
         case 'DELETE_LIABILITY':
-          await fetch(`${FINANCE_API_URL}/liabilities/${action.payload}`, { 
+          await fetch(`${FINANCE_API_URL}/liabilities/${action.payload}`, {
             method: 'DELETE',
             headers
           });
           break;
-        
+
         case 'ADD_XITIQUES':
         case 'ADD_XITIQUE': {
           const xBody = {
@@ -715,7 +717,7 @@ export function FinanceProvider({ children }) {
           return;
         }
         case 'DELETE_XITIQUE': {
-          await fetch(`${FINANCE_API_URL}/xitiques/${action.payload}`, { 
+          await fetch(`${FINANCE_API_URL}/xitiques/${action.payload}`, {
             method: 'DELETE',
             headers
           });
@@ -742,10 +744,12 @@ export function FinanceProvider({ children }) {
             fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
           ]);
           dispatch({ type: 'SET_XITIQUES', payload: Array.isArray(refreshX) ? refreshX.map(mapXitique) : [] });
-          dispatch({ type: 'SET_DATA', payload: { 
-            transacoes: refreshT.map(mapTransaction),
-            contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(mapAccount) : []
-          }});
+          dispatch({
+            type: 'SET_DATA', payload: {
+              transacoes: refreshT.map(mapTransaction),
+              contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(mapAccount) : []
+            }
+          });
           return;
         }
         case 'RECEIVE_XITIQUE': {
@@ -767,10 +771,12 @@ export function FinanceProvider({ children }) {
             fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
           ]);
           dispatch({ type: 'SET_XITIQUES', payload: Array.isArray(refreshX2) ? refreshX2.map(mapXitique) : [] });
-          dispatch({ type: 'SET_DATA', payload: { 
-            transacoes: refreshT2.map(mapTransaction),
-            contas: Array.isArray(refreshAccounts2) ? refreshAccounts2.map(mapAccount) : []
-          }});
+          dispatch({
+            type: 'SET_DATA', payload: {
+              transacoes: refreshT2.map(mapTransaction),
+              contas: Array.isArray(refreshAccounts2) ? refreshAccounts2.map(mapAccount) : []
+            }
+          });
           return;
         }
 
@@ -835,7 +841,7 @@ export function FinanceProvider({ children }) {
           break;
         }
         case 'DELETE_DEBT': {
-          await fetch(`${FINANCE_API_URL}/debts/${action.payload}`, { 
+          await fetch(`${FINANCE_API_URL}/debts/${action.payload}`, {
             method: 'DELETE',
             headers
           });
@@ -858,9 +864,9 @@ export function FinanceProvider({ children }) {
             fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
           ]);
           dispatch({ type: 'SET_DEBTS', payload: Array.isArray(refreshD) ? refreshD : [] });
-          dispatch({ 
-            type: 'SET_DATA', 
-            payload: { 
+          dispatch({
+            type: 'SET_DATA',
+            payload: {
               transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : [],
               contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(mapAccount) : []
             }
@@ -885,12 +891,12 @@ export function FinanceProvider({ children }) {
               const errorData = await accResp.json();
               const detailText = Array.isArray(errorData?.details)
                 ? errorData.details
-                    .map((item) => {
-                      const path = Array.isArray(item?.path) ? item.path.join('.') : '';
-                      return [path, item?.message].filter(Boolean).join(': ');
-                    })
-                    .filter(Boolean)
-                    .join(', ')
+                  .map((item) => {
+                    const path = Array.isArray(item?.path) ? item.path.join('.') : '';
+                    return [path, item?.message].filter(Boolean).join(': ');
+                  })
+                  .filter(Boolean)
+                  .join(', ')
                 : '';
               errorMessage = detailText || errorData?.message || errorData?.error || errorMessage;
             } catch {
@@ -915,7 +921,7 @@ export function FinanceProvider({ children }) {
           break;
         }
         case 'DELETE_ACCOUNT': {
-          await fetch(`${FINANCE_API_URL}/accounts/${action.payload}`, { 
+          await fetch(`${FINANCE_API_URL}/accounts/${action.payload}`, {
             method: 'DELETE',
             headers
           });
