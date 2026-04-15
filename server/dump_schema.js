@@ -1,17 +1,17 @@
-const { db } = require('./src/config/db');
 require('dotenv').config({ path: './.env' });
+const { db } = require('./src/config/db');
 
 async function dumpSchema() {
   try {
     const res = await db.execute({
       sql: `
-        SELECT column_name, data_type, is_nullable 
-        FROM information_schema.columns 
-        WHERE table_name = 'push_subscriptions'
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public'
       `,
       args: []
     });
-    console.log('Schema for push_subscriptions:');
+    console.log('Tables:');
     console.table(res.rows);
   } catch (err) {
     console.error('Error dumping schema:', err.message);

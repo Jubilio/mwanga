@@ -262,13 +262,9 @@ async function maybeSendMonthlyCommitmentReminder(userSettings, parts) {
   const [rentalsRes, debtsRes, xitiqueRes] = await Promise.all([
     db.execute({
       sql: `
-        SELECT COUNT(*) AS total, COALESCE(SUM(amount), 0) AS amount
-        FROM rentals
-        WHERE household_id = ?
-          AND status = 'pendente'
-          AND month = ?
+        SELECT 0 AS total, 0 AS amount
       `,
-      args: [userSettings.household_id, parts.month],
+      args: [],
     }),
     db.execute({
       sql: `
