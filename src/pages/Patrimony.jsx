@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useFinance } from '../hooks/useFinance';
 import { useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { TrendingUp, TrendingDown, Medal, Plus, Trash2, Home, Car, Smartphone, Briefcase, Star, Shield, Zap, Flame, Target, Info, ArrowRight, ShieldAlert } from 'lucide-react';
+import { TrendingUp, TrendingDown, Medal, Plus, Trash2, Home, Car, Smartphone, Briefcase, Star, Shield, Zap, Flame, Target, Info, ArrowRight, ShieldAlert, Wallet } from 'lucide-react';
 import { fmt } from '../utils/calculations';
 
 export default function Patrimony() {
@@ -13,10 +13,35 @@ export default function Patrimony() {
   const [showAssetModal, setShowAssetModal] = useState(false);
   const [showLiabilityModal, setShowLiabilityModal] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(null);
 
   const [assetForm, setAssetForm] = useState({ name: '', type: 'imóvel', value: '' });
   const [liabilityForm, setLiabilityForm] = useState({ name: '', totalAmount: '', remainingAmount: '', interestRate: '' });
-  const [accountForm, setAccountForm] = useState({ name: '', type: 'bank', initial_balance: '' });
+  const [accountForm, setAccountForm] = useState({ institution: 'M-Pesa', customName: '', type: 'mobile', initial_balance: '' });
+
+  const MOZ_INSTITUTIONS = [
+    { id: 'mpesa', name: 'M-Pesa', type: 'mobile' },
+    { id: 'emola', name: 'e-Mola', type: 'mobile' },
+    { id: 'mkesh', name: 'mKesh', type: 'mobile' },
+    { id: 'bim', name: 'Millennium BIM', type: 'bank' },
+    { id: 'bci', name: 'BCI', type: 'bank' },
+    { id: 'moza', name: 'Moza Banco', type: 'bank' },
+    { id: 'standard', name: 'Standard Bank', type: 'bank' },
+    { id: 'absa', name: 'Absa', type: 'bank' },
+    { id: 'fnb', name: 'FNB Moçambique', type: 'bank' },
+    { id: 'access', name: 'Access Bank', type: 'bank' },
+    { id: 'cash', name: 'Dinheiro em Mão', type: 'cash' },
+    { id: 'other', name: 'Outro', type: 'other' }
+  ];
+
+  const getTypeLabel = (type) => {
+    const tLower = typeof type === 'string' ? type.toLowerCase() : '';
+    if (tLower === 'bank' || tLower === 'banco') return 'Conta Bancária';
+    if (tLower === 'mobile' || tLower === 'carteira_movel' || tLower === 'movel') return 'Carteira Móvel';
+    if (tLower === 'cash' || tLower === 'dinheiro') return 'Dinheiro';
+    if (tLower === 'other' || tLower === 'outro') return 'Outro';
+    return type || 'Conta';
+  };
 
   // Advanced Simulators State
   const [retireMonthlySavings, setRetireMonthlySavings] = useState(10000);
@@ -87,17 +112,21 @@ export default function Patrimony() {
 
   const handleAddAccount = (e) => {
     e.preventDefault();
-    if (!accountForm.name || accountForm.initial_balance === '') return;
+    const finalName = accountForm.institution === 'Outro' ? accountForm.customName : accountForm.institution;
+    if (!finalName || accountForm.initial_balance === '') return;
+    
     dispatch({ 
       type: 'ADD_ACCOUNT', 
       payload: { 
-        name: accountForm.name, 
+        name: finalName, 
         type: accountForm.type, 
-        initial_balance: parseFloat(accountForm.initial_balance)
+        initial_balance: parseFloat(accountForm.initial_balance),
+        current_balance: parseFloat(accountForm.initial_balance)
       } 
     });
+    
     setShowAccountModal(false);
-    setAccountForm({ name: '', type: 'bank', initial_balance: '' });
+    setAccountForm({ institution: 'M-Pesa', customName: '', type: 'mobile', initial_balance: '' });
     showToast(t('patrimony.toasts.account_added'));
   };
 
@@ -111,8 +140,26 @@ export default function Patrimony() {
 
   const accountIcons = {
     'bank': Briefcase,
+    'banco': Briefcase,
     'mobile': Smartphone,
-    'cash': Zap
+    'carteira_movel': Smartphone,
+    'cash': Zap,
+    'dinheiro': Zap,
+    'other': Briefcase,
+    'outro': Briefcase
+  };
+
+  const getAccountCardStyle = (type, name) => {
+    const n = name.toLowerCase();
+    if (n.includes('m-pesa') || n.includes('mpesa') || n.includes('vodacom')) return 'from-[#E3000F] to-[#99000a] text-white'; // M-Pesa red
+    if (n.includes('e-mola') || n.includes('emola') || n.includes('movitel')) return 'from-[#F58220] to-[#c75e0c] text-white'; // e-mola orange
+    if (n.includes('bim') || n.includes('millennium')) return 'from-[#002f6c] to-[#001031] text-white'; // BIM
+    if (n.includes('bci')) return 'from-[#0070bc] to-[#003666] text-white'; // BCI
+    if (n.includes('moza')) return 'from-[#004e38] to-[#002e21] text-white'; // Moza
+    if (n.includes('standard')) return 'from-[#0033a1] to-[#00226a] text-white'; // Standard Bank
+    if (type === 'mobile') return 'from-rose-500 to-rose-800 text-white';
+    if (type === 'cash') return 'from-emerald-500 to-emerald-800 text-white';
+    return 'from-ocean to-midnight text-white'; // Default
   };
 
   return (
@@ -166,45 +213,73 @@ export default function Patrimony() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Contas Section */}
         <div>
-          <div className="sh">
-            <h2 className="st">{t('patrimony.accounts.title')}</h2>
-            <button className="btn btn-secondary py-1 px-3 text-sm" onClick={() => setShowAccountModal(true)}>
-              <Plus size={16} /> {t('patrimony.accounts.add')}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-bold font-serif dark:text-white flex items-center gap-2">
+              <Wallet size={18} className="text-ocean" /> {t('patrimony.accounts.title')}
+            </h2>
+            <button className="text-xs bg-ocean/10 text-ocean hover:bg-ocean/20 px-3 py-1.5 rounded-full font-bold flex items-center gap-1 transition-colors" onClick={() => setShowAccountModal(true)}>
+              <Plus size={14} /> {t('patrimony.accounts.add')}
             </button>
           </div>
           
-          <div className="glass-card overflow-hidden">
+          <div className="flex flex-col gap-4">
+            {/* Dinheiro Físico (Global Setting - if exists) */}
+            {state.settings.cash_balance !== undefined && Number(state.settings.cash_balance) > 0 && (
+               <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-gold to-yellow-600 text-white p-5 shadow-lg flex items-end justify-between cursor-pointer hover:scale-[1.02] transition-transform">
+                 <div className="absolute top-[-20%] right-[-10%] opacity-20"><Zap size={120} /></div>
+                 <div className="relative z-10 w-full">
+                    <div className="flex items-center gap-2 mb-4 opacity-80 text-xs font-bold uppercase tracking-widest">
+                      <Wallet size={14} /> Dinheiro em Mão
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-2xl font-black font-serif tracking-tight">{fmt(state.settings.cash_balance, currency)}</div>
+                    </div>
+                 </div>
+               </div>
+            )}
+
+            {/* Contas List */}
             {state.contas?.length > 0 ? (
-              <div className="divide-y divide-slate-100">
-                {state.contas.map((account, idx) => {
-                  const Icon = accountIcons[account.type] || Briefcase;
-                  return (
-                    <div key={account.id || `account-${idx}`} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                          <Icon size={18} />
+              state.contas.map((account, idx) => {
+                const Icon = accountIcons[account.type] || Briefcase;
+                const styleClass = getAccountCardStyle(account.type, account.name);
+                return (
+                  <div key={account.id || `account-${idx}`} className={`relative overflow-hidden rounded-2xl bg-linear-to-br ${styleClass} p-5 shadow-lg group hover:shadow-xl transition-all hover:scale-[1.02]`}>
+                    {/* Background Pattern */}
+                    <div className="absolute top-[-30%] right-[-10%] opacity-10 group-hover:opacity-20 transition-opacity">
+                      <Icon size={140} />
+                    </div>
+                    
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                      <div className="flex justify-between items-start mb-6">
+                        <div className="flex items-center gap-2 bg-black/10 backdrop-blur-xs px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest">
+                          <Icon size={12} /> {getTypeLabel(account.type)}
                         </div>
-                        <div>
-                          <div className="font-semibold text-slate-800">{account.name}</div>
-                          <div className="text-xs text-slate-500 capitalize">{t(`patrimony.accounts.types.${account.type}`)}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="font-bold text-ocean">{fmt(account.current_balance, currency)}</div>
                         <button 
-                          className="text-slate-300 hover:text-rose-500 transition-colors"
-                          onClick={() => dispatch({ type: 'DELETE_ACCOUNT', payload: account.id })}
+                          className="p-2 bg-black/20 text-white/80 hover:bg-rose-500 hover:text-white rounded-full transition-colors"
+                          onClick={() => {
+                            dispatch({ type: 'DELETE_ACCOUNT', payload: account.id })
+                              .catch(err => setErrorModal(err.message));
+                          }}
+                          title="Eliminar Conta"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={12} />
                         </button>
                       </div>
+                      
+                      <div className="mt-2">
+                        <div className="text-xs font-medium opacity-80 mb-1">{account.name}</div>
+                        <div className="text-2xl font-black font-serif tracking-tight">{fmt(account.current_balance, currency)}</div>
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })
             ) : (
-              <div className="p-8 text-center text-slate-400">
-                <p>{t('patrimony.accounts.empty')}</p>
+              <div className="border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-8 text-center text-slate-400">
+                <Wallet size={32} className="mx-auto mb-3 opacity-50" />
+                <p className="text-sm font-semibold">{t('patrimony.accounts.empty')}</p>
+                <p className="text-xs mt-1 opacity-70">Adiciona a tua primeira conta bancária ou carteira móvel.</p>
               </div>
             )}
           </div>
@@ -407,11 +482,11 @@ export default function Patrimony() {
                     className="w-full"
                     value={assetForm.type} onChange={e => setAssetForm({...assetForm, type: e.target.value})}
                   >
-                    <option value="imóvel">{t('patrimony.assets.types.imóvel')}</option>
-                    <option value="veiculo">{t('patrimony.assets.types.veiculo')}</option>
-                    <option value="poupanca">{t('patrimony.assets.types.poupanca')}</option>
-                    <option value="investimento">{t('patrimony.assets.types.investimento')}</option>
-                    <option value="outro">{t('patrimony.assets.types.outro')}</option>
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="imóvel">{t('patrimony.assets.types.imóvel')}</option>
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="veiculo">{t('patrimony.assets.types.veiculo')}</option>
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="poupanca">{t('patrimony.assets.types.poupanca')}</option>
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="investimento">{t('patrimony.assets.types.investimento')}</option>
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="outro">{t('patrimony.assets.types.outro')}</option>
                   </select>
                 </div>
                 <div className="space-y-1">
@@ -481,37 +556,72 @@ export default function Patrimony() {
             <h3 className="text-lg font-bold font-serif mb-4">{t('patrimony.modals.add_account')}</h3>
             <form onSubmit={handleAddAccount} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.account_name_label')}</label>
-                <input 
-                  type="text" className="w-full" placeholder={t('patrimony.modals.account_name_placeholder')} required
-                  value={accountForm.name} onChange={e => setAccountForm({...accountForm, name: e.target.value})}
-                />
+                <label className="text-xs font-bold text-slate-500 uppercase">Instituição</label>
+                <select 
+                  className="w-full"
+                  value={accountForm.institution} 
+                  onChange={e => {
+                    const inst = MOZ_INSTITUTIONS.find(i => i.name === e.target.value);
+                    setAccountForm({ ...accountForm, institution: e.target.value, type: inst ? inst.type : 'other' });
+                  }}
+                  required
+                >
+                  {MOZ_INSTITUTIONS.map(inst => (
+                    <option key={inst.id} value={inst.name} className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white text-slate-900 bg-white dark:bg-slate-800 dark:text-white">
+                      {inst.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+
+              {accountForm.institution === 'Outro' && (
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Tipo</label>
-                  <select 
-                    className="w-full"
-                    value={accountForm.type} onChange={e => setAccountForm({...accountForm, type: e.target.value})}
-                  >
-                    <option value="bank">{t('patrimony.accounts.types.bank')}</option>
-                    <option value="mobile">{t('patrimony.accounts.types.mobile')}</option>
-                    <option value="cash">{t('patrimony.accounts.types.cash')}</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.initial_balance_label')}</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase">Nome da Conta / Banco</label>
                   <input 
-                    type="number" className="w-full" placeholder="0" required
-                    value={accountForm.initial_balance} onChange={e => setAccountForm({...accountForm, initial_balance: e.target.value})}
+                    type="text" className="w-full" placeholder="Ex: Conta Conjunta" required
+                    value={accountForm.customName} onChange={e => setAccountForm({...accountForm, customName: e.target.value})}
                   />
                 </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-500 uppercase">{t('patrimony.modals.initial_balance_label')}</label>
+                <input 
+                  type="number" className="w-full" placeholder="0" required
+                  value={accountForm.initial_balance} onChange={e => setAccountForm({...accountForm, initial_balance: e.target.value})}
+                />
               </div>
+
               <div className="flex gap-3 pt-2">
                 <button type="button" className="btn btn-secondary flex-1" onClick={() => setShowAccountModal(false)}>{t('patrimony.modals.cancel')}</button>
                 <button type="submit" className="btn btn-primary flex-1">{t('patrimony.modals.add')}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {errorModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="card-glass p-6 w-full max-w-sm border-t-4 border-rose-500 animate-in fade-in zoom-in cursor-default text-center relative overflow-hidden shadow-2xl">
+            <div className="absolute top-[-20%] right-[-10%] opacity-5 text-rose-500">
+               <ShieldAlert size={150} />
+            </div>
+            <div className="relative z-10">
+              <div className="w-16 h-16 rounded-full bg-rose-500/10 text-rose-500 mx-auto flex items-center justify-center mb-4 ring-4 ring-rose-500/10">
+                <ShieldAlert size={32} />
+              </div>
+              <h3 className="text-xl font-bold font-serif mb-2 text-slate-800 dark:text-slate-100 uppercase tracking-tight">Operação Recusada</h3>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+                {errorModal}
+              </p>
+              <button 
+                className="btn w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 text-sm shadow-md shadow-rose-500/20 active:scale-95 transition-all" 
+                onClick={() => setErrorModal(null)}
+              >
+                Entendido
+              </button>
+            </div>
           </div>
         </div>
       )}

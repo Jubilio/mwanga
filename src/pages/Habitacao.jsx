@@ -47,7 +47,7 @@ export default function Habitacao() {
       return;
     }
 
-    if (type === 'propria' && !form.valor) {
+    if (type === 'propria' && (!form.proprietario || !form.valor)) {
       showToast(t('housing.toasts.own_missing_fields'));
       return;
     }
@@ -56,7 +56,7 @@ export default function Habitacao() {
       type: 'ADD_RENDA',
       payload: {
         ...form,
-        proprietario: type === 'propria' ? t('housing.labels.own_home') : form.proprietario,
+        proprietario: form.proprietario,
         valor: parseFloat(form.valor)
       }
     });
@@ -74,13 +74,32 @@ export default function Habitacao() {
     showToast(t('housing.toasts.profile_changed', { type: newType === 'renda' ? t('housing.types.rent') : t('housing.types.own') }));
   }
 
-  const totalPago = state.rendas.filter(r => r.estado === 'pago').reduce((sum, r) => sum + r.valor, 0);
-  const totalMesAtual = state.rendas.filter(r => r.mes === monthKey).reduce((sum, r) => sum + r.valor, 0);
-  const registosPendentes = state.rendas.filter(r => r.estado === 'pendente').length;
-  const latestRecord = [...state.rendas].sort((a, b) => b.mes.localeCompare(a.mes))[0];
+  const propriaCategories = [
+    'Casa Própria',
+    'Condomínio',
+    'Energia (Credelec)',
+    'Água (FIPAG)',
+    'Impostos (IMI / IPRA)',
+    'Obras e Manutenção',
+    'Seguro Habitação',
+    'Outras Despesas'
+  ];
+
+  const filteredRendas = useMemo(() => {
+    return state.rendas.filter(r => {
+      const ownLabel = t('housing.labels.own_home');
+      const isPropria = propriaCategories.includes(r.proprietario) || r.proprietario === ownLabel;
+      return type === 'propria' ? isPropria : !isPropria;
+    });
+  }, [state.rendas, type, t]);
+
+  const totalPago = filteredRendas.filter(r => r.estado === 'pago').reduce((sum, r) => sum + r.valor, 0);
+  const totalMesAtual = filteredRendas.filter(r => r.mes === monthKey).reduce((sum, r) => sum + r.valor, 0);
+  const registosPendentes = filteredRendas.filter(r => r.estado === 'pendente').length;
+  const latestRecord = [...filteredRendas].sort((a, b) => b.mes.localeCompare(a.mes))[0];
 
   const chartData = useMemo(() => {
-    const monthlyMap = state.rendas.reduce((acc, rental) => {
+    const monthlyMap = filteredRendas.reduce((acc, rental) => {
       acc[rental.mes] = (acc[rental.mes] || 0) + rental.valor;
       return acc;
     }, {});
@@ -88,10 +107,10 @@ export default function Habitacao() {
     return Object.entries(monthlyMap)
       .map(([mes, valor]) => ({ mes, valor }))
       .sort((a, b) => a.mes.localeCompare(b.mes));
-  }, [state.rendas]);
+  }, [filteredRendas]);
 
   const committedIncome = useMemo(() => {
-    const rendasMes = state.rendas.filter(r => r.mes === monthKey).reduce((sum, r) => sum + r.valor, 0);
+    const rendasMes = filteredRendas.filter(r => r.mes === monthKey).reduce((sum, r) => sum + r.valor, 0);
     const receitasMes = state.transacoes
       .filter(t => t.tipo === 'receita' && t.data.startsWith(monthKey))
       .reduce((sum, t) => sum + t.valor, 0);
@@ -101,22 +120,22 @@ export default function Habitacao() {
     }
 
     return Math.min(100, Math.round((rendasMes / receitasMes) * 100));
-  }, [state.rendas, state.transacoes, monthKey]);
+  }, [filteredRendas, state.transacoes, monthKey]);
 
   const momComparison = useMemo(() => {
     const [y, m] = monthKey.split('-');
     const lastMonthDate = new Date(y, m - 2);
     const lastMonthKey = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
 
-    const curVal = state.rendas.filter(r => r.mes === monthKey).reduce((sum, r) => sum + r.valor, 0);
-    const lastVal = state.rendas.filter(r => r.mes === lastMonthKey).reduce((sum, r) => sum + r.valor, 0);
+    const curVal = filteredRendas.filter(r => r.mes === monthKey).reduce((sum, r) => sum + r.valor, 0);
+    const lastVal = filteredRendas.filter(r => r.mes === lastMonthKey).reduce((sum, r) => sum + r.valor, 0);
 
     if (lastVal === 0) {
       return curVal > 0 ? 100 : 0;
     }
 
     return Math.round(((curVal - lastVal) / lastVal) * 100);
-  }, [state.rendas, monthKey]);
+  }, [filteredRendas, monthKey]);
 
   return (
     <div className="animate-fade-in pb-20 w-full max-w-none space-y-6">
@@ -178,7 +197,7 @@ export default function Habitacao() {
         saveDefaults={saveDefaults}
       />
       <HousingHistoryTable
-        rendas={state.rendas}
+        rendas={filteredRendas}
         currency={currency}
         handleDelete={handleDelete}
         showToast={showToast}

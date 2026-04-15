@@ -512,10 +512,10 @@ export default function Settings() {
                           onChange={(e) => setForm({ ...form, currency: e.target.value })}
                           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-teal-500/40 transition-all appearance-none cursor-pointer font-medium"
                         >
-                          <option value="MT">MT — Metical Moçambicano</option>
-                          <option value="USD">USD — Dólar Americano</option>
-                          <option value="EUR">EUR — Euro</option>
-                          <option value="ZAR">ZAR — Rand Sul-Africano</option>
+                          <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="MT">MT — Metical Moçambicano</option>
+                          <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="USD">USD — Dólar Americano</option>
+                          <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="EUR">EUR — Euro</option>
+                          <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="ZAR">ZAR — Rand Sul-Africano</option>
                         </select>
                       </div>
                     </div>
@@ -536,7 +536,7 @@ export default function Settings() {
                           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-indigo-500/40 transition-all appearance-none cursor-pointer font-medium"
                         >
                           {[...Array(31)].map((_, i) => (
-                            <option key={i + 1} value={i + 1}>{t('settings.pref.reset_day_option', { day: i + 1 })}</option>
+                            <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={i + 1} value={i + 1}>{t('settings.pref.reset_day_option', { day: i + 1 })}</option>
                           ))}
                         </select>
                       </div>
@@ -675,8 +675,8 @@ export default function Settings() {
                               disabled={!form.monthly_due_reminder_enabled}
                               className="flex-1 bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-[10px] font-bold text-white outline-none focus:border-teal-400 disabled:opacity-30 uppercase tracking-tighter"
                             >
-                              <option value="inicio" className="bg-ocean">{t('settings.pref.push.period_start')}</option>
-                              <option value="fim" className="bg-ocean">{t('settings.pref.push.period_end')}</option>
+                              <option value="inicio" className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white bg-ocean">{t('settings.pref.push.period_start')}</option>
+                              <option value="fim" className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white bg-ocean">{t('settings.pref.push.period_end')}</option>
                             </select>
                           </div>
                         </div>

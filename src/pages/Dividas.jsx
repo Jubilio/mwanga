@@ -282,9 +282,9 @@ export default function Dividas() {
                           value={paymentAccount}
                           onChange={e => setPaymentAccount(e.target.value)}
                         >
-                          <option value="">{t('debts.payment.no_account')}</option>
+                          <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">{t('debts.payment.no_account')}</option>
                           {state.contas?.map(acc => (
-                            <option key={acc.id} value={acc.id}>{acc.name} • {getPaymentMethodLabel(acc.type)} ({fmt(acc.current_balance, currency)})</option>
+                            <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={acc.id} value={acc.id}>{acc.name} • {getPaymentMethodLabel(acc.type)} ({fmt(acc.current_balance, currency)})</option>
                           ))}
                         </select>
                         <div className="flex gap-2">

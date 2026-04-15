@@ -64,7 +64,7 @@ export default function Dashboard() {
 
   const totalContas = state.contas?.reduce((acc, curr) => acc + Number(curr.current_balance || 0), 0) || 0;
   const cashSetting = Number(state.settings.cash_balance || 0);
-  const realBalance = totalContas + cashSetting + totalUnlinked;
+  const realBalance = totalContas + cashSetting;
   const pendingHousing = state.rendas.filter(r => r.estado === 'pendente').length;
   const pendingDebts = state.dividas.filter(d => Number(d.remaining_amount || 0) > 0).length;
   const totalAlerts = pendingDebts + pendingHousing;

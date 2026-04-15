@@ -227,7 +227,7 @@ export default function QuickAddNotificationModal({
                 onChange={(event) => setForm({ ...form, cat: event.target.value })}
               >
                 {CATEGORIES.map((category) => (
-                  <option key={category} value={category}>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={category} value={category}>
                     {t(`common.categories.${category}`) || category}
                   </option>
                 ))}
@@ -243,9 +243,9 @@ export default function QuickAddNotificationModal({
                 value={form.account_id}
                 onChange={(event) => setForm({ ...form, account_id: event.target.value })}
               >
-                <option value="">{t('quick_add.fields.no_account')}</option>
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">{t('quick_add.fields.no_account')}</option>
                 {(state.contas || []).map((account) => (
-                  <option key={account.id} value={account.id}>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={account.id} value={account.id}>
                     {account.name}
                   </option>
                 ))}

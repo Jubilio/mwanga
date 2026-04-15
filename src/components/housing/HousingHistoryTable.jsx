@@ -14,8 +14,8 @@ export default function HousingHistoryTable({ rendas, currency, handleDelete, sh
         {/* Mock Filter/Sort buttons for UI aesthetic */}
         <div className="flex gap-2">
           <select className="text-xs bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg px-2 py-1 outline-none dark:text-white cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
-            <option>{t('housing.history.all_years')}</option>
-            <option>2026</option>
+            <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white">{t('housing.history.all_years')}</option>
+            <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white">2026</option>
           </select>
         </div>
       </div>

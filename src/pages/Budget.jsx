@@ -44,7 +44,7 @@ export default function Budget() {
             <label className="form-label">{t('budget.category_label')}</label>
             <select className="form-input" value={newCat} onChange={e => setNewCat(e.target.value)}>
               {EXPENSE_CATEGORIES.map((category) => (
-                <option key={category} value={category}>
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={category} value={category}>
                   {t(`common.categories.${category}`)}
                 </option>
               ))}

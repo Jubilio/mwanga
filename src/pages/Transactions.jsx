@@ -100,7 +100,7 @@ export default function Transactions() {
                 value={form.tipo}
                 onChange={e => setForm({ ...form, tipo: e.target.value })}
               >
-                {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                {TYPES.map(t => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={t.value} value={t.value}>{t.label}</option>)}
               </select>
             </div>
             <div>
@@ -132,7 +132,7 @@ export default function Transactions() {
                 onChange={e => setForm({ ...form, cat: e.target.value })}
               >
                 {CATEGORIES.map(c => (
-                  <option key={c.id} value={c.id}>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={c.id} value={c.id}>
                     {t(`transactions.categories.${c.key}`)}
                   </option>
                 ))}
@@ -145,9 +145,9 @@ export default function Transactions() {
                 value={form.account_id}
                 onChange={e => setForm({ ...form, account_id: e.target.value })}
               >
-                <option value="">{t('transactions.none')}</option>
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">{t('transactions.none')}</option>
                 {state.contas?.map(acc => (
-                  <option key={acc.id} value={acc.id}>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={acc.id} value={acc.id}>
                     {acc.name} • {getPaymentMethodLabel(acc.type)} ({fmt(acc.current_balance, currency)})
                   </option>
                 ))}
@@ -184,8 +184,8 @@ export default function Transactions() {
             value={filterType}
             onChange={e => setFilterType(e.target.value)}
           >
-            <option value="all">{t('transactions.all_types')}</option>
-            {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+            <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="all">{t('transactions.all_types')}</option>
+            {TYPES.map(t => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={t.value} value={t.value}>{t.label}</option>)}
           </select>
           <button
             onClick={() => {

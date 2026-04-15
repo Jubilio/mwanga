@@ -176,9 +176,9 @@ export default function Xitique() {
                                   value={paymentAccount}
                                   onChange={e => setPaymentAccount(e.target.value)}
                                 >
-                                  <option value="">{t('xitique.table.no_account')}</option>
+                                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">{t('xitique.table.no_account')}</option>
                                   {state.contas?.map(acc => (
-                                    <option key={acc.id} value={acc.id}>{acc.name} • {getPaymentMethodLabel(acc.type)}</option>
+                                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={acc.id} value={acc.id}>{acc.name} • {getPaymentMethodLabel(acc.type)}</option>
                                   ))}
                                 </select>
                               )}

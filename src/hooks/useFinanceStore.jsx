@@ -921,16 +921,20 @@ export function FinanceProvider({ children }) {
           break;
         }
         case 'DELETE_ACCOUNT': {
-          await fetch(`${FINANCE_API_URL}/accounts/${action.payload}`, {
+          const resp = await fetch(`${FINANCE_API_URL}/accounts/${action.payload}`, {
             method: 'DELETE',
             headers
           });
+          if (!resp.ok) {
+            throw new Error('Não podes eliminar esta conta porque já existem transações (receitas/despesas) dependentes dela.');
+          }
           break;
         }
       }
       dispatch({ ...action, payload });
-    } catch {
-      // API Error handled by individual components or ignored if background task
+    } catch (err) {
+      console.error('API Dispatch Error:', err);
+      throw err;
     }
   };
 

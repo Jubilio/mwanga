@@ -810,9 +810,9 @@ function TabConsolidate({ debts, userData }) {
               <label style={{ fontSize: 12, fontWeight: 600, color: G.text, marginBottom: 8, display: 'block' }}>{t('credit.consolidate.bank_select')}</label>
               <select style={{ width: '100%', padding: 12, borderRadius: 10, background: G.bg2, border: `1px solid ${G.border}`, color: G.text, outline: 'none' }}
                 value={rate} onChange={e => setRate(parseFloat(e.target.value))}>
-                <option value={0.261}>Millennium BIM (26.1% AA)</option>
-                <option value={0.281}>BCI (28.1% AA)</option>
-                <option value={0.10}>{t('credit.simulator.partner_micro')} (10%/mês)</option>
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value={0.261}>Millennium BIM (26.1% AA)</option>
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value={0.281}>BCI (28.1% AA)</option>
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value={0.10}>{t('credit.simulator.partner_micro')} (10%/mês)</option>
               </select>
             </div>
             <div style={{ flex: 1, minWidth: 200 }}>
@@ -820,11 +820,11 @@ function TabConsolidate({ debts, userData }) {
               <div style={{ display: 'flex', gap: 8 }}>
                 <select style={{ flex: 1, padding: 12, borderRadius: 10, background: G.bg2, border: `1px solid ${G.border}`, color: G.text, outline: 'none' }}
                   value={months} onChange={e => setMonths(parseInt(e.target.value))}>
-                  <option value={6}>6 {t('credit.simulator.months')}</option>
-                  <option value={12}>12 {t('credit.simulator.months')}</option>
-                  <option value={24}>24 {t('credit.simulator.months')}</option>
-                  <option value={36}>36 {t('credit.simulator.months')}</option>
-                  <option value={48}>48 {t('credit.simulator.months')}</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value={6}>6 {t('credit.simulator.months')}</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value={12}>12 {t('credit.simulator.months')}</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value={24}>24 {t('credit.simulator.months')}</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value={36}>36 {t('credit.simulator.months')}</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value={48}>48 {t('credit.simulator.months')}</option>
                 </select>
                 <input 
                   type="number" 

@@ -30,8 +30,8 @@ export default function LanguageSwitcher() {
           fontWeight: 600
         }}
       >
-        <option value="pt">PT</option>
-        <option value="en">EN</option>
+        <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="pt">PT</option>
+        <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="en">EN</option>
       </select>
     </div>
   );

@@ -34,7 +34,7 @@ export default function HousingSummaryCard({ totalInvested, currency, type }) {
               {t('housing.summary.status')}
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-md border border-white/5">
-              <span>{t('housing.summary.next_payment', { date: <strong>{t('housing.summary.next_month_01')}</strong> })}</span>
+              <span>{t('housing.summary.next_payment', { date: t('housing.summary.next_month_01') })}</span>
             </div>
           </div>
         </div>

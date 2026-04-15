@@ -136,9 +136,9 @@ export default function VslaModule() {
                     onChange={e => setFormData({...formData, meetingFrequency: e.target.value})}
                     style={{ width: '100%', background: G.muted3, border: `1px solid ${G.border}`, borderRadius: 12, padding: 12, color: G.text, outline: 'none' }}
                   >
-                    <option value="weekly">Semanal</option>
-                    <option value="biweekly">Quinzenal</option>
-                    <option value="monthly">Mensal</option>
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="weekly">Semanal</option>
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="biweekly">Quinzenal</option>
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="monthly">Mensal</option>
                   </select>
                 </div>
                 <div>

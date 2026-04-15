@@ -45,16 +45,30 @@ export default function HousingForm({ form, setForm, handleSubmit, type, currenc
             <div>
               <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1 block">{t('housing.form.status_label')}</label>
               <select className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-ocean/50 focus:border-ocean outline-none transition-all dark:text-white appearance-none" value={form.estado} onChange={e => setForm({ ...form, estado: e.target.value })}>
-                <option value="pago">t('housing.form.status_pago')</option>
-                <option value="pendente">t('housing.form.status_pendente')</option>
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="pago">{t('housing.form.status_pago')}</option>
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="pendente">{t('housing.form.status_pendente')}</option>
               </select>
             </div>
 
             {/* ROW 2 */}
-            {type === 'renda' && (
+            {type === 'renda' ? (
               <div className="md:col-span-2">
                 <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1 block">{t('housing.form.landlord_label')}</label>
                 <input type="text" className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-ocean/50 focus:border-ocean outline-none transition-all dark:text-white" placeholder={t('housing.form.landlord_placeholder')} value={form.proprietario} onChange={e => setForm({ ...form, proprietario: e.target.value })} />
+              </div>
+            ) : (
+              <div className="md:col-span-2">
+                <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1 block">Categoria de Gasto</label>
+                <select className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-ocean/50 focus:border-ocean outline-none transition-all dark:text-white appearance-none" value={form.proprietario} onChange={e => setForm({ ...form, proprietario: e.target.value })}>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">Selecione o Gasto...</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="Condomínio">Condomínio</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="Energia (Credelec)">Energia (Credelec)</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="Água (FIPAG)">Água (FIPAG)</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="Impostos (IMI / IPRA)">Impostos (IMI / IPRA)</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="Obras e Manutenção">Obras e Manutenção</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="Seguro Habitação">Seguro Habitação</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="Outras Despesas">Outras Despesas</option>
+                </select>
               </div>
             )}
             
