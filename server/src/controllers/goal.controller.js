@@ -58,6 +58,24 @@ const updateGoalProgress = async (req, res) => {
   ];
 
   // If incrementing from an account, subtract from account balance
+  if (account_id && numIncrement > 0) {
+    queries.push({
+      sql: 'UPDATE accounts SET current_balance = current_balance - ? WHERE id = ? AND household_id = ?',
+      args: [numIncrement, account_id, householdId]
+    });
+    
+    // Log a virtual transaction for history and cash flow
+    const today = new Date().toISOString().split('T')[0];
+    queries.push({
+      sql: 'INSERT INTO transactions (date, type, description, amount, category, note, household_id, account_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      args: [today, 'poupanca', `Transferência: ${goal.name}`, numIncrement, 'Poupança', 'Reforço de meta de poupança', householdId, account_id]
+    });
+  }
+
+  await db.batch(queries, 'write');
+
+  // 3. Notify for milestones (using finalSavedAmount)
+  const oldPct = (Number(goal.saved_amount) / Number(goal.target_amount)) * 100;
   const newPct = (finalSavedAmount / Number(goal.target_amount)) * 100;
 
   if (oldPct < 50 && newPct >= 50 && newPct < 100) {

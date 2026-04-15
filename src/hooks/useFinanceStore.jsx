@@ -591,16 +591,18 @@ export function FinanceProvider({ children }) {
           });
 
           // Re-fetch everything to ensure perfect sync
-          const [refreshGoals, refreshAccs] = await Promise.all([
+          const [refreshGoals, refreshAccs, refreshTxs] = await Promise.all([
             fetch(`${FINANCE_API_URL}/goals`, { headers }).then(r => r.json()),
-            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
+            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json())
           ]);
 
           dispatch({
             type: 'SET_DATA',
             payload: {
               metas: Array.isArray(refreshGoals) ? refreshGoals.map(mapGoal) : [],
-              contas: Array.isArray(refreshAccs) ? refreshAccs.map(mapAccount) : []
+              contas: Array.isArray(refreshAccs) ? refreshAccs.map(mapAccount) : [],
+              transacoes: Array.isArray(refreshTxs) ? refreshTxs.map(mapTx) : []
             }
           });
           return;
