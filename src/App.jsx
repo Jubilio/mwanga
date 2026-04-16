@@ -9,7 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 
 // Lazy-loaded pages — only downloaded when navigated to
-const Onboarding = lazy(() => import('./pages/Onboarding'));
+
 const Transactions = lazy(() => import('./pages/Transactions'));
 const Budget = lazy(() => import('./pages/Budget'));
 const Habitacao = lazy(() => import('./pages/Habitacao'));
@@ -70,20 +70,6 @@ function RequireAuth({ children }) {
   );
   if (!token) return <Navigate to="/login" replace />;
 
-  // Redirect to onboarding only when:
-  // 1. The localStorage sentinel is NOT set (fast check), AND
-  // 2. The API has loaded and explicitly says onboarding is incomplete
-  const apiSaysIncomplete = state.settings && state.settings.onboarding_completed === false;
-  if (!hasOnboarded && apiSaysIncomplete && loc.pathname !== '/onboarding') {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  // Backfill: if the API confirms onboarding is done, persist the sentinel
-  // so future page loads skip the API check entirely.
-  if (!hasOnboarded && state.settings && state.settings.onboarding_completed === true) {
-    localStorage.setItem('mwanga-onboarded', 'true');
-  }
-
   return (
     <>
       <SmsManager />
@@ -99,7 +85,7 @@ export default function App() {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* ── Main App (financial) ── */}
-            <Route path="onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
+
             
             <Route element={<RequireAuth><Layout /></RequireAuth>}>
               <Route index element={<Dashboard />} />

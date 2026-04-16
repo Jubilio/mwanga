@@ -31,6 +31,7 @@ const defaultState = {
     monthly_due_reminder_enabled: true,
     monthly_due_reminder_time: '08:00',
     monthly_due_reminder_period: 'inicio',
+    onboarding_completed: true,
     subscription_tier: 'pro' // 'free' | 'growth' | 'pro'
   },
   user: null,
