@@ -10,7 +10,7 @@ export function fmt(n, currency = 'MT') {
 
 export function fmtShort(n, currency = 'MT') {
   const abs = Math.abs(n);
-  if (abs >= 1_000_000) return (n / 1_000_000).toFixed(1).replace('.', ',') + 'M ' + currency;
+  if (abs >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M ' + currency;
   if (abs >= 1_000) return (n / 1_000).toFixed(0) + 'k ' + currency;
   return fmt(n, currency);
 }
