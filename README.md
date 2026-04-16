@@ -92,11 +92,13 @@ O **Mwanga** é uma plataforma SaaS de elite para gestão financeira familiar, d
 ---
 
 ## 🎨 Branding: NEXO VIBE
+
 O Mwanga faz parte do ecossistema **NEXO VIBE**, uma marca dedicada à excelência tecnológica e inovação digital liderada por Jubílio Maússe.
 
 ---
 
 ## 👨‍💻 Autor e Estrategista
+
 Desenvolvido por **Jubílio Maússe** — *Fullstack Developer & Financial Strategist*.
 
 ---
