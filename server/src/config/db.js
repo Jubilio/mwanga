@@ -67,6 +67,12 @@ const db = {
         rowCount: result.rowCount
       };
     } catch (error) {
+      // Offline / DNS Errors
+      if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN' || error.message.includes('getaddrinfo')) {
+        logger.warn(`Database offline or unreachable (Check your internet connection): ${error.message}`);
+        throw new Error('Database is offline');
+      }
+
       // Retry for both terminated connections AND connection timeouts
       const isRetryable = error.message.includes('terminated unexpectedly') || 
                           error.message.includes('timeout') ||
@@ -102,6 +108,12 @@ const db = {
       return results;
     } catch (error) {
       await client.query('ROLLBACK');
+      
+      if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN' || error.message.includes('getaddrinfo')) {
+        logger.warn(`Database offline or unreachable during batch execution: ${error.message}`);
+        throw new Error('Database is offline');
+      }
+
       logger.error(`Database Batch Error: ${error.message}`);
       throw error;
     } finally {

@@ -5,6 +5,8 @@ import { registerRoute } from 'workbox-routing';
 import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+import { BackgroundSyncPlugin } from 'workbox-background-sync';
+import { NetworkFirst, NetworkOnly } from 'workbox-strategies';
 
 self.skipWaiting();
 clientsClaim();
@@ -26,6 +28,59 @@ registerRoute(
       new CacheableResponsePlugin({ statuses: [0, 200] }),
       new ExpirationPlugin({ maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 }),
     ],
+  })
+);
+
+// 1. API Caching Strategy (Network First for fresh data, Cache fallback)
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/v1/transactions') || url.pathname.startsWith('/api/v1/accounts'),
+  new NetworkFirst({
+    cacheName: 'mwanga-api-cache',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 24 * 60 * 60, // 24 hours
+      }),
+      new CacheableResponsePlugin({ statuses: [200] })
+    ]
+  })
+);
+
+// 2. Background Sync for Offline Mutations (Transactions & SMS)
+const bgSyncPlugin = new BackgroundSyncPlugin('mwanga-offline-queue', {
+  maxRetentionTime: 24 * 60, // Retry for up to 24 hours (in minutes)
+  onSync: async ({ queue }) => {
+    let entry;
+    while ((entry = await queue.shiftRequest())) {
+      try {
+        await fetch(entry.request.clone());
+        // Sync successful, could trigger postMessage here
+      } catch (error) {
+        await queue.unshiftRequest(entry);
+        throw error;
+      }
+    }
+  }
+});
+
+// Capture POST/PUT requests to the API for background sync
+registerRoute(
+  ({ url, request }) => (request.method === 'POST' || request.method === 'PUT') && url.pathname.includes('/api/v1/'),
+  new NetworkOnly({
+    plugins: [bgSyncPlugin]
+  })
+);
+
+// 3. SPA Navigation Fallback
+// This ensures that when testing offline in both Dev and Prod, 
+// the HTML document itself is served from the cache if the network fails.
+registerRoute(
+  ({ request }) => request.mode === 'navigate',
+  new NetworkFirst({
+    cacheName: 'mwanga-pages',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [200] })
+    ]
   })
 );
 

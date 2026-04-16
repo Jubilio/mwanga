@@ -17,7 +17,8 @@ describe('Calculations Utility', () => {
     it('fmt should format currency correctly', () => {
       expect(fmt(1250.5)).toContain('1.250,50 MT');
       expect(fmt(0)).toContain('0,00 MT');
-      expect(fmt(100, 'USD')).toContain('100,00 USD');
+      // 100 MT is ~ 1.57 USD
+      expect(fmt(100, 'USD')).toContain('1,57 USD');
     });
 
     it('fmtShort should abbreviate large numbers', () => {

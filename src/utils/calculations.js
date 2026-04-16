@@ -1,7 +1,19 @@
 // Financial calculation utilities shared across the app.
 
+export const EXCHANGE_RATES = {
+  MT: 1,
+  USD: 1 / 63.5, // 1 USD ~ 63.5 MT
+  EUR: 1 / 69.2, // 1 EUR ~ 69.2 MT
+  ZAR: 1 / 3.4   // 1 ZAR ~ 3.4 MT
+};
+
 export function fmt(n, currency = 'MT') {
-  const value = Number(n || 0);
+  let value = Number(n || 0);
+  
+  // Realiza a conversão baseada em MT se a moeda for diferente
+  const rate = EXCHANGE_RATES[currency] || 1;
+  value = value * rate;
+
   // Manual format to ensure consistency across environments (1.250,50 MT)
   const parts = value.toFixed(2).split('.');
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -9,10 +21,15 @@ export function fmt(n, currency = 'MT') {
 }
 
 export function fmtShort(n, currency = 'MT') {
-  const abs = Math.abs(n);
-  if (abs >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M ' + currency;
-  if (abs >= 1_000) return (n / 1_000).toFixed(0) + 'k ' + currency;
-  return fmt(n, currency);
+  let value = Number(n || 0);
+  const rate = EXCHANGE_RATES[currency] || 1;
+  value = value * rate;
+
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M ' + currency;
+  if (abs >= 1_000) return (value / 1_000).toFixed(0) + 'k ' + currency;
+  
+  return fmt(n, currency); // Pass the original `n` because `fmt` will do its own conversion
 }
 
 export function fmtPercent(n) {
@@ -285,7 +302,7 @@ export function calcMonthlySavingsNeeded(targetAmount, currentSaved, deadlineDat
   return Math.ceil(remaining / totalMonths);
 }
 
-export function exportToCSV(transactions, filename = 'mwanga_transacoes.csv') {
+export async function exportToCSV(transactions, filename = 'mwanga_transacoes.csv') {
   const headers = ['Data', 'Tipo', 'Categoria', 'Descrição', 'Valor (MT)', 'Notas'];
   const rows = transactions.map(t => [t.data, t.tipo, t.cat, t.desc, t.valor, t.nota || '']);
   const csvContent = [headers, ...rows]
@@ -293,11 +310,48 @@ export function exportToCSV(transactions, filename = 'mwanga_transacoes.csv') {
     .join('\n');
 
   const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+  // Use Native File System API if available (great for Desktop PWA / Tauri)
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{ description: 'CSV File', accept: { 'text/csv': ['.csv'] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return;
+    } catch (err) {
+      if (err.name !== 'AbortError') console.error('Error saving file:', err);
+      // If aborted by user, we don't want to fallback to standard download. Return early.
+      if (err.name === 'AbortError') return;
+      // Other errors may fall through to the fallback method below.
+    }
+  }
+
+  // Fallback for browsers without showSaveFilePicker (e.g. mobile Safari, Firefox)
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = filename;
   link.click();
   URL.revokeObjectURL(link.href);
+}
+
+export async function shareSummary(summaryText) {
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Mwanga - Resumo Financeiro',
+        text: summaryText,
+      });
+    } catch (e) {
+      console.error('Error sharing:', e);
+    }
+  } else {
+    navigator.clipboard.writeText(summaryText);
+    alert('Resumo copiado para a área de transferência!');
+  }
 }
 
 export function generateDemoData() {

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mwanga</string>
+    <string name="title_activity_main">Mwanga</string>
+    <string name="package_name">com.mwanga.app</string>
+    <string name="custom_url_scheme">com.mwanga.app</string>
+</resources>

@@ -595,7 +595,7 @@ export function FinanceProvider({ children }) {
             payload: {
               metas: Array.isArray(refreshGoals) ? refreshGoals.map(mapGoal) : [],
               contas: Array.isArray(refreshAccs) ? refreshAccs.map(mapAccount) : [],
-              transacoes: Array.isArray(refreshTxs) ? refreshTxs.map(mapTx) : []
+              transacoes: Array.isArray(refreshTxs) ? refreshTxs.map(mapTransaction) : []
             }
           });
           return;
