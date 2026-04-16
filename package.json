@@ -6,10 +6,6 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "android:prod": "npm run build && npx cap copy android && npx cap open android",
-    "android:dev": "npx cap run android -l",
-    "android:apk": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug",
-    "android:assets": "npx capacitor-assets generate --android",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run"
@@ -31,7 +27,6 @@
     "tailwindcss": "^4.2.0"
   },
   "devDependencies": {
-    "@capacitor/assets": "^3.0.5",
     "@eslint/js": "^9.39.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",

@@ -1,15 +1,16 @@
 // Financial calculation utilities shared across the app.
 
 export function fmt(n, currency = 'MT') {
-  return Number(n || 0).toLocaleString('pt-MZ', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }) + ' ' + currency;
+  const value = Number(n || 0);
+  // Manual format to ensure consistency across environments (1.250,50 MT)
+  const parts = value.toFixed(2).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return parts.join(',') + ' ' + currency;
 }
 
 export function fmtShort(n, currency = 'MT') {
   const abs = Math.abs(n);
-  if (abs >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M ' + currency;
+  if (abs >= 1_000_000) return (n / 1_000_000).toFixed(1).replace('.', ',') + 'M ' + currency;
   if (abs >= 1_000) return (n / 1_000).toFixed(0) + 'k ' + currency;
   return fmt(n, currency);
 }
@@ -266,14 +267,22 @@ export function calcCompoundInterest(principal, monthlyContribution, annualRate,
 }
 
 export function calcMonthlySavingsNeeded(targetAmount, currentSaved, deadlineDate) {
-  const days = daysUntil(deadlineDate);
-  if (!days || days <= 0) return null;
+  if (!deadlineDate) return null;
+  
+  const target = new Date(deadlineDate);
+  const now = new Date();
+  
+  if (target <= now) return 0;
 
-  const months = Math.max(1, Math.ceil(days / 30));
+  // Calculate difference in months accurately
+  const yearDiff = target.getFullYear() - now.getFullYear();
+  const monthDiff = target.getMonth() - now.getMonth();
+  const totalMonths = Math.max(1, (yearDiff * 12) + monthDiff);
+
   const remaining = targetAmount - currentSaved;
   if (remaining <= 0) return 0;
 
-  return Math.ceil(remaining / months);
+  return Math.ceil(remaining / totalMonths);
 }
 
 export function exportToCSV(transactions, filename = 'mwanga_transacoes.csv') {

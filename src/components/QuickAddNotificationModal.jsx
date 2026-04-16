@@ -5,13 +5,16 @@ import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
 
 const CATEGORIES = [
-  'Alimentação',
-  'Transporte',
-  'Saúde',
-  'Lazer',
-  'Poupança',
-  'Salário',
-  'Outro',
+  'food',
+  'transport',
+  'health',
+  'leisure',
+  'savings',
+  'salary',
+  'house_rent',
+  'internet',
+  'energy_water',
+  'other',
 ];
 
 const TYPES = [
@@ -41,7 +44,7 @@ export default function QuickAddNotificationModal({
     tipo: 'despesa',
     desc: '',
     valor: '',
-    cat: 'Alimentação',
+    cat: 'food',
     nota: '',
     account_id: '',
   });
@@ -57,7 +60,7 @@ export default function QuickAddNotificationModal({
       tipo: initialType,
       desc: '',
       valor: '',
-      cat: initialType === 'receita' ? 'Salário' : 'Alimentação',
+      cat: initialType === 'receita' ? 'salary' : 'food',
       nota: '',
       account_id: '',
     });
@@ -115,7 +118,7 @@ export default function QuickAddNotificationModal({
       <div className="fixed inset-0 bg-[#03141d]/70 backdrop-blur-md" onClick={onClose} />
 
       <div className="relative w-full max-w-2xl rounded-[2.5rem] border border-white/10 bg-white shadow-[0_30px_100px_rgba(3,20,29,0.3)]">
-        <div className="relative overflow-hidden rounded-t-[2.5rem] bg-linear-to-br from-ocean to-[#088395] px-6 pb-6 pt-12 sm:py-8 text-white">
+        <div className="relative overflow-hidden rounded-t-[2.5rem] bg-linear-to-br from-ocean to-[#088395] px-6 pb-6 pt-16 sm:py-8 text-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_42%)]" />
           <div className="relative flex items-start justify-between gap-4">
             <div>
@@ -152,7 +155,7 @@ export default function QuickAddNotificationModal({
                   onClick={() => setForm({
                     ...form,
                     tipo: item.value,
-                    cat: item.value === 'receita' ? 'Salário' : form.cat,
+                    cat: item.value === 'receita' ? 'salary' : form.cat,
                   })}
                   className={`flex items-center gap-3 rounded-2xl border px-4 py-4 text-left transition ${
                     active
@@ -165,7 +168,7 @@ export default function QuickAddNotificationModal({
                   </div>
                   <div>
                     <div className="text-sm font-black uppercase tracking-[0.2em]">
-                      {item.value === 'receita' ? t('quick_add.fields.income') || 'Receita' : t('quick_add.fields.expense') || 'Despesa'}
+                      {item.value === 'receita' ? t('dashboard.quick_actions.income') : t('dashboard.quick_actions.expense')}
                     </div>
                     <div className={`text-xs ${active ? 'text-white/75' : 'text-slate-500'}`}>
                       {item.value === 'receita' ? t('quick_add.entry_fast') : t('quick_add.exit_fast')}
@@ -228,7 +231,7 @@ export default function QuickAddNotificationModal({
               >
                 {CATEGORIES.map((category) => (
                   <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={category} value={category}>
-                    {t(`common.categories.${category}`) || category}
+                    {t(`transactions.categories.${category}`) || category}
                   </option>
                 ))}
               </select>
