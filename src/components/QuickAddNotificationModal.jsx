@@ -111,11 +111,11 @@ export default function QuickAddNotificationModal({
   }
 
   return (
-    <div className="fixed inset-0 z-120 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-[#03141d]/60 backdrop-blur-md" onClick={onClose} />
+    <div className="fixed inset-0 z-120 flex items-start justify-center overflow-y-auto px-4 py-8 sm:items-center sm:py-0">
+      <div className="fixed inset-0 bg-[#03141d]/70 backdrop-blur-md" onClick={onClose} />
 
-      <div className="relative w-full max-w-2xl rounded-4xl border border-white/10 bg-white shadow-[0_30px_80px_rgba(3,20,29,0.25)]">
-        <div className="relative overflow-hidden rounded-t-4xl bg-linear-to-br from-ocean to-[#088395] px-6 py-6 text-white">
+      <div className="relative w-full max-w-2xl rounded-[2.5rem] border border-white/10 bg-white shadow-[0_30px_100px_rgba(3,20,29,0.3)]">
+        <div className="relative overflow-hidden rounded-t-[2.5rem] bg-linear-to-br from-ocean to-[#088395] px-6 pb-6 pt-12 sm:py-8 text-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_42%)]" />
           <div className="relative flex items-start justify-between gap-4">
             <div>
@@ -131,7 +131,7 @@ export default function QuickAddNotificationModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-2xl bg-white/10 p-3 text-white transition hover:bg-white/20"
+              className="mt-[-12px] mr-[-8px] rounded-2xl bg-white/10 p-3 text-white transition hover:bg-white/20 sm:mt-0 sm:mr-0"
               aria-label={t('layout.logout').includes('Terminar') ? 'Fechar' : 'Close'}
             >
               <X size={18} />
