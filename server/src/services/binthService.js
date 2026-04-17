@@ -396,7 +396,7 @@ async function buildUserContext(householdId, userId) {
       }
     };
   } catch (err) {
-    console.error('[buildUserContext] Error:', err);
+    logger.error({ err }, '[buildUserContext] Failed to build user context');
     return {
       text: 'Dados financeiros não disponíveis de momento.',
       summary: {

@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 const compression = require('compression');
+const xss = require('xss');
 const errorHandler = require('./middleware/error.middleware');
 const authRoutes = require('./routes/auth.routes');
 const financeRoutes = require('./routes/finance.routes');
@@ -63,10 +64,14 @@ app.use(cors({
 // 3. Compression
 app.use(compression());
 
-// 4. Rate Limiting (JSON fixed)
+// 4. Rate Limiting
+// 300 req/15min por IP é mais que suficiente para uso legítimo de uma fintech.
+// Reduzido de 5000 que era demasiado permissivo e não protegia contra scraping/DoS.
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
   handler: (req, res) => {
     res.status(429).json({
       status: 'error',
@@ -90,18 +95,26 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
 // 5. Body Parsing & Sanitization
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// 1MB é mais que suficiente para uma API financeira e reduz o risco de DoS por payload.
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ limit: '1mb', extended: true }));
 app.use(hpp());
 
-app.use((req, res, next) => {
-  if (req.body) {
-    for (const key in req.body) {
-      if (typeof req.body[key] === 'string') {
-        req.body[key] = req.body[key].replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      }
-    }
+// Sanitização recursiva com a biblioteca xss (já instalada).
+// A versão anterior só cobria strings no root do body — esta cobre objetos nested.
+function sanitizeDeep(value) {
+  if (typeof value === 'string') return xss(value);
+  if (Array.isArray(value)) return value.map(sanitizeDeep);
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, sanitizeDeep(v)])
+    );
   }
+  return value;
+}
+
+app.use((req, res, next) => {
+  if (req.body) req.body = sanitizeDeep(req.body);
   next();
 });
 

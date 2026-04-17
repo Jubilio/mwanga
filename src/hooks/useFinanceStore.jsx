@@ -32,7 +32,7 @@ const defaultState = {
     monthly_due_reminder_time: '08:00',
     monthly_due_reminder_period: 'inicio',
     onboarding_completed: true,
-    subscription_tier: 'pro' // 'free' | 'growth' | 'pro'
+    subscription_tier: 'free' // Correto: 'free' | 'growth' | 'pro' — valor real vem da API
   },
   user: null,
   darkMode: true,
@@ -163,25 +163,66 @@ async function batchFetch(tasks, concurrency = 5) {
   return results;
 }
 
+// ─── Fetch de dados via endpoint agregado (1 chamada) ────────────────────────
+// Preferimos o endpoint /dashboard-summary que faz 1 round-trip em vez de 13.
+// Se falhar (ex: servidor antigo, erro de rede), fazemos fallback para o modo
+// individual garantindo retro-compatibilidade.
 async function fetchAllData(headers, dispatch) {
+  // ── Tentativa 1: Endpoint Agregado (caminho feliz) ───────────────────────────
+  try {
+    const res = await fetch(`${FINANCE_API_URL}/dashboard-summary`, { headers });
+
+    if (res.status === 401) {
+      localStorage.removeItem('mwanga-token');
+      dispatch({ type: 'RESET_SESSION' });
+      return null; // sinaliza reset de sessão
+    }
+
+    if (res.ok) {
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        const data = await res.json();
+        // O endpoint devolve os mesmos campos que o modo individual
+        return {
+          ts: data.transactions,
+          rendas: data.rentals,
+          metas: data.goals,
+          budgets: data.budgets,
+          assets: data.assets,
+          liabs: data.liabilities,
+          xitiques: data.xitiques,
+          settingsResp: data.settings,
+          user: data.user,
+          debts: data.debts,
+          accounts: data.accounts,
+          loanApplications: data.loanApplications,
+          loans: data.loans,
+        };
+      }
+    }
+  } catch (err) {
+    // Silencioso: o fallback abaixo garante que não fica sem dados.
+    console.warn('[fetchAllData] Endpoint agregado falhou, a usar fallback individual:', err?.message);
+  }
+
+  // ── Tentativa 2: Chamadas individuais (fallback retro-compatível) ───────────
   const SF = async (url) => {
     try {
-      const res = await fetch(url, { headers });
-      if (res.status === 401) {
+      const r = await fetch(url, { headers });
+      if (r.status === 401) {
         localStorage.removeItem('mwanga-token');
         dispatch({ type: 'RESET_SESSION' });
         return [];
       }
-      if (!res.ok) return [];
-      const ct = res.headers.get('content-type');
+      if (!r.ok) return [];
+      const ct = r.headers.get('content-type');
       if (!ct || !ct.includes('application/json')) return [];
-      return await res.json();
+      return await r.json();
     } catch {
       return [];
     }
   };
 
-  // Batch: 5 concurrent at a time (avoids HTTP/2 stream exhaustion on free-tier)
   const endpoints = [
     `${FINANCE_API_URL}/transactions`,
     `${FINANCE_API_URL}/rentals`,
@@ -214,8 +255,13 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
   const headers = { Authorization: `Bearer ${token}` };
 
   try {
-    const { ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans } =
-      await fetchAllData(headers, dispatch);
+    const fetched = await fetchAllData(headers, dispatch);
+
+    // fetchAllData retorna null em caso de 401 — a sessão foi resetada
+    // pelo dispatcher interno. Não continuamos o processamento.
+    if (fetched === null) return null;
+
+    const { ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans } = fetched;
 
     const mergedSettings = normalizeSettings(
       settingsResp && !Array.isArray(settingsResp) ? settingsResp : {}
@@ -375,11 +421,12 @@ export function FinanceProvider({ children }) {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       try {
-        console.log('Fetching initial data from:', FINANCE_API_URL);
-        const { ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans } =
-          await fetchAllData(headers, dispatch);
+        const fetched = await fetchAllData(headers, dispatch);
 
-        if (aborted) return; // StrictMode cleanup fired — discard stale results
+        // fetchAllData retorna null em caso de 401 — sessão já foi resetada.
+        if (fetched === null || aborted) return;
+
+        const { ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans } = fetched;
 
         const mergedSettings = normalizeSettings(
           settingsResp && !Array.isArray(settingsResp) ? settingsResp : {}
@@ -407,11 +454,7 @@ export function FinanceProvider({ children }) {
               remaining_amount: Number(d.remaining_amount || 0),
               payments: d.payments?.map(p => ({ ...p, amount: Number(p.amount || 0) })) || []
             })) : [],
-            contas: Array.isArray(accounts) ? accounts.map(acc => ({
-              ...acc,
-              initial_balance: Number(acc.initial_balance || 0),
-              current_balance: Number(acc.current_balance || 0)
-            })) : [],
+            contas: Array.isArray(accounts) ? accounts.map(mapAccount) : [],
             loanApplications: Array.isArray(loanApplications) ? loanApplications : [],
             loans: Array.isArray(loans) ? loans : [],
             settings: mergedSettings,
@@ -423,7 +466,8 @@ export function FinanceProvider({ children }) {
 
       } catch (e) {
         if (aborted) return;
-        console.error('API Fetch failed, using demo data:', e);
+        // Falha silenciosa: mostra demo data para que o utilizador veja o produto
+        // mesmo sem conexão. O utilizador pode tentar novamente com o botão de refresh.
         const demo = generateDemoData();
         dispatch({ type: 'SET_DATA', payload: { ...demo, loading: false } });
       }
@@ -874,7 +918,6 @@ export function FinanceProvider({ children }) {
             type: action.payload.type,
             initial_balance: Number(action.payload.initial_balance || 0)
           };
-          console.log('Sending account payload:', accountBody);
           const accResp = await fetch(`${FINANCE_API_URL}/accounts`, {
             method: 'POST',
             headers,
@@ -928,7 +971,9 @@ export function FinanceProvider({ children }) {
       }
       dispatch({ ...action, payload });
     } catch (err) {
-      console.error('API Dispatch Error:', err);
+      // Re-lançamos o erro para que o chamador possa reagir (ex: mostrar toast de erro).
+      // Não fazemos console.error aqui para evitar duplicação — o erro será capturado
+      // pelo handler do componente que chamou apiDispatch().
       throw err;
     }
   };

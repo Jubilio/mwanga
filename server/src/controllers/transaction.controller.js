@@ -4,6 +4,7 @@ const { createNotification } = require('../services/notification.service');
 const { publishNotificationEvent } = require('../services/notificationEventEngine.service');
 const redis = require('../utils/redis');
 const { logAction } = require('../utils/audit');
+const logger = require('../utils/logger');
 
 const transactionSchema = z.object({
   date: z.string().min(10).max(10),
@@ -34,7 +35,7 @@ const getTransactions = async (req, res) => {
       try {
         cached = await redis.get(cacheKey);
       } catch (redisError) {
-        console.warn('Redis cache miss:', redisError.message);
+        logger.warn({ err: redisError }, 'Redis cache miss on transactions fetch');
       }
     }
 
@@ -75,13 +76,13 @@ const getTransactions = async (req, res) => {
       try {
         await redis.setex(cacheKey, 300, JSON.stringify(response));
       } catch (redisError) {
-        console.warn('Redis cache set failed:', redisError.message);
+        logger.warn({ err: redisError }, 'Redis cache set failed on transactions');
       }
     }
 
     res.json(response);
   } catch (error) {
-    console.error('Error fetching transactions:', error);
+    logger.error({ err: error }, 'Error fetching transactions');
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };
@@ -161,7 +162,7 @@ const createTransaction = async (req, res, next) => {
       try {
         await redis.del(`transactions:${householdId}:1:50:all:all:all:all`);
       } catch (redisError) {
-        console.warn('Redis cache invalidation failed:', redisError.message);
+        logger.warn({ err: redisError }, 'Redis cache invalidation failed on createTransaction');
       }
     }
 
@@ -240,7 +241,7 @@ const deleteTransaction = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error('Error deleting transaction:', error);
+    logger.error({ err: error }, 'Error deleting transaction');
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };

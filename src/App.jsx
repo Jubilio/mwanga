@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useMemo } from 'react';
 import { FinanceProvider } from './hooks/useFinanceStore';
 import Layout from './components/Layout';
 import { useFinance } from './hooks/useFinance';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Critical path — loaded immediately
 import Dashboard from './pages/Dashboard';
@@ -92,7 +93,7 @@ function RequireAuth({ children }) {
         <div className="loading-logo-container">
           <img src="/splash-premium.png" alt="Mwanga Logo" className="loading-image" />
         </div>
-        <div className="loading-brand">Mwanga ✦</div>
+        <div className="loading-brand">Mwanga ✶</div>
         <div className="loading-quote">
           "{FINANCIAL_QUOTES[Math.floor(Math.random() * FINANCIAL_QUOTES.length)]}"
         </div>
@@ -119,47 +120,47 @@ export default function App() {
   return (
     <FinanceProvider>
       <BrowserRouter>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            {/* ── Main App (financial) ── */}
+        <ErrorBoundary context="Aplicação">
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* ── Main App (financial) ── */}
+              <Route element={<RequireAuth><Layout /></RequireAuth>}>
+                <Route index element={<ErrorBoundary context="Dashboard"><Dashboard /></ErrorBoundary>} />
+                <Route path="transacoes" element={<ErrorBoundary context="Transações"><Transactions /></ErrorBoundary>} />
+                <Route path="orcamento" element={<ErrorBoundary context="Orçamento"><Budget /></ErrorBoundary>} />
+                <Route path="habitacao" element={<ErrorBoundary context="Habitação"><Habitacao /></ErrorBoundary>} />
+                <Route path="xitique" element={<ErrorBoundary context="Xitique"><Xitique /></ErrorBoundary>} />
+                <Route path="metas" element={<ErrorBoundary context="Metas"><Goals /></ErrorBoundary>} />
+                <Route path="dividas" element={<ErrorBoundary context="Dívidas"><Dividas /></ErrorBoundary>} />
+                <Route path="credito" element={<ErrorBoundary context="Crédito"><Credito /></ErrorBoundary>} />
+                <Route path="simuladores" element={<ErrorBoundary context="Simuladores"><Simulators /></ErrorBoundary>} />
+                <Route path="relatorio" element={<ErrorBoundary context="Relatórios"><Reports /></ErrorBoundary>} />
+                <Route path="patrimonio" element={<ErrorBoundary context="Património"><Patrimony /></ErrorBoundary>} />
+                <Route path="sms-import" element={<ErrorBoundary context="SMS Import"><SmsImport /></ErrorBoundary>} />
+                <Route path="nexovibe" element={<ErrorBoundary context="NexoVibe"><NexoVibe /></ErrorBoundary>} />
+                <Route path="settings" element={<ErrorBoundary context="Definições"><Settings /></ErrorBoundary>} />
+                <Route path="pricing" element={<ErrorBoundary context="Pricing"><Pricing /></ErrorBoundary>} />
+                <Route path="insights" element={<ErrorBoundary context="Insights"><Insights /></ErrorBoundary>} />
+                <Route path="help" element={<ErrorBoundary context="Ajuda"><Help /></ErrorBoundary>} />
+                <Route path="quick-add" element={<Dashboard />} />
+              </Route>
 
-            
-            <Route element={<RequireAuth><Layout /></RequireAuth>}>
-              <Route index element={<Dashboard />} />
-              <Route path="transacoes" element={<Transactions />} />
-              <Route path="orcamento" element={<Budget />} />
-              <Route path="habitacao" element={<Habitacao />} />
-              <Route path="xitique" element={<Xitique />} />
-              <Route path="metas" element={<Goals />} />
-              <Route path="dividas" element={<Dividas />} />
-              <Route path="credito" element={<Credito />} />
-              <Route path="simuladores" element={<Simulators />} />
-              <Route path="relatorio" element={<Reports />} />
-              <Route path="patrimonio" element={<Patrimony />} />
-              <Route path="sms-import" element={<SmsImport />} />
-              <Route path="nexovibe" element={<NexoVibe />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="pricing" element={<Pricing />} />
-              <Route path="insights" element={<Insights />} />
-              <Route path="help" element={<Help />} />
-              <Route path="quick-add" element={<Dashboard />} />
-            </Route>
+              {/* ── Admin Portal (isolated) ── */}
+              <Route path="admin/login" element={<AdminLogin />} />
+              <Route path="admin" element={<AdminLayout />}>
+                <Route index element={<Admin />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="settings" element={<AdminSettings />} />
+                <Route path="feedback" element={<AdminFeedback />} />
+              </Route>
 
-            {/* ── Admin Portal (isolated) ── */}
-            <Route path="admin/login" element={<AdminLogin />} />
-            <Route path="admin" element={<AdminLayout />}>
-              <Route index element={<Admin />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="settings" element={<AdminSettings />} />
-              <Route path="feedback" element={<AdminFeedback />} />
-            </Route>
-
-            {/* ── Public auth pages ── */}
-            <Route path="login" element={<Login />} />
-            <Route path="forgot-password" element={<ForgotPassword />} />
-            <Route path="reset-password" element={<ResetPassword />} />
-          </Routes>
-        </Suspense>
+              {/* ── Public auth pages ── */}
+              <Route path="login" element={<Login />} />
+              <Route path="forgot-password" element={<ForgotPassword />} />
+              <Route path="reset-password" element={<ResetPassword />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </BrowserRouter>
     </FinanceProvider>
   );

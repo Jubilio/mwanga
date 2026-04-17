@@ -31,10 +31,11 @@ import {
 } from '../utils/calculations';
 
 export default function Dashboard() {
-  const { state } = useFinance();
+  const { state, reloadData } = useFinance();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [showBalance, setShowBalance] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const currency = state.settings.currency || 'MT';
   const startDay = state.settings.financial_month_start_day || 1;
@@ -57,6 +58,12 @@ export default function Dashboard() {
       .sort((a, b) => `${b.data || ''}`.localeCompare(`${a.data || ''}`) || Number(b.id || 0) - Number(a.id || 0))
       .slice(0, 5),
     [state.transacoes]
+  );
+
+  // O saldo máximo entre contas — calculado FORA do .map() para evitar O(n²).
+  const maxContaBalance = useMemo(
+    () => Math.max(...(state.contas?.map(c => Number(c.current_balance || 0)) ?? [0]), 1),
+    [state.contas]
   );
 
   const greeting = useMemo(() => {
@@ -103,6 +110,29 @@ export default function Dashboard() {
     }
   ];
 
+  // Formata o saldo principal em duas partes (inteiro + decimais) de forma segura.
+  // O fmt() retorna sempre "1.234,56 MT" — o split por ',' é seguro dado que
+  // a função sempre usa toFixed(2) internamente. Protegemos contra edge cases
+  // com fallback explícito.
+  const formattedBalance = useMemo(() => {
+    const raw = fmt(realBalance, '');
+    const [intPart, ...decParts] = raw.split(',');
+    return {
+      integer: intPart || '0',
+      decimal: decParts.join(',') || '00',
+    };
+  }, [realBalance]);
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await reloadData();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -138,10 +168,17 @@ export default function Dashboard() {
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500/80">{greeting}</span>
             <div className="h-1 w-1 rounded-full bg-gold/50" />
             <button
-              onClick={() => globalThis.location.reload()}
-              className="group p-1 text-gray-500 hover:text-gold transition-colors"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              aria-label="Actualizar dados"
+              className="group p-1 text-gray-500 hover:text-gold transition-colors disabled:opacity-50"
             >
-              <RefreshCw size={10} className="group-hover:rotate-180 transition-transform duration-500" />
+              <RefreshCw
+                size={10}
+                className={`transition-transform duration-500 ${
+                  isRefreshing ? 'animate-spin' : 'group-hover:rotate-180'
+                }`}
+              />
             </button>
           </div>
 
@@ -151,8 +188,8 @@ export default function Dashboard() {
             <div className="flex items-baseline gap-1 text-white tracking-tighter">
               {showBalance ? (
                 <>
-                  <span className="text-4xl font-black sm:text-5xl">{fmt(realBalance, '').split(',')[0]}</span>
-                  <span className="text-xl font-bold opacity-30 sm:text-2xl">,{fmt(realBalance, '').split(',')[1].trim()}</span>
+                  <span className="text-4xl font-black sm:text-5xl">{formattedBalance.integer}</span>
+                  <span className="text-xl font-bold opacity-30 sm:text-2xl">,{formattedBalance.decimal}</span>
                   <span className="ml-2 text-base font-black text-gold-light tracking-widest sm:text-lg">{currency}</span>
                 </>
               ) : (
@@ -344,8 +381,7 @@ export default function Dashboard() {
           {state.contas?.length > 0 ? (
             <div className="flex flex-col gap-3">
               {state.contas.slice(0, 4).map((conta) => {
-                const maxBalance = Math.max(...state.contas.map(c => Number(c.current_balance || 0)), 1);
-                const pct = Math.min((Number(conta.current_balance || 0) / maxBalance) * 100, 100);
+                const pct = Math.min((Number(conta.current_balance || 0) / maxContaBalance) * 100, 100);
                 return (
                   <div key={conta.id} className="flex flex-col gap-1">
                     <div className="flex items-center justify-between">

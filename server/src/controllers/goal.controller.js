@@ -1,6 +1,7 @@
 const { db } = require('../config/db');
 const { z } = require('zod');
 const { createNotification } = require('../services/notification.service');
+const logger = require('../utils/logger');
 
 const goalSchema = z.object({
   name: z.string().min(1).max(100).trim(),
@@ -12,11 +13,16 @@ const goalSchema = z.object({
 }).strict();
 
 const getGoals = async (req, res) => {
-  const result = await db.execute({
-    sql: 'SELECT * FROM goals WHERE household_id = ?',
-    args: [req.user.householdId]
-  });
-  res.json(result.rows);
+  try {
+    const result = await db.execute({
+      sql: 'SELECT * FROM goals WHERE household_id = ?',
+      args: [req.user.householdId]
+    });
+    res.json(result.rows);
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching goals');
+    res.status(500).json({ error: 'Erro ao carregar metas' });
+  }
 };
 
 const createGoal = async (req, res, next) => {
@@ -33,8 +39,15 @@ const createGoal = async (req, res, next) => {
   }
 };
 
-const updateGoalProgress = async (req, res) => {
-  const { savedAmount, account_id, increment } = req.body;
+const updateGoalSchema = z.object({
+  savedAmount: z.coerce.number().nonnegative().optional(),
+  account_id: z.coerce.number().optional(),
+  increment: z.coerce.number().optional(),
+}).strict();
+
+const updateGoalProgress = async (req, res, next) => {
+  try {
+    const { savedAmount, account_id, increment } = updateGoalSchema.parse(req.body);
   const householdId = req.user.householdId;
   const goalId = req.params.id;
   
@@ -86,15 +99,27 @@ const updateGoalProgress = async (req, res) => {
     await createNotification(householdId, 'success', `Meta atingida! Parabéns por completares: ${goal.name}! 🎉`);
   }
 
-  res.json({ success: true, savedAmount: finalSavedAmount });
+    res.json({ success: true, savedAmount: finalSavedAmount });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
+    logger.error({ err: error }, 'Error updating goal progress');
+    next(error);
+  }
 };
 
 const deleteGoal = async (req, res) => {
-  await db.execute({
-    sql: 'DELETE FROM goals WHERE id = ? AND household_id = ?',
-    args: [req.params.id, req.user.householdId]
-  });
-  res.json({ success: true });
+  try {
+    await db.execute({
+      sql: 'DELETE FROM goals WHERE id = ? AND household_id = ?',
+      args: [req.params.id, req.user.householdId]
+    });
+    res.json({ success: true });
+  } catch (error) {
+    logger.error({ err: error }, 'Error deleting goal');
+    res.status(500).json({ error: 'Erro ao eliminar meta' });
+  }
 };
 
 module.exports = { getGoals, createGoal, updateGoalProgress, deleteGoal };

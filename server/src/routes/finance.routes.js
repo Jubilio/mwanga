@@ -10,12 +10,17 @@ const { getOverview: getInsights } = require('../controllers/insights.controller
 const { getDebts, addDebt, deleteDebt, addPayment } = require('../controllers/debtController');
 const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require('../controllers/accountController');
 const { chat: binthChat, getScore: binthScore, getPageInsight } = require('../controllers/binth.controller');
+const { getDashboardSummary } = require('../controllers/dashboard.controller');
 const { authenticate } = require('../middleware/auth.middleware');
 const vslaRoutes = require('./vsla.routes');
 
 const router = express.Router();
 
 router.use(authenticate);
+
+// Dashboard Agregado — 1 chamada substitui 13 chamadas paralelas do frontend
+// Cache de 30s no Redis. Invalida automaticamente após mutações.
+router.get('/dashboard-summary', getDashboardSummary);
 
 // VSLA (Community)
 router.use('/vsla', vslaRoutes);
