@@ -7,15 +7,12 @@ import {
   ArrowUpRight,
   ArrowDownToLine,
   Coins,
-  CreditCard,
   ShieldCheck,
-  ArrowRightLeft,
   TrendingUp,
   TrendingDown,
   ChevronRight,
   Sparkles,
   Target,
-  PiggyBank,
   RefreshCw
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -23,7 +20,6 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import BinthContextual from '../components/BinthContextual';
-import CategoryBadge from '../components/CategoryBadge';
 import { useFinance } from '../hooks/useFinance';
 import {
   calcFinancialScore,
@@ -49,19 +45,6 @@ export default function Dashboard() {
   const risk = calcRiskLevel(score);
   const savingsRate = calcSavingsRate(totals.totalIncome, totals.totalExpenses);
 
-  // Cumulative unlinked balance (transactions not tied to any account)
-  const totalUnlinked = useMemo(() => 
-    state.transacoes
-      .filter(t => !t.account_id)
-      .reduce((sum, t) => {
-        const val = Number(t.valor || 0);
-        if (t.tipo === 'receita') return sum + val;
-        if (t.tipo === 'despesa' || t.tipo === 'renda') return sum - val;
-        return sum;
-      }, 0),
-    [state.transacoes]
-  );
-
   const totalContas = state.contas?.reduce((acc, curr) => acc + Number(curr.current_balance || 0), 0) || 0;
   const cashSetting = Number(state.settings.cash_balance || 0);
   const realBalance = totalContas + cashSetting;
@@ -76,7 +59,6 @@ export default function Dashboard() {
     [state.transacoes]
   );
 
-  // Greeting based on time
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
     if (hour < 12) return t('dashboard.greeting.morning');
@@ -84,453 +66,424 @@ export default function Dashboard() {
     return t('dashboard.greeting.evening');
   }, [t]);
 
-  // Score color and label
   const scoreColor = score > 70 ? 'text-leaf dark:text-leaf-light' : score > 40 ? 'text-gold dark:text-gold-light' : 'text-coral';
   const scoreLabel = score > 70 ? t('dashboard.health.excellent') : score > 40 ? t('dashboard.health.moderate') : t('dashboard.health.attention');
 
-  // Income vs Expense progress
   const totalFlow = totals.totalIncome + totals.totalExpenses;
   const incomePercent = totalFlow > 0 ? (totals.totalIncome / totalFlow) * 100 : 50;
 
-  // Quick actions config
   const quickActions = [
     {
       icon: Plus,
       label: t('dashboard.quick_actions.expense'),
-      sublabel: t('dashboard.quick_actions.expense_sub'),
       gradient: 'from-coral to-coral-light',
-      bg: 'bg-linear-to-br from-coral to-coral-light',
+      shadow: 'shadow-coral/20',
       onClick: () => navigate('/transacoes', { state: { openModal: true, tipo: 'despesa' } })
     },
     {
       icon: ArrowUpRight,
       label: t('dashboard.quick_actions.income'),
-      sublabel: t('dashboard.quick_actions.income_sub'),
       gradient: 'from-leaf to-leaf-light',
-      bg: 'bg-linear-to-br from-leaf to-leaf-light',
+      shadow: 'shadow-leaf/20',
       onClick: () => navigate('/transacoes', { state: { openModal: true, tipo: 'receita' } })
-    },
-    {
-      icon: ArrowRightLeft,
-      label: t('dashboard.quick_actions.transactions'),
-      sublabel: t('dashboard.quick_actions.transactions_sub'),
-      gradient: 'from-ocean to-sky',
-      bg: 'bg-linear-to-br from-ocean to-sky',
-      onClick: () => navigate('/transacoes')
     },
     {
       icon: Coins,
       label: t('dashboard.quick_actions.xitique'),
-      sublabel: t('dashboard.quick_actions.xitique_sub'),
       gradient: 'from-gold to-gold-light',
-      bg: 'bg-linear-to-br from-gold to-gold-light',
+      shadow: 'shadow-gold/20',
       onClick: () => navigate('/xitique')
-    },
-    {
-      icon: CreditCard,
-      label: t('dashboard.quick_actions.credit'),
-      sublabel: t('dashboard.quick_actions.credit_sub'),
-      gradient: 'from-[#0a1926] to-[#1c3545]',
-      bg: 'bg-linear-to-br from-[#0a1926] to-[#1c3545]',
-      onClick: () => navigate('/credito')
     },
     {
       icon: Target,
       label: t('dashboard.quick_actions.goals'),
-      sublabel: t('dashboard.quick_actions.goals_sub'),
       gradient: 'from-sky to-ocean',
-      bg: 'bg-linear-to-br from-sky to-ocean',
+      shadow: 'shadow-ocean/20',
       onClick: () => navigate('/metas')
     }
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className="flex flex-col gap-5" style={{ paddingBottom: '7rem' }}>
+    <motion.div 
+      initial="hidden"
+      animate="show"
+      variants={containerVariants}
+      className="flex flex-col gap-6" 
+      style={{ paddingBottom: '7rem' }}
+    >
 
-      {/* ─── 1. BALANCE HERO ─── */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="dashboard-balance-hero"
-      >
-        {/* Greeting */}
-        <div className="text-center mb-1 flex items-center justify-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 pl-6">{greeting} ✨</span>
-          <button
-            onClick={() => globalThis.location.reload()}
-            className="p-1.5 text-gray-400 hover:text-gold transition-colors"
-            title="Recarregar"
-          >
-            <RefreshCw size={12} />
-          </button>
-        </div>
+      {/* ─── 1. PREMIUM BALANCE HERO ─── */}
+      <motion.div variants={itemVariants} className="relative overflow-hidden rounded-[32px] bg-linear-to-br from-midnight via-[#12232e] to-midnight p-8 shadow-2xl">
+        {/* Animated Orbs for Depth */}
+        <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-ocean/10 blur-[100px] animate-pulse" />
+        <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-gold/5 blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
 
-        {/* Balance */}
-        <div className="relative flex flex-col items-center">
-          <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 dark:text-gray-400 mb-1">{t('dashboard.available_balance')}</span>
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="mb-4 flex items-center justify-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500/80">{greeting}</span>
+            <div className="h-1 w-1 rounded-full bg-gold/50" />
+            <button
+              onClick={() => globalThis.location.reload()}
+              className="group p-1 text-gray-500 hover:text-gold transition-colors"
+            >
+              <RefreshCw size={10} className="group-hover:rotate-180 transition-transform duration-500" />
+            </button>
+          </div>
 
-          <div className="dashboard-balance-row">
-            <div className="dashboard-balance-value text-midnight dark:text-white truncate max-w-[80vw] flex items-baseline justify-center gap-0.5">
+          <span className="mb-2 text-[11px] font-black uppercase tracking-[0.4em] text-sky/60">{t('dashboard.available_balance')}</span>
+
+          <div className="flex w-full flex-col items-center gap-4 px-4 sm:flex-row sm:justify-center">
+            <div className="flex items-baseline gap-1 text-white tracking-tighter">
               {showBalance ? (
                 <>
-                  <span className="font-black">{fmt(realBalance, '').split(',')[0]}</span>
-                  <span className="text-[0.45em] opacity-50 font-bold">,{fmt(realBalance, '').split(',')[1].trim()}</span>
-                  <span className="text-[0.35em] uppercase tracking-[0.2em] ml-1.5 font-black text-gold dark:text-gold-light">{currency}</span>
+                  <span className="text-4xl font-black sm:text-5xl">{fmt(realBalance, '').split(',')[0]}</span>
+                  <span className="text-xl font-bold opacity-30 sm:text-2xl">,{fmt(realBalance, '').split(',')[1].trim()}</span>
+                  <span className="ml-2 text-base font-black text-gold-light tracking-widest sm:text-lg">{currency}</span>
                 </>
               ) : (
-                <span className="opacity-20 tracking-[0.3em]">••••••</span>
+                <span className="text-4xl opacity-10 tracking-[0.4em] font-black sm:text-5xl">•••••</span>
               )}
             </div>
             <button
               onClick={() => setShowBalance(!showBalance)}
-              className="dashboard-balance-toggle p-2.5 rounded-full bg-black/5 dark:bg-white/5 text-gray-400 hover:text-ocean dark:hover:text-sky transition-all active:scale-90"
-              aria-label={showBalance ? t('dashboard.hide_balance') : t('dashboard.show_balance')}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 text-gray-400 backdrop-blur-md transition-all hover:bg-white/10 hover:text-white active:scale-90"
             >
-              {showBalance ? <Eye size={16} /> : <EyeOff size={16} />}
+              {showBalance ? <Eye size={18} /> : <EyeOff size={18} />}
             </button>
           </div>
 
-          {/* Monthly Flow Badge */}
-          <div className="flex flex-wrap justify-center gap-2 mt-4">
-            <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-              className={`flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full ${totals.saldo >= 0
-                ? 'bg-leaf/10 text-leaf dark:text-leaf-light'
-                : 'bg-coral/10 text-coral'
-                }`}
-            >
-              {totals.saldo >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-              {totals.saldo >= 0 ? '+' : ''}{fmt(totals.saldo, currency)} {t('dashboard.monthly_flow')}
-            </motion.div>
+          {/* Flow Indicator Chips */}
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+             <div className={`flex items-center gap-2 rounded-2xl bg-white/5 py-2 px-4 backdrop-blur-xl border border-white/5 ${totals.saldo >= 0 ? 'text-leaf-light' : 'text-coral-light'}`}>
+                {totals.saldo >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                <span className="text-[11px] font-black uppercase tracking-wider tabular-nums">
+                  {totals.saldo >= 0 ? '+' : ''}{fmt(totals.saldo, currency)}
+                </span>
+             </div>
+             {state.settings.cash_balance !== undefined && (
+               <div className="flex items-center gap-2 rounded-2xl bg-white/5 py-2 px-4 backdrop-blur-xl border border-white/5 text-gold-light">
+                 <Wallet size={14} />
+                 <span className="text-[11px] font-black uppercase tracking-wider tabular-nums">
+                   {showBalance ? fmt(state.settings.cash_balance, currency) : '••••'} Dinheiro
+                 </span>
+               </div>
+             )}
+          </div>
 
-            {state.settings.cash_balance !== undefined && (
-              <motion.div
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35, duration: 0.4 }}
-                className="flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full bg-gold/10 text-gold-dark dark:text-gold-light border border-gold/20"
-                onClick={() => navigate('/settings')}
-              >
-                <Wallet size={14} />
-                {showBalance ? fmt(state.settings.cash_balance, currency) : '••••'} {t('dashboard.physical_cash')}
-              </motion.div>
-            )}
+          {/* Premium Split-Tile Stats */}
+          <div className="mt-10 flex w-full items-stretch border-t border-white/5 pt-6">
+            {/* Income Tile */}
+            <div className="flex flex-1 flex-col items-center gap-2 px-2">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-leaf-light/60">Rendimentos</span>
+              <span className="text-sm font-black tabular-nums text-leaf-light sm:text-base">
+                {fmt(totals.totalIncome, currency)}
+              </span>
+              <div className="mt-1 h-1.5 w-full max-w-[140px] overflow-hidden rounded-full bg-white/5">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: '100%' }}
+                  className="h-full bg-linear-to-r from-leaf-light/40 to-leaf-light" 
+                />
+              </div>
+            </div>
+
+            {/* Vertical Divider */}
+            <div className="w-[1px] self-stretch bg-linear-to-b from-transparent via-white/10 to-transparent" />
+
+            {/* Expense Tile */}
+            <div className="flex flex-1 flex-col items-center gap-2 px-2">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-coral-light/60">Despesas</span>
+              <span className="text-sm font-black tabular-nums text-coral-light sm:text-base">
+                {fmt(totals.totalExpenses, currency)}
+              </span>
+              <div className="mt-1 h-1.5 w-full max-w-[140px] overflow-hidden rounded-full bg-white/5">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min((totals.totalExpenses / Math.max(totals.totalIncome, 1)) * 100, 100)}%` }}
+                  className="h-full bg-linear-to-r from-coral-light/40 to-coral-light" 
+                />
+              </div>
+            </div>
           </div>
         </div>
+      </motion.div>
 
-        {/* Income vs Expense Mini Bar */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="mt-5 px-4"
-        >
-          <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5">
-            <span className="text-leaf dark:text-leaf-light">↑ {t('dashboard.income')} {fmt(totals.totalIncome, currency)}</span>
-            <span className="text-coral dark:text-coral-light">↓ {t('dashboard.expenses')} {fmt(totals.totalExpenses, currency)}</span>
+      {/* ─── 2. QUICK ACTION BUTTONS (With Hover Labels) ─── */}
+      <motion.div variants={itemVariants} className="mb-12 flex flex-wrap items-center justify-center gap-4 sm:gap-8">
+        {quickActions.map((action, idx) => (
+          <div key={action.label} className="group relative flex flex-col items-center">
+            <button
+              onClick={action.onClick}
+              className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:bg-white/5 dark:hover:bg-white/10 sm:h-16 sm:w-16"
+            >
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br ${action.gradient} text-white shadow-lg ${action.shadow} transition-transform group-hover:scale-110 group-active:scale-95 sm:h-12 sm:w-12`}>
+                <action.icon size={20} strokeWidth={3} />
+              </div>
+              
+              {/* Subtle Glow Background */}
+              <div className={`absolute inset-0 rounded-2xl bg-linear-to-br ${action.gradient} opacity-0 blur-xl transition-opacity group-hover:opacity-20`} />
+            </button>
+
+            {/* Hover Label (Tooltip style) */}
+            <div className="pointer-events-none absolute -bottom-8 opacity-0 transition-all duration-300 group-hover:bottom-[-2.2rem] group-hover:opacity-100 z-20">
+               <span className="whitespace-nowrap px-2 py-1 text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                 {action.label}
+               </span>
+            </div>
           </div>
-          <div className="h-2 rounded-full overflow-hidden bg-black/5 dark:bg-white/5 flex">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${incomePercent}%` }}
-              transition={{ delay: 0.6, duration: 0.8, ease: 'easeOut' }}
-              className="h-full bg-linear-to-r from-leaf to-leaf-light rounded-full"
-            />
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${100 - incomePercent}%` }}
-              transition={{ delay: 0.7, duration: 0.8, ease: 'easeOut' }}
-              className="h-full bg-linear-to-r from-coral-light to-coral rounded-full"
-            />
+        ))}
+      </motion.div>
+
+      {/* ─── 3. HEALTH & ALERTS ─── */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <motion.div 
+          variants={itemVariants}
+          onClick={() => navigate('/insights')}
+          className="glass-card group flex flex-col justify-between overflow-hidden p-5 cursor-pointer min-h-[160px]"
+        >
+          <div className="flex items-center justify-between">
+             <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-ocean/10 text-ocean dark:bg-sky/10 dark:text-sky">
+                  <ShieldCheck size={18} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Saúde Financeira</span>
+             </div>
+             <ChevronRight size={16} className="text-slate-300 transition-transform group-hover:translate-x-1" />
+          </div>
+          
+          <div className="mt-4 flex items-baseline gap-2">
+             <span className={`text-4xl font-black ${scoreColor}`}>{score}</span>
+             <span className="text-xs font-bold text-slate-400">/ 100</span>
+          </div>
+          
+          <div className="mt-2 flex items-center gap-2">
+             <Sparkles size={12} className={scoreColor} />
+             <span className={`text-[10px] font-black uppercase tracking-wider ${scoreColor}`}>{scoreLabel}</span>
+          </div>
+
+          <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/5">
+             <motion.div 
+               initial={{ width: 0 }}
+               animate={{ width: `${score}%` }}
+               transition={{ duration: 1, ease: 'easeOut' }}
+               className={`h-full bg-linear-to-r ${score > 70 ? 'from-leaf to-leaf-light' : score > 40 ? 'from-gold to-gold-light' : 'from-coral to-coral-light'}`}
+             />
           </div>
         </motion.div>
-      </motion.div>
 
-      {/* ─── 2. QUICK ACTIONS (Centered Grid) ─── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.4 }}
-      >
-        <div className="dashboard-quick-actions">
-          {quickActions.map((action, idx) => (
-            <motion.button
-              key={action.label}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 + idx * 0.05, duration: 0.3 }}
-              onClick={action.onClick}
-              className="dashboard-action-btn group"
-            >
-              <div className={`dashboard-action-icon ${action.bg} text-white shadow-lg group-hover:shadow-xl group-active:scale-90 transition-all duration-200`}>
-                <action.icon size={22} strokeWidth={2.2} />
-              </div>
-              <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300 tracking-wide">{action.label}</span>
-              <span className="text-[9px] text-gray-400 dark:text-gray-500 font-medium hidden xs:block">{action.sublabel}</span>
-            </motion.button>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* ─── 3. HEALTH + ALERTS (Side by Side on Desktop) ─── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25, duration: 0.4 }}
-        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-      >
-        {/* Financial Health Score */}
-        <div
-          onClick={() => navigate('/insights')}
-          className="glass-card p-5 cursor-pointer active:scale-[0.98] transition-all group"
+        <motion.div 
+          variants={itemVariants}
+          onClick={() => navigate(totalAlerts > 0 ? '/dividas' : '/patrimonio')}
+          className="glass-card group flex flex-col justify-between p-6 cursor-pointer"
         >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-ocean to-sky flex items-center justify-center text-white shadow-md">
-                <ShieldCheck size={18} />
-              </div>
-              <div>
-                <span className="text-xs uppercase tracking-widest font-bold text-gray-500">{t('dashboard.health.title')}</span>
-              </div>
-            </div>
-            <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 group-hover:text-ocean dark:group-hover:text-sky transition-colors" />
-          </div>
-
-          <div className="flex items-end justify-between">
-            <div>
-              <div className={`text-3xl font-black ${scoreColor}`}>{score}<span className="text-lg">/ 100</span></div>
-              <div className={`text-[10px] uppercase font-bold mt-1 ${scoreColor}`}>
-                <Sparkles size={10} className="inline mr-1" />{scoreLabel} · {t('dashboard.health.risk')} {risk.level}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-sm font-bold text-gray-500">{savingsRate}%</div>
-              <div className="text-[9px] uppercase font-bold text-gray-400 flex items-center gap-1">
-                <PiggyBank size={10} /> {t('dashboard.health.savings')}
-              </div>
-            </div>
-          </div>
-
-          {/* Score bar */}
-          <div className="mt-3 h-1.5 rounded-full bg-black/5 dark:bg-white/5 overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${score}%` }}
-              transition={{ delay: 0.5, duration: 1, ease: 'easeOut' }}
-              className={`h-full rounded-full ${score > 70 ? 'bg-linear-to-r from-leaf to-leaf-light'
-                : score > 40 ? 'bg-linear-to-r from-gold to-gold-light'
-                  : 'bg-linear-to-r from-coral to-coral-light'
-                }`}
-            />
-          </div>
-        </div>
-
-        {/* Alerts Card */}
-        <div
-          onClick={() => navigate(pendingDebts > 0 ? '/dividas' : '/habitacao')}
-          className="glass-card p-5 cursor-pointer active:scale-[0.98] transition-all group"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-md ${totalAlerts > 0
-                ? 'bg-linear-to-br from-coral to-coral-light animate-pulse'
-                : 'bg-linear-to-br from-leaf to-leaf-light'
-                }`}>
-                <Bell size={18} />
-              </div>
-              <span className="text-xs uppercase tracking-widest font-bold text-gray-500">{t('dashboard.alerts.title')}</span>
-            </div>
-            <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 group-hover:text-ocean dark:group-hover:text-sky transition-colors" />
-          </div>
-
-          {totalAlerts > 0 ? (
-            <div>
-              <div className="text-3xl font-black text-coral">{totalAlerts}</div>
-              <div className="text-[10px] uppercase font-bold text-gray-400 mt-1">{t('dashboard.alerts.pending_actions')}</div>
-              <div className="mt-3 space-y-1.5">
-                {pendingDebts > 0 && (
-                  <div className="flex items-center gap-2 text-xs text-coral font-semibold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
-                    {pendingDebts} {pendingDebts > 1 ? t('dashboard.alerts.debts_pending') : t('dashboard.alerts.debt_pending')}
-                  </div>
-                )}
-                {pendingHousing > 0 && (
-                  <div className="flex items-center gap-2 text-xs text-gold font-semibold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-                    {pendingHousing} {pendingHousing > 1 ? t('dashboard.alerts.rents_pending') : t('dashboard.alerts.rent_pending')}
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div>
-              <div className="text-3xl font-black text-leaf dark:text-leaf-light">0</div>
-              <div className="text-[10px] uppercase font-bold text-gray-400 mt-1">{t('dashboard.alerts.all_clear')}</div>
-              <div className="mt-3 text-xs text-leaf/80 dark:text-leaf-light/80 font-medium">
-                {t('dashboard.alerts.no_alerts')}
-              </div>
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* ─── 4. CASHFLOW + ACCOUNTS (Side by Side on Desktop) ─── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.4 }}
-        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-      >
-        {/* Cashflow Card */}
-        <div
-          onClick={() => navigate('/transacoes')}
-          className="glass-card p-5 cursor-pointer active:scale-[0.98] transition-all group"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-gold to-gold-light flex items-center justify-center text-white shadow-md">
-                <ArrowRightLeft size={18} />
-              </div>
-              <span className="text-xs uppercase tracking-widest font-bold text-gray-500">{t('dashboard.cashflow.title')}</span>
-            </div>
-            <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 group-hover:text-ocean dark:group-hover:text-sky transition-colors" />
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-leaf/10 flex items-center justify-center">
-                  <ArrowUpRight size={14} className="text-leaf" />
+          <div className="flex items-center justify-between">
+             <div className="flex items-center gap-3">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${totalAlerts > 0 ? 'bg-coral/10 text-coral animate-pulse' : 'bg-leaf/10 text-leaf'}`}>
+                  <Bell size={20} />
                 </div>
-                <span className="text-xs font-semibold text-gray-500">{t('dashboard.income')}</span>
-              </div>
-              <span className="text-sm font-bold text-leaf dark:text-leaf-light">{fmt(totals.totalIncome, currency)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-coral/10 flex items-center justify-center">
-                  <ArrowDownToLine size={14} className="text-coral" />
-                </div>
-                <span className="text-xs font-semibold text-gray-500">{t('dashboard.expenses')}</span>
-              </div>
-              <span className="text-sm font-bold text-coral dark:text-coral-light">{fmt(totals.totalExpenses, currency)}</span>
-            </div>
-            <div className="border-t border-black/5 dark:border-white/5 pt-2 flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold text-gray-400">{t('dashboard.cashflow.monthly_balance')}</span>
-              <span className={`text-sm font-black ${totals.saldo >= 0 ? 'text-leaf dark:text-leaf-light' : 'text-coral'}`}>
-                {totals.saldo >= 0 ? '+' : ''}{fmt(totals.saldo, currency)}
-              </span>
-            </div>
+                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Alertas & Pendentes</span>
+             </div>
+             <ChevronRight size={18} className="text-slate-300 transition-transform group-hover:translate-x-1" />
           </div>
-        </div>
+
+          <div className="mt-8">
+             {totalAlerts > 0 ? (
+               <div className="space-y-3">
+                  <span className="text-5xl font-black text-coral">{totalAlerts}</span>
+                  <div className="flex flex-col gap-1">
+                    {pendingDebts > 0 && <span className="text-[10px] font-bold text-coral/80 uppercase tracking-wider">● {pendingDebts} Dívidas Pendentes</span>}
+                    {pendingHousing > 0 && <span className="text-[10px] font-bold text-gold/80 uppercase tracking-wider">● {pendingHousing} Despesas de Habitação</span>}
+                  </div>
+               </div>
+             ) : (
+               <div className="space-y-3">
+                  <span className="text-5xl font-black text-leaf-light">0</span>
+                  <span className="block text-[10px] font-bold text-leaf/60 uppercase tracking-wider">Tudo sob controlo</span>
+               </div>
+             )}
+          </div>
+          
+          <div className="mt-6 h-1.5 w-full rounded-full bg-slate-100 dark:bg-white/5" />
+        </motion.div>
+      </div>
+
+      {/* ─── 4. CONTAS ACTIVAS & FLUXO DE CAIXA ─── */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 
         {/* Active Accounts Card */}
-        <div
+        <motion.div
+          variants={itemVariants}
           onClick={() => navigate('/patrimonio')}
-          className="glass-card p-5 cursor-pointer active:scale-[0.98] transition-all group"
+          className="glass-card group flex flex-col gap-4 p-5 cursor-pointer"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-midnight to-dark-light flex items-center justify-center text-gold shadow-md">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-ocean/10 text-ocean dark:bg-sky/10 dark:text-sky">
                 <Wallet size={18} />
               </div>
-              <span className="text-xs uppercase tracking-widest font-bold text-gray-500">{t('dashboard.accounts.title')}</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Contas Activas</span>
             </div>
-            <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 group-hover:text-ocean dark:group-hover:text-sky transition-colors" />
+            <ChevronRight size={16} className="text-slate-300 transition-transform group-hover:translate-x-1" />
           </div>
 
-          <div className="text-2xl font-black text-ocean dark:text-sky">{fmt(totalContas, currency)}</div>
-          <div className="text-[10px] uppercase font-bold text-gray-400 mt-1">{t('dashboard.accounts.total_in')} {state.contas?.length || 0} {(state.contas?.length || 0) !== 1 ? t('dashboard.accounts.accounts') : t('dashboard.accounts.account')}</div>
-
-          {/* Mini account list */}
-          {state.contas && state.contas.length > 0 && (
-            <div className="mt-3 space-y-1.5">
-              {state.contas.slice(0, 3).map((conta, i) => (
-                <div key={conta.id || i} className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500 font-medium truncate max-w-[120px]">{conta.name || conta.tipo || 'Conta'}</span>
-                  <span className="font-bold text-gray-700 dark:text-gray-300">{fmt(Number(conta.current_balance || 0), currency)}</span>
-                </div>
-              ))}
-              {state.contas.length > 3 && (
-                <div className="text-[10px] text-ocean dark:text-sky font-bold">+{state.contas.length - 3} {t('dashboard.accounts.more')}</div>
+          {state.contas?.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              {state.contas.slice(0, 4).map((conta) => {
+                const maxBalance = Math.max(...state.contas.map(c => Number(c.current_balance || 0)), 1);
+                const pct = Math.min((Number(conta.current_balance || 0) / maxBalance) * 100, 100);
+                return (
+                  <div key={conta.id} className="flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[55%]">{conta.name}</span>
+                      <span className="text-xs font-black tabular-nums text-midnight dark:text-white">{fmt(conta.current_balance, currency)}</span>
+                    </div>
+                    <div className="h-1 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/5">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${pct}%` }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                        className="h-full bg-linear-to-r from-ocean/40 to-sky"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              {state.contas.length > 4 && (
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                  +{state.contas.length - 4} contas...
+                </span>
               )}
             </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* ─── 5. AI INSIGHTS (BINTH) ─── */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }}>
-        <BinthContextual page="dashboard" />
-      </motion.div>
-
-      {/* ─── 6. LATEST TRANSACTIONS ─── */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.4 }}>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-bold dark:text-white flex items-center gap-2">
-            {t('dashboard.latest_transactions.title')}
-          </h2>
-          <button
-            onClick={() => navigate('/transacoes')}
-            className="text-[10px] font-bold text-ocean dark:text-sky uppercase tracking-wider hover:underline flex items-center gap-1"
-          >
-            {t('dashboard.latest_transactions.view_all')} <ChevronRight size={12} />
-          </button>
-        </div>
-        <div className="glass-card overflow-hidden">
-          {latestTransactions.length === 0 ? (
-            <div className="p-10 text-center">
-              <div className="text-3xl mb-2">📝</div>
-              <div className="text-sm font-bold text-gray-400 dark:text-gray-500">{t('dashboard.latest_transactions.empty')}</div>
-              <div className="text-[10px] text-gray-400 mt-1">{t('dashboard.latest_transactions.empty_sub')}</div>
-              <button
-                onClick={() => navigate('/transacoes', { state: { openModal: true } })}
-                className="mt-4 text-xs font-bold text-ocean dark:text-sky bg-ocean/10 dark:bg-sky/10 px-4 py-2 rounded-full hover:bg-ocean/20 dark:hover:bg-sky/20 transition-colors"
-              >
-                {t('dashboard.latest_transactions.add_new')}
-              </button>
-            </div>
           ) : (
-            <div className="divide-y divide-black/5 dark:divide-white/5">
-              {latestTransactions.map((t, idx) => (
+            <div className="py-4 text-center text-xs text-slate-400">Sem contas registadas</div>
+          )}
+
+          <div className="mt-auto flex items-baseline gap-1 border-t border-slate-100 dark:border-white/5 pt-3">
+            <span className="text-xs text-slate-400 uppercase tracking-widest font-bold">Total</span>
+            <span className="ml-auto text-base font-black text-midnight dark:text-white tabular-nums">{fmt(totalContas, currency)}</span>
+          </div>
+        </motion.div>
+
+        {/* Cash Flow Card */}
+        <motion.div
+          variants={itemVariants}
+          onClick={() => navigate('/insights')}
+          className="glass-card group flex flex-col gap-4 p-5 cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${totals.saldo >= 0 ? 'bg-leaf/10 text-leaf' : 'bg-coral/10 text-coral'}`}>
+                {totals.saldo >= 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Fluxo de Caixa</span>
+            </div>
+            <ChevronRight size={16} className="text-slate-300 transition-transform group-hover:translate-x-1" />
+          </div>
+
+          {/* Big Flow Number */}
+          <div className="flex flex-col">
+            <span className={`text-3xl font-black tabular-nums ${totals.saldo >= 0 ? 'text-leaf-light' : 'text-coral-light'}`}>
+              {totals.saldo >= 0 ? '+' : ''}{fmt(totals.saldo, currency)}
+            </span>
+            <span className={`text-[9px] font-black uppercase tracking-widest mt-1 ${totals.saldo >= 0 ? 'text-leaf/60' : 'text-coral/60'}`}>
+              {totals.saldo >= 0 ? '✓ Mês positivo' : '⚠ Despesas acima dos rendimentos'}
+            </span>
+          </div>
+
+          {/* Income vs Expense mini bars */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <span className="w-16 text-[9px] font-black uppercase tracking-widest text-leaf-light/70 shrink-0">Entradas</span>
+              <div className="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
                 <motion.div
-                  key={t.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.45 + idx * 0.05, duration: 0.3 }}
-                  className="p-4 flex items-center justify-between hover:bg-black/2 dark:hover:bg-white/2 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${t.tipo === 'despesa'
-                      ? 'bg-coral/10 text-coral'
-                      : 'bg-leaf/10 text-leaf dark:text-leaf-light'
-                      }`}>
-                      {t.tipo === 'despesa' ? <ArrowDownToLine size={16} /> : <ArrowUpRight size={16} />}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="font-bold text-sm dark:text-gray-200 leading-tight truncate">{t.desc}</div>
-                      <div className="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5 truncate flex items-center gap-2">
-                        {t.categoria && <CategoryBadge category={t.categoria} />}
-                        <span className="opacity-60">{t.data}</span>
-                      </div>
-                    </div>
+                  initial={{ width: 0 }}
+                  animate={{ width: '100%' }}
+                  className="h-full bg-linear-to-r from-leaf/30 to-leaf-light"
+                />
+              </div>
+              <span className="text-[9px] font-black tabular-nums text-leaf-light shrink-0">{fmt(totals.totalIncome, currency)}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="w-16 text-[9px] font-black uppercase tracking-widest text-coral-light/70 shrink-0">Saídas</span>
+              <div className="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min((totals.totalExpenses / Math.max(totals.totalIncome, 1)) * 100, 100)}%` }}
+                  className="h-full bg-linear-to-r from-coral/30 to-coral-light"
+                />
+              </div>
+              <span className="text-[9px] font-black tabular-nums text-coral-light shrink-0">{fmt(totals.totalExpenses, currency)}</span>
+            </div>
+          </div>
+
+          {/* Savings Rate */}
+          <div className="mt-auto flex items-center justify-between border-t border-slate-100 dark:border-white/5 pt-3">
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Taxa de Poupança</span>
+            <span className={`text-sm font-black ${savingsRate > 20 ? 'text-leaf-light' : savingsRate > 0 ? 'text-gold' : 'text-coral'}`}>
+              {savingsRate.toFixed(1)}%
+            </span>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* ─── 5. AI INSIGHTS ─── */}
+      <motion.div variants={itemVariants}>
+         <BinthContextual page="dashboard" />
+      </motion.div>
+
+
+      {/* ─── 5. LATEST TRANSACTIONS ─── */}
+      <motion.div variants={itemVariants} className="flex flex-col gap-4">
+        <div className="flex items-center justify-between px-2">
+           <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500">Últimos Registos</h3>
+           <button onClick={() => navigate('/transacoes')} className="text-[10px] font-black uppercase tracking-widest text-ocean dark:text-sky hover:opacity-70 transition-opacity">Ver Tudo</button>
+        </div>
+
+        <div className="glass-card divide-y divide-slate-100 dark:divide-white/5 overflow-hidden">
+          {latestTransactions.map((t, idx) => (
+            <div key={t.id || idx} className="flex items-center justify-between p-4 transition-colors hover:bg-slate-50/50 dark:hover:bg-white/2">
+              <div className="flex items-center gap-4">
+                <div className={`flex h-11 w-11 items-center justify-center rounded-[18px] ${t.tipo === 'despesa' ? 'bg-coral/10 text-coral' : 'bg-leaf/10 text-leaf dark:text-leaf-light'}`}>
+                  {t.tipo === 'despesa' ? <ArrowDownToLine size={20} /> : <ArrowUpRight size={20} />}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-midnight dark:text-white leading-tight">{t.desc}</span>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{t.data}</span>
+                    <span className="text-[9px] font-bold text-ocean dark:text-sky/60 uppercase">{t.categoria}</span>
                   </div>
-                  <div className={`font-bold text-sm tabular-nums ${t.tipo === 'despesa'
-                    ? 'text-gray-900 dark:text-white'
-                    : 'text-leaf dark:text-leaf-light'
-                    }`}>
-                    {t.tipo === 'despesa' ? '-' : '+'}{fmt(t.valor, currency)}
-                  </div>
-                </motion.div>
-              ))}
+                </div>
+              </div>
+              <span className={`text-base font-black tabular-nums ${t.tipo === 'despesa' ? 'text-midnight dark:text-white' : 'text-leaf-light'}`}>
+                {t.tipo === 'despesa' ? '-' : '+'}{fmt(t.valor, currency)}
+              </span>
+            </div>
+          ))}
+
+          {latestTransactions.length === 0 && (
+            <div className="py-12 text-center">
+               <span className="text-3xl opacity-20">📝</span>
+               <p className="mt-2 text-xs font-bold text-slate-400">{t('dashboard.latest_transactions.empty')}</p>
             </div>
           )}
         </div>
       </motion.div>
 
-    </div>
+    </motion.div>
   );
 }

@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
-import { Plus, Search, Trash2, Download } from 'lucide-react';
+import { Plus, Search, Trash2, Download, Filter, Calendar, Tag, CreditCard, ArrowDownToLine, ArrowUpRight } from 'lucide-react';
 import { fmt, exportToCSV } from '../utils/calculations';
 import { getPaymentMethodLabel } from '../utils/paymentMethods';
 import CategoryBadge from '../components/CategoryBadge';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CATEGORIES = [
   { id: 'Salário', key: 'salary' },
@@ -30,6 +31,7 @@ export default function Transactions() {
   const { showToast } = useOutletContext();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const TYPES = [
     { value: 'receita', label: t('transactions.types.receita') },
@@ -55,6 +57,7 @@ export default function Transactions() {
     });
     setForm({ ...form, desc: '', valor: '', nota: '', account_id: '' });
     showToast(t('transactions.toast_added'));
+    setIsFormOpen(false);
   }
 
   function handleDelete(id) {
@@ -66,113 +69,74 @@ export default function Transactions() {
 
   const filtered = (state.transacoes || [])
     .filter(t => filterType === 'all' || t.tipo === filterType)
-    .filter(t =>
-      (t.desc || '').toLowerCase().includes(search.toLowerCase()) ||
-      (t.cat || '').toLowerCase().includes(search.toLowerCase())
-    );
+    .filter(tr =>
+      (tr.desc || '').toLowerCase().includes(search.toLowerCase()) ||
+      (tr.cat || '').toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => new Date(b.data) - new Date(a.data));
+
+  const totalFiltered = filtered.reduce((acc, curr) => {
+    if (curr.tipo === 'receita') return acc + Number(curr.valor);
+    return acc - Number(curr.valor);
+  }, 0);
 
   return (
-    <div className="animate-fade-in" style={{ paddingBottom: '5rem' }}>
-      {/* 1. Add Transaction Form */}
-      <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-        <div className="section-title">
-          <span>{t('transactions.add_transaction')}</span>
-        </div>
-        <form onSubmit={handleSubmit}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '1rem',
-          }}>
-            <div>
-              <label className="form-label">{t('transactions.date')}</label>
-              <input
-                type="date"
-                className="form-input"
-                value={form.data}
-                onChange={e => setForm({ ...form, data: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="form-label">{t('transactions.type')}</label>
-              <select
-                className="form-input"
-                value={form.tipo}
-                onChange={e => setForm({ ...form, tipo: e.target.value })}
-              >
-                {TYPES.map(t => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="form-label">{t('transactions.description')}</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder={t('transactions.desc_placeholder')}
-                value={form.desc}
-                onChange={e => setForm({ ...form, desc: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="form-label">{t('transactions.value_mt').replace('{currency}', currency)}</label>
-              <input
-                type="number"
-                className="form-input"
-                placeholder="0"
-                min="0"
-                value={form.valor}
-                onChange={e => setForm({ ...form, valor: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="form-label">{t('transactions.category')}</label>
-              <select
-                className="form-input"
-                value={form.cat}
-                onChange={e => setForm({ ...form, cat: e.target.value })}
-              >
-                {CATEGORIES.map(c => (
-                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={c.id} value={c.id}>
-                    {t(`transactions.categories.${c.key}`)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="form-label">{t('transactions.payment_method')}</label>
-              <select
-                className="form-input"
-                value={form.account_id}
-                onChange={e => setForm({ ...form, account_id: e.target.value })}
-              >
-                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">{t('transactions.none')}</option>
-                {state.contas?.map(acc => (
-                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={acc.id} value={acc.id}>
-                    {acc.name} • {getPaymentMethodLabel(acc.type)} ({fmt(acc.current_balance, currency)})
-                  </option>
-                ))}
-              </select>
-            </div>
+    <div className="flex flex-col gap-6" style={{ paddingBottom: '7rem' }}>
+      
+      {/* ─── 1. HEADER & SUMMARY ─── */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h1 className="text-2xl font-black dark:text-white leading-tight">Transações</h1>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">
+              {filtered.length} {t('transactions.records')}
+            </p>
           </div>
           <button
-            type="submit"
-            className="btn-primary w-full mt-6 flex items-center justify-center gap-2 py-3 rounded-2xl shadow-lg transition-all active:scale-95"
+            onClick={() => setIsFormOpen(!isFormOpen)}
+            className={`flex h-11 w-11 items-center justify-center rounded-2xl shadow-lg transition-all active:scale-95 ${
+              isFormOpen ? 'bg-coral text-white' : 'bg-linear-to-br from-ocean to-sky text-white'
+            }`}
           >
-            <Plus size={20} strokeWidth={2.5} />
-            {t('transactions.add_transaction')}
+            <Plus size={24} className={`transition-transform duration-300 ${isFormOpen ? 'rotate-45' : ''}`} />
           </button>
-        </form>
+        </div>
+
+        {/* Mini Summary Card */}
+        <div className="glass-card p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${totalFiltered >= 0 ? 'bg-leaf/10 text-leaf' : 'bg-coral/10 text-coral'}`}>
+                <Filter size={18} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] uppercase font-black tracking-widest text-gray-400">Balanço do Filtro</span>
+                <span className={`text-base font-black tabular-nums ${totalFiltered >= 0 ? 'text-leaf-light' : 'text-coral-light'}`}>
+                  {totalFiltered >= 0 ? '+' : ''}{fmt(totalFiltered, currency)}
+                </span>
+              </div>
+            </div>
+            <button
+               onClick={() => {
+                 exportToCSV(filtered);
+                 showToast(t('transactions.toast_exported'));
+               }}
+               className="p-2.5 rounded-xl bg-white/5 text-gray-400 hover:text-ocean transition-all"
+               title="Exportar CSV"
+            >
+              <Download size={18} />
+            </button>
+        </div>
       </div>
 
-      {/* 2. SEARCH & FILTERS */}
-      <div className="flex flex-col md:flex-row gap-3 mb-6">
+      {/* ─── 2. SEARCH & FILTERS ─── */}
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 group">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-ocean transition-colors">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-ocean transition-colors">
             <Search size={18} />
           </div>
           <input
             type="text"
-            className="form-input pl-11 h-12 bg-white/50 backdrop-blur-md border-white/20 focus:bg-white transition-all shadow-sm"
+            className="form-input pl-11 h-11 bg-white/40 dark:bg-white/5 backdrop-blur-md border-transparent focus:bg-white dark:focus:bg-white/10 transition-all shadow-sm rounded-xl"
             placeholder={t('transactions.search_placeholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -180,80 +144,176 @@ export default function Transactions() {
         </div>
         <div className="flex gap-2">
           <select
-            className="form-input h-12 bg-white/50 backdrop-blur-md border-white/20 min-w-[140px] shadow-sm"
+            className="form-input h-11 bg-white/40 dark:bg-white/5 backdrop-blur-md border-transparent min-w-[130px] shadow-sm rounded-xl appearance-none text-xs font-bold pl-4 pr-10"
             value={filterType}
             onChange={e => setFilterType(e.target.value)}
           >
             <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="all">{t('transactions.all_types')}</option>
             {TYPES.map(t => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={t.value} value={t.value}>{t.label}</option>)}
           </select>
-          <button
-            onClick={() => {
-              exportToCSV(filtered);
-              showToast(t('transactions.toast_exported'));
-            }}
-            className="h-12 px-4 rounded-2xl bg-leaf/10 text-leaf border border-leaf/20 hover:bg-leaf/20 transition-all flex items-center gap-2 font-bold shadow-sm"
-            title={t('transactions.export_csv')}
+        </div>
+      </div>
+
+      {/* ─── 3. ADD TRANSACTION FORM (Collapsible) ─── */}
+      <AnimatePresence>
+        {isFormOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
           >
-            <Download size={18} />
-          </button>
-        </div>
-      </div>
-
-      {/* 3. TRANSACTIONS LIST */}
-      <div className="flex items-center justify-between mb-3 px-1">
-        <div className="text-xs font-black uppercase tracking-widest text-gray-400">
-          {filtered.length} {t('transactions.records')}
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {filtered.length === 0 ? (
-          <div className="glass-card p-10 text-center text-gray-400">
-            <div className="text-3xl mb-2">🔎</div>
-            <p className="font-bold">{t('transactions.empty')}</p>
-            <p className="text-[10px] mt-1">{t('transactions.empty_sub')}</p>
-          </div>
-        ) : (
-          filtered.map((t) => (
-            <div key={t.id} className="glass-card p-4 group hover:border-ocean/30 transition-all active:scale-[0.98]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
-                    t.tipo === 'despesa' || t.tipo === 'renda'
-                      ? 'bg-coral/10 text-coral' 
-                      : 'bg-leaf/10 text-leaf'
-                  }`}>
-                    <Plus size={18} className={t.tipo === 'receita' ? 'rotate-0' : 'rotate-45'} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-bold text-sm dark:text-gray-200 truncate">{t.desc}</div>
-                    <div className="text-[10px] text-gray-400 font-bold mt-1 truncate flex items-center gap-2">
-                      <CategoryBadge category={t.cat} />
-                      <span className="opacity-60 uppercase tracking-widest">{t.data}</span>
-                    </div>
-                  </div>
+            <form onSubmit={handleSubmit} className="glass-card p-5 flex flex-col gap-5 border-ocean/20 border">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                    <Calendar size={11} /> {t('transactions.date')}
+                  </label>
+                  <input
+                    type="date"
+                    className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm"
+                    value={form.data}
+                    onChange={e => setForm({ ...form, data: e.target.value })}
+                  />
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className={`font-black tabular-nums ${
-                    t.tipo === 'despesa' || t.tipo === 'renda' ? 'text-midnight dark:text-white' : 'text-leaf'
-                  }`}>
-                    {(t.tipo === 'despesa' || t.tipo === 'renda') ? '-' : '+'}{fmt(t.valor, currency)}
-                  </div>
-                  <button
-                    onClick={() => handleDelete(t.id)}
-                    className="p-2 text-gray-300 hover:text-coral transition-colors"
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                    <Filter size={11} /> {t('transactions.type')}
+                  </label>
+                  <select
+                    className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm"
+                    value={form.tipo}
+                    onChange={e => setForm({ ...form, tipo: e.target.value })}
                   >
-                    <Trash2 size={16} />
-                  </button>
+                    {TYPES.map(t => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5 lg:col-span-1">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                    <Plus size={11} /> {t('transactions.description')}
+                  </label>
+                  <input
+                    type="text"
+                    className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm"
+                    placeholder={t('transactions.desc_placeholder')}
+                    value={form.desc}
+                    onChange={e => setForm({ ...form, desc: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                    <CreditCard size={11} /> {t('transactions.value_mt').replace('{currency}', currency)}
+                  </label>
+                  <input
+                    type="number"
+                    className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl font-black text-base"
+                    placeholder="0"
+                    min="0"
+                    value={form.valor}
+                    onChange={e => setForm({ ...form, valor: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                    <Tag size={11} /> {t('transactions.category')}
+                  </label>
+                  <select
+                    className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm"
+                    value={form.cat}
+                    onChange={e => setForm({ ...form, cat: e.target.value })}
+                  >
+                    {CATEGORIES.map(c => (
+                      <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={c.id} value={c.id}>
+                        {t(`transactions.categories.${c.key}`)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                    <CreditCard size={11} /> {t('transactions.payment_method')}
+                  </label>
+                  <select
+                    className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm"
+                    value={form.account_id}
+                    onChange={e => setForm({ ...form, account_id: e.target.value })}
+                  >
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">{t('transactions.none')}</option>
+                    {state.contas?.map(acc => (
+                      <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={acc.id} value={acc.id}>
+                        {acc.name} • ({fmt(acc.current_balance, currency)})
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
-              {t.nota && (
-                <div className="mt-2 text-[10px] text-gray-400 italic bg-black/5 dark:bg-white/5 p-2 rounded-lg">
-                  "{t.nota}"
-                </div>
-              )}
+              <button
+                type="submit"
+                className="btn-primary w-full h-11 flex items-center justify-center gap-2 rounded-xl shadow-xl shadow-ocean/30 transition-all active:scale-95 text-[11px] font-black uppercase tracking-widest"
+              >
+                <Plus size={16} strokeWidth={3} />
+                Registar Transação
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── 4. TRANSACTIONS LIST ─── */}
+      <div className="flex flex-col gap-3">
+        {filtered.length === 0 ? (
+          <div className="glass-card p-16 text-center flex flex-col items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-4xl">📝</div>
+            <div>
+              <p className="font-black text-slate-500">{t('transactions.empty')}</p>
+              <p className="text-[10px] font-bold text-gray-400/60 uppercase tracking-widest mt-1">{t('transactions.empty_sub')}</p>
             </div>
+            <button onClick={() => setIsFormOpen(true)} className="text-xs font-black text-ocean uppercase tracking-widest hover:underline mt-4">Adicionar Primeira</button>
+          </div>
+        ) : (
+          filtered.map((tr, idx) => (
+            <motion.div
+              key={tr.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.03, duration: 0.3 }}
+              className="glass-card p-4 flex items-center justify-between group hover:bg-white/40 dark:hover:bg-white/8 transition-all cursor-default"
+            >
+              <div className="flex items-center gap-4">
+                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
+                  tr.tipo === 'receita' ? 'bg-leaf/10 text-leaf' : 'bg-coral/10 text-coral'
+                }`}>
+                  {tr.tipo === 'receita' ? <ArrowUpRight size={20} /> : <ArrowDownToLine size={20} />}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-bold text-midnight dark:text-white leading-tight truncate">{tr.desc}</span>
+                  <div className="mt-1 flex items-center gap-2 overflow-hidden">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 shrink-0">{tr.data}</span>
+                    <div className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
+                    <CategoryBadge category={tr.cat} />
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 pl-2">
+                <span className={`text-base font-black tabular-nums whitespace-nowrap ${
+                  tr.tipo === 'receita' ? 'text-leaf' : 'text-midnight dark:text-white'
+                }`}>
+                  {tr.tipo === 'receita' ? '+' : '-'}{fmt(tr.valor, currency).split(',')[0]}
+                  <span className="opacity-30 text-[10px]">,{fmt(tr.valor, currency).split(',')[1]}</span>
+                </span>
+                <button
+                  onClick={() => handleDelete(tr.id)}
+                  className="p-2 rounded-xl text-gray-300 hover:bg-coral/10 hover:text-coral transition-all lg:opacity-0 lg:group-hover:opacity-100"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </motion.div>
           ))
         )}
       </div>
