@@ -169,20 +169,33 @@ async function batchFetch(tasks, concurrency = 5) {
 // individual garantindo retro-compatibilidade.
 async function fetchAllData(headers, dispatch) {
   // ── Tentativa 1: Endpoint Agregado (caminho feliz) ───────────────────────────
+  // Usamos AbortSignal com timeout curto para não bloquear se o servidor for lento.
   try {
-    const res = await fetch(`${FINANCE_API_URL}/dashboard-summary`, { headers });
+    const res = await fetch(`${FINANCE_API_URL}/dashboard-summary`, {
+      headers,
+      signal: AbortSignal.timeout(10000),
+    });
 
     if (res.status === 401) {
       localStorage.removeItem('mwanga-token');
       dispatch({ type: 'RESET_SESSION' });
-      return null; // sinaliza reset de sessão
+      return null;
     }
 
-    if (res.ok) {
+    // 404/405 — endpoint ainda não deployado no servidor de produção.
+    // Silencioso: o fallback abaixo carrega os dados via chamadas individuais.
+    if (res.status === 404 || res.status === 405) {
+      if (import.meta.env.DEV) {
+        console.info(
+          '[Mwanga] /api/dashboard-summary não disponível neste servidor.\n' +
+          'A usar fallback (13 chamadas individuais). Faz deploy do backend para activar.'
+        );
+      }
+      // Cai para o fallback sem logar erro
+    } else if (res.ok) {
       const ct = res.headers.get('content-type') || '';
       if (ct.includes('application/json')) {
         const data = await res.json();
-        // O endpoint devolve os mesmos campos que o modo individual
         return {
           ts: data.transactions,
           rendas: data.rentals,
@@ -201,8 +214,10 @@ async function fetchAllData(headers, dispatch) {
       }
     }
   } catch (err) {
-    // Silencioso: o fallback abaixo garante que não fica sem dados.
-    console.warn('[fetchAllData] Endpoint agregado falhou, a usar fallback individual:', err?.message);
+    // Apenas loga erros reais (timeout, rede, CORS) — não 404.
+    if (err?.name !== 'AbortError') {
+      console.warn('[Mwanga] Endpoint agregado inacessível, a usar fallback:', err?.message);
+    }
   }
 
   // ── Tentativa 2: Chamadas individuais (fallback retro-compatível) ───────────
