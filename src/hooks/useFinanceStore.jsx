@@ -165,16 +165,17 @@ async function batchFetch(tasks, concurrency = 5) {
 
 // ─── Fetch de dados via endpoint agregado (1 chamada) ────────────────────────
 // Preferimos o endpoint /dashboard-summary que faz 1 round-trip em vez de 13.
-// Se falhar (ex: servidor antigo, erro de rede), fazemos fallback para o modo
-// individual garantindo retro-compatibilidade.
+// Se falhar (ex: servidor antigo, cold start do Render), fazemos fallback
+// para chamadas individuais garantindo retro-compatibilidade.
+//
+// NOTÁ: Não usamos AbortSignal.timeout aqui porque o Render free-tier precisa
+// de 30-60s de cold start. O loading screen já dá feedback visual ao utilizador.
 async function fetchAllData(headers, dispatch) {
   // ── Tentativa 1: Endpoint Agregado (caminho feliz) ───────────────────────────
-  // Usamos AbortSignal com timeout curto para não bloquear se o servidor for lento.
   try {
-    const res = await fetch(`${FINANCE_API_URL}/dashboard-summary`, {
-      headers,
-      signal: AbortSignal.timeout(10000),
-    });
+    // Sem timeout agressivo — o Render free-tier precisa de 30-60s de cold start.
+    // O splash screen / loading state já garante feedback visual durante a espera.
+    const res = await fetch(`${FINANCE_API_URL}/dashboard-summary`, { headers });
 
     if (res.status === 401) {
       localStorage.removeItem('mwanga-token');
@@ -191,7 +192,6 @@ async function fetchAllData(headers, dispatch) {
           'A usar fallback (13 chamadas individuais). Faz deploy do backend para activar.'
         );
       }
-      // Cai para o fallback sem logar erro
     } else if (res.ok) {
       const ct = res.headers.get('content-type') || '';
       if (ct.includes('application/json')) {
@@ -214,13 +214,15 @@ async function fetchAllData(headers, dispatch) {
       }
     }
   } catch (err) {
-    // Apenas loga erros reais (timeout, rede, CORS) — não 404.
-    if (err?.name !== 'AbortError') {
-      console.warn('[Mwanga] Endpoint agregado inacessível, a usar fallback:', err?.message);
+    // Loga apenas erros inesperados (CORS, rede caída) — não timeouts normais.
+    if (import.meta.env.DEV) {
+      console.warn('[Mwanga] Endpoint agregado falhou, a usar fallback:', err?.message);
     }
   }
 
   // ── Tentativa 2: Chamadas individuais (fallback retro-compatível) ───────────
+  // Se chegamos aqui, o servidor já foi "acordado" pelo primeiro request.
+  // As chamadas individuais devem ser rápidas ou estar em warm-up.
   const SF = async (url) => {
     try {
       const r = await fetch(url, { headers });
