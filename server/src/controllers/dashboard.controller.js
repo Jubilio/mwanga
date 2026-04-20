@@ -17,9 +17,11 @@ const logger = require('../utils/logger');
 const CACHE_TTL_SECONDS = 30;
 
 const getDashboardSummary = async (req, res) => {
-  const householdId = req.user?.householdId;
+  const { householdId, id: userId } = req.user;
+
   if (!householdId) {
-    return res.status(401).json({ error: 'Unauthorized: No household ID' });
+    logger.warn({ userId }, 'Dashboard requested but user has no householdId');
+    return res.status(400).json({ error: 'Household ID missing. Please ensure your profile is correctly set up.' });
   }
 
   // ── Cache check ──────────────────────────────────────────────────────────────

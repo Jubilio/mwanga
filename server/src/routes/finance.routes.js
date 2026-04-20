@@ -11,44 +11,42 @@ const { getDebts, addDebt, deleteDebt, addPayment } = require('../controllers/de
 const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require('../controllers/accountController');
 const { chat: binthChat, getScore: binthScore, getPageInsight } = require('../controllers/binth.controller');
 const { getDashboardSummary } = require('../controllers/dashboard.controller');
-const { authenticate } = require('../middleware/auth.middleware');
+const auth = require('../middleware/auth.middleware');
 const vslaRoutes = require('./vsla.routes');
 
 const router = express.Router();
 
-router.use(authenticate);
+router.use((req, res, next) => auth.authenticate(req, res, next));
 
 // Dashboard Agregado — 1 chamada substitui 13 chamadas paralelas do frontend
 // Cache de 30s no Redis. Invalida automaticamente após mutações.
-router.get('/dashboard-summary', getDashboardSummary);
+router.get('/dashboard-summary', (req, res, next) => auth.authenticate(req, res, next), getDashboardSummary);
 
 // VSLA (Community)
 router.use('/vsla', vslaRoutes);
 
 // Transactions
-router.get('/transactions', getTransactions);
-router.post('/transactions', createTransaction);
-router.delete('/transactions/:id', deleteTransaction);
+router.get('/transactions', (req, res, next) => auth.authenticate(req, res, next), getTransactions);
+router.post('/transactions', (req, res, next) => auth.authenticate(req, res, next), createTransaction);
+router.delete('/transactions/:id', (req, res, next) => auth.authenticate(req, res, next), deleteTransaction);
 
 // Budgets
-router.get('/budgets', getBudgets);
-router.post('/budgets', upsertBudget);
-router.delete('/budgets/:id', deleteBudget);
+router.get('/budgets', (req, res, next) => auth.authenticate(req, res, next), getBudgets);
+router.post('/budgets', (req, res, next) => auth.authenticate(req, res, next), upsertBudget);
+router.delete('/budgets/:id', (req, res, next) => auth.authenticate(req, res, next), deleteBudget);
 
 // Goals
-router.get('/goals', getGoals);
-router.post('/goals', createGoal);
-router.put('/goals/:id', updateGoalProgress);
-router.delete('/goals/:id', deleteGoal);
+router.get('/goals', (req, res, next) => auth.authenticate(req, res, next), getGoals);
+router.post('/goals', (req, res, next) => auth.authenticate(req, res, next), createGoal);
+router.put('/goals/:id', (req, res, next) => auth.authenticate(req, res, next), updateGoalProgress);
+router.delete('/goals/:id', (req, res, next) => auth.authenticate(req, res, next), deleteGoal);
 
 // Rentals
-router.get('/rentals', getRentals);
-router.post('/rentals', createRental);
-router.delete('/rentals/:id', deleteRental);
+router.get('/rentals', (req, res, next) => auth.authenticate(req, res, next), getRentals);
+router.post('/rentals', (req, res, next) => auth.authenticate(req, res, next), createRental);
+router.delete('/rentals/:id', (req, res, next) => auth.authenticate(req, res, next), deleteRental);
 
 // Patrimony (Assets & Liabilities)
-router.get('/assets', getAssets);
-router.post('/assets', createAsset);
 router.delete('/assets/:id', deleteAsset);
 router.get('/liabilities', getLiabilities);
 router.post('/liabilities', createLiability);

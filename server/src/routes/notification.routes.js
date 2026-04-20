@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const notificationController = require('../controllers/notification.controller');
-const { authenticate } = require('../middleware/auth.middleware');
+const auth = require('../middleware/auth.middleware');
 
 router.get('/push-config', notificationController.getPushConfig);
 
 // Private routes (requires authentication)
-router.use(authenticate);
+router.use((req, res, next) => auth.authenticate(req, res, next));
 
 router.get('/', notificationController.list);
 router.post('/subscribe', notificationController.subscribe);
