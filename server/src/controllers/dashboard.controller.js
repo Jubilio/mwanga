@@ -98,6 +98,7 @@ const getDashboardSummary = async (req, res) => {
       }).catch((err) => { logger.warn({ err }, 'dashboard: xitiques query failed'); return { rows: [] }; }),
 
       // Settings vem do JOIN entre households e settings table
+      // .catch() essencial: a tabela 'settings' pode não existir em todos os ambientes
       db.execute({
         sql: `SELECT h.cash_balance, h.name as household_name,
                 s.financial_month_start_day, s.currency, s.user_salary,
@@ -110,13 +111,13 @@ const getDashboardSummary = async (req, res) => {
               LEFT JOIN settings s ON s.household_id = h.id
               WHERE h.id = ?`,
         args: [householdId],
-      }),
+      }).catch((err) => { logger.warn({ err }, 'dashboard: settings query failed'); return { rows: [] }; }),
 
       db.execute({
         sql: `SELECT id, name, email, avatar_url, role, subscription_tier
               FROM users WHERE household_id = ? LIMIT 1`,
         args: [householdId],
-      }),
+      }).catch((err) => { logger.warn({ err }, 'dashboard: user query failed'); return { rows: [] }; }),
 
       // Dívidas sem payments — buscados separadamente abaixo
       db.execute({
@@ -276,7 +277,10 @@ const getDashboardSummary = async (req, res) => {
     res.json(summary);
   } catch (error) {
     logger.error({ err: error, householdId }, 'Error fetching dashboard summary');
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({
+      error: 'Erro interno do servidor',
+      detail: process.env.NODE_ENV !== 'production' ? error.message : undefined
+    });
   }
 };
 
