@@ -37,6 +37,9 @@ const getDashboardSummary = async (req, res) => {
 
   try {
     // ── Fase 1: Todas as queries base em paralelo (queries simples, sem aggregation) ──
+    // NOTA: Tabelas que podem não existir em todos os ambientes (debts, xitiques,
+    // loan_applications, loans) têm .catch() para evitar que o Promise.all inteiro
+    // falhe e retorne 500 ao utilizador.
     const [
       transactionsResult,
       rentalsResult,
@@ -58,41 +61,41 @@ const getDashboardSummary = async (req, res) => {
               FROM transactions WHERE household_id = ?
               ORDER BY date DESC, id DESC LIMIT 200`,
         args: [householdId],
-      }),
+      }).catch((err) => { logger.warn({ err }, 'dashboard: transactions query failed'); return { rows: [] }; }),
 
       db.execute({
         sql: `SELECT id, month, landlord, amount, status, notes
               FROM rentals WHERE household_id = ? ORDER BY month DESC`,
         args: [householdId],
-      }),
+      }).catch((err) => { logger.warn({ err }, 'dashboard: rentals query failed'); return { rows: [] }; }),
 
       db.execute({
         sql: `SELECT id, name, target_amount, saved_amount, deadline, category, monthly_saving
               FROM goals WHERE household_id = ? ORDER BY created_at DESC`,
         args: [householdId],
-      }),
+      }).catch((err) => { logger.warn({ err }, 'dashboard: goals query failed'); return { rows: [] }; }),
 
       db.execute({
         sql: `SELECT id, category, limit_amount FROM budgets WHERE household_id = ?`,
         args: [householdId],
-      }),
+      }).catch((err) => { logger.warn({ err }, 'dashboard: budgets query failed'); return { rows: [] }; }),
 
       db.execute({
         sql: `SELECT id, name, type, value FROM assets WHERE household_id = ?`,
         args: [householdId],
-      }),
+      }).catch((err) => { logger.warn({ err }, 'dashboard: assets query failed'); return { rows: [] }; }),
 
       db.execute({
         sql: `SELECT id, name, total_amount, remaining_amount, interest_rate
               FROM liabilities WHERE household_id = ?`,
         args: [householdId],
-      }),
+      }).catch((err) => { logger.warn({ err }, 'dashboard: liabilities query failed'); return { rows: [] }; }),
 
       // Apenas xitiques activos — sub-data (cycles/contributions/receipts) buscada abaixo
       db.execute({
         sql: `SELECT * FROM xitiques WHERE household_id = ? AND status = 'active' ORDER BY created_at DESC`,
         args: [householdId],
-      }),
+      }).catch((err) => { logger.warn({ err }, 'dashboard: xitiques query failed'); return { rows: [] }; }),
 
       // Settings vem do JOIN entre households e settings table
       db.execute({
@@ -119,13 +122,13 @@ const getDashboardSummary = async (req, res) => {
       db.execute({
         sql: `SELECT * FROM debts WHERE household_id = ? ORDER BY created_at DESC`,
         args: [householdId],
-      }),
+      }).catch((err) => { logger.warn({ err }, 'dashboard: debts query failed'); return { rows: [] }; }),
 
       db.execute({
         sql: `SELECT id, name, type, initial_balance, current_balance
               FROM accounts WHERE household_id = ? ORDER BY current_balance DESC`,
         args: [householdId],
-      }),
+      }).catch((err) => { logger.warn({ err }, 'dashboard: accounts query failed'); return { rows: [] }; }),
 
       // Loan applications — tabela pode não existir em todos os ambientes
       db.execute({
@@ -142,60 +145,82 @@ const getDashboardSummary = async (req, res) => {
     // ── Fase 2: Queries dependentes dos IDs da fase 1 ───────────────────────────
 
     // Payments de dívidas — mesmo padrão do debtController
+    // Wrapped in try/catch: debt_payments table may not exist
     let debtsWithPayments = debtsResult.rows;
     if (debtsResult.rows.length > 0) {
-      const debtIds = debtsResult.rows.map(d => d.id);
-      const placeholders = debtIds.map(() => '?').join(', ');
-      const paymentsResult = await db.execute({
-        sql: `SELECT * FROM debt_payments WHERE debt_id IN (${placeholders}) ORDER BY payment_date DESC`,
-        args: debtIds,
-      });
+      try {
+        const debtIds = debtsResult.rows.map(d => d.id);
+        const placeholders = debtIds.map(() => '?').join(', ');
+        const paymentsResult = await db.execute({
+          sql: `SELECT * FROM debt_payments WHERE debt_id IN (${placeholders}) ORDER BY payment_date DESC`,
+          args: debtIds,
+        });
 
-      const paymentsByDebt = paymentsResult.rows.reduce((acc, p) => {
-        if (!acc[p.debt_id]) acc[p.debt_id] = [];
-        acc[p.debt_id].push(p);
-        return acc;
-      }, {});
+        const paymentsByDebt = paymentsResult.rows.reduce((acc, p) => {
+          if (!acc[p.debt_id]) acc[p.debt_id] = [];
+          acc[p.debt_id].push(p);
+          return acc;
+        }, {});
 
-      debtsWithPayments = debtsResult.rows.map(debt => ({
-        ...debt,
-        total_amount: Number(debt.total_amount || 0),
-        remaining_amount: Number(debt.remaining_amount || 0),
-        payments: (paymentsByDebt[debt.id] || []).map(p => ({
-          ...p,
-          amount: Number(p.amount || 0),
-        })),
-      }));
+        debtsWithPayments = debtsResult.rows.map(debt => ({
+          ...debt,
+          total_amount: Number(debt.total_amount || 0),
+          remaining_amount: Number(debt.remaining_amount || 0),
+          payments: (paymentsByDebt[debt.id] || []).map(p => ({
+            ...p,
+            amount: Number(p.amount || 0),
+          })),
+        }));
+      } catch (err) {
+        logger.warn({ err }, 'dashboard: debt_payments sub-query failed, returning debts without payments');
+        debtsWithPayments = debtsResult.rows.map(debt => ({
+          ...debt,
+          total_amount: Number(debt.total_amount || 0),
+          remaining_amount: Number(debt.remaining_amount || 0),
+          payments: [],
+        }));
+      }
     }
 
     // Sub-data de xitiques — mesmo padrão do xitiqueController
+    // Wrapped in try/catch: xitique sub-tables may not exist
     let xitiquesWithData = xitiquesResult.rows;
     if (xitiquesResult.rows.length > 0) {
-      const xIds = xitiquesResult.rows.map(x => x.id);
-      const xPlaceholders = xIds.map(() => '?').join(', ');
+      try {
+        const xIds = xitiquesResult.rows.map(x => x.id);
+        const xPlaceholders = xIds.map(() => '?').join(', ');
 
-      const [cyclesRes, contribRes, receiptsRes] = await Promise.all([
-        db.execute({ sql: `SELECT * FROM xitique_cycles WHERE xitique_id IN (${xPlaceholders})`, args: xIds }),
-        db.execute({ sql: `SELECT * FROM xitique_contributions WHERE xitique_id IN (${xPlaceholders})`, args: xIds }),
-        db.execute({ sql: `SELECT * FROM xitique_receipts WHERE xitique_id IN (${xPlaceholders})`, args: xIds }),
-      ]);
+        const [cyclesRes, contribRes, receiptsRes] = await Promise.all([
+          db.execute({ sql: `SELECT * FROM xitique_cycles WHERE xitique_id IN (${xPlaceholders})`, args: xIds }).catch(() => ({ rows: [] })),
+          db.execute({ sql: `SELECT * FROM xitique_contributions WHERE xitique_id IN (${xPlaceholders})`, args: xIds }).catch(() => ({ rows: [] })),
+          db.execute({ sql: `SELECT * FROM xitique_receipts WHERE xitique_id IN (${xPlaceholders})`, args: xIds }).catch(() => ({ rows: [] })),
+        ]);
 
-      const groupBy = (rows, key) => rows.reduce((map, row) => {
-        const k = row[key];
-        (map[k] = map[k] || []).push(row);
-        return map;
-      }, {});
+        const groupBy = (rows, key) => rows.reduce((map, row) => {
+          const k = row[key];
+          (map[k] = map[k] || []).push(row);
+          return map;
+        }, {});
 
-      const cyclesMap = groupBy(cyclesRes.rows, 'xitique_id');
-      const contribMap = groupBy(contribRes.rows, 'xitique_id');
-      const receiptsMap = groupBy(receiptsRes.rows, 'xitique_id');
+        const cyclesMap = groupBy(cyclesRes.rows, 'xitique_id');
+        const contribMap = groupBy(contribRes.rows, 'xitique_id');
+        const receiptsMap = groupBy(receiptsRes.rows, 'xitique_id');
 
-      xitiquesWithData = xitiquesResult.rows.map(x => ({
-        ...x,
-        cycles: cyclesMap[x.id] || [],
-        contributions: contribMap[x.id] || [],
-        receipts: receiptsMap[x.id] || [],
-      }));
+        xitiquesWithData = xitiquesResult.rows.map(x => ({
+          ...x,
+          cycles: cyclesMap[x.id] || [],
+          contributions: contribMap[x.id] || [],
+          receipts: receiptsMap[x.id] || [],
+        }));
+      } catch (err) {
+        logger.warn({ err }, 'dashboard: xitique sub-queries failed, returning xitiques without sub-data');
+        xitiquesWithData = xitiquesResult.rows.map(x => ({
+          ...x,
+          cycles: [],
+          contributions: [],
+          receipts: [],
+        }));
+      }
     }
 
     // ── Fase 3: Normalizar settings ──────────────────────────────────────────────

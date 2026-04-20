@@ -135,31 +135,55 @@ export default function Layout() {
   const [showInstallBanner, setShowInstallBanner] = useState(true);
 
   useEffect(() => {
+    let failCount = 0;
+    let timeoutId = null;
+
     const fetchNotifications = async () => {
       const token = localStorage.getItem('mwanga-token');
       if (!token) {
         setNotifications([]);
+        scheduleNext();
         return;
       }
 
       try {
         const response = await api.get('/notifications');
         setNotifications(response.data || []);
+        failCount = 0; // Reset on success
       } catch (error) {
         if (error.response?.status === 401) {
           setNotifications([]);
+          scheduleNext();
           return;
         }
 
-        if (error.response?.status !== 429) {
+        // Silently ignore network-level errors (DNS, offline, Render cold start)
+        // — these are transient and spamming console doesn't help the user.
+        const isNetworkError = !error.response && (
+          error.code === 'ERR_NETWORK' ||
+          error.message?.includes('Network Error') ||
+          error.message?.includes('ERR_NAME_NOT_RESOLVED')
+        );
+
+        if (!isNetworkError && error.response?.status !== 429) {
           console.error('Error fetching notifications:', error);
         }
+
+        failCount++;
       }
+
+      scheduleNext();
     };
 
+    // Back off polling on consecutive failures: 60s → 120s → 240s (max 5 min)
+    function scheduleNext() {
+      const baseInterval = 60000;
+      const backoff = Math.min(baseInterval * Math.pow(2, failCount), 300000);
+      timeoutId = setTimeout(fetchNotifications, backoff);
+    }
+
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000);
-    return () => clearInterval(interval);
+    return () => { if (timeoutId) clearTimeout(timeoutId); };
   }, []);
 
   useEffect(() => {
