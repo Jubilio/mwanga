@@ -17,7 +17,8 @@ export default function Dividas() {
     principal_amount: '', 
     interest_rate: '', 
     months: '', 
-    due_date: '' 
+    due_date: '',
+    account_id: '' 
   });
 
   const [showPayForm, setShowPayForm] = useState(null);
@@ -63,11 +64,12 @@ export default function Dividas() {
         total_amount: Number(total.toFixed(2)),
         remaining_amount: Number(total.toFixed(2)),
         due_date: newDebt.due_date,
+        account_id: newDebt.account_id || null,
         status: 'pending'
       }
     });
 
-    setNewDebt({ creditor_name: '', principal_amount: '', interest_rate: '', months: '', due_date: '' });
+    setNewDebt({ creditor_name: '', principal_amount: '', interest_rate: '', months: '', due_date: '', account_id: '' });
     setShowAddForm(false);
   };
 
@@ -170,6 +172,21 @@ export default function Dividas() {
             <div>
               <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('debts.form.months_label')}</label>
               <input type="number" className="input bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 focus:border-blue-500" step="1" min="0" value={newDebt.months} onChange={e => setNewDebt({ ...newDebt, months: e.target.value })} placeholder={t('debts.form.months_placeholder')} />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">Receber dinheiro na conta (Opcional)</label>
+              <select 
+                className="input bg-green-50/30 dark:bg-green-900/10 border-green-200/50 focus:border-green-500"
+                value={newDebt.account_id}
+                onChange={e => setNewDebt({ ...newDebt, account_id: e.target.value })}
+              >
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">Não registar entrada em conta</option>
+                {state.contas?.map(acc => (
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={acc.id} value={acc.id}>{acc.name} • {fmt(acc.current_balance, currency)}</option>
+                ))}
+              </select>
+              <p className="text-[10px] text-gray-400 mt-1 italic">Ao selecionar uma conta, o sistema criará automaticamente uma transação de "Empréstimo" e aumentará o saldo dessa conta.</p>
             </div>
 
             {/* Live Calculation Preview */}

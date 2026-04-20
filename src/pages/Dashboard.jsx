@@ -380,29 +380,36 @@ export default function Dashboard() {
 
           {state.contas?.length > 0 ? (
             <div className="flex flex-col gap-3">
-              {state.contas.slice(0, 4).map((conta) => {
-                const pct = Math.min((Number(conta.current_balance || 0) / maxContaBalance) * 100, 100);
-                return (
-                  <div key={conta.id} className="flex flex-col gap-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[55%]">{conta.name}</span>
-                      <span className="text-xs font-black tabular-nums text-midnight dark:text-white">{fmt(conta.current_balance, currency)}</span>
+              {state.contas
+                .filter(conta => Number(conta.current_balance || 0) > 0)
+                .sort((a, b) => Number(b.current_balance || 0) - Number(a.current_balance || 0))
+                .slice(0, 4)
+                .map((conta) => {
+                  const pct = Math.min((Number(conta.current_balance || 0) / maxContaBalance) * 100, 100);
+                  return (
+                    <div key={conta.id} className="flex flex-col gap-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[55%]">{conta.name}</span>
+                        <span className="text-xs font-black tabular-nums text-midnight dark:text-white">{fmt(conta.current_balance, currency)}</span>
+                      </div>
+                      <div className="h-1 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/5">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${pct}%` }}
+                          transition={{ duration: 0.8, ease: 'easeOut' }}
+                          className="h-full bg-linear-to-r from-ocean/40 to-sky"
+                        />
+                      </div>
                     </div>
-                    <div className="h-1 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/5">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${pct}%` }}
-                        transition={{ duration: 0.8, ease: 'easeOut' }}
-                        className="h-full bg-linear-to-r from-ocean/40 to-sky"
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-              {state.contas.length > 4 && (
+                  );
+                })}
+              {state.contas.filter(c => Number(c.current_balance || 0) > 0).length > 4 && (
                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                  +{state.contas.length - 4} contas...
+                  +{state.contas.filter(c => Number(c.current_balance || 0) > 0).length - 4} contas...
                 </span>
+              )}
+              {state.contas.filter(c => Number(c.current_balance || 0) > 0).length === 0 && (
+                <div className="py-4 text-center text-xs text-slate-400 italic">Todas as contas com saldo zero</div>
               )}
             </div>
           ) : (
@@ -410,7 +417,7 @@ export default function Dashboard() {
           )}
 
           <div className="mt-auto flex items-baseline gap-1 border-t border-slate-100 dark:border-white/5 pt-3">
-            <span className="text-xs text-slate-400 uppercase tracking-widest font-bold">Total</span>
+            <span className="text-xs text-slate-400 uppercase tracking-widest font-bold">Total em Contas</span>
             <span className="ml-auto text-base font-black text-midnight dark:text-white tabular-nums">{fmt(totalContas, currency)}</span>
           </div>
         </motion.div>

@@ -54,6 +54,8 @@ export default function Settings() {
     monthly_due_reminder_period: state.settings.monthly_due_reminder_period || 'inicio',
     cash_balance: state.settings.cash_balance || 0,
     sms_automation_enabled: state.settings.sms_automation_enabled === 'true' || state.settings.sms_automation_enabled === true,
+    default_income_account_id: state.settings.default_income_account_id || '',
+    default_expense_account_id: state.settings.default_expense_account_id || '',
   });
 
   const saveTimeoutRef = useRef(null);
@@ -460,7 +462,34 @@ export default function Settings() {
                             {form.currency}
                           </div>
                         </div>
-                        <p className="text-[9px] text-slate-400 mt-2 italic px-1">{t('settings.financas.cash_balance_tip')}</p>
+                      </div>
+
+                      <div className="group">
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Conta Padrão (Entradas)</label>
+                        <select
+                          value={form.default_income_account_id}
+                          onChange={(e) => setFormDirty({ ...form, default_income_account_id: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-indigo-500/40 transition-all appearance-none cursor-pointer font-medium"
+                        >
+                          <option value="">Nenhuma</option>
+                          {state.contas?.map(acc => (
+                            <option key={acc.id} value={acc.id}>{acc.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="group">
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Conta Padrão (Despesas)</label>
+                        <select
+                          value={form.default_expense_account_id}
+                          onChange={(e) => setFormDirty({ ...form, default_expense_account_id: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-indigo-500/40 transition-all appearance-none cursor-pointer font-medium"
+                        >
+                          <option value="">Nenhuma</option>
+                          {state.contas?.map(acc => (
+                            <option key={acc.id} value={acc.id}>{acc.name}</option>
+                          ))}
+                        </select>
                       </div>
 
                       <div

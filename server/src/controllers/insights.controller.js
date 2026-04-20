@@ -23,7 +23,7 @@ const getOverview = async (req, res) => {
   // Income vs Expenses (Last 6 months)
   const trendResult = await db.execute({
     sql: `
-      SELECT to_char(date, 'YYYY-MM') as month, 
+      SELECT to_char(date::date, 'YYYY-MM') as month, 
              SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as income,
              SUM(CASE WHEN type IN ('despesa', 'renda') THEN amount ELSE 0 END) as expenses
       FROM transactions 

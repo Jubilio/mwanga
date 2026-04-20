@@ -6,12 +6,13 @@ const addDebtSchema = z.object({
   creditor_name: z.string().min(1).max(100).trim(),
   total_amount: z.coerce.number().positive(),
   due_date: z.string().optional().nullable(),
+  account_id: z.coerce.number().optional().nullable(),
 }).strict();
 
 const addPaymentSchema = z.object({
   amount: z.coerce.number().positive(),
   payment_date: z.string(),
-  account_id: z.coerce.number().optional(),
+  account_id: z.coerce.number().optional().nullable(),
 }).strict();
 
 exports.getDebts = async (req, res) => {
@@ -57,19 +58,41 @@ exports.getDebts = async (req, res) => {
 
 exports.addDebt = async (req, res, next) => {
   try {
-    const { creditor_name, total_amount, due_date } = addDebtSchema.parse(req.body);
+    const { creditor_name, total_amount, due_date, account_id } = addDebtSchema.parse(req.body);
     const householdId = req.user.householdId;
 
-    const result = await db.execute({
-      sql: `
-        INSERT INTO debts (creditor_name, total_amount, remaining_amount, due_date, status, household_id)
-        VALUES ($1, $2, $3, $4, 'pending', $5) RETURNING id
-      `,
-      args: [creditor_name, total_amount, total_amount, due_date || null, householdId]
-    });
+    const queries = [
+      {
+        sql: `
+          INSERT INTO debts (creditor_name, total_amount, remaining_amount, due_date, status, household_id)
+          VALUES ($1, $2, $3, $4, 'pending', $5) RETURNING id
+        `,
+        args: [creditor_name, total_amount, total_amount, due_date || null, householdId]
+      }
+    ];
+
+    // If an account is linked, record the money coming in (the loan)
+    if (account_id) {
+      const today = new Date().toISOString().split('T')[0];
+      queries.push({
+        sql: `
+          INSERT INTO transactions (date, type, description, amount, category, household_id, account_id)
+          VALUES ($1, 'receita', $2, $3, 'Empréstimo', $4, $5)
+        `,
+        args: [today, `Empréstimo recebido de: ${creditor_name}`, total_amount, householdId, account_id]
+      });
+
+      queries.push({
+        sql: 'UPDATE accounts SET current_balance = current_balance + $1 WHERE id = $2 AND household_id = $3',
+        args: [total_amount, account_id, householdId]
+      });
+    }
+
+    const results = await db.batch(queries, 'write');
+    const debtId = Number(results[0].rows?.[0]?.id || results[0].lastInsertRowid || 0);
 
     res.status(201).json({
-      id: result.rows?.[0]?.id,
+      id: debtId,
       message: 'Dívida adicionada com sucesso'
     });
   } catch (error) {

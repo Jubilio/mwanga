@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useOutletContext, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
-import { Plus, Search, Trash2, Download, Filter, Calendar, Tag, CreditCard, ArrowDownToLine, ArrowUpRight } from 'lucide-react';
+import { Plus, Search, Trash2, Download, Filter, Calendar, Tag, CreditCard, ArrowDownToLine, ArrowUpRight, Save } from 'lucide-react';
 import { fmt, exportToCSV } from '../utils/calculations';
 import { getPaymentMethodLabel } from '../utils/paymentMethods';
 import CategoryBadge from '../components/CategoryBadge';
@@ -32,6 +32,7 @@ export default function Transactions() {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const TYPES = [
     { value: 'receita', label: t('transactions.types.receita') },
@@ -41,9 +42,35 @@ export default function Transactions() {
   ];
 
   const today = new Date().toISOString().split('T')[0];
+  const location = useLocation();
   const [form, setForm] = useState({
-    data: today, tipo: 'despesa', desc: '', valor: '', cat: 'Alimentação', nota: '', account_id: ''
+    data: today, 
+    tipo: 'despesa', 
+    desc: '', 
+    valor: '', 
+    cat: 'Alimentação', 
+    nota: '', 
+    account_id: state.settings.default_expense_account_id || ''
   });
+
+  useEffect(() => {
+    if (location.state?.openModal) {
+      setIsFormOpen(true);
+      if (location.state.tipo) {
+        const type = location.state.tipo;
+        const defaultAcc = type === 'receita' 
+          ? state.settings.default_income_account_id 
+          : state.settings.default_expense_account_id;
+          
+        setForm(f => ({ 
+          ...f, 
+          tipo: type,
+          cat: type === 'receita' ? 'Salário' : 'Alimentação',
+          account_id: defaultAcc || ''
+        }));
+      }
+    }
+  }, [location.state, state.settings]);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -51,13 +78,37 @@ export default function Transactions() {
       showToast(t('transactions.toast_fill_desc'));
       return;
     }
-    dispatch({
-      type: 'ADD_TRANSACTION',
-      payload: { ...form, valor: parseFloat(form.valor), account_id: form.account_id || null },
-    });
+    if (editingId) {
+      dispatch({
+        type: 'UPDATE_TRANSACTION',
+        payload: { ...form, id: editingId, valor: parseFloat(form.valor), account_id: form.account_id || null },
+      });
+      setEditingId(null);
+      showToast(t('transactions.toast_updated') || 'Transação actualizada');
+    } else {
+      dispatch({
+        type: 'ADD_TRANSACTION',
+        payload: { ...form, valor: parseFloat(form.valor), account_id: form.account_id || null },
+      });
+      showToast(t('transactions.toast_added'));
+    }
     setForm({ ...form, desc: '', valor: '', nota: '', account_id: '' });
-    showToast(t('transactions.toast_added'));
     setIsFormOpen(false);
+  }
+
+  function handleEdit(tr) {
+    setEditingId(tr.id);
+    setForm({
+      data: tr.data,
+      tipo: tr.tipo,
+      desc: tr.desc,
+      valor: tr.valor,
+      cat: tr.cat,
+      nota: tr.nota || '',
+      account_id: tr.account_id || ''
+    });
+    setIsFormOpen(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function handleDelete(id) {
@@ -75,10 +126,15 @@ export default function Transactions() {
     )
     .sort((a, b) => new Date(b.data) - new Date(a.data));
 
-  const totalFiltered = filtered.reduce((acc, curr) => {
-    if (curr.tipo === 'receita') return acc + Number(curr.valor);
-    return acc - Number(curr.valor);
-  }, 0);
+  const totals = filtered.reduce((acc, curr) => {
+    const val = Number(curr.valor || 0);
+    if (curr.tipo === 'receita') acc.in += val;
+    else if (curr.tipo === 'despesa' || curr.tipo === 'renda') acc.out += val;
+    else if (curr.tipo === 'poupanca') acc.sav += val;
+    return acc;
+  }, { in: 0, out: 0, sav: 0 });
+
+  const balance = totals.in - totals.out;
 
   return (
     <div className="flex flex-col gap-6" style={{ paddingBottom: '7rem' }}>
@@ -93,7 +149,13 @@ export default function Transactions() {
             </p>
           </div>
           <button
-            onClick={() => setIsFormOpen(!isFormOpen)}
+            onClick={() => {
+              if (isFormOpen && editingId) {
+                setEditingId(null);
+                setForm({ ...form, desc: '', valor: '', nota: '', account_id: '' });
+              }
+              setIsFormOpen(!isFormOpen);
+            }}
             className={`flex h-11 w-11 items-center justify-center rounded-2xl shadow-lg transition-all active:scale-95 ${
               isFormOpen ? 'bg-coral text-white' : 'bg-linear-to-br from-ocean to-sky text-white'
             }`}
@@ -102,16 +164,21 @@ export default function Transactions() {
           </button>
         </div>
 
-        {/* Mini Summary Card */}
-        <div className="glass-card p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${totalFiltered >= 0 ? 'bg-leaf/10 text-leaf' : 'bg-coral/10 text-coral'}`}>
-                <Filter size={18} />
-              </div>
+        {/* Improved Summary Card */}
+        <div className="glass-card p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
               <div className="flex flex-col">
-                <span className="text-[9px] uppercase font-black tracking-widest text-gray-400">Balanço do Filtro</span>
-                <span className={`text-base font-black tabular-nums ${totalFiltered >= 0 ? 'text-leaf-light' : 'text-coral-light'}`}>
-                  {totalFiltered >= 0 ? '+' : ''}{fmt(totalFiltered, currency)}
+                <span className="text-[8px] uppercase font-black tracking-widest text-gray-400">Entradas</span>
+                <span className="text-sm font-black tabular-nums text-leaf-light">{fmt(totals.in, currency)}</span>
+              </div>
+              <div className="flex flex-col border-l border-white/10 pl-4">
+                <span className="text-[8px] uppercase font-black tracking-widest text-gray-400">Saídas</span>
+                <span className="text-sm font-black tabular-nums text-coral-light">{fmt(totals.out, currency)}</span>
+              </div>
+              <div className="flex flex-col border-l border-white/10 pl-4">
+                <span className="text-[8px] uppercase font-black tracking-widest text-gray-400">Balanço</span>
+                <span className={`text-sm font-black tabular-nums ${balance >= 0 ? 'text-leaf-light' : 'text-coral-light'}`}>
+                  {balance >= 0 ? '+' : ''}{fmt(balance, currency)}
                 </span>
               </div>
             </div>
@@ -120,7 +187,7 @@ export default function Transactions() {
                  exportToCSV(filtered);
                  showToast(t('transactions.toast_exported'));
                }}
-               className="p-2.5 rounded-xl bg-white/5 text-gray-400 hover:text-ocean transition-all"
+               className="p-2.5 rounded-xl bg-white/5 text-gray-400 hover:text-ocean transition-all shrink-0"
                title="Exportar CSV"
             >
               <Download size={18} />
@@ -184,7 +251,18 @@ export default function Transactions() {
                   <select
                     className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm"
                     value={form.tipo}
-                    onChange={e => setForm({ ...form, tipo: e.target.value })}
+                    onChange={e => {
+                      const newType = e.target.value;
+                      const defaultAcc = newType === 'receita' 
+                        ? state.settings.default_income_account_id 
+                        : state.settings.default_expense_account_id;
+                      setForm({ 
+                        ...form, 
+                        tipo: newType, 
+                        cat: newType === 'receita' ? 'Salário' : 'Alimentação',
+                        account_id: defaultAcc || form.account_id
+                      });
+                    }}
                   >
                     {TYPES.map(t => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
@@ -207,14 +285,25 @@ export default function Transactions() {
                   <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
                     <CreditCard size={11} /> {t('transactions.value_mt').replace('{currency}', currency)}
                   </label>
-                  <input
-                    type="number"
-                    className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl font-black text-base"
-                    placeholder="0"
-                    min="0"
-                    value={form.valor}
-                    onChange={e => setForm({ ...form, valor: e.target.value })}
-                  />
+                   <div className="relative">
+                    <input
+                      type="number"
+                      className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl font-black text-base w-full"
+                      placeholder="0"
+                      min="0"
+                      value={form.valor}
+                      onChange={e => setForm({ ...form, valor: e.target.value })}
+                    />
+                    {form.tipo === 'receita' && form.cat === 'Salário' && state.settings.user_salary > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setForm({ ...form, valor: state.settings.user_salary })}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-leaf/10 text-leaf text-[9px] font-black uppercase hover:bg-leaf/20 transition-colors"
+                      >
+                        Carregar Salário
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
@@ -256,8 +345,8 @@ export default function Transactions() {
                 type="submit"
                 className="btn-primary w-full h-11 flex items-center justify-center gap-2 rounded-xl shadow-xl shadow-ocean/30 transition-all active:scale-95 text-[11px] font-black uppercase tracking-widest"
               >
-                <Plus size={16} strokeWidth={3} />
-                Registar Transação
+                {editingId ? <Save size={16} strokeWidth={3} /> : <Plus size={16} strokeWidth={3} />}
+                {editingId ? 'Guardar Alterações' : 'Registar Transação'}
               </button>
             </form>
           </motion.div>
@@ -306,12 +395,24 @@ export default function Transactions() {
                   {tr.tipo === 'receita' ? '+' : '-'}{fmt(tr.valor, currency).split(',')[0]}
                   <span className="opacity-30 text-[10px]">,{fmt(tr.valor, currency).split(',')[1]}</span>
                 </span>
-                <button
-                  onClick={() => handleDelete(tr.id)}
-                  className="p-2 rounded-xl text-gray-300 hover:bg-coral/10 hover:text-coral transition-all lg:opacity-0 lg:group-hover:opacity-100"
-                >
-                  <Trash2 size={16} />
-                </button>
+                <div className="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-all">
+                  <button
+                    onClick={() => handleEdit(tr)}
+                    className="p-2 rounded-xl text-gray-300 hover:bg-ocean/10 hover:text-ocean transition-all"
+                  >
+                    <Plus size={16} className="rotate-45 scale-75" /> {/* Using Edit icon if imported, or lucide-pencil */}
+                    <Search size={16} className="hidden" /> {/* placeholder */}
+                    <div className="w-4 h-4 flex items-center justify-center">
+                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(tr.id)}
+                    className="p-2 rounded-xl text-gray-300 hover:bg-coral/10 hover:text-coral transition-all"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))

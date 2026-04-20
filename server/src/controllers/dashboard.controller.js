@@ -61,9 +61,9 @@ const getDashboardSummary = async (req, res) => {
       db.execute({
         sql: `SELECT id, date, type, description, amount, category, note, account_id
               FROM transactions WHERE household_id = ?
-              ORDER BY date DESC, id DESC LIMIT 200`,
+              ORDER BY date DESC, id DESC LIMIT 1000`,
         args: [householdId],
-      }).catch((err) => { logger.warn({ err }, 'dashboard: transactions query failed'); return { rows: [] }; }),
+      }).catch((err) => { logger.warn({ err, householdId }, 'dashboard: transactions query failed'); return { rows: [] }; }),
 
       db.execute({
         sql: `SELECT id, month, landlord, amount, status, notes

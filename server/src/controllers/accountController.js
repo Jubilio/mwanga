@@ -64,10 +64,34 @@ exports.addAccount = async (req, res, next) => {
       args: [name, type, initial_balance, initial_balance, householdId]
     });
 
-    const accountId = result.rows[0]?.id;
+    const accountId = Number(result.rows[0]?.id || result.lastInsertRowid || 0);
+
+    // If initial balance > 0, create a transaction record so it shows up in monthly income
+    if (initial_balance > 0) {
+      const today = new Date().toISOString().split('T')[0];
+      await db.execute({
+        sql: `
+          INSERT INTO transactions (date, type, description, amount, category, household_id, account_id)
+          VALUES (?, 'receita', ?, ?, 'Saldo Inicial', ?, ?)
+        `,
+        args: [today, `Saldo inicial: ${name}`, initial_balance, householdId, accountId]
+      });
+      
+      // Invalidate transactions cache if Redis is used
+      const redis = require('../utils/redis');
+      if (redis) {
+        try {
+          await redis.del(`transactions:${householdId}:1:50:all:all:all:all`);
+          await redis.del(`dashboard:${householdId}`);
+        } catch (cacheErr) {
+          logger.warn('Cache invalidation failed on addAccount transaction');
+        }
+      }
+    }
+
     await logAction(householdId, 'ACCOUNT_CREATE', 'ACCOUNT', accountId);
 
-    res.status(201).json({ id: accountId, message: 'Account added successfully' });
+    res.status(201).json({ id: accountId, message: 'Account added successfully with initial balance transaction' });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: error.issues || error.errors || [] });
@@ -83,6 +107,39 @@ exports.updateAccountBalance = async (req, res, next) => {
     const { current_balance } = updateBalanceSchema.parse(req.body);
     const householdId = req.user.householdId;
 
+    // Fetch old balance to calculate difference
+    const accountResult = await db.execute({
+      sql: 'SELECT current_balance, name FROM accounts WHERE id = ? AND household_id = ?',
+      args: [id, householdId]
+    });
+    const account = accountResult.rows[0];
+
+    if (account) {
+      const oldBalance = Number(account.current_balance || 0);
+      const diff = current_balance - oldBalance;
+
+      if (diff !== 0) {
+        const today = new Date().toISOString().split('T')[0];
+        const type = diff > 0 ? 'receita' : 'despesa';
+        
+        await db.execute({
+          sql: `
+            INSERT INTO transactions (date, type, description, amount, category, household_id, account_id)
+            VALUES (?, ?, ?, ?, 'Ajuste de Saldo', ?, ?)
+          `,
+          args: [today, type, `Ajuste de saldo: ${account.name}`, Math.abs(diff), householdId, id]
+        });
+
+        const redis = require('../utils/redis');
+        if (redis) {
+          try {
+            await redis.del(`transactions:${householdId}:1:50:all:all:all:all`);
+            await redis.del(`dashboard:${householdId}`);
+          } catch (err) {}
+        }
+      }
+    }
+
     await db.execute({
       sql: `
         UPDATE accounts 
@@ -94,7 +151,7 @@ exports.updateAccountBalance = async (req, res, next) => {
 
     await logAction(householdId, 'ACCOUNT_BALANCE_UPDATE', 'ACCOUNT', id);
 
-    res.json({ message: 'Account balance updated' });
+    res.json({ message: 'Account balance updated and adjustment recorded' });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     logger.error('Error updating account balance:', error);

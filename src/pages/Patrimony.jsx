@@ -240,8 +240,11 @@ export default function Patrimony() {
             )}
 
             {/* Contas List */}
-            {state.contas?.length > 0 ? (
-              state.contas.map((account, idx) => {
+            {state.contas?.filter(a => Number(a.current_balance || 0) > 0).length > 0 ? (
+              state.contas
+                .filter(a => Number(a.current_balance || 0) > 0)
+                .sort((a, b) => Number(b.current_balance || 0) - Number(a.current_balance || 0))
+                .map((account, idx) => {
                 const Icon = accountIcons[account.type] || Briefcase;
                 const styleClass = getAccountCardStyle(account.type, account.name);
                 return (
@@ -296,9 +299,12 @@ export default function Patrimony() {
           </div>
           
           <div className="glass-card overflow-hidden">
-            {state.activos?.length > 0 ? (
+            {state.activos?.filter(a => a.value > 0).length > 0 ? (
               <div className="divide-y divide-slate-100">
-                {state.activos.map((asset, idx) => {
+                {state.activos
+                  .filter(a => a.value > 0)
+                  .sort((a, b) => b.value - a.value)
+                  .map((asset, idx) => {
                   const Icon = assetIcons[asset.type] || Star;
                   return (
                     <div key={asset.id || `asset-${idx}`} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
@@ -342,9 +348,12 @@ export default function Patrimony() {
           </div>
 
           <div className="glass-card overflow-hidden">
-            {activeDebts.length > 0 ? (
+            {activeDebts.filter(d => (d.remaining_amount || 0) > 0).length > 0 ? (
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                {activeDebts.map((d, idx) => (
+                {activeDebts
+                  .filter(d => (d.remaining_amount || 0) > 0)
+                  .sort((a, b) => (b.remaining_amount || 0) - (a.remaining_amount || 0))
+                  .map((d, idx) => (
                   <div key={d.id || `debt-${idx}`} className="p-4 flex items-center justify-between hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">

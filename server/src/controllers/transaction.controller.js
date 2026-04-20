@@ -246,4 +246,63 @@ const deleteTransaction = async (req, res) => {
   }
 };
 
-module.exports = { getTransactions, createTransaction, deleteTransaction };
+const updateTransaction = async (req, res, next) => {
+  try {
+    const householdId = req.user.householdId;
+    const txId = req.params.id;
+    const data = transactionSchema.parse(req.body);
+
+    // 1. Get original transaction to handle balance reversal
+    const result = await db.execute({
+      sql: 'SELECT * FROM transactions WHERE id = ? AND household_id = ?',
+      args: [txId, householdId],
+    });
+    const oldTx = result.rows[0];
+    if (!oldTx) return res.status(404).json({ error: 'Transação não encontrada' });
+
+    const queries = [];
+
+    // 2. Handle Account Balance Reversal (if old account existed)
+    if (oldTx.account_id) {
+      const oldChange = (oldTx.type === 'receita' || oldTx.type === 'poupanca' || oldTx.type === 'deposito') ? Number(oldTx.amount) : -Number(oldTx.amount);
+      queries.push({
+        sql: 'UPDATE accounts SET current_balance = current_balance - ? WHERE id = ? AND household_id = ?',
+        args: [oldChange, oldTx.account_id, householdId],
+      });
+    }
+
+    // 3. Update Transaction
+    queries.push({
+      sql: `UPDATE transactions 
+            SET date = ?, type = ?, description = ?, amount = ?, category = ?, note = ?, account_id = ?
+            WHERE id = ? AND household_id = ?`,
+      args: [data.date, data.type, data.description || null, data.amount, data.category || null, data.note || null, data.account_id || null, txId, householdId],
+    });
+
+    // 4. Handle New Account Balance Apply (if new account exists)
+    if (data.account_id) {
+      const newChange = (data.type === 'receita' || data.type === 'poupanca' || data.type === 'deposito') ? data.amount : -data.amount;
+      queries.push({
+        sql: 'UPDATE accounts SET current_balance = current_balance + ? WHERE id = ? AND household_id = ?',
+        args: [newChange, data.account_id, householdId],
+      });
+    }
+
+    await db.batch(queries, 'write');
+
+    if (redis) {
+      try {
+        await redis.del(`transactions:${householdId}:1:50:all:all:all:all`);
+      } catch (err) {
+        logger.warn({ err }, 'Redis cache invalidation failed on updateTransaction');
+      }
+    }
+
+    res.json({ success: true, id: txId, ...data });
+  } catch (error) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    next(error);
+  }
+};
+
+module.exports = { getTransactions, createTransaction, deleteTransaction, updateTransaction };

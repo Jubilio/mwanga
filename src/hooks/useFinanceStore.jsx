@@ -546,6 +546,40 @@ export function FinanceProvider({ children }) {
           });
           return;
         }
+        case 'UPDATE_TRANSACTION': {
+          const txBody = {
+            date: action.payload.data,
+            type: action.payload.tipo,
+            description: action.payload.desc,
+            amount: action.payload.valor,
+            category: action.payload.cat,
+            note: action.payload.nota,
+            account_id: action.payload.account_id
+          };
+          const resp = await fetch(`${FINANCE_API_URL}/transactions/${action.payload.id}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify(txBody)
+          });
+          if (!resp.ok) throw new Error('Failed to update transaction');
+
+          const [refreshT, refreshAccounts] = await Promise.all([
+            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
+          ]);
+          dispatch({
+            type: 'SET_DATA',
+            payload: {
+              transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : [],
+              contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(acc => ({
+                ...acc,
+                initial_balance: Number(acc.initial_balance || 0),
+                current_balance: Number(acc.current_balance || 0)
+              })) : []
+            }
+          });
+          return;
+        }
         case 'DELETE_TRANSACTION': {
           await fetch(`${FINANCE_API_URL}/transactions/${action.payload}`, {
             method: 'DELETE',
@@ -886,15 +920,33 @@ export function FinanceProvider({ children }) {
           const debtBody = {
             creditor_name: action.payload.creditor_name,
             total_amount: action.payload.total_amount,
-            due_date: action.payload.due_date || null
+            due_date: action.payload.due_date || null,
+            account_id: action.payload.account_id || null
           };
-          const debtRet = await fetch(`${FINANCE_API_URL}/debts`, {
+          const resp = await fetch(`${FINANCE_API_URL}/debts`, {
             method: 'POST',
             headers,
             body: JSON.stringify(debtBody)
-          }).then(r => r.json());
-          payload = { ...action.payload, id: debtRet.id, payments: [] };
-          break;
+          });
+          if (!resp.ok) throw new Error('Failed to add debt');
+          
+          if (action.payload.account_id) {
+             const [refreshT, refreshAccs] = await Promise.all([
+               fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
+               fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
+             ]);
+             dispatch({
+               type: 'SET_DATA',
+               payload: {
+                 transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : [],
+                 contas: Array.isArray(refreshAccs) ? refreshAccs.map(mapAccount) : []
+               }
+             });
+          }
+          
+          const refreshDebts = await fetch(`${FINANCE_API_URL}/debts`, { headers }).then(r => r.json());
+          dispatch({ type: 'SET_DATA', payload: { dividas: refreshDebts } });
+          return;
         }
         case 'DELETE_DEBT': {
           await fetch(`${FINANCE_API_URL}/debts/${action.payload}`, {
@@ -960,20 +1012,44 @@ export function FinanceProvider({ children }) {
             throw new Error(errorMessage);
           }
           const accRet = await accResp.json();
-          payload = {
-            ...accountBody,
-            id: accRet.id,
-            current_balance: accountBody.initial_balance
-          };
-          break;
+          
+          // Re-fetch everything to get the auto-generated 'Saldo Inicial' transaction
+          const [refreshAccounts, refreshTransactions] = await Promise.all([
+            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json())
+          ]);
+
+          dispatch({
+            type: 'SET_DATA',
+            payload: {
+              contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(mapAccount) : [],
+              transacoes: Array.isArray(refreshTransactions) ? refreshTransactions.map(mapTransaction) : []
+            }
+          });
+          return accRet;
         }
         case 'UPDATE_ACCOUNT_BALANCE': {
-          await fetch(`${FINANCE_API_URL}/accounts/${action.payload.id}/balance`, {
+          const resp = await fetch(`${FINANCE_API_URL}/accounts/${action.payload.id}/balance`, {
             method: 'PUT',
             headers,
             body: JSON.stringify({ current_balance: action.payload.balance })
           });
-          break;
+          if (!resp.ok) throw new Error('Failed to update balance');
+
+          // Re-fetch everything to get the auto-generated 'Ajuste de Saldo' transaction
+          const [refreshAccounts, refreshTransactions] = await Promise.all([
+            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json()),
+            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json())
+          ]);
+
+          dispatch({
+            type: 'SET_DATA',
+            payload: {
+              contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(mapAccount) : [],
+              transacoes: Array.isArray(refreshTransactions) ? refreshTransactions.map(mapTransaction) : []
+            }
+          });
+          return;
         }
         case 'DELETE_ACCOUNT': {
           const resp = await fetch(`${FINANCE_API_URL}/accounts/${action.payload}`, {
@@ -983,7 +1059,16 @@ export function FinanceProvider({ children }) {
           if (!resp.ok) {
             throw new Error('Não podes eliminar esta conta porque já existem transações (receitas/despesas) dependentes dela.');
           }
-          break;
+          
+          // Refresh accounts list
+          const refreshAccounts = await fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json());
+          dispatch({
+            type: 'SET_DATA',
+            payload: {
+              contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(mapAccount) : []
+            }
+          });
+          return;
         }
       }
       dispatch({ ...action, payload });
