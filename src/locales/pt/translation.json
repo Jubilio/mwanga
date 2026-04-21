@@ -558,7 +558,9 @@
       "Lazer": "Lazer",
       "Investimentos": "Investimentos",
       "Casa": "Casa",
-      "Outro": "Outro"
+      "Renda": "Renda da Casa",
+      "Poupanca": "Poupança",
+      "Outros": "Outros / Diversos"
     },
     "toasts": {
       "csv_exported": "📥 CSV exportado!",
@@ -665,6 +667,19 @@
       "rent": "Arrendamento",
       "own": "Casa Própria"
     },
+    "categories": {
+      "own_home": "Casa Própria",
+      "condo": "Condomínio",
+      "electricity": "Energia (Credelec)",
+      "water": "Água (FIPAG)",
+      "taxes": "Impostos (IMI / IPRA)",
+      "maintenance": "Obras e Manutenção",
+      "insurance": "Seguro Habitação",
+      "other": "Outras Despesas"
+    },
+    "labels": {
+      "own_home": "Casa Própria"
+    },
     "stats": {
       "current_month": "Mês atual",
       "pending": "Registos pendentes",
@@ -708,6 +723,8 @@
       "landlord_placeholder": "Nome do senhorio ou entidade",
       "obs_label": "Observações (Opcional)",
       "obs_placeholder": "Detalhes adicionais...",
+      "category_label": "Categoria de Gasto",
+      "select_category": "Selecione o Gasto...",
       "submit_btn": "Registrar Pagamento",
       "recurrent_btn": "Tornar Recorrente"
     },
@@ -937,6 +954,8 @@
         "daily_reminder": "Resumo Diário",
         "daily_reminder_tip": "Hora do lembrete diário",
         "commitments": "Compromissos",
+        "debt_reminder": "Vencimento de Dívidas",
+        "debt_reminder_tip": "Alerta antes do prazo",
         "period_start": "Início",
         "period_end": "Fim",
         "ai_sync": "Sincronizado com o motor Binth AI",

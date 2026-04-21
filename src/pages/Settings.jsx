@@ -9,7 +9,7 @@ import {
   Banknote, Calendar, Globe, Mail, CreditCard, Chrome,
   Sun, Moon, Calculator, Check, ChevronRight, Sparkles, Zap,
   Loader2, CloudCheck, Home as HomeIcon, Heart, TrendingUp,
-  HelpCircle, AlertTriangle
+  HelpCircle, AlertTriangle, ShieldAlert
 } from 'lucide-react';
 
 const AVATARS = [
@@ -52,6 +52,7 @@ export default function Settings() {
     monthly_due_reminder_enabled: state.settings.monthly_due_reminder_enabled ?? true,
     monthly_due_reminder_time: state.settings.monthly_due_reminder_time || '08:00',
     monthly_due_reminder_period: state.settings.monthly_due_reminder_period || 'inicio',
+    debt_due_reminder_enabled: state.settings.debt_due_reminder_enabled ?? true,
     cash_balance: state.settings.cash_balance || 0,
     sms_automation_enabled: state.settings.sms_automation_enabled === 'true' || state.settings.sms_automation_enabled === true,
     default_income_account_id: state.settings.default_income_account_id || '',
@@ -711,6 +712,25 @@ export default function Settings() {
                               <option value="inicio" className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white bg-ocean">{t('settings.pref.push.period_start')}</option>
                               <option value="fim" className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white bg-ocean">{t('settings.pref.push.period_end')}</option>
                             </select>
+                          </div>
+                        </div>
+
+                        {/* Lembrete de Dívidas */}
+                        <div className="bg-white/5 rounded-2xl p-4 border border-white/5 hover:bg-white/10 transition-all">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <ShieldAlert size={14} className="text-rose-400" />
+                              <span className="text-[10px] font-black uppercase tracking-widest">{t('settings.pref.push.debt_reminder')}</span>
+                            </div>
+                            <input
+                              type="checkbox"
+                              checked={form.debt_due_reminder_enabled}
+                              onChange={(e) => setFormDirty({ ...form, debt_due_reminder_enabled: e.target.checked })}
+                              className="w-4 h-4 rounded border-white/20 bg-transparent text-teal-500 focus:ring-teal-500"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] text-white/40 italic">{t('settings.pref.push.debt_reminder_tip')}</span>
                           </div>
                         </div>
                       </div>

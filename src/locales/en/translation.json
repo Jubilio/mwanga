@@ -558,7 +558,9 @@
       "Lazer": "Leisure",
       "Investimentos": "Investments",
       "Casa": "Housing",
-      "Outro": "Other"
+      "Renda": "Home Rent",
+      "Poupanca": "Savings",
+      "Outros": "Others"
     },
     "toasts": {
       "csv_exported": "📥 CSV exported!",
@@ -665,6 +667,19 @@
       "rent": "Rent",
       "own": "Own Home"
     },
+    "categories": {
+      "own_home": "Home Loan / Mortgage",
+      "condo": "Condo Fees",
+      "electricity": "Electricity (Credelec)",
+      "water": "Water (FIPAG)",
+      "taxes": "Property Taxes (IPRA)",
+      "maintenance": "Maintenance & Works",
+      "insurance": "Home Insurance",
+      "other": "Other Expenses"
+    },
+    "labels": {
+      "own_home": "Own Home"
+    },
     "stats": {
       "current_month": "Current month",
       "pending": "Pending records",
@@ -708,6 +723,8 @@
       "landlord_placeholder": "Landlord name or entity",
       "obs_label": "Observations (Optional)",
       "obs_placeholder": "Additional details...",
+      "category_label": "Expense Category",
+      "select_category": "Select Category...",
       "submit_btn": "Register Payment",
       "recurrent_btn": "Make Recurrent"
     },

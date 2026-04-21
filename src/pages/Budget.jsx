@@ -8,7 +8,7 @@ import { fmt, calcCategoryBreakdown, getMonthKey } from '../utils/calculations';
 const EXPENSE_CATEGORIES = [
   'Alimentação', 'Transporte', 'Energia/Água', 'Internet',
   'Saúde', 'Educação', 'Igreja/Doações', 'Lazer',
-  'Investimentos', 'Casa', 'Outro',
+  'Investimentos', 'Casa', 'Renda', 'Poupanca', 'Outros',
 ];
 
 export default function Budget() {

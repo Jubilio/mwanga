@@ -21,8 +21,8 @@ const CATEGORIES = [
   { id: 'Igreja/Doações', key: 'church_donations' },
   { id: 'Lazer', key: 'leisure' },
   { id: 'Investimentos', key: 'investments' },
-  { id: 'Poupança', key: 'savings' },
-  { id: 'Outro', key: 'other' },
+  { id: 'Poupança', key: 'Poupanca' },
+  { id: 'Outros', key: 'Outros' },
 ];
 
 export default function Transactions() {

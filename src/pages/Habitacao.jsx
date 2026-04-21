@@ -75,20 +75,28 @@ export default function Habitacao() {
   }
 
   const propriaCategories = [
-    'Casa Própria',
-    'Condomínio',
-    'Energia (Credelec)',
-    'Água (FIPAG)',
-    'Impostos (IMI / IPRA)',
-    'Obras e Manutenção',
-    'Seguro Habitação',
-    'Outras Despesas'
+    'own_home',
+    'condo',
+    'electricity',
+    'water',
+    'taxes',
+    'maintenance',
+    'insurance',
+    'other'
+  ];
+
+  // For backward compatibility with old hardcoded strings in DB
+  const legacyPropriaNames = [
+    'Casa Própria', 'Condomínio', 'Energia (Credelec)', 'Água (FIPAG)',
+    'Impostos (IMI / IPRA)', 'Obras e Manutenção', 'Seguro Habitação', 'Outras Despesas'
   ];
 
   const filteredRendas = useMemo(() => {
     return state.rendas.filter(r => {
       const ownLabel = t('housing.labels.own_home');
-      const isPropria = propriaCategories.includes(r.proprietario) || r.proprietario === ownLabel;
+      const isPropria = propriaCategories.includes(r.proprietario) || 
+                        legacyPropriaNames.includes(r.proprietario) || 
+                        r.proprietario === ownLabel;
       return type === 'propria' ? isPropria : !isPropria;
     });
   }, [state.rendas, type, t]);

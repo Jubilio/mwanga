@@ -46,7 +46,9 @@ export default function HousingHistoryTable({ rendas, currency, handleDelete, sh
                     {r.mes}
                   </td>
                   <td className="px-5 py-4 text-sm text-gray-800 dark:text-white font-semibold">
-                    {r.proprietario}
+                    {['own_home', 'condo', 'electricity', 'water', 'taxes', 'maintenance', 'insurance', 'other'].includes(r.proprietario)
+                      ? t(`housing.categories.${r.proprietario}`)
+                      : r.proprietario}
                   </td>
                   <td className="px-5 py-4 text-sm text-gray-800 dark:text-white font-bold">
                     {fmt(r.valor, currency)}

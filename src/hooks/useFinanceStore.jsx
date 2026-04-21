@@ -33,6 +33,7 @@ const defaultState = {
     monthly_due_reminder_enabled: true,
     monthly_due_reminder_time: '08:00',
     monthly_due_reminder_period: 'inicio',
+    debt_due_reminder_enabled: true,
     onboarding_completed: true,
     subscription_tier: 'free' // Correto: 'free' | 'growth' | 'pro' — valor real vem da API
   },
@@ -72,6 +73,10 @@ function normalizeSettings(rawSettings = {}) {
     monthly_due_reminder_time: rawSettings.monthly_due_reminder_time || defaultState.settings.monthly_due_reminder_time,
     monthly_due_reminder_period:
       rawSettings.monthly_due_reminder_period === 'fim' ? 'fim' : defaultState.settings.monthly_due_reminder_period,
+    debt_due_reminder_enabled: parseBooleanSetting(
+      rawSettings.debt_due_reminder_enabled,
+      defaultState.settings.debt_due_reminder_enabled
+    ),
     subscription_tier: rawSettings.subscription_tier || 'pro' // Default to 'pro' for development
   };
 }
