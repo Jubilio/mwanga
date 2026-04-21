@@ -1,7 +1,8 @@
-import { useReducer, useEffect } from 'react';
+import { useReducer, useEffect, useCallback } from 'react';
 import { FinanceContext } from './FinanceContext';
 import { generateDemoData } from '../utils/calculations';
 import { db } from '../db/db';
+import { useOfflineSync } from './useOfflineSync';
 
 // Define the API Base URL
 let FINANCE_API_URL = import.meta.env.VITE_API_URL || '';
@@ -565,29 +566,39 @@ export function FinanceProvider({ children }) {
             note: action.payload.nota,
             account_id: action.payload.account_id
           };
-          const resp = await fetch(`${FINANCE_API_URL}/transactions`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(txBody)
-          });
-          if (!resp.ok) throw new Error('Failed to add transaction');
+          try {
+            const resp = await fetch(`${FINANCE_API_URL}/transactions`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify(txBody)
+            });
+            if (!resp.ok) throw new Error('Failed to add transaction');
 
-          // Re-fetch transactions AND accounts to ensure perfect sync
-          const [refreshT, refreshAccounts] = await Promise.all([
-            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
-            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
-          ]);
-          dispatch({
-            type: 'SET_DATA',
-            payload: {
-              transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : [],
-              contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(acc => ({
-                ...acc,
-                initial_balance: Number(acc.initial_balance || 0),
-                current_balance: Number(acc.current_balance || 0)
-              })) : []
-            }
-          });
+            // Re-fetch transactions AND accounts to ensure perfect sync
+            const [refreshT, refreshAccounts] = await Promise.all([
+              fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
+              fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
+            ]);
+            dispatch({
+              type: 'SET_DATA',
+              payload: {
+                transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : [],
+                contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(acc => ({
+                  ...acc,
+                  initial_balance: Number(acc.initial_balance || 0),
+                  current_balance: Number(acc.current_balance || 0)
+                })) : []
+              }
+            });
+          } catch (err) {
+            console.warn('[Sync] Offline: Adicionando transação à fila...', err.message);
+            // Salvar localmente no Dexie
+            await db.transacoes.add(mapTransaction({...txBody, id: `offline-${Date.now()}`}));
+            // Adicionar à fila de sincronização
+            await db.pendingActions.add({ type: 'ADD_TRANSACTION', payload: txBody, timestamp: Date.now() });
+            // Atualizar estado local otimisticamente
+            dispatch({ type: 'ADD_TRANSACTION', payload: action.payload });
+          }
           return;
         }
         case 'UPDATE_TRANSACTION': {
@@ -967,29 +978,36 @@ export function FinanceProvider({ children }) {
             due_date: action.payload.due_date || null,
             account_id: action.payload.account_id || null
           };
-          const resp = await fetch(`${FINANCE_API_URL}/debts`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(debtBody)
-          });
-          if (!resp.ok) throw new Error('Failed to add debt');
-          
-          if (action.payload.account_id) {
-             const [refreshT, refreshAccs] = await Promise.all([
-               fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
-               fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
-             ]);
-             dispatch({
-               type: 'SET_DATA',
-               payload: {
-                 transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : [],
-                 contas: Array.isArray(refreshAccs) ? refreshAccs.map(mapAccount) : []
-               }
-             });
+          try {
+            const resp = await fetch(`${FINANCE_API_URL}/debts`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify(debtBody)
+            });
+            if (!resp.ok) throw new Error('Failed to add debt');
+            
+            if (action.payload.account_id) {
+               const [refreshT, refreshAccs] = await Promise.all([
+                 fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
+                 fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
+               ]);
+               dispatch({
+                 type: 'SET_DATA',
+                 payload: {
+                   transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : [],
+                   contas: Array.isArray(refreshAccs) ? refreshAccs.map(mapAccount) : []
+                 }
+               });
+            }
+            
+            const refreshDebts = await fetch(`${FINANCE_API_URL}/debts`, { headers }).then(r => r.json());
+            dispatch({ type: 'SET_DATA', payload: { dividas: refreshDebts } });
+          } catch (err) {
+            console.warn('[Sync] Offline: Adicionando dívida à fila...');
+            await db.dividas.add({ ...debtBody, id: `offline-${Date.now()}`, remaining_amount: debtBody.total_amount, status: 'pending' });
+            await db.pendingActions.add({ type: 'ADD_DEBT', payload: debtBody, timestamp: Date.now() });
+            dispatch({ type: 'ADD_DEBT', payload: action.payload });
           }
-          
-          const refreshDebts = await fetch(`${FINANCE_API_URL}/debts`, { headers }).then(r => r.json());
-          dispatch({ type: 'SET_DATA', payload: { dividas: refreshDebts } });
           return;
         }
         case 'DELETE_DEBT': {
@@ -1001,28 +1019,35 @@ export function FinanceProvider({ children }) {
         }
         case 'PAY_DEBT': {
           const paymentBody = {
+            debtId: action.payload.debtId,
             amount: action.payload.amount,
             payment_date: action.payload.payment_date,
             account_id: action.payload.account_id || undefined
           };
-          await fetch(`${FINANCE_API_URL}/debts/${action.payload.debtId}/pay`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(paymentBody)
-          });
-          const [refreshD, refreshT, refreshAccounts] = await Promise.all([
-            fetch(`${FINANCE_API_URL}/debts`, { headers }).then(r => r.json()),
-            fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
-            fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
-          ]);
-          dispatch({ type: 'SET_DEBTS', payload: Array.isArray(refreshD) ? refreshD : [] });
-          dispatch({
-            type: 'SET_DATA',
-            payload: {
-              transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : [],
-              contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(mapAccount) : []
-            }
-          });
+          try {
+            await fetch(`${FINANCE_API_URL}/debts/${action.payload.debtId}/pay`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify(paymentBody)
+            });
+            const [refreshD, refreshT, refreshAccounts] = await Promise.all([
+              fetch(`${FINANCE_API_URL}/debts`, { headers }).then(r => r.json()),
+              fetch(`${FINANCE_API_URL}/transactions`, { headers }).then(r => r.json()),
+              fetch(`${FINANCE_API_URL}/accounts`, { headers }).then(r => r.json())
+            ]);
+            dispatch({ type: 'SET_DEBTS', payload: Array.isArray(refreshD) ? refreshD : [] });
+            dispatch({
+              type: 'SET_DATA',
+              payload: {
+                transacoes: Array.isArray(refreshT) ? refreshT.map(mapTransaction) : [],
+                contas: Array.isArray(refreshAccounts) ? refreshAccounts.map(mapAccount) : []
+              }
+            });
+          } catch (err) {
+            console.warn('[Sync] Offline: Adicionando pagamento à fila...');
+            await db.pendingActions.add({ type: 'PAY_DEBT', payload: paymentBody, timestamp: Date.now() });
+            dispatch({ type: 'PAY_DEBT', payload: action.payload });
+          }
           return;
         }
         case 'ADD_ACCOUNT': {
@@ -1117,15 +1142,17 @@ export function FinanceProvider({ children }) {
       }
       dispatch({ ...action, payload });
     } catch (err) {
-      // Re-lançamos o erro para que o chamador possa reagir (ex: mostrar toast de erro).
-      // Não fazemos console.error aqui para evitar duplicação — o erro será capturado
-      // pelo handler do componente que chamou apiDispatch().
       throw err;
     }
   };
 
+  const reloadData = useCallback((options) => fetchSessionData(dispatch, options), [dispatch]);
+
+  // Inicializar o motor de sincronização offline
+  useOfflineSync(FINANCE_API_URL, dispatch, reloadData);
+
   return (
-    <FinanceContext.Provider value={{ state, dispatch: apiDispatch, reloadData: (options) => fetchSessionData(dispatch, options) }}>
+    <FinanceContext.Provider value={{ state, dispatch: apiDispatch, reloadData }}>
       {children}
     </FinanceContext.Provider>
   );
