@@ -26,6 +26,7 @@ import {
   MessageSquare,
   Menu,
   ChevronDown,
+  Clock,
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
@@ -112,6 +113,7 @@ export default function Layout() {
     { to: '/simuladores', icon: Calculator, label: t('layout.simulators') },
     { to: '/relatorio', icon: BarChart3, label: t('layout.report') },
     { to: '/pricing', icon: Crown, label: t('layout.pricing') || 'Premium', premium: true },
+    { to: '/time-machine', icon: Clock, label: 'Máquina do Tempo', premium: true },
     { to: '/help', icon: HelpCircle, label: t('layout.help') },
     { to: '/settings', icon: SettingsIcon, label: t('layout.settings') },
   ];
@@ -158,15 +160,15 @@ export default function Layout() {
         }
 
         // Silently ignore network-level errors (DNS, offline, Render cold start)
-        // — these are transient and spamming console doesn't help the user.
-        const isNetworkError = !error.response && (
-          error.code === 'ERR_NETWORK' ||
-          error.message?.includes('Network Error') ||
-          error.message?.includes('ERR_NAME_NOT_RESOLVED')
-        );
+        const errorText = error.message || '';
+        const isNetworkError = !error.response || 
+          error.code === 'ERR_NETWORK' || 
+          errorText.includes('Network Error') || 
+          errorText.includes('ERR_NAME_NOT_RESOLVED') ||
+          errorText.includes('dns');
 
         if (!isNetworkError && error.response?.status !== 429) {
-          console.error('Error fetching notifications:', error);
+          console.error('Notification Error:', error.message);
         }
 
         failCount++;

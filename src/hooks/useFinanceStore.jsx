@@ -1,6 +1,7 @@
 import { useReducer, useEffect } from 'react';
 import { FinanceContext } from './FinanceContext';
 import { generateDemoData } from '../utils/calculations';
+import { db } from '../db/db';
 
 // Define the API Base URL
 let FINANCE_API_URL = import.meta.env.VITE_API_URL || '';
@@ -316,6 +317,15 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
       }
     });
 
+    // PERSISTÊNCIA: Atualizar Dexie com os dados frescos da API
+    await Promise.all([
+      db.transacoes.clear().then(() => db.transacoes.bulkAdd(Array.isArray(ts) ? ts.map(mapTransaction) : [])),
+      db.budgets.clear().then(() => db.budgets.bulkAdd(Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: b.category, limit: Number(b.limit_amount || 0) })) : [])),
+      db.metas.clear().then(() => db.metas.bulkAdd(Array.isArray(metas) ? metas.map(mapGoal) : [])),
+      db.rendas.clear().then(() => db.rendas.bulkAdd(Array.isArray(rendas) ? rendas.map(mapRental) : [])),
+      db.settings.put({ id: 'current', ...mergedSettings })
+    ]);
+
     return resolvedUser;
   } catch {
     const demo = generateDemoData();
@@ -481,10 +491,44 @@ export function FinanceProvider({ children }) {
 
         if (user) dispatch({ type: 'SET_USER', payload: user });
 
+        // PERSISTÊNCIA: Guardar tudo no Dexie para uso offline posterior
+        await Promise.all([
+          db.transacoes.clear().then(() => db.transacoes.bulkAdd(Array.isArray(ts) ? ts.map(mapTransaction) : [])),
+          db.budgets.clear().then(() => db.budgets.bulkAdd(Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: b.category, limit: Number(b.limit_amount || 0) })) : [])),
+          db.metas.clear().then(() => db.metas.bulkAdd(Array.isArray(metas) ? metas.map(mapGoal) : [])),
+          db.rendas.clear().then(() => db.rendas.bulkAdd(Array.isArray(rendas) ? rendas.map(mapRental) : [])),
+          db.settings.put({ id: 'current', ...mergedSettings })
+        ]);
+
       } catch (e) {
         if (aborted) return;
-        // Falha silenciosa: mostra demo data para que o utilizador veja o produto
-        // mesmo sem conexão. O utilizador pode tentar novamente com o botão de refresh.
+        
+        // FALLBACK: Tentar carregar do Dexie se a API falhar (Offline Mode)
+        try {
+          const offlineTs = await db.transacoes.toArray();
+          const offlineBudgets = await db.budgets.toArray();
+          const offlineMetas = await db.metas.toArray();
+          const offlineRendas = await db.rendas.toArray();
+          const offlineSettings = await db.settings.get('current');
+
+          if (offlineTs.length > 0) {
+            dispatch({
+              type: 'SET_DATA',
+              payload: {
+                transacoes: offlineTs,
+                budgets: offlineBudgets,
+                metas: offlineMetas,
+                rendas: offlineRendas,
+                settings: offlineSettings || defaultState.settings,
+                loading: false
+              }
+            });
+            return;
+          }
+        } catch (dexieErr) {
+          console.error('Offline load failed:', dexieErr);
+        }
+
         const demo = generateDemoData();
         dispatch({ type: 'SET_DATA', payload: { ...demo, loading: false } });
       }

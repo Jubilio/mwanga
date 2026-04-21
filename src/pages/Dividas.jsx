@@ -10,6 +10,7 @@ export default function Dividas() {
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
+  const [showBalance] = useState(() => localStorage.getItem('mwanga-show-balance') !== 'false');
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newDebt, setNewDebt] = useState({ 
@@ -38,11 +39,9 @@ export default function Dividas() {
     if (!newDebt.creditor_name || !newDebt.principal_amount) return;
 
     const principal = Number(newDebt.principal_amount);
-    const rate = Number(newDebt.interest_rate) / 100; // Transform from 20 to 0.20
+    const rate = Number(newDebt.interest_rate) / 100;
     const months = Number(newDebt.months);
 
-    // Calculate actual total using Price Table 
-    // M = P * i * (1+i)^n / ((1+i)^n - 1)
     let parcela = 0;
     let total = principal;
 
@@ -98,12 +97,12 @@ export default function Dividas() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-20">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-display font-bold text-dark dark:text-white">{t('debts.title')}</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">{t('debts.subtitle')}</p>
         </div>
-        <button className="btn btn-primary flex items-center gap-2" onClick={() => setShowAddForm(!showAddForm)}>
+        <button className="btn btn-primary flex items-center gap-2 w-full sm:w-auto justify-center" onClick={() => setShowAddForm(!showAddForm)}>
           <Plus size={18} /> {t('debts.new_debt')}
         </button>
       </div>
@@ -112,12 +111,12 @@ export default function Dividas() {
       <div className="responsive-grid mb-6">
         <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-coral">
           <div className="text-xs uppercase tracking-widest text-muted mb-1">{t('debts.total_debt')}</div>
-          <div className="text-2xl font-bold text-coral">{fmt(totalRemaining, currency)}</div>
+          <div className="text-2xl font-bold text-coral">{showBalance ? fmt(totalRemaining, currency) : '••••'}</div>
           <Wallet size={32} className="absolute right-4 bottom-4 text-coral opacity-20" />
         </div>
         <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-leaf">
           <div className="text-xs uppercase tracking-widest text-muted mb-1">{t('debts.total_paid')}</div>
-          <div className="text-2xl font-bold text-leaf">{fmt(totalPaid, currency)}</div>
+          <div className="text-2xl font-bold text-leaf">{showBalance ? fmt(totalPaid, currency) : '••••'}</div>
           <CheckCircle size={32} className="absolute right-4 bottom-4 text-leaf opacity-20" />
         </div>
         <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-gold text-white bg-linear-to-br from-gray-900 to-black">
@@ -129,7 +128,7 @@ export default function Dividas() {
 
       <BinthContextual page="dividas" />
 
-      {/* Biblical Principle Banner — Evitar Dívidas Excessivas */}
+      {/* Biblical Principle Banner */}
       {debts.filter(d => d.status !== 'paid').length > 0 && (
         <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-700/30 text-red-700 dark:text-red-400">
           <span className="text-base shrink-0">📖</span>
@@ -163,7 +162,6 @@ export default function Dividas() {
               <input type="date" className="input bg-gray-50 dark:bg-[#0c1018]" value={newDebt.due_date} onChange={e => setNewDebt({ ...newDebt, due_date: e.target.value })} />
             </div>
 
-            {/* Smart Credit Fields */}
             <div>
               <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('debts.form.rate_label')}</label>
               <input type="number" className="input bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 focus:border-blue-500" step="any" min="0" value={newDebt.interest_rate} onChange={e => setNewDebt({ ...newDebt, interest_rate: e.target.value })} placeholder={t('debts.form.rate_placeholder')} />
@@ -186,29 +184,7 @@ export default function Dividas() {
                   <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={acc.id} value={acc.id}>{acc.name} • {fmt(acc.current_balance, currency)}</option>
                 ))}
               </select>
-              <p className="text-[10px] text-gray-400 mt-1 italic">Ao selecionar uma conta, o sistema criará automaticamente uma transação de "Empréstimo" e aumentará o saldo dessa conta.</p>
             </div>
-
-            {/* Live Calculation Preview */}
-            {(newDebt.principal_amount && newDebt.interest_rate > 0 && newDebt.months > 0) && (
-              <div className="md:col-span-2 mt-2 p-4 rounded-xl bg-gray-50 dark:bg-[#101620] border border-gray-200 dark:border-white/10">
-                <div className="text-xs text-muted font-bold tracking-widest uppercase mb-3">{t('debts.form.simulation_title')}</div>
-                <div className="flex gap-6">
-                  <div>
-                    <div className="text-[10px] text-gray-500">{t('debts.form.installment_label')}</div>
-                    <div className="font-bold text-lg text-blue-600 dark:text-blue-400">
-                      MT {fmt( (Number(newDebt.principal_amount) * (Number(newDebt.interest_rate)/100) * Math.pow(1+(Number(newDebt.interest_rate)/100), Number(newDebt.months))) / (Math.pow(1+(Number(newDebt.interest_rate)/100), Number(newDebt.months)) - 1) )} <span className="text-xs font-normal text-muted">/mês</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] text-gray-500">{t('debts.form.total_cost_label')}</div>
-                    <div className="font-bold text-lg text-red-500">
-                      MT {fmt( ((Number(newDebt.principal_amount) * (Number(newDebt.interest_rate)/100) * Math.pow(1+(Number(newDebt.interest_rate)/100), Number(newDebt.months))) / (Math.pow(1+(Number(newDebt.interest_rate)/100), Number(newDebt.months)) - 1)) * Number(newDebt.months) )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             <div className="md:col-span-2 flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-white/5">
               <button type="button" className="btn bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-6" onClick={() => setShowAddForm(false)}>{t('debts.form.cancel')}</button>
@@ -244,8 +220,8 @@ export default function Dividas() {
                     <div className="font-semibold">{debt.creditor_name}</div>
                     <div className="text-[10px] text-muted hide-desktop">{debt.due_date || t('debts.table.no_date')}</div>
                   </td>
-                  <td className="hide-mobile text-muted">{fmt(debt.total_amount, currency)}</td>
-                  <td className="font-bold text-coral">{fmt(debt.remaining_amount, currency)}</td>
+                  <td className="hide-mobile text-muted">{showBalance ? fmt(debt.total_amount, currency) : '••••'}</td>
+                  <td className="font-bold text-coral">{showBalance ? fmt(debt.remaining_amount, currency) : '••••'}</td>
                   <td className="hide-mobile">
                     {debt.due_date ? (
                       <div className="flex items-center gap-2">
@@ -260,7 +236,6 @@ export default function Dividas() {
                         <button
                           onClick={() => setShowPayForm(showPayForm === debt.id ? null : debt.id)}
                           className="text-leaf hover:opacity-70 p-1"
-                          title={t('debts.actions.pay')}
                         >
                           <CheckCircle2 size={18} />
                         </button>
@@ -268,48 +243,10 @@ export default function Dividas() {
                       <button
                         onClick={() => setConfirmDelete(debt.id)}
                         className="text-coral hover:opacity-70 p-1"
-                        title={t('debts.actions.delete')}
                       >
                         <Trash2 size={18} />
                       </button>
                     </div>
-                    {confirmDelete === debt.id && (
-                      <div className="absolute right-0 mt-2 p-3 bg-white dark:bg-black border border-coral/30 rounded-xl shadow-xl z-10 animate-fade-in">
-                        <p className="text-[10px] font-bold text-coral mb-2">{t('debts.delete_confirm')}</p>
-                        <div className="flex gap-2">
-                          <button onClick={() => handleDelete(debt.id)} className="bg-coral text-white text-[10px] px-2 py-1 rounded">{t('debts.yes')}</button>
-                          <button onClick={() => setConfirmDelete(null)} className="bg-gray-200 text-gray-600 text-[10px] px-2 py-1 rounded">{t('debts.no')}</button>
-                        </div>
-                      </div>
-                    )}
-                    {showPayForm === debt.id && (
-                      <div className="absolute right-0 mt-2 p-4 bg-white dark:bg-black border border-gold/30 rounded-xl shadow-xl z-20 animate-fade-in w-56">
-                        <label className="block text-[10px] font-bold mb-1">{t('debts.payment.title')}</label>
-                        <input
-                          type="number"
-                          className="form-input text-xs py-1 mb-2"
-                          value={paymentAmount}
-                          max={debt.remaining_amount}
-                          onChange={e => setPaymentAmount(e.target.value)}
-                          placeholder={t('debts.payment.placeholder')}
-                        />
-                        <label className="block text-[10px] font-bold mb-1">{t('debts.payment.method_label')}</label>
-                        <select
-                          className="form-input text-xs py-1 mb-3"
-                          value={paymentAccount}
-                          onChange={e => setPaymentAccount(e.target.value)}
-                        >
-                          <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">{t('debts.payment.no_account')}</option>
-                          {state.contas?.map(acc => (
-                            <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={acc.id} value={acc.id}>{acc.name} • {getPaymentMethodLabel(acc.type)} ({fmt(acc.current_balance, currency)})</option>
-                          ))}
-                        </select>
-                        <div className="flex gap-2">
-                          <button onClick={() => handlePay(debt.id)} className="btn btn-primary flex-1 py-1 text-[10px]">{t('debts.payment.pay_btn')}</button>
-                          <button onClick={() => setShowPayForm(null)} className="btn bg-gray-100 dark:bg-gray-800 flex-1 py-1 text-[10px]">X</button>
-                        </div>
-                      </div>
-                    )}
                   </td>
                 </tr>
               ))}

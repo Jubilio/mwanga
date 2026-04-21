@@ -5,8 +5,8 @@
     "transactions": "Transactions",
     "budget": "Budget",
     "housing": "Housing",
-    "goals": "Goals / Savings",
-    "xitique": "Xitique Module",
+    "goals": "Metas",
+    "xitique": "Xitique",
     "debts": "Active Debts",
     "credit": "Bank Credit",
     "simulators": "AI Simulators",
@@ -18,9 +18,35 @@
     "admin": "Admin Panel",
     "help": "Help / Tutorial",
     "settings": "Settings",
-    "pricing": "Plans / Upgrade",
-    "logout": "Log Out",
-    "add": "Add"
+    "pricing": "Planos / Upgrade",
+    "logout": "Terminar Sessão",
+    "add": "Adicionar",
+    "management": "GESTÃO FINANCEIRA",
+    "funding": "FINANCIAMENTO",
+    "savings_goals": "POUPANÇA & METAS",
+    "pro_intelligence": "PRO INTELLIGENCE",
+    "administration": "ADMINISTRATION"
+  },
+  "sidebar": {
+    "pro_locked": {
+      "title": "PRO Feature",
+      "desc_sms": "Import bank SMS automatically and let AI extract transactions for you.",
+      "desc_generic": "This feature is only available in the PRO plan.",
+      "exclusive": "Exclusive plan feature",
+      "upgrade_btn": "✦ Upgrade to PRO",
+      "later_btn": "Maybe later"
+    },
+    "premium_cta": {
+      "title": "NEXO VIBE PREMIUM",
+      "desc": "Unlock Advanced Intelligence, Detailed Reports, and Exclusive Simulators.",
+      "btn": "✦ Upgrade Now"
+    },
+    "user": {
+      "settings_tooltip": "Settings",
+      "logout_tooltip": "Logout",
+      "default_name": "User",
+      "default_household": "Mwanga"
+    }
   },
   "credit": {
     "header": {
@@ -1056,7 +1082,8 @@
       "health": "Financial Health",
       "distribution": "Expense Distribution (Current Month)",
       "evolution": "Monthly Evolution",
-      "history": "Monthly History"
+      "history": "Monthly History",
+      "flow": "Flow Visualization (Sankey)"
     },
     "metrics": {
       "income": "Total Income",
@@ -1076,7 +1103,9 @@
     },
     "chart": {
       "income": "Income",
-      "expenses": "Consolidated Expenses"
+      "expenses": "Consolidated Expenses",
+      "sankey_title": "Sankey Cash Flow",
+      "sankey_subtitle": "Synchronized with your monthly reports"
     },
     "empty_state": "No expenses to analyze"
   },

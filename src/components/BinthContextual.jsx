@@ -49,9 +49,13 @@ export default function BinthContextual({ page }) {
     info:        'rgba(255,255,255,0.12)',
   };
   const borderColor = INSIGHT_BORDER[insight?.insight_type] || INSIGHT_BORDER.info;
+  const isHighUrgency = insight?.insight_type === 'warning' && (insight?.message?.includes('%') || insight?.message?.includes('risco'));
 
   return (
-    <div className="glass-card p-4 relative overflow-hidden group" style={{ borderLeft: `3px solid ${borderColor}` }}>
+    <div 
+      className={`glass-card p-4 relative overflow-hidden group transition-all duration-500 ${isHighUrgency ? 'ring-2 ring-coral/20 bg-coral/5 dark:bg-coral/10 animate-pulse-slow' : ''}`} 
+      style={{ borderLeft: `3px solid ${borderColor}` }}
+    >
       {/* Background Sparkle Effect */}
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
         <Sparkles size={48} className="text-gold" />
@@ -97,6 +101,14 @@ export default function BinthContextual({ page }) {
               )}
               
               <div className="mt-3 flex flex-wrap gap-2">
+                {isHighUrgency && (
+                  <button 
+                    className="text-[11px] bg-coral/20 hover:bg-coral/30 text-coral dark:text-coral-light px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all border border-coral/20"
+                    onClick={() => navigate('/orcamentos')}
+                  >
+                    Rever Orçamentos
+                  </button>
+                )}
                 {insight.quick_actions?.map((action, i) => (
                   <button 
                     key={i} 

@@ -7,7 +7,6 @@ import LanguageSwitcher from './LanguageSwitcher';
 import MwangaLogo from '../MwangaLogo';
 
 // ─── PRO Badge ───────────────────────────────────────────────────────────────
-// ... [rest of the component stays similar]
 function ProBadge() {
   return (
     <span style={{
@@ -21,6 +20,7 @@ function ProBadge() {
 
 // ─── Pro Locked Modal ─────────────────────────────────────────────────────────
 function ProLockedPanel({ item, onClose, onUpgrade }) {
+  const { t } = useTranslation();
   return (
     <div
       style={{
@@ -39,7 +39,6 @@ function ProLockedPanel({ item, onClose, onUpgrade }) {
           animation: 'sidebarPopIn 0.22s cubic-bezier(0.34,1.56,0.64,1)',
         }}
       >
-        {/* Icon */}
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <div style={{
             width: 64, height: 64, borderRadius: 18,
@@ -49,48 +48,26 @@ function ProLockedPanel({ item, onClose, onUpgrade }) {
             fontSize: 28, margin: '0 auto 16px',
           }}>{item?.icon || '🔒'}</div>
           <div style={{ fontSize: 19, fontWeight: 700, color: '#fff', letterSpacing: '-0.01em', marginBottom: 8 }}>
-            {item?.label || 'Funcionalidade PRO'}
+            {item?.label || t('sidebar.pro_locked.title')}
           </div>
           <div style={{ fontSize: 13, color: '#5a7a9a', lineHeight: 1.7 }}>
             {item?.highlight
-              ? 'Importa SMS bancários automaticamente e deixa a IA extrair as transações por ti.'
-              : 'Esta funcionalidade está disponível apenas no plano PRO.'
+              ? t('sidebar.pro_locked.desc_sms')
+              : t('sidebar.pro_locked.desc_generic')
             }
           </div>
         </div>
 
-        {/* Features (only for SMS import) */}
-        {item?.highlight && (
-          <div style={{ marginBottom: 24, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[
-              { icon: '📩', text: 'Parse automático de SMS do Millennium BIM, BCI, M-Pesa, mKesh' },
-              { icon: '⚡', text: 'Extracção instantânea de valor, data, banco e tipo' },
-              { icon: '🔒', text: 'Processamento 100% seguro, sem armazenamento externo' },
-            ].map((f, i) => (
-              <div key={i} style={{
-                display: 'flex', gap: 12, alignItems: 'flex-start',
-                padding: '10px 14px', background: 'rgba(255,255,255,0.03)',
-                borderRadius: 10, border: '1px solid rgba(255,255,255,0.05)',
-              }}>
-                <span style={{ fontSize: 16, flexShrink: 0 }}>{f.icon}</span>
-                <span style={{ fontSize: 12.5, color: '#8a9ab8', lineHeight: 1.55 }}>{f.text}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* PRO badge row */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20,
           padding: '10px 14px', background: 'rgba(245,158,11,0.07)',
           borderRadius: 10, border: '1px solid rgba(245,158,11,0.15)',
         }}>
           <span style={{ fontSize: 14 }}>👑</span>
-          <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600 }}>Funcionalidade exclusiva do plano</span>
+          <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600 }}>{t('sidebar.pro_locked.exclusive')}</span>
           <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 800, background: 'linear-gradient(135deg,#F59E0B,#F97316)', color: '#000', borderRadius: 4, padding: '2px 7px' }}>PRO</span>
         </div>
 
-        {/* Buttons */}
         <button
           onClick={onUpgrade}
           style={{
@@ -100,7 +77,7 @@ function ProLockedPanel({ item, onClose, onUpgrade }) {
             letterSpacing: '0.01em', boxShadow: '0 4px 20px rgba(245,158,11,0.35)',
             marginBottom: 10, transition: 'opacity 0.2s',
           }}
-        >✦ Fazer Upgrade para PRO</button>
+        >{t('sidebar.pro_locked.upgrade_btn')}</button>
         <button
           onClick={onClose}
           style={{
@@ -108,7 +85,7 @@ function ProLockedPanel({ item, onClose, onUpgrade }) {
             background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
             color: '#5a7a9a', fontSize: 13, fontWeight: 500, cursor: 'pointer',
           }}
-        >Talvez mais tarde</button>
+        >{t('sidebar.pro_locked.later_btn')}</button>
       </div>
     </div>
   );
@@ -116,16 +93,14 @@ function ProLockedPanel({ item, onClose, onUpgrade }) {
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 export default function Sidebar({ isOpen, onClose }) {
-  const [proModal, setProModal] = useState(null); // stores the nav item object
+  const [proModal, setProModal] = useState(null);
   const { state } = useFinance();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const userName = state.user?.name || 'Utilizador';
-  const familyName = state.settings?.household_name || 'Mwanga';
+  const userName = state.user?.name || t('sidebar.user.default_name');
+  const familyName = state.settings?.household_name || t('sidebar.user.default_household');
   const userInitial = userName.charAt(0).toUpperCase();
-
-  // Check if user has Pro subscription
   const isPro = state.settings?.subscription_tier === 'pro' || state.settings?.subscription_tier === 'legacy';
 
   const handleLogout = () => {
@@ -135,7 +110,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
   const NAV = [
     {
-      section: 'GESTÃO FINANCEIRA',
+      section: t('layout.management'),
       items: [
         { icon: '▦', label: t('layout.dashboard'), to: '/', end: true },
         { icon: '↕', label: t('layout.transactions'), to: '/transacoes' },
@@ -143,7 +118,7 @@ export default function Sidebar({ isOpen, onClose }) {
       ],
     },
     {
-      section: 'FINANCIAMENTO',
+      section: t('layout.funding'),
       items: [
         { icon: '💸', label: t('layout.credit'), to: '/credito' },
         { icon: '⊟', label: t('layout.debts'), to: '/dividas' },
@@ -151,7 +126,7 @@ export default function Sidebar({ isOpen, onClose }) {
       ],
     },
     {
-      section: 'POUPANÇA & METAS',
+      section: t('layout.savings_goals'),
       items: [
         { icon: '✦', label: t('layout.xitique'), to: '/xitique' },
         { icon: '◉', label: t('layout.goals'), to: '/metas' },
@@ -159,12 +134,14 @@ export default function Sidebar({ isOpen, onClose }) {
       ],
     },
     {
-      section: 'INTELIGÊNCIA PRO',
+      section: t('layout.pro_intelligence'),
       items: [
         { icon: '◈', label: t('layout.insights'), to: '/insights', pro: true },
         { icon: '⇩', label: t('layout.sms_import'), to: '/sms-import', pro: true, highlight: true },
         { icon: '◧', label: t('layout.patrimony'), to: '/patrimonio', pro: true },
         { icon: '⧉', label: t('layout.simulators'), to: '/simuladores', pro: true },
+        { icon: '⏳', label: 'Máquina do Tempo', to: '/time-machine', pro: true },
+        { icon: '👑', label: 'Mordomia', to: '/mordomia', pro: true },
         { icon: '↗', label: t('layout.report'), to: '/relatorio', pro: true },
       ],
     },
@@ -172,7 +149,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
   const ADMIN_NAV = [
     {
-      section: 'ADMINISTRAÇÃO',
+      section: t('layout.administration'),
       items: [
         { icon: '⚙', label: t('layout.admin'), to: '/admin' },
       ],
@@ -195,9 +172,6 @@ export default function Sidebar({ isOpen, onClose }) {
         }
         .sb-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.06); }
         .sb-item.sb-active  { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.25); }
-        .sb-item.sb-highlight { background: rgba(245,158,11,0.07); border-color: rgba(245,158,11,0.18); }
-        .sb-item.sb-highlight:hover { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.28); }
-        .sb-item.sb-pro:not(.sb-highlight):hover { background: rgba(255,255,255,0.03); }
         .sb-settings-btn, .sb-logout-btn {
           background: transparent; border-radius: 10px; padding: 8px;
           cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -215,7 +189,6 @@ export default function Sidebar({ isOpen, onClose }) {
           box-shadow: 0 4px 20px rgba(245,158,11,0.3);
         }
         .sb-upgrade-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        /* Mobile overlay */
         .sb-backdrop { display: none; }
         @media (max-width: 768px) {
           .sb-shell {
@@ -232,7 +205,6 @@ export default function Sidebar({ isOpen, onClose }) {
         .sb-scroll::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
       `}</style>
 
-      {/* Mobile backdrop */}
       {isOpen && <div className="sb-backdrop hide-desktop" onClick={onClose} />}
 
       <aside
@@ -244,24 +216,20 @@ export default function Sidebar({ isOpen, onClose }) {
           overflowY: 'auto', flexShrink: 0,
         }}
       >
-        {/* Logo and Language Switcher */}
         <div style={{ padding: '28px 24px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <MwangaLogo variant="sidebar" />
             </div>
-
             <LanguageSwitcher />
-
           </div>
         </div>
 
         <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 20px 8px' }} />
 
-        {/* Nav */}
         <nav style={{ flex: 1, padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {NAV.map((group, gi) => (
-            <div key={gi} style={{ marginBottom: gi === 0 ? 20 : 0 }}>
+            <div key={gi}>
               <div style={{
                 fontSize: 10, fontWeight: 700, letterSpacing: '0.14em',
                 color: '#4a5568', padding: '14px 6px 8px', textTransform: 'uppercase',
@@ -271,7 +239,6 @@ export default function Sidebar({ isOpen, onClose }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {group.items.map(item =>
                   item.pro ? (
-                    // PRO items — navigable (payment not yet implemented)
                     <NavLink
                       key={item.to}
                       to={item.to}
@@ -302,7 +269,6 @@ export default function Sidebar({ isOpen, onClose }) {
                       )}
                     </NavLink>
                   ) : (
-                    // Regular items — use NavLink
                     <NavLink
                       key={item.to}
                       to={item.to}
@@ -340,7 +306,6 @@ export default function Sidebar({ isOpen, onClose }) {
             </div>
           ))}
 
-          {/* Admin Nav */}
           {state.user?.role === 'admin' && ADMIN_NAV.map((group, gi) => (
             <div key={gi}>
               <div style={{
@@ -357,8 +322,8 @@ export default function Sidebar({ isOpen, onClose }) {
                   >
                     {({ isActive }) => (
                       <>
-                        <span style={{ fontSize: 17, width: 22, textAlign: 'center', flexShrink: 0, color: isActive ? '#F59E0B' : '#F59E0B' }}>{item.icon}</span>
-                        <span style={{ fontSize: 14.5, flex: 1, color: isActive ? '#F59E0B' : '#F59E0B', fontWeight: isActive ? 600 : 400 }}>{item.label}</span>
+                        <span style={{ fontSize: 17, width: 22, textAlign: 'center', flexShrink: 0, color: isActive ? '#F59E0B' : '#8a9ab8' }}>{item.icon}</span>
+                        <span style={{ fontSize: 14.5, flex: 1, color: isActive ? '#F59E0B' : '#c8d6e8', fontWeight: isActive ? 600 : 400 }}>{item.label}</span>
                       </>
                     )}
                   </NavLink>
@@ -368,7 +333,6 @@ export default function Sidebar({ isOpen, onClose }) {
           ))}
         </nav>
 
-        {/* Premium CTA — Only show if NOT Pro */}
         {!isPro && (
           <div style={{ padding: '0 16px 20px' }}>
             <div style={{
@@ -378,14 +342,14 @@ export default function Sidebar({ isOpen, onClose }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <span style={{ fontSize: 15 }}>👑</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#F59E0B', letterSpacing: '0.04em' }}>
-                  NEXO VIBE PREMIUM
+                  {t('sidebar.premium_cta.title')}
                 </span>
               </div>
               <p style={{ fontSize: 12.5, color: '#7a8fa8', lineHeight: 1.6, marginBottom: 14 }}>
-                Desbloqueie Inteligência Avançada, Relatórios Detalhados e Simuladores Exclusivos.
+                {t('sidebar.premium_cta.desc')}
               </p>
               <button className="sb-upgrade-btn" onClick={() => navigate('/pricing')}>
-                ✦ Fazer Upgrade
+                {t('sidebar.premium_cta.btn')}
               </button>
             </div>
           </div>
@@ -393,7 +357,6 @@ export default function Sidebar({ isOpen, onClose }) {
 
         <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 20px' }} />
 
-        {/* User */}
         <div style={{ padding: '16px 20px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
             width: 38, height: 38, borderRadius: 12,
@@ -409,16 +372,15 @@ export default function Sidebar({ isOpen, onClose }) {
               {familyName}
             </div>
           </div>
-          <button className="sb-settings-btn" title="Definições" onClick={() => { navigate('/settings'); onClose(); }}>
+          <button className="sb-settings-btn" title={t('sidebar.user.settings_tooltip')} onClick={() => { navigate('/settings'); onClose(); }}>
             <Settings size={15} />
           </button>
-          <button className="sb-logout-btn" title="Sair" onClick={() => { handleLogout(); onClose(); }}>
+          <button className="sb-logout-btn" title={t('sidebar.user.logout_tooltip')} onClick={() => { handleLogout(); onClose(); }}>
             <LogOut size={15} />
           </button>
         </div>
       </aside>
 
-      {/* Pro Locked Modal */}
       {proModal && (
         <ProLockedPanel
           item={proModal}

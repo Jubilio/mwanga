@@ -26,7 +26,9 @@ const Dividas = lazy(() => import('./pages/Dividas'));
 const Credito = lazy(() => import('./pages/Credito'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Insights = lazy(() => import('./pages/Insights'));
+const Stewardship = lazy(() => import('./pages/Stewardship'));
 const Help = lazy(() => import('./pages/Help'));
+const TimeMachine = lazy(() => import('./pages/TimeMachine'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const AdminLayout = lazy(() => import('./components/AdminLayout'));
@@ -141,6 +143,8 @@ export default function App() {
                 <Route path="settings" element={<ErrorBoundary context="Definições"><Settings /></ErrorBoundary>} />
                 <Route path="pricing" element={<ErrorBoundary context="Pricing"><Pricing /></ErrorBoundary>} />
                 <Route path="insights" element={<ErrorBoundary context="Insights"><Insights /></ErrorBoundary>} />
+                <Route path="mordomia" element={<ErrorBoundary context="Mordomia"><Stewardship /></ErrorBoundary>} />
+                <Route path="time-machine" element={<ErrorBoundary context="Máquina do Tempo"><TimeMachine /></ErrorBoundary>} />
                 <Route path="help" element={<ErrorBoundary context="Ajuda"><Help /></ErrorBoundary>} />
                 <Route path="quick-add" element={<Dashboard />} />
               </Route>

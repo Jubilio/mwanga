@@ -12,6 +12,7 @@ import {
   YAxis
 } from 'recharts';
 import { useFinance } from '../hooks/useFinance';
+import FinancialFlow from '../components/FinancialFlow';
 import {
   calcCategoryBreakdown,
   calcFinancialScore,
@@ -136,6 +137,17 @@ export default function Reports() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="section-title">{t('reports.sections.flow')}</div>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <FinancialFlow 
+          transactions={state.transacoes} 
+          currency={currency} 
+          monthKey={monthKey}
+          rendas={state.rendas}
+          startDay={startDay}
+        />
       </div>
 
       <div className="section-title">{t('reports.sections.distribution')}</div>

@@ -20,6 +20,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import BinthContextual from '../components/BinthContextual';
+import BalanceTrendChart from '../components/BalanceTrendChart';
 import { useFinance } from '../hooks/useFinance';
 import {
   calcFinancialScore,
@@ -34,8 +35,14 @@ export default function Dashboard() {
   const { state, reloadData } = useFinance();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [showBalance, setShowBalance] = useState(true);
+  const [showBalance, setShowBalance] = useState(() => localStorage.getItem('mwanga-show-balance') !== 'false');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const toggleBalance = () => {
+    const newState = !showBalance;
+    setShowBalance(newState);
+    localStorage.setItem('mwanga-show-balance', newState.toString());
+  };
 
   const currency = state.settings.currency || 'MT';
   const startDay = state.settings.financial_month_start_day || 1;
@@ -123,6 +130,32 @@ export default function Dashboard() {
     };
   }, [realBalance]);
 
+  // Cálculo simplificado de tendência para o gráfico
+  const trendData = useMemo(() => {
+    const months = {};
+    const now = new Date();
+    // Pegar os últimos 6 meses
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = d.toLocaleString('pt-PT', { month: 'short' }).replace('.', '');
+      months[key] = { name: key, total: 0, rawDate: d };
+    }
+
+    // Distribuir transações (isso é uma simplificação, idealmente viria do backend)
+    state.transacoes.forEach(t => {
+      const tDate = new Date(t.data);
+      const key = tDate.toLocaleString('pt-PT', { month: 'short' }).replace('.', '');
+      if (months[key]) {
+        if (t.tipo === 'receita') months[key].total += Number(t.valor);
+        else months[key].total -= Number(t.valor);
+      }
+    });
+
+    // Ajustar para saldo acumulado (começando pelo saldo atual e voltando ou vice-versa)
+    // Para fins de UI, vamos apenas mostrar o balanço mensal se não tivermos histórico real de contas
+    return Object.values(months);
+  }, [state.transacoes]);
+
   const handleRefresh = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
@@ -197,7 +230,7 @@ export default function Dashboard() {
               )}
             </div>
             <button
-              onClick={() => setShowBalance(!showBalance)}
+              onClick={toggleBalance}
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 text-gray-400 backdrop-blur-md transition-all hover:bg-white/10 hover:text-white active:scale-90"
             >
               {showBalance ? <Eye size={18} /> : <EyeOff size={18} />}
@@ -206,12 +239,12 @@ export default function Dashboard() {
 
           {/* Flow Indicator Chips */}
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-             <div className={`flex items-center gap-2 rounded-2xl bg-white/5 py-2 px-4 backdrop-blur-xl border border-white/5 ${totals.saldo >= 0 ? 'text-leaf-light' : 'text-coral-light'}`}>
-                {totals.saldo >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                <span className="text-[11px] font-black uppercase tracking-wider tabular-nums">
-                  {totals.saldo >= 0 ? '+' : ''}{fmt(totals.saldo, currency)}
-                </span>
-             </div>
+              <div className={`flex items-center gap-2 rounded-2xl bg-white/5 py-2 px-4 backdrop-blur-xl border border-white/5 ${totals.saldo >= 0 ? 'text-leaf-light' : 'text-coral-light'}`}>
+                 {totals.saldo >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                 <span className="text-[11px] font-black uppercase tracking-wider tabular-nums">
+                   {showBalance ? `${totals.saldo >= 0 ? '+' : ''}${fmt(totals.saldo, currency)}` : '••••'}
+                 </span>
+              </div>
              {state.settings.cash_balance !== undefined && (
                <div className="flex items-center gap-2 rounded-2xl bg-white/5 py-2 px-4 backdrop-blur-xl border border-white/5 text-gold-light">
                  <Wallet size={14} />
@@ -228,7 +261,7 @@ export default function Dashboard() {
             <div className="flex flex-1 flex-col items-center gap-2 px-2">
               <span className="text-[9px] font-black uppercase tracking-[0.2em] text-leaf-light/60">Rendimentos</span>
               <span className="text-sm font-black tabular-nums text-leaf-light sm:text-base">
-                {fmt(totals.totalIncome, currency)}
+                {showBalance ? fmt(totals.totalIncome, currency) : '••••'}
               </span>
               <div className="mt-1 h-1.5 w-full max-w-[140px] overflow-hidden rounded-full bg-white/5">
                 <motion.div 
@@ -246,7 +279,7 @@ export default function Dashboard() {
             <div className="flex flex-1 flex-col items-center gap-2 px-2">
               <span className="text-[9px] font-black uppercase tracking-[0.2em] text-coral-light/60">Despesas</span>
               <span className="text-sm font-black tabular-nums text-coral-light sm:text-base">
-                {fmt(totals.totalExpenses, currency)}
+                {showBalance ? fmt(totals.totalExpenses, currency) : '••••'}
               </span>
               <div className="mt-1 h-1.5 w-full max-w-[140px] overflow-hidden rounded-full bg-white/5">
                 <motion.div 
@@ -359,6 +392,11 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
+      {/* ─── 3.5 FINANCIAL TREND CHART ─── */}
+      <motion.div variants={itemVariants}>
+         <BalanceTrendChart data={trendData} currency={currency} />
+      </motion.div>
+
       {/* ─── 4. CONTAS ACTIVAS & FLUXO DE CAIXA ─── */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 
@@ -390,7 +428,9 @@ export default function Dashboard() {
                     <div key={conta.id} className="flex flex-col gap-1">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[55%]">{conta.name}</span>
-                        <span className="text-xs font-black tabular-nums text-midnight dark:text-white">{fmt(conta.current_balance, currency)}</span>
+                        <span className="text-xs font-black tabular-nums text-midnight dark:text-white">
+                          {showBalance ? fmt(conta.current_balance, currency) : '••••'}
+                        </span>
                       </div>
                       <div className="h-1 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/5">
                         <motion.div
@@ -418,7 +458,9 @@ export default function Dashboard() {
 
           <div className="mt-auto flex items-baseline gap-1 border-t border-slate-100 dark:border-white/5 pt-3">
             <span className="text-xs text-slate-400 uppercase tracking-widest font-bold">Total em Contas</span>
-            <span className="ml-auto text-base font-black text-midnight dark:text-white tabular-nums">{fmt(totalContas, currency)}</span>
+            <span className="ml-auto text-base font-black text-midnight dark:text-white tabular-nums">
+              {showBalance ? fmt(totalContas, currency) : '••••'}
+            </span>
           </div>
         </motion.div>
 
@@ -441,7 +483,7 @@ export default function Dashboard() {
           {/* Big Flow Number */}
           <div className="flex flex-col">
             <span className={`text-3xl font-black tabular-nums ${totals.saldo >= 0 ? 'text-leaf-light' : 'text-coral-light'}`}>
-              {totals.saldo >= 0 ? '+' : ''}{fmt(totals.saldo, currency)}
+              {showBalance ? `${totals.saldo >= 0 ? '+' : ''}${fmt(totals.saldo, currency)}` : '•••••'}
             </span>
             <span className={`text-[9px] font-black uppercase tracking-widest mt-1 ${totals.saldo >= 0 ? 'text-leaf/60' : 'text-coral/60'}`}>
               {totals.saldo >= 0 ? '✓ Mês positivo' : '⚠ Despesas acima dos rendimentos'}
@@ -459,7 +501,9 @@ export default function Dashboard() {
                   className="h-full bg-linear-to-r from-leaf/30 to-leaf-light"
                 />
               </div>
-              <span className="text-[9px] font-black tabular-nums text-leaf-light shrink-0">{fmt(totals.totalIncome, currency)}</span>
+              <span className="text-[9px] font-black tabular-nums text-leaf-light shrink-0">
+                 {showBalance ? fmt(totals.totalIncome, currency) : '••••'}
+               </span>
             </div>
             <div className="flex items-center gap-3">
               <span className="w-16 text-[9px] font-black uppercase tracking-widest text-coral-light/70 shrink-0">Saídas</span>
@@ -470,7 +514,9 @@ export default function Dashboard() {
                   className="h-full bg-linear-to-r from-coral/30 to-coral-light"
                 />
               </div>
-              <span className="text-[9px] font-black tabular-nums text-coral-light shrink-0">{fmt(totals.totalExpenses, currency)}</span>
+              <span className="text-[9px] font-black tabular-nums text-coral-light shrink-0">
+                 {showBalance ? fmt(totals.totalExpenses, currency) : '••••'}
+               </span>
             </div>
           </div>
 
@@ -513,8 +559,8 @@ export default function Dashboard() {
                 </div>
               </div>
               <span className={`text-base font-black tabular-nums ${t.tipo === 'despesa' ? 'text-midnight dark:text-white' : 'text-leaf-light'}`}>
-                {t.tipo === 'despesa' ? '-' : '+'}{fmt(t.valor, currency)}
-              </span>
+                 {showBalance ? `${t.tipo === 'despesa' ? '-' : '+'}${fmt(t.valor, currency)}` : '••••'}
+               </span>
             </div>
           ))}
 

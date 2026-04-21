@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useOutletContext } from 'react-router-dom';
-import { Send, Sparkles, Brain } from 'lucide-react';
+import { useOutletContext, useLocation } from 'react-router-dom';
+import { Send, Sparkles, Brain, Mic, MicOff } from 'lucide-react';
 import api from '../utils/api';
+import { db } from '../db/db';
+import { useFinance } from '../hooks/useFinance';
+import { parseMobileMoneySMS } from '../utils/smsParser';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 // Providers are now managed by backend .env variables
@@ -70,57 +73,180 @@ function ScoreRing({ score, label, biblicalLabel }) {
 export default function Insights() {
   const { t } = useTranslation();
   const { showToast } = useOutletContext();
+  const { state } = useFinance();
 
   // Chat state
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [score, setScore] = useState(null);
+  const [isListening, setIsListening] = useState(false);
 
   const chatEndRef = useRef(null);
   const inputRef   = useRef(null);
+  const recognitionRef = useRef(null);
 
   // Scroll to bottom on new messages
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
 
-  // Load score + personalized welcome message on mount
+  // Load messages from Dexie + score on mount
   useEffect(() => {
-    api.get('/binth/score')
-      .then(r => setScore(r.data))
-      .catch(() => {});
+    const loadData = async () => {
+      // 1. Load History from Dexie
+      const history = await db.mensagens.orderBy('timestamp').toArray();
+      if (history.length > 0) {
+        setMessages(history);
+      } else {
+        // Default welcome if no history
+        api.get('/binth/insights/dashboard')
+          .then((r) => {
+            const { message, insight_type, quick_actions, biblical_insight, alerta } = r.data || {};
+            const welcomeMsg = {
+              role: 'assistant',
+              content: message || t('insights.welcome_default'),
+              insight_type: insight_type || 'info',
+              quick_actions: quick_actions || t('insights.qa_defaults', { returnObjects: true }),
+              biblical_insight,
+              alerta,
+              timestamp: Date.now()
+            };
+            setMessages([welcomeMsg]);
+            db.mensagens.add(welcomeMsg);
+          })
+          .catch(() => {
+            const fallback = {
+              role: 'assistant',
+              content: t('insights.welcome_default'),
+              insight_type: 'info',
+              quick_actions: t('insights.qa_defaults', { returnObjects: true }),
+              timestamp: Date.now()
+            };
+            setMessages([fallback]);
+            db.mensagens.add(fallback);
+          });
+      }
 
-    api.get('/binth/insights/dashboard')
-      .then((r) => {
-        const { message, insight_type, quick_actions, biblical_insight, alerta } = r.data || {};
-        setMessages([{
-          role: 'assistant',
-          content: message || t('insights.welcome_default'),
-          insight_type: insight_type || 'info',
-          quick_actions: quick_actions || t('insights.qa_defaults', { returnObjects: true }),
-          biblical_insight,
-          alerta,
-        }]);
-      })
-      .catch(() => {
-        setMessages([{
-          role: 'assistant',
-          content: t('insights.welcome_default'),
-          insight_type: 'info',
-          quick_actions: t('insights.qa_defaults', { returnObjects: true }),
-        }]);
-      });
-  }, [t]);
+      // 2. Load Score
+      api.get('/binth/score')
+        .then(r => setScore(r.data))
+        .catch(() => {});
+    };
+
+    loadData();
+
+    // 3. Initialize Speech Recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true; // Permite ver o que está a ser dito em tempo real
+      recognition.lang = 'pt-PT';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        console.log('[Binth] Microfone ativo...');
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0])
+          .map(result => result.transcript)
+          .join('');
+        
+        setInput(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        console.error('[Binth] Erro no microfone:', event.error);
+        setIsListening(false);
+        if (event.error === 'not-allowed') {
+          showToast('Permissão de microfone negada. Verifica as definições do browser.', 'error');
+        } else {
+          showToast('Erro ao aceder ao microfone: ' + event.error, 'error');
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+        console.log('[Binth] Microfone desligado.');
+      };
+
+      recognitionRef.current = recognition;
+    } else {
+      console.warn('[Binth] SpeechRecognition não suportado neste browser.');
+    }
+  }, [t, showToast]);
+
+  const toggleListening = () => {
+    try {
+      if (isListening) {
+        recognitionRef.current?.stop();
+      } else {
+        if (!recognitionRef.current) {
+          showToast('O teu browser não suporta comandos de voz.', 'warning');
+          return;
+        }
+        recognitionRef.current.start();
+      }
+    } catch (err) {
+      console.error('Erro ao alternar microfone:', err);
+      setIsListening(false);
+    }
+  };
 
   async function sendMessage(text) {
     const msg = (text || input).trim();
     if (!msg || loading) return;
+
+    if (msg === 'Sim, registar agora') {
+      const lastMsg = messages.filter(m => m.pending_transaction).pop();
+      if (lastMsg?.pending_transaction) {
+        const tr = lastMsg.pending_transaction;
+        api.post('/transactions', {
+          data: tr.formattedDate,
+          tipo: tr.type,
+          desc: tr.description,
+          valor: tr.amount,
+          cat: tr.category,
+          account_id: state.settings.default_expense_account_id || null
+        }).then(() => {
+          showToast('Transação registada pela Binth! 🚀', 'success');
+          // Update state manually or reload
+          window.location.reload(); 
+        });
+      }
+    }
+
     setInput('');
 
-    const userMsg = { role: 'user', content: msg };
+    const userMsg = { role: 'user', content: msg, timestamp: Date.now() };
     const history = messages.filter(m => m.role !== 'system');
 
+    // Verificação de SMS Mobile Money
+    const smsData = parseMobileMoneySMS(msg);
+    if (smsData) {
+      setMessages(prev => [...prev, userMsg]);
+      db.mensagens.add(userMsg);
+      
+      const assistantMsg = {
+        role: 'assistant',
+        content: `Detetei um SMS do **${smsData.service}**!\n\n**Valor:** ${smsData.amount} MT\n**Tipo:** ${smsData.type === 'receita' ? 'Entrada' : 'Saída'}\n**Origem/Destino:** ${smsData.description}\n\nQueres que eu registe esta transação agora?`,
+        insight_type: 'action',
+        quick_actions: ['Sim, registar agora', 'Não, obrigado'],
+        pending_transaction: smsData,
+        timestamp: Date.now()
+      };
+      
+      setTimeout(() => {
+        setMessages(prev => [...prev, assistantMsg]);
+        db.mensagens.add(assistantMsg);
+      }, 600);
+      return;
+    }
+
     setMessages(prev => [...prev, userMsg]);
+    db.mensagens.add(userMsg);
     setLoading(true);
 
     try {
@@ -130,7 +256,14 @@ export default function Insights() {
       });
 
       const { message: aiMessage, ...rest } = res.data;
-      setMessages(prev => [...prev, { role: 'assistant', content: aiMessage || t('insights.error_invalid_response'), ...rest }]);
+      const assistantMsg = { 
+        role: 'assistant', 
+        content: aiMessage || t('insights.error_invalid_response'), 
+        timestamp: Date.now(),
+        ...rest 
+      };
+      setMessages(prev => [...prev, assistantMsg]);
+      db.mensagens.add(assistantMsg);
     } catch (err) {
       const errMsg = err.response?.data?.message || t('insights.welcome_error');
       setMessages(prev => [...prev, {
@@ -304,6 +437,19 @@ export default function Insights() {
 
         {/* Input bar */}
         <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center' }}>
+          <button
+            onClick={toggleListening}
+            className={isListening ? 'animate-pulse' : ''}
+            style={{
+              width: 44, height: 44, borderRadius: 12, border: 'none',
+              background: isListening ? '#EF4444' : 'rgba(255,255,255,0.05)',
+              color: isListening ? '#fff' : '#5a7a9a',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s',
+            }}
+          >
+            {isListening ? <Mic size={20} /> : <MicOff size={20} />}
+          </button>
           <div style={{ flex: 1, position: 'relative' }}>
             <Sparkles size={14} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#5a7a9a', pointerEvents: 'none' }} />
             <input

@@ -5,8 +5,8 @@
     "transactions": "Transações",
     "budget": "Orçamento",
     "housing": "Habitação",
-    "goals": "Metas / Poupanças",
-    "xitique": "Módulo Xitique",
+    "goals": "Metas",
+    "xitique": "Xitique",
     "debts": "Dívidas",
     "credit": "Crédito Bancário",
     "simulators": "Simuladores IA",
@@ -20,7 +20,33 @@
     "settings": "Definições",
     "pricing": "Planos / Upgrade",
     "logout": "Terminar Sessão",
-    "add": "Adicionar"
+    "add": "Adicionar",
+    "management": "GESTÃO FINANCEIRA",
+    "funding": "FINANCIAMENTO",
+    "savings_goals": "POUPANÇA & METAS",
+    "pro_intelligence": "INTELIGÊNCIA PRO",
+    "administration": "ADMINISTRAÇÃO"
+  },
+  "sidebar": {
+    "pro_locked": {
+      "title": "Funcionalidade PRO",
+      "desc_sms": "Importa SMS bancários automaticamente e deixa a IA extrair as transações por ti.",
+      "desc_generic": "Esta funcionalidade está disponível apenas no plano PRO.",
+      "exclusive": "Funcionalidade exclusiva do plano",
+      "upgrade_btn": "✦ Fazer Upgrade para PRO",
+      "later_btn": "Talvez mais tarde"
+    },
+    "premium_cta": {
+      "title": "NEXO VIBE PREMIUM",
+      "desc": "Desbloqueie Inteligência Avançada, Relatórios Detalhados e Simuladores Exclusivos.",
+      "btn": "✦ Fazer Upgrade"
+    },
+    "user": {
+      "settings_tooltip": "Definições",
+      "logout_tooltip": "Sair",
+      "default_name": "Utilizador",
+      "default_household": "Mwanga"
+    }
   },
   "credit": {
     "header": {
@@ -1056,7 +1082,8 @@
       "health": "Saúde Financeira",
       "distribution": "Distribuição de Despesas (Mês Actual)",
       "evolution": "Evolução Mensal",
-      "history": "Histórico Mensal"
+      "history": "Histórico Mensal",
+      "flow": "Visualização de Fluxo (Sankey)"
     },
     "metrics": {
       "income": "Receitas Totais",
@@ -1076,7 +1103,9 @@
     },
     "chart": {
       "income": "Receitas",
-      "expenses": "Despesas Consolidadas"
+      "expenses": "Despesas Consolidadas",
+      "sankey_title": "Fluxo de Caixa Sankey",
+      "sankey_subtitle": "Sincronizado com os teus relatórios mensais"
     },
     "empty_state": "Sem despesas para analisar"
   },
