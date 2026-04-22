@@ -1,36 +1,21 @@
-const { db } = require('../config/db');
 const { z } = require('zod');
+const patrimonyService = require('../services/patrimony.service');
+const { assetSchema, liabilitySchema } = require('../schemas/patrimony.schema');
 
-const assetSchema = z.object({
-  name: z.string().min(1).max(100).trim(),
-  type: z.string().min(1).max(50).trim(),
-  value: z.number().positive(),
-}).strict();
-
-const liabilitySchema = z.object({
-  name: z.string().min(1).max(100).trim(),
-  totalAmount: z.number().positive(),
-  remainingAmount: z.number().nonnegative(),
-  interestRate: z.number().nonnegative().optional().default(0),
-}).strict();
-
-// Assets
 const getAssets = async (req, res) => {
-  const result = await db.execute({
-    sql: 'SELECT * FROM assets WHERE household_id = ?',
-    args: [req.user.householdId]
-  });
-  res.json(result.rows);
+  try {
+    const assets = await patrimonyService.getAssets(req.user.householdId);
+    res.json(assets);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar ativos' });
+  }
 };
 
 const createAsset = async (req, res, next) => {
   try {
     const data = assetSchema.parse(req.body);
-    const result = await db.execute({
-      sql: 'INSERT INTO assets (name, type, value, household_id) VALUES (?, ?, ?, ?) RETURNING id',
-      args: [data.name, data.type, data.value, req.user.householdId]
-    });
-    res.status(201).json({ id: Number(result.rows?.[0]?.id || result.lastInsertRowid || 0), ...data });
+    const result = await patrimonyService.createAsset(req.user.householdId, data);
+    res.status(201).json(result);
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     next(error);
@@ -38,30 +23,28 @@ const createAsset = async (req, res, next) => {
 };
 
 const deleteAsset = async (req, res) => {
-  await db.execute({
-    sql: 'DELETE FROM assets WHERE id = ? AND household_id = ?',
-    args: [req.params.id, req.user.householdId]
-  });
-  res.json({ success: true });
+  try {
+    await patrimonyService.deleteAsset(req.user.householdId, req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao remover ativo' });
+  }
 };
 
-// Liabilities
 const getLiabilities = async (req, res) => {
-  const result = await db.execute({
-    sql: 'SELECT * FROM liabilities WHERE household_id = ?',
-    args: [req.user.householdId]
-  });
-  res.json(result.rows);
+  try {
+    const liabilities = await patrimonyService.getLiabilities(req.user.householdId);
+    res.json(liabilities);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar passivos' });
+  }
 };
 
 const createLiability = async (req, res, next) => {
   try {
     const data = liabilitySchema.parse(req.body);
-    const result = await db.execute({
-      sql: 'INSERT INTO liabilities (name, total_amount, remaining_amount, interest_rate, household_id) VALUES (?, ?, ?, ?, ?) RETURNING id',
-      args: [data.name, data.totalAmount, data.remainingAmount, data.interestRate, req.user.householdId]
-    });
-    res.status(201).json({ id: Number(result.rows?.[0]?.id || result.lastInsertRowid || 0), ...data });
+    const result = await patrimonyService.createLiability(req.user.householdId, data);
+    res.status(201).json(result);
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     next(error);
@@ -69,11 +52,12 @@ const createLiability = async (req, res, next) => {
 };
 
 const deleteLiability = async (req, res) => {
-  await db.execute({
-    sql: 'DELETE FROM liabilities WHERE id = ? AND household_id = ?',
-    args: [req.params.id, req.user.householdId]
-  });
-  res.json({ success: true });
+  try {
+    await patrimonyService.deleteLiability(req.user.householdId, req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao remover passivo' });
+  }
 };
 
 module.exports = { getAssets, createAsset, deleteAsset, getLiabilities, createLiability, deleteLiability };

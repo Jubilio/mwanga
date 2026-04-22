@@ -549,10 +549,10 @@ export default function Layout() {
               <button
                 className="md:hidden rounded-2xl p-2.5 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5 flex items-center gap-1.5"
                 onClick={() => setIsSidebarOpen(true)}
-                title="Abrir Menu de Opções"
+                title="Abrir Menu Principal"
               >
                 <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5 text-ocean dark:text-aurora">
-                  <Plus size={18} strokeWidth={3} />
+                  <Menu size={18} strokeWidth={2.5} />
                 </div>
               </button>
 

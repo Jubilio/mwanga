@@ -170,7 +170,7 @@ export default function Patrimony() {
                   <div className="text-2xl font-black mt-2">{showBalance ? fmt(state.settings.cash_balance, currency) : '••••'}</div>
                 </div>
              )}
-             {state.contas?.map(account => (
+             {state.contas?.filter(acc => Number(acc.current_balance || 0) > 0).map(account => (
                <div key={account.id} className={`glass-card p-5 bg-linear-to-br ${getAccountCardStyle(account.type, account.name)} relative overflow-hidden group`}>
                   <div className="flex justify-between items-start mb-4">
                     <span className="px-2 py-1 rounded-lg bg-black/20 text-[8px] font-black uppercase tracking-widest">{getTypeLabel(account.type)}</span>
