@@ -1,4 +1,6 @@
 // Financial calculation utilities shared across the app.
+import { normalizeCategory } from './categories';
+
 
 export const EXCHANGE_RATES = {
   MT: 1,
@@ -171,7 +173,7 @@ export function calcCategoryBreakdown(transactions, tipo = 'despesa', monthKey =
 
   const map = {};
   filtered.forEach(t => {
-    const category = t.cat || 'Sem categoria';
+    const category = normalizeCategory(t.cat);
     map[category] = (map[category] || 0) + Number(t.valor || 0);
   });
 
@@ -180,7 +182,7 @@ export function calcCategoryBreakdown(transactions, tipo = 'despesa', monthKey =
     const monthHousing = monthKey ? housingFiltered.filter(r => r.mes === monthKey) : housingFiltered;
     const housingTotal = monthHousing.reduce((sum, rental) => sum + Number(rental.valor || 0), 0);
     if (housingTotal > 0) {
-      map['Habitação'] = (map['Habitação'] || 0) + housingTotal;
+      map['habitacao'] = (map['habitacao'] || 0) + housingTotal;
     }
   }
 
@@ -365,24 +367,24 @@ export function generateDemoData() {
 
   return {
     transacoes: [
-      { id: 1, data: `${dm}-01`, tipo: 'receita', desc: 'Salário - ACTED', valor: 85000, cat: 'Salário', nota: 'Transferência bancária' },
-      { id: 2, data: `${dm}-01`, tipo: 'renda', desc: 'Renda Pemba - Sr. Manuel', valor: 15000, cat: 'Habitação', nota: 'M-Pesa' },
-      { id: 3, data: `${dm}-03`, tipo: 'despesa', desc: 'Supermercado Shoprite', valor: 12500, cat: 'Alimentação', nota: '' },
-      { id: 4, data: `${dm}-05`, tipo: 'despesa', desc: 'Combustível (gasolina)', valor: 4500, cat: 'Transporte', nota: '' },
-      { id: 5, data: `${dm}-07`, tipo: 'despesa', desc: 'Conta de energia (EDM)', valor: 2800, cat: 'Energia/Água', nota: '' },
-      { id: 6, data: `${dm}-08`, tipo: 'despesa', desc: 'Internet Vodacom', valor: 1500, cat: 'Internet', nota: 'Pacote mensal' },
-      { id: 7, data: `${dm}-10`, tipo: 'despesa', desc: 'Dízimo & ofertas', valor: 8500, cat: 'Igreja/Doações', nota: '' },
-      { id: 8, data: `${dm}-12`, tipo: 'despesa', desc: 'Consulta médica', valor: 3000, cat: 'Saúde', nota: 'Clínica do Polana' },
-      { id: 9, data: `${dm}-14`, tipo: 'despesa', desc: 'Jantar no restaurante', valor: 2500, cat: 'Lazer', nota: '' },
-      { id: 10, data: `${dm}-15`, tipo: 'poupanca', desc: 'Poupança mensal', valor: 10000, cat: 'Poupança', nota: 'Conta poupança BCI' },
-      { id: 11, data: `${dm}-18`, tipo: 'despesa', desc: 'Mercado local', valor: 5000, cat: 'Alimentação', nota: '' },
-      { id: 101, data: `${pdm}-01`, tipo: 'receita', desc: 'Salário - ACTED', valor: 85000, cat: 'Salário', nota: '' },
-      { id: 102, data: `${pdm}-01`, tipo: 'renda', desc: 'Renda - Júlia Santos', valor: 15000, cat: 'Renda Casa', nota: '' },
-      { id: 103, data: `${pdm}-05`, tipo: 'despesa', desc: 'Supermercado', valor: 14000, cat: 'Alimentação', nota: '' },
-      { id: 104, data: `${pdm}-08`, tipo: 'despesa', desc: 'Combustível', valor: 5000, cat: 'Transporte', nota: '' },
-      { id: 105, data: `${pdm}-10`, tipo: 'despesa', desc: 'Contas (energia + água)', valor: 3500, cat: 'Energia/Água', nota: '' },
-      { id: 106, data: `${pdm}-15`, tipo: 'poupanca', desc: 'Poupança mensal', valor: 8000, cat: 'Poupança', nota: '' },
-      { id: 107, data: `${pdm}-12`, tipo: 'despesa', desc: 'Dízimo & ofertas', valor: 8500, cat: 'Igreja/Doações', nota: '' }
+      { id: 1, data: `${dm}-01`, tipo: 'receita', desc: 'Salário - ACTED', valor: 85000, cat: 'salary', nota: 'Transferência bancária' },
+      { id: 2, data: `${dm}-01`, tipo: 'renda', desc: 'Renda Pemba - Sr. Manuel', valor: 15000, cat: 'habitacao', nota: 'M-Pesa' },
+      { id: 3, data: `${dm}-03`, tipo: 'despesa', desc: 'Supermercado Shoprite', valor: 12500, cat: 'food', nota: '' },
+      { id: 4, data: `${dm}-05`, tipo: 'despesa', desc: 'Combustível (gasolina)', valor: 4500, cat: 'transport', nota: '' },
+      { id: 5, data: `${dm}-07`, tipo: 'despesa', desc: 'Conta de energia (EDM)', valor: 2800, cat: 'energy_water', nota: '' },
+      { id: 6, data: `${dm}-08`, tipo: 'despesa', desc: 'Internet Vodacom', valor: 1500, cat: 'internet', nota: 'Pacote mensal' },
+      { id: 7, data: `${dm}-10`, tipo: 'despesa', desc: 'Dízimo & ofertas', valor: 8500, cat: 'church_donations', nota: '' },
+      { id: 8, data: `${dm}-12`, tipo: 'despesa', desc: 'Consulta médica', valor: 3000, cat: 'health', nota: 'Clínica do Polana' },
+      { id: 9, data: `${dm}-14`, tipo: 'despesa', desc: 'Jantar no restaurante', valor: 2500, cat: 'leisure', nota: '' },
+      { id: 10, data: `${dm}-15`, tipo: 'poupanca', desc: 'Poupança mensal', valor: 10000, cat: 'savings', nota: 'Conta poupança BCI' },
+      { id: 11, data: `${dm}-18`, tipo: 'despesa', desc: 'Mercado local', valor: 5000, cat: 'food', nota: '' },
+      { id: 101, data: `${pdm}-01`, tipo: 'receita', desc: 'Salário - ACTED', valor: 85000, cat: 'salary', nota: '' },
+      { id: 102, data: `${pdm}-01`, tipo: 'renda', desc: 'Renda - Júlia Santos', valor: 15000, cat: 'house_rent', nota: '' },
+      { id: 103, data: `${pdm}-05`, tipo: 'despesa', desc: 'Supermercado', valor: 14000, cat: 'food', nota: '' },
+      { id: 104, data: `${pdm}-08`, tipo: 'despesa', desc: 'Combustível', valor: 5000, cat: 'transport', nota: '' },
+      { id: 105, data: `${pdm}-10`, tipo: 'despesa', desc: 'Contas (energia + água)', valor: 3500, cat: 'energy_water', nota: '' },
+      { id: 106, data: `${pdm}-15`, tipo: 'poupanca', desc: 'Poupança mensal', valor: 8000, cat: 'savings', nota: '' },
+      { id: 107, data: `${pdm}-12`, tipo: 'despesa', desc: 'Dízimo & ofertas', valor: 8500, cat: 'church_donations', nota: '' }
     ],
     rendas: [
       { id: 10, mes: dm, landlord: 'Sr. Manuel', valor: 15000, estado: 'pago', obs: 'Pago via M-Pesa no dia 1' },
@@ -394,13 +396,13 @@ export function generateDemoData() {
       { id: 22, nome: 'Viagem de Lua de Mel', alvo: 120000, poupado: 35000, prazo: `${y}-12-15` }
     ],
     budgets: [
-      { id: 1, category: 'Alimentação', limit: 20000 },
-      { id: 2, category: 'Transporte', limit: 6000 },
-      { id: 3, category: 'Energia/Água', limit: 4000 },
-      { id: 4, category: 'Internet', limit: 2000 },
-      { id: 5, category: 'Lazer', limit: 5000 },
-      { id: 6, category: 'Saúde', limit: 5000 },
-      { id: 7, category: 'Igreja/Doações', limit: 10000 }
+      { id: 1, category: 'food', limit: 20000 },
+      { id: 2, category: 'transport', limit: 6000 },
+      { id: 3, category: 'energy_water', limit: 4000 },
+      { id: 4, category: 'internet', limit: 2000 },
+      { id: 5, category: 'leisure', limit: 5000 },
+      { id: 6, category: 'health', limit: 5000 },
+      { id: 7, category: 'church_donations', limit: 10000 }
     ]
   };
 }

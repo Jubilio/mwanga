@@ -24,6 +24,7 @@ import {
   fmt,
   getFinancialMonthKey
 } from '../utils/calculations';
+import { normalizeCategory } from '../utils/categories';
 
 export default function Reports() {
   const { state } = useFinance();
@@ -41,18 +42,11 @@ export default function Reports() {
 
   // Helper to get category display name
   const getCategoryLabel = (categoryName) => {
-    // Remove full translation key path if present
-    let cleanName = categoryName;
-    if (categoryName.startsWith('transactions.categories.')) {
-      cleanName = categoryName.replace('transactions.categories.', '');
-    }
-
-    // Try to translate using the clean name
-    const translationKey = `transactions.categories.${cleanName.toLowerCase().replace(/\s+/g, '_')}`;
+    const key = normalizeCategory(categoryName);
+    const translationKey = `common.categories.${key}`;
     const translated = t(translationKey);
 
-    // If translation exists (doesn't match the key), return it; otherwise return the clean name
-    return translated !== translationKey ? translated : cleanName;
+    return translated !== translationKey ? translated : (categoryName || t('common.categories.other'));
   };
 
   return (

@@ -366,23 +366,6 @@
     }
   },
   "transactions": {
-    "categories": {
-      "salary": "Salário",
-      "house_rent": "Renda Casa",
-      "food": "Alimentação",
-      "transport": "Transporte",
-      "health": "Saúde",
-      "education": "Educação",
-      "energy_water": "Energia/Água",
-      "internet": "Internet",
-      "church_donations": "Igreja/Doações",
-      "leisure": "Lazer",
-      "investments": "Investimentos",
-      "savings": "Poupança",
-      "other": "Outro",
-      "xitique": "Xitique",
-      "habitacao": "Habitação"
-    },
     "title": "Transações",
     "add_transaction": "Adicionar Transação",
     "date": "Data",
@@ -548,19 +531,21 @@
   },
   "common": {
     "categories": {
-      "Alimentação": "Alimentação",
-      "Transporte": "Transporte",
-      "Energia/Água": "Energia/Água",
-      "Internet": "Internet",
-      "Saúde": "Saúde",
-      "Educação": "Educação",
-      "Igreja/Doações": "Igreja/Doações",
-      "Lazer": "Lazer",
-      "Investimentos": "Investimentos",
-      "Casa": "Casa",
-      "Renda": "Renda da Casa",
-      "Poupanca": "Poupança",
-      "Outros": "Outros / Diversos"
+      "salary": "Salário",
+      "house_rent": "Renda Casa",
+      "food": "Alimentação",
+      "transport": "Transporte",
+      "health": "Saúde",
+      "education": "Educação",
+      "energy_water": "Energia/Água",
+      "internet": "Internet",
+      "church_donations": "Igreja/Doações",
+      "leisure": "Lazer",
+      "investments": "Investimentos",
+      "savings": "Poupança",
+      "other": "Outros",
+      "xitique": "Xitique",
+      "habitacao": "Habitação"
     },
     "toasts": {
       "csv_exported": "📥 CSV exportado!",
@@ -1139,6 +1124,11 @@
     "qa_defaults": ["Como estao as minhas financas?", "Onde estou a gastar mais?", "Como posso poupar mais?", "Analisa o meu orcamento"],
     "score_section": {
       "title": "Score Financeiro Bíblico"
+    },
+    "mic_errors": {
+      "not_allowed": "Permissão de microfone negada. Verifica as definições do browser.",
+      "network": "Erro de rede no microfone. A transcrição de voz requer internet estável.",
+      "generic": "Erro ao aceder ao microfone: {{error}}"
     }
   },
   "goals": {

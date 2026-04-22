@@ -161,9 +161,11 @@ export default function Insights() {
         console.error('[Binth] Erro no microfone:', event.error);
         setIsListening(false);
         if (event.error === 'not-allowed') {
-          showToast('Permissão de microfone negada. Verifica as definições do browser.', 'error');
+          showToast(t('insights.mic_errors.not_allowed'), 'error');
+        } else if (event.error === 'network') {
+          showToast(t('insights.mic_errors.network'), 'error');
         } else {
-          showToast('Erro ao aceder ao microfone: ' + event.error, 'error');
+          showToast(t('insights.mic_errors.generic', { error: event.error }), 'error');
         }
       };
 

@@ -51,16 +51,16 @@ describe('Calculations Utility', () => {
 
   describe('Financial Calculations', () => {
     const mockTransactions = [
-      { id: 1, data: '2026-04-01', tipo: 'receita', valor: 10000, cat: 'Salário' },
-      { id: 2, data: '2026-04-05', tipo: 'despesa', valor: 2000, cat: 'Alimentação' },
-      { id: 3, data: '2026-04-10', tipo: 'despesa', valor: 1000, cat: 'Transporte' },
-      { id: 4, data: '2026-04-15', tipo: 'renda', valor: 3000, cat: 'Habitação' }, // 'renda' is a special expense type
+      { id: 1, data: '2026-04-01', tipo: 'receita', valor: 10000, cat: 'salary' },
+      { id: 2, data: '2026-04-05', tipo: 'despesa', valor: 2000, cat: 'food' },
+      { id: 3, data: '2026-04-10', tipo: 'despesa', valor: 1000, cat: 'transport' },
+      { id: 4, data: '2026-04-15', tipo: 'renda', valor: 3000, cat: 'habitacao' }, // 'renda' is a special expense type
     ];
 
     it('calcMonthlyTotals should calculate correctly', () => {
       const totals = calcMonthlyTotals(mockTransactions, '2026-04', [], 1);
       expect(totals.receitas).toBe(10000);
-      expect(totals.despesas).toBe(3000); // Alimentação (2000) + Transporte (1000)
+      expect(totals.despesas).toBe(3000); // food (2000) + transport (1000)
       expect(totals.renda).toBe(3000);
       expect(totals.totalIncome).toBe(10000);
       expect(totals.totalExpenses).toBe(6000); // 3000 (despesas) + 3000 (renda)

@@ -66,7 +66,7 @@ export function parseMobileMoneySMS(text) {
         type,
         amount,
         description: `${p.name}: ${entity}`,
-        category: type === 'receita' ? 'Salário' : 'Outro',
+        category: type === 'receita' ? 'salary' : 'other',
         balanceAfter: balance,
         rawDate: dateMatch ? dateMatch[1] : null,
         formattedDate: date

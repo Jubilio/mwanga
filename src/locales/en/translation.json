@@ -403,23 +403,6 @@
       "despesa": "💸 Expense",
       "renda": "🏠 House Rent",
       "poupanca": "🏦 Savings"
-    },
-    "categories": {
-      "salary": "Salary",
-      "house_rent": "House Rent",
-      "food": "Food",
-      "transport": "Transport",
-      "health": "Health",
-      "education": "Education",
-      "energy_water": "Energy / Water",
-      "internet": "Internet",
-      "church_donations": "Church / Donations",
-      "leisure": "Leisure",
-      "investments": "Investments",
-      "savings": "Savings",
-      "other": "Others",
-      "xitique": "Xitique",
-      "habitacao": "Housing"
     }
   },
   "sms_import": {
@@ -548,19 +531,21 @@
   },
   "common": {
     "categories": {
-      "Alimentação": "Food",
-      "Transporte": "Transport",
-      "Energia/Água": "Utilities",
-      "Internet": "Internet",
-      "Saúde": "Health",
-      "Educação": "Education",
-      "Igreja/Doações": "Church/Donations",
-      "Lazer": "Leisure",
-      "Investimentos": "Investments",
-      "Casa": "Housing",
-      "Renda": "Home Rent",
-      "Poupanca": "Savings",
-      "Outros": "Others"
+      "salary": "Salary",
+      "house_rent": "House Rent",
+      "food": "Food",
+      "transport": "Transport",
+      "health": "Health",
+      "education": "Education",
+      "energy_water": "Energy / Water",
+      "internet": "Internet",
+      "church_donations": "Church / Donations",
+      "leisure": "Leisure",
+      "investments": "Investments",
+      "savings": "Savings",
+      "other": "Others",
+      "xitique": "Xitique",
+      "habitacao": "Housing"
     },
     "toasts": {
       "csv_exported": "📥 CSV exported!",
@@ -1137,6 +1122,11 @@
     "qa_defaults": ["How are my finances?", "Where am I spending most?", "How can I save more?", "Analyze my budget"],
     "score_section": {
       "title": "Biblical Financial Score"
+    },
+    "mic_errors": {
+      "not_allowed": "Microphone permission denied. Please check your browser settings.",
+      "network": "Microphone network error. Voice transcription requires a stable internet connection.",
+      "generic": "Error accessing microphone: {{error}}"
     }
   },
   "goals": {

@@ -3,25 +3,23 @@ import { useOutletContext } from 'react-router-dom';
 import { useFinance } from '../hooks/useFinance';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
-import { fmt, calcCategoryBreakdown, getMonthKey } from '../utils/calculations';
+import { fmt, calcCategoryBreakdown, getFinancialMonthKey } from '../utils/calculations';
+import { normalizeCategory, MAIN_CATEGORIES } from '../utils/categories';
 
-const EXPENSE_CATEGORIES = [
-  'Alimentação', 'Transporte', 'Energia/Água', 'Internet',
-  'Saúde', 'Educação', 'Igreja/Doações', 'Lazer',
-  'Investimentos', 'Casa', 'Renda', 'Poupanca', 'Outros',
-];
+const EXPENSE_CATEGORIES = MAIN_CATEGORIES.filter(c => c !== 'salary');
 
 export default function Budget() {
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
+  const startDay = state.settings.financial_month_start_day || 1;
   const { showToast } = useOutletContext();
-  const monthKey = getMonthKey();
+  const monthKey = getFinancialMonthKey(new Date(), startDay);
 
   const [newCat, setNewCat] = useState(EXPENSE_CATEGORIES[0]);
   const [newLimit, setNewLimit] = useState('');
 
-  const categories = calcCategoryBreakdown(state.transacoes, 'despesa', monthKey);
+  const categories = calcCategoryBreakdown(state.transacoes, 'despesa', monthKey, state.rendas, startDay);
 
   function handleAdd(e) {
     e.preventDefault();
@@ -90,7 +88,8 @@ export default function Budget() {
           </div>
 
           {state.budgets.map((budget) => {
-            const spent = categories.find(category => category.category === budget.category)?.amount || 0;
+            const normalizedKey = normalizeCategory(budget.category);
+            const spent = categories.find(category => category.category === normalizedKey)?.amount || 0;
             const budgetLimit = Number(budget.limit || 0);
             const pct = budgetLimit > 0 ? Math.min(100, Math.round((spent / budgetLimit) * 100)) : (spent > 0 ? 100 : 0);
             const isOver = pct >= 100;
@@ -101,7 +100,7 @@ export default function Budget() {
               <div key={budget.id || budget.category} className="glass-card animate-fade-in-up" style={{ padding: '1.25rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <div>
-                    <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>{t(`common.categories.${budget.category}`)}</span>
+                    <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>{t(`common.categories.${normalizedKey}`)}</span>
                     {isOver && (
                       <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: 'var(--color-coral)', fontWeight: 600 }}>
                         <AlertTriangle size={13} style={{ verticalAlign: 'text-bottom' }} /> {t('budget.status.over')}

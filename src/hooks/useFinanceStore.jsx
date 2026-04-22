@@ -2,6 +2,7 @@ import { useReducer, useEffect, useCallback } from 'react';
 import { FinanceContext } from './FinanceContext';
 import { generateDemoData } from '../utils/calculations';
 import { db } from '../db/db';
+import { normalizeCategory } from '../utils/categories';
 import { useOfflineSync } from './useOfflineSync';
 
 // Define the API Base URL
@@ -88,7 +89,7 @@ function mapTransaction(t) {
     tipo: t.type,
     desc: t.description,
     valor: Number(t.amount || 0),
-    cat: t.category,
+    cat: normalizeCategory(t.category),
     nota: t.note,
     account_id: t.account_id
   };
@@ -112,7 +113,7 @@ function mapGoal(m) {
     alvo: Number(m.target_amount || 0),
     poupado: Number(m.saved_amount || 0),
     prazo: m.deadline,
-    cat: m.category,
+    cat: normalizeCategory(m.category),
     mensal: Number(m.monthly_saving || 0)
   };
 }
@@ -471,7 +472,7 @@ export function FinanceProvider({ children }) {
             transacoes: Array.isArray(ts) ? ts.map(mapTransaction) : [],
             rendas: Array.isArray(rendas) ? rendas.map(mapRental) : [],
             metas: Array.isArray(metas) ? metas.map(mapGoal) : [],
-            budgets: Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: b.category, limit: Number(b.limit_amount || 0) })) : [],
+            budgets: Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: normalizeCategory(b.category), limit: Number(b.limit_amount || 0) })) : [],
             activos: Array.isArray(assets) ? assets.map(a => ({ id: a.id, name: a.name, type: a.type, value: Number(a.value || 0) })) : [],
             passivos: Array.isArray(liabs) ? liabs.map(l => ({
               id: l.id,
@@ -500,7 +501,7 @@ export function FinanceProvider({ children }) {
         // PERSISTÊNCIA: Guardar tudo no Dexie para uso offline posterior
         await Promise.all([
           db.transacoes.clear().then(() => db.transacoes.bulkAdd(Array.isArray(ts) ? ts.map(mapTransaction) : [])),
-          db.budgets.clear().then(() => db.budgets.bulkAdd(Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: b.category, limit: Number(b.limit_amount || 0) })) : [])),
+          db.budgets.clear().then(() => db.budgets.bulkAdd(Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: normalizeCategory(b.category), limit: Number(b.limit_amount || 0) })) : [])),
           db.metas.clear().then(() => db.metas.bulkAdd(Array.isArray(metas) ? metas.map(mapGoal) : [])),
           db.rendas.clear().then(() => db.rendas.bulkAdd(Array.isArray(rendas) ? rendas.map(mapRental) : [])),
           db.settings.put({ id: 'current', ...mergedSettings })
@@ -567,7 +568,7 @@ export function FinanceProvider({ children }) {
             type: action.payload.tipo,
             description: action.payload.desc,
             amount: action.payload.valor,
-            category: action.payload.cat,
+            category: normalizeCategory(action.payload.cat),
             note: action.payload.nota,
             account_id: action.payload.account_id
           };
@@ -612,7 +613,7 @@ export function FinanceProvider({ children }) {
             type: action.payload.tipo,
             description: action.payload.desc,
             amount: action.payload.valor,
-            category: action.payload.cat,
+            category: normalizeCategory(action.payload.cat),
             note: action.payload.nota,
             account_id: action.payload.account_id
           };
@@ -766,7 +767,7 @@ export function FinanceProvider({ children }) {
             method: 'POST',
             headers,
             body: JSON.stringify({
-              category: action.payload.category,
+              category: normalizeCategory(action.payload.category),
               limit: action.payload.limit
             })
           });
@@ -778,7 +779,7 @@ export function FinanceProvider({ children }) {
                 budgets: Array.isArray(refreshBudgets)
                   ? refreshBudgets.map(b => ({
                     id: b.id,
-                    category: b.category,
+                    category: normalizeCategory(b.category),
                     limit: Number(b.limit_amount || 0)
                   }))
                   : []
@@ -939,13 +940,13 @@ export function FinanceProvider({ children }) {
           });
 
           await Promise.all([
-            saveBudget('Renda', needs * 0.4),
-            saveBudget('Alimentação', needs * 0.4),
-            saveBudget('Transporte', needs * 0.1),
-            saveBudget('Saúde', needs * 0.1),
-            saveBudget('Lazer', wants * 0.7),
-            saveBudget('Outros', wants * 0.3),
-            saveBudget('Poupanca', savings * 1.0)
+            saveBudget('house_rent', needs * 0.4),
+            saveBudget('food', needs * 0.4),
+            saveBudget('transport', needs * 0.1),
+            saveBudget('health', needs * 0.1),
+            saveBudget('leisure', wants * 0.7),
+            saveBudget('other', wants * 0.3),
+            saveBudget('savings', savings * 1.0)
           ]);
 
           const refreshB = await fetch(`${FINANCE_API_URL}/budgets`, { headers }).then(r => r.json());

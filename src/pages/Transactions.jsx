@@ -8,22 +8,9 @@ import { parseMobileMoneySMS } from '../utils/smsParser';
 import { generateTransactionsPDF } from '../utils/pdfGenerator';
 import CategoryBadge from '../components/CategoryBadge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { normalizeCategory, MAIN_CATEGORIES } from '../utils/categories';
 
-const CATEGORIES = [
-  { id: 'Salário', key: 'salary' },
-  { id: 'Renda Casa', key: 'house_rent' },
-  { id: 'Alimentação', key: 'food' },
-  { id: 'Transporte', key: 'transport' },
-  { id: 'Saúde', key: 'health' },
-  { id: 'Educação', key: 'education' },
-  { id: 'Energia/Água', key: 'energy_water' },
-  { id: 'Internet', key: 'internet' },
-  { id: 'Igreja/Doações', key: 'church_donations' },
-  { id: 'Lazer', key: 'leisure' },
-  { id: 'Investimentos', key: 'investments' },
-  { id: 'Poupança', key: 'Poupanca' },
-  { id: 'Outros', key: 'Outros' },
-];
+const CATEGORIES = MAIN_CATEGORIES.map(key => ({ id: key, key }));
 
 export default function Transactions() {
   const { state, dispatch } = useFinance();
@@ -54,7 +41,7 @@ export default function Transactions() {
     tipo: 'despesa', 
     desc: '', 
     valor: '', 
-    cat: 'Alimentação', 
+    cat: 'food', 
     nota: '', 
     account_id: state.settings.default_expense_account_id || ''
   });
@@ -79,7 +66,7 @@ export default function Transactions() {
         setForm(f => ({ 
           ...f, 
           tipo: type,
-          cat: type === 'receita' ? 'Salário' : 'Alimentação',
+          cat: type === 'receita' ? 'salary' : 'food',
           account_id: defaultAcc || ''
         }));
       }
@@ -365,7 +352,7 @@ export default function Transactions() {
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[9px] font-black uppercase tracking-widest text-gray-400"><Tag size={11} className="inline mr-1" /> {t('transactions.category')}</label>
                   <select className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm" value={form.cat} onChange={e => setForm({ ...form, cat: e.target.value })}>
-                    {CATEGORIES.map(c => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={c.id} value={c.id}>{t(`transactions.categories.${c.key}`)}</option>)}
+                    {CATEGORIES.map(c => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={c.id} value={c.id}>{t(`common.categories.${c.key}`)}</option>)}
                   </select>
                 </div>
               </div>

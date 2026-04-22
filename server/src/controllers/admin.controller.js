@@ -1,5 +1,6 @@
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
+const notificationService = require('../services/notification.service');
 
 /**
  * Admin Controller
@@ -143,8 +144,45 @@ const updateKycStatus = async (req, res) => {
   }
 };
 
+const broadcastNotification = async (req, res) => {
+  try {
+    const { title, body } = req.body;
+    if (!title || !body) {
+      return res.status(400).json({ error: 'Título e mensagem são obrigatórios.' });
+    }
+
+    // 1. Fetch all users
+    const usersResult = await db.execute('SELECT id, household_id FROM public.users');
+    const users = usersResult.rows;
+
+    logger.info(`Starting broadcast to ${users.length} users: ${title}`);
+
+    // 2. Create notifications for each user
+    const results = await Promise.all(users.map(user => 
+      notificationService.createNotification({
+        householdId: user.household_id,
+        userId: user.id,
+        title,
+        message: body,
+        type: 'info',
+        channel: 'push',
+        sendPush: true
+      })
+    ));
+
+    res.json({ 
+      message: 'Broadcast enviado com sucesso!', 
+      count: results.length 
+    });
+  } catch (error) {
+    logger.error('Error in broadcastNotification:', error);
+    res.status(500).json({ error: 'Falha ao processar broadcast global.' });
+  }
+};
+
 module.exports = {
   getUsers,
   getPlatformStats,
-  updateKycStatus
+  updateKycStatus,
+  broadcastNotification
 };

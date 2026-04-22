@@ -22,7 +22,7 @@ const TYPE_COLORS = (t) => ({
   deposit: { bg: 'bg-emerald-500/10', border: 'border-emerald-500', text: 'text-emerald-400', label: t('sms_import.result.labels.description') },
   payment: { bg: 'bg-orange-500/10', border: 'border-orange-500', text: 'text-orange-400', label: t('sms_import.result.labels.description') },
   fee: { bg: 'bg-coral/10', border: 'border-coral', text: 'text-coral', label: t('sms_import.result.labels.description') },
-  unknown: { bg: 'bg-slate-500/10', border: 'border-slate-500', text: 'text-slate-400', label: t('transactions.categories.other') },
+  unknown: { bg: 'bg-slate-500/10', border: 'border-slate-500', text: 'text-slate-400', label: t('common.categories.other') },
 });
 
 function ConfidenceBar({ score }) {
@@ -57,14 +57,14 @@ function inferTransactionType(result) {
   return ['credit', 'deposit', 'transfer_in'].includes(result.transaction_type) ? 'receita' : 'despesa';
 }
 
-function inferCategory(result, t) {
+function inferCategory(result) {
   const type = result.transaction_type;
-  if (type === 'withdrawal') return t('transactions.categories.withdrawal') || 'Levantamento';
-  if (type === 'transfer_out' || type === 'transfer_in') return t('transactions.categories.transport') || 'Transferencias'; // Best fit for general transport/transfer if missing specific
-  if (type === 'payment' || type === 'debit') return t('transactions.categories.other') || 'Outros';
-  if (type === 'credit' || type === 'deposit') return t('transactions.categories.salary') || 'Receitas';
-  if (type === 'fee') return t('transactions.categories.other') || 'Taxas';
-  return t('transactions.categories.other') || 'Outros';
+  if (type === 'withdrawal') return 'other';
+  if (type === 'transfer_out' || type === 'transfer_in') return 'transport';
+  if (type === 'payment' || type === 'debit') return 'other';
+  if (type === 'credit' || type === 'deposit') return 'salary';
+  if (type === 'fee') return 'other';
+  return 'other';
 }
 
 function buildDescription(result, t) {

@@ -27,6 +27,7 @@ import {
   Menu,
   ChevronDown,
   Clock,
+  Shield,
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
@@ -116,6 +117,7 @@ export default function Layout() {
     { to: '/time-machine', icon: Clock, label: 'Máquina do Tempo', premium: true },
     { to: '/help', icon: HelpCircle, label: t('layout.help') },
     { to: '/settings', icon: SettingsIcon, label: t('layout.settings') },
+    ...(state.user?.role === 'admin' ? [{ to: '/admin', icon: Shield, label: t('layout.admin') }] : []),
   ];
 
   const bottomNavItems = [

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import {
   Users, Shield, BarChart2, CheckCircle, XCircle, Clock,
-  TrendingUp, AlertCircle, RefreshCw, FileCheck, UserX, MessageSquare
+  TrendingUp, AlertCircle, RefreshCw, FileCheck, UserX, MessageSquare, Send
 } from 'lucide-react';
 import { Tooltip, PieChart, Pie, Cell } from 'recharts';
 
@@ -34,6 +34,8 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [broadcast, setBroadcast] = useState({ title: '', body: '' });
+  const [broadcasting, setBroadcasting] = useState(false);
 
   useEffect(() => {
     fetchData(true);
@@ -72,6 +74,25 @@ export default function Admin() {
     } catch (updateError) {
       console.error('Error updating KYC:', updateError);
       setError(updateError.response?.data?.error || 'Falha ao atualizar o estado KYC.');
+    }
+  };
+
+  const handleBroadcast = async (e) => {
+    e.preventDefault();
+    if (!broadcast.title || !broadcast.body) return;
+    
+    setBroadcasting(true);
+    setError('');
+    try {
+      const headers = getAdminHeaders();
+      await api.post('/admin/notifications/broadcast', broadcast, { headers });
+      setBroadcast({ title: '', body: '' });
+      alert('Mensagem enviada para todos os usuários com sucesso!');
+    } catch (err) {
+      console.error('Broadcast failed:', err);
+      setError(err.response?.data?.error || 'Falha ao enviar broadcast.');
+    } finally {
+      setBroadcasting(false);
     }
   };
 
@@ -291,6 +312,50 @@ export default function Admin() {
               <PriorityRow icon={<MessageSquare size={16} color={G.blue} />} label="Ver novo feedback dos utilizadores" value={stats.feedbackCount || 0} />
               <PriorityRow icon={<UserX size={16} color={G.red} />} label="Analisar rejeições recentes" value={stats.kycSummary.rejected} />
             </div>
+          </div>
+ 
+          <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '24px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <MessageSquare size={18} color={G.blue} /> Broadcast Global
+            </h3>
+            <p style={{ fontSize: '12px', color: G.muted, marginBottom: '16px' }}>Envia uma notificação push e in-app para todos os utilizadores registados.</p>
+            <form onSubmit={handleBroadcast} style={{ display: 'grid', gap: '12px' }}>
+              <input
+                type="text"
+                placeholder="Título da Mensagem"
+                value={broadcast.title}
+                onChange={e => setBroadcast({ ...broadcast, title: e.target.value })}
+                style={{ background: G.card, border: `1px solid ${G.border}`, borderRadius: '12px', padding: '10px 14px', color: G.text, fontSize: '13px', outline: 'none' }}
+              />
+              <textarea
+                placeholder="Conteúdo da mensagem..."
+                value={broadcast.body}
+                onChange={e => setBroadcast({ ...broadcast, body: e.target.value })}
+                style={{ background: G.card, border: `1px solid ${G.border}`, borderRadius: '12px', padding: '10px 14px', color: G.text, fontSize: '13px', outline: 'none', minHeight: '80px', resize: 'vertical' }}
+              />
+              <button
+                type="submit"
+                disabled={broadcasting || !broadcast.title || !broadcast.body}
+                style={{
+                  background: G.blue,
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  cursor: (broadcasting || !broadcast.title || !broadcast.body) ? 'not-allowed' : 'pointer',
+                  opacity: (broadcasting || !broadcast.title || !broadcast.body) ? 0.6 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                {broadcasting ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />}
+                {broadcasting ? 'A enviar...' : 'Enviar para todos'}
+              </button>
+            </form>
           </div>
         </div>
       </div>

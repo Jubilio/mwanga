@@ -3,19 +3,9 @@ import { X, Plus, Wallet, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
+import { MAIN_CATEGORIES } from '../utils/categories';
 
-const CATEGORIES = [
-  'food',
-  'transport',
-  'health',
-  'leisure',
-  'savings',
-  'salary',
-  'house_rent',
-  'internet',
-  'energy_water',
-  'other',
-];
+const CATEGORIES = MAIN_CATEGORIES;
 
 const TYPES = [
   { value: 'despesa', label: 'Despesa', icon: ArrowDownLeft },
@@ -231,7 +221,7 @@ export default function QuickAddNotificationModal({
               >
                 {CATEGORIES.map((category) => (
                   <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={category} value={category}>
-                    {t(`transactions.categories.${category}`) || category}
+                    {t(`common.categories.${category}`) || category}
                   </option>
                 ))}
               </select>

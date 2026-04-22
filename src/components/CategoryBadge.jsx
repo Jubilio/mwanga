@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { normalizeCategory } from '../utils/categories';
 import { 
   DollarSign, 
   Home, 
@@ -34,26 +35,7 @@ const CATEGORY_CONFIG = {
 export default function CategoryBadge({ category, className = "" }) {
   const { t } = useTranslation();
   
-  // Find key based on ID (to support existing data format)
-  const categoryKeys = {
-    'Salário': 'salary',
-    'Renda Casa': 'house_rent',
-    'Alimentação': 'food',
-    'Transporte': 'transport',
-    'Saúde': 'health',
-    'Educação': 'education',
-    'Energia/Água': 'energy_water',
-    'Internet': 'internet',
-    'Igreja/Doações': 'church_donations',
-    'Lazer': 'leisure',
-    'Investimentos': 'investments',
-    'Poupança': 'savings',
-    'Outro': 'other',
-    'Habitação': 'habitacao',
-    'housing': 'habitacao'
-  };
-
-  const key = categoryKeys[category] || category?.toLowerCase() || 'other';
+  const key = normalizeCategory(category);
   const config = CATEGORY_CONFIG[key] || CATEGORY_CONFIG.other;
   const Icon = config.icon;
 
@@ -61,7 +43,7 @@ export default function CategoryBadge({ category, className = "" }) {
     <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${config.bg} ${config.color} ${className}`}>
       <Icon size={12} strokeWidth={2.5} />
       <span className="text-[10px] font-black uppercase tracking-wider truncate max-w-[80px]">
-        {t(`transactions.categories.${key}`, { defaultValue: category })}
+        {t(`common.categories.${key}`, { defaultValue: category })}
       </span>
     </div>
   );

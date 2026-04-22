@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import { useTranslation } from 'react-i18next';
 import { fmt, calcMonthlyTotals, calcCategoryBreakdown } from '../utils/calculations';
+import { normalizeCategory } from '../utils/categories';
 
 export default function FinancialFlow({ transactions, currency, monthKey, rendas, startDay }) {
   const { t } = useTranslation();
@@ -13,50 +14,11 @@ export default function FinancialFlow({ transactions, currency, monthKey, rendas
 
     // Helper para tradução e normalização de categorias
     const getCategoryLabel = (categoryName) => {
-      if (!categoryName) return t('transactions.categories.other');
-      
-      let name = categoryName;
-      if (name.startsWith('transactions.categories.')) {
-        name = name.replace('transactions.categories.', '');
-      }
-
-      // Mapeamento manual para garantir que variações comuns batam nas chaves do JSON
-      const mapping = {
-        'alimentacao': 'food',
-        'alimentação': 'food',
-        'habitacao': 'house_rent',
-        'habitação': 'house_rent',
-        'casa': 'house_rent',
-        'renda': 'house_rent',
-        'transporte': 'transport',
-        'saude': 'health',
-        'saúde': 'health',
-        'educacao': 'education',
-        'educação': 'education',
-        'lazer': 'leisure',
-        'investimento': 'investments',
-        'investimentos': 'investments',
-        'poupanca': 'savings',
-        'poupança': 'savings',
-        'outro': 'other',
-        'outros': 'other',
-        'other': 'other',
-        'divida': 'debts',
-        'dívida': 'debts',
-        'energia/agua': 'energy_water',
-        'energia/água': 'energy_water',
-        'igreja/doacoes': 'church_donations',
-        'igreja/doações': 'church_donations',
-        'internet': 'internet'
-      };
-
-      const normalized = name.toLowerCase().trim();
-      const key = mapping[normalized] || normalized;
-      
-      const translationKey = `transactions.categories.${key}`;
+      const key = normalizeCategory(categoryName);
+      const translationKey = `common.categories.${key}`;
       const translated = t(translationKey);
       
-      return translated !== translationKey ? translated : name;
+      return translated !== translationKey ? translated : (categoryName || t('common.categories.other'));
     };
 
     // Usar as funções core para garantir consistência total
@@ -83,7 +45,7 @@ export default function FinancialFlow({ transactions, currency, monthKey, rendas
     const rawNodes = [
       { name: t('dashboard.income'), id: 'income', color: '#10b981' },
       { name: t('dashboard.expenses'), id: 'expenses', color: '#ef4444' },
-      { name: t('transactions.categories.savings'), id: 'savings', color: '#f59e0b' },
+      { name: t('common.categories.savings'), id: 'savings', color: '#f59e0b' },
     ];
 
     Object.keys(consolidatedExpenses).forEach(label => {
