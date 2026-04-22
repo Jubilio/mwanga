@@ -330,7 +330,8 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
       db.budgets.clear().then(() => db.budgets.bulkAdd(Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: b.category, limit: Number(b.limit_amount || 0) })) : [])),
       db.metas.clear().then(() => db.metas.bulkAdd(Array.isArray(metas) ? metas.map(mapGoal) : [])),
       db.rendas.clear().then(() => db.rendas.bulkAdd(Array.isArray(rendas) ? rendas.map(mapRental) : [])),
-      db.settings.put({ id: 'current', ...mergedSettings })
+      db.settings.put({ id: 'current', ...mergedSettings }),
+      resolvedUser ? db.settings.put({ id: 'user_profile', ...resolvedUser }) : Promise.resolve()
     ]);
 
     return resolvedUser;
@@ -504,7 +505,8 @@ export function FinanceProvider({ children }) {
           db.budgets.clear().then(() => db.budgets.bulkAdd(Array.isArray(budgets) ? budgets.map(b => ({ id: b.id, category: normalizeCategory(b.category), limit: Number(b.limit_amount || 0) })) : [])),
           db.metas.clear().then(() => db.metas.bulkAdd(Array.isArray(metas) ? metas.map(mapGoal) : [])),
           db.rendas.clear().then(() => db.rendas.bulkAdd(Array.isArray(rendas) ? rendas.map(mapRental) : [])),
-          db.settings.put({ id: 'current', ...mergedSettings })
+          db.settings.put({ id: 'current', ...mergedSettings }),
+          user ? db.settings.put({ id: 'user_profile', ...user }) : Promise.resolve()
         ]);
 
       } catch (e) {
@@ -517,8 +519,9 @@ export function FinanceProvider({ children }) {
           const offlineMetas = await db.metas.toArray();
           const offlineRendas = await db.rendas.toArray();
           const offlineSettings = await db.settings.get('current');
+          const offlineUser = await db.settings.get('user_profile');
 
-          if (offlineTs.length > 0) {
+          if (offlineTs.length > 0 || offlineUser) {
             dispatch({
               type: 'SET_DATA',
               payload: {
@@ -527,6 +530,7 @@ export function FinanceProvider({ children }) {
                 metas: offlineMetas,
                 rendas: offlineRendas,
                 settings: offlineSettings || defaultState.settings,
+                user: offlineUser || null,
                 loading: false
               }
             });

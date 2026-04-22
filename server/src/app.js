@@ -152,6 +152,7 @@ app.use('/api/kyc', kycRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/households', inviteRoutes);
+app.use('/api/behavior', require('./routes/behavior.routes'));
 
 app.use('/api', financeRoutes);
 

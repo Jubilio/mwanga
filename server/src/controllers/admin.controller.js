@@ -102,8 +102,22 @@ const getPlatformStats = async (req, res) => {
       logger.warn('Feedbacks table might not exist yet:', e.message);
     }
 
+    // 6. Active Users (Last 24h)
+    let activeUsers = 0;
+    try {
+      const activeCount = await db.execute(`
+        SELECT COUNT(DISTINCT user_id) as count 
+        FROM behavior_events 
+        WHERE created_at >= NOW() - INTERVAL '24 hours'
+      `);
+      activeUsers = Number(activeCount.rows[0].count);
+    } catch (e) {
+      logger.warn('Behavior events table might not exist or schema differs:', e.message);
+    }
+
     res.json({
       totalUsers: Number(usersCount.rows[0].count),
+      activeUsers,
       kyc: kycStats.rows,
       loans: {
         totalDisbursed: Number(loanStats.rows[0].total_disbursed || 0),

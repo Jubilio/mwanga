@@ -41,6 +41,7 @@ import InstallBanner from './InstallBanner';
 import { usePWA } from '../hooks/usePWA';
 import { useTranslation } from 'react-i18next';
 import MwangaLogo from './MwangaLogo';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
   // Dynamic items will be generated inside the component using t()
 
@@ -137,6 +138,21 @@ export default function Layout() {
 
   const { installPrompt } = usePWA();
   const [showInstallBanner, setShowInstallBanner] = useState(true);
+  const { enablePush, isSubscribed, isSupported, permission } = usePushNotifications();
+
+  // Auto-enable push notifications if possible
+  useEffect(() => {
+    if (isSupported && !isSubscribed && permission !== 'denied') {
+      // Small delay to ensure everything is ready
+      const timer = setTimeout(() => {
+        enablePush().catch(err => {
+          // Silently fail for auto-enable to avoid bothering the user with errors
+          console.warn('Auto-enable push failed:', err.message);
+        });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSupported, isSubscribed, permission, enablePush]);
 
   useEffect(() => {
     let failCount = 0;
@@ -187,6 +203,10 @@ export default function Layout() {
     }
 
     fetchNotifications();
+
+    // Ping behavior tracking for Active User metrics
+    api.post('/behavior/ping').catch(() => {});
+
     return () => { if (timeoutId) clearTimeout(timeoutId); };
   }, []);
 
@@ -325,11 +345,6 @@ export default function Layout() {
         }
       }
     };
-
-    // Request notification permission on first load if not determined
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
 
     checkDailySpending();
     

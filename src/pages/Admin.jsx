@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import {
-  Users, Shield, BarChart2, CheckCircle, XCircle, Clock,
-  TrendingUp, AlertCircle, RefreshCw, FileCheck, UserX, MessageSquare, Send
+  Users, Shield, BarChart2, XCircle, Clock,
+  TrendingUp, AlertCircle, RefreshCw, FileCheck, UserX, MessageSquare, Send, CheckCircle
 } from 'lucide-react';
 import { Tooltip, PieChart, Pie, Cell } from 'recharts';
+import Toast, { useToast } from '../components/Toast';
 
 const G = {
   bg: '#07090f', bg2: '#0c1018',
@@ -36,6 +37,7 @@ export default function Admin() {
   const [error, setError] = useState('');
   const [broadcast, setBroadcast] = useState({ title: '', body: '' });
   const [broadcasting, setBroadcasting] = useState(false);
+  const { toast, showToast, hideToast } = useToast();
 
   useEffect(() => {
     fetchData(true);
@@ -87,10 +89,12 @@ export default function Admin() {
       const headers = getAdminHeaders();
       await api.post('/admin/notifications/broadcast', broadcast, { headers });
       setBroadcast({ title: '', body: '' });
-      alert('Mensagem enviada para todos os usuários com sucesso!');
+      showToast('Mensagem enviada com sucesso para toda a comunidade Mwanga!', 'success');
     } catch (err) {
       console.error('Broadcast failed:', err);
-      setError(err.response?.data?.error || 'Falha ao enviar broadcast.');
+      const msg = err.response?.data?.error || 'Falha ao enviar broadcast.';
+      showToast(msg, 'error');
+      setError(msg);
     } finally {
       setBroadcasting(false);
     }
@@ -160,6 +164,7 @@ export default function Admin() {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+        <StatCard label="Utilizadores Ativos (24h)" value={stats.activeUsers || 0} icon={<Shield />} color={G.gold} />
         <StatCard label="Total de Utilizadores" value={stats.totalUsers} icon={<Users />} color={G.blue} />
         <StatCard label="Volume Desembolsado" value={`MT ${stats.loans.totalDisbursed.toLocaleString()}`} icon={<TrendingUp />} color={G.green} />
         <StatCard label="Pedidos Pendentes" value={stats.pendingApplications} icon={<Clock />} color={G.gold} />
@@ -359,6 +364,13 @@ export default function Admin() {
           </div>
         </div>
       </div>
+      
+      <Toast 
+        message={toast.message} 
+        visible={toast.visible} 
+        variant={toast.variant} 
+        onClose={hideToast}
+      />
     </div>
   );
 }
