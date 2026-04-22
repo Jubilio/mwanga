@@ -31,6 +31,8 @@ O sistema utiliza um modelo relacional focado em multi-tenancy através do conce
   - Suporta amortizações parciais e cálculo de juros.
 - **`accounts`**: Contas bancárias ou carteiras móveis (M-Pesa, mKesh) com saldo dinâmico.
 - **`notifications`**: Sistema de alertas e lembretes integrados com Push API.
+- **`behavior_events`**: Registo de interações e métricas de uso (DAU/MAU).
+- **`kyc_documents`**: Armazena metadados de documentos de identidade para verificação manual por administradores.
 
 ---
 
@@ -41,7 +43,7 @@ O sistema utiliza um modelo relacional focado em multi-tenancy através do conce
 Um dos diferenciais competitivos do Mwanga. Permite importar transações copiando o texto de SMS de bancos moçambicanos (Millennium BIM, BCI) e carteiras móveis.
 
 - **Fase 1 (Regex)**: Tenta extrair valores, referências e datas usando padrões conhecidos.
-- **Fase 2 (LLM Fallback)**: Se o Regex falhar ou tiver baixa confiança, o sistema utiliza a API da **Anthropic (Claude 3.5)** para interpretar o texto e devolver um JSON estruturado.
+- **Fase 2 (LLM Fallback)**: Se o Regex falhar ou tiver baixa confiança, o sistema utiliza a API da **Anthropic (Claude 3.5)** para interpretar o texto e devolver um JSON Estruturado.
 
 ### 4.2. Binth AI Assistant
 
@@ -64,6 +66,22 @@ Sistema proativo de notificações:
 
 - **Inteligência de Entrega**: Score de relevância para decidir se envia push instantâneo ou agrega num resumo diário.
 - **Deduplicação**: Evita alertas repetidos para o mesmo evento financeiro.
+- **Push Default**: O sistema solicita e ativa notificações Push automaticamente no primeiro acesso para maximizar o alcance.
+
+### 4.5. Painel Administrativo (Governance)
+
+Módulo exclusivo para utilizadores com a role `admin`:
+
+- **Gestão KYC**: Interface para aprovação ou rejeição de documentos de identidade.
+- **Estatísticas de Plataforma**: Monitorização de volume desembolsado, total de utilizadores e pedidos pendentes.
+- **Broadcast Global**: Ferramenta para envio de comunicações em massa via Push e Notificação In-App.
+
+### 4.6. Comportamento e Analytics (DAU)
+
+Monitorização de engajamento através de um endpoint de "ping":
+
+- **Métricas de Atividade**: Cálculo em tempo real de Utilizadores Ativos (últimas 24h).
+- **Tracking de Eventos**: Registo de aberturas de app, interações com notificações e conversões.
 
 ---
 
@@ -76,7 +94,17 @@ Sistema proativo de notificações:
 
 ---
 
-## 6. Configuração e Deploy
+## 6. Resiliência Offline e PWA
+
+O Mwanga utiliza uma estratégia **Offline-First**:
+
+- **Dexie.js (IndexedDB)**: Sincronização local de transações, orçamentos, metas e perfil de utilizador.
+- **Persistência de Perfil**: O nome e dados do utilizador são cacheados localmente para evitar o estado "Utilizador Genérico" durante quedas de rede.
+- **Sincronização Diferida**: Ações realizadas offline são enfileiradas na tabela `pendingActions` e processadas automaticamente quando a ligação é restabelecida.
+
+---
+
+## 7. Configuração e Deploy
 
 ### Variáveis de Ambiente Necessárias
 
@@ -97,6 +125,6 @@ cd server && npm start
 ```
 
 ---
-## 7. Notas Finais
+## 8. Notas Finais
 
-*Documentação atualizada em: 08/04/2026*
+*Documentação atualizada em: 22/04/2026*

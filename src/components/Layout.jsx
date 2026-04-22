@@ -424,7 +424,7 @@ export default function Layout() {
   }
 
   return (
-    <div className={`app-container ${state.darkMode ? 'dark transition-colors' : 'transition-colors'}`}>
+    <div className={`app-container premium-bg ${state.darkMode ? 'dark transition-colors' : 'transition-colors'}`}>
       <CustomCursor />
 
       <div className={`fixed inset-0 z-100 transition-opacity duration-300 ${isNotificationsOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
@@ -586,7 +586,7 @@ export default function Layout() {
                 {/* Desktop Info */}
                 <div className="hidden md:flex flex-col items-end pl-2">
                   <span className="text-[12px] font-bold text-midnight dark:text-white leading-tight">
-                    {state.user?.name?.split(' ')[0] || 'Utilizador'}
+                    {state.user?.name?.split(' ')[0] || 'Explorador'}
                   </span>
                   <span className="text-[9px] font-black uppercase tracking-widest text-slate-500/80">
                     {state.settings?.household_name?.slice(0, 15) || 'Mwanga'}

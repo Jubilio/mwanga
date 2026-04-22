@@ -257,7 +257,7 @@ const googleLogin = async (req, res) => {
     }
 
     const normalizedEmail = String(email).trim().toLowerCase();
-    const displayName = String(name || normalizedEmail.split('@')[0] || 'Utilizador Mwanga').trim();
+    const displayName = String(name || normalizedEmail.split('@')[0] || 'Explorador Mwanga').trim();
 
     let created = false;
     let result = await db.execute({

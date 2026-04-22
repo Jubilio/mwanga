@@ -72,6 +72,36 @@ body {
   padding-bottom: var(--sab);
 }
 
+.premium-bg {
+  background-color: var(--color-cream);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(10, 77, 104, 0.03) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(26, 143, 168, 0.03) 0px, transparent 50%);
+  position: relative;
+}
+
+.premium-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: -1;
+}
+
+.dark .premium-bg {
+  background-color: #0a1926;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(35, 181, 212, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(10, 77, 104, 0.05) 0px, transparent 50%);
+}
+
+.dark .premium-bg::before {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
 /* ═══ PWA FAB & Navigation ═══ */
 .fab-container {
   position: absolute;
@@ -303,49 +333,43 @@ textarea {
 /* ═══ Glass Card 2.0 ═══ */
 .glass-card {
   background: var(--color-glass-bg);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  border-radius: 24px;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-radius: 28px;
   border: 1px solid var(--color-glass-border);
   box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.05),
-    0 10px 15px -3px rgba(0, 0, 0, 0.03);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    0 10px 30px -5px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   overflow: hidden;
-  will-change: transform, opacity;
 }
 
-.glass-card::before {
+.glass-card::after {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0) 100%);
+  background: radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 70%);
   pointer-events: none;
 }
 
 .glass-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px) scale(1.01);
   box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  border-color: rgba(201, 150, 58, 0.3);
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  border-color: rgba(201, 150, 58, 0.4);
 }
 
 .dark .glass-card {
-  background: var(--color-glass-bg);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  border-radius: 24px;
-}
-
-.dark .glass-card:hover {
-  border-color: rgba(201, 150, 58, 0.2);
+  background: rgba(15, 23, 42, 0.7);
+  box-shadow: 
+    0 10px 40px -10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* ═══ Global Design Utilities ═══ */
@@ -581,6 +605,41 @@ textarea {
   text-transform: uppercase;
   letter-spacing: 0.8px;
   margin-bottom: 0.4rem;
+}
+
+.premium-input {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.premium-input:focus {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--color-sky);
+  box-shadow: 
+    0 0 0 4px rgba(35, 181, 212, 0.1),
+    inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.light .premium-input {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--color-dark);
+}
+
+.light .premium-input:focus {
+  background: white;
+  border-color: var(--color-ocean);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 /* ═══ Tables ═══ */
