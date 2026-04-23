@@ -399,8 +399,8 @@ async function upsertPushSubscription({
 
   const endpoint = subscription.endpoint;
   const expirationTime = subscription.expirationTime || null;
-  const p256dh = subscription.keys?.p256dh;
-  const auth = subscription.keys?.auth;
+  const p256dh = subscription.keys?.p256dh || null;
+  const auth = subscription.keys?.auth || null;
 
     const result = await db.execute({
       sql: `

@@ -42,6 +42,7 @@ import { usePWA } from '../hooks/usePWA';
 import { useTranslation } from 'react-i18next';
 import MwangaLogo from './MwangaLogo';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import { useSmsSync } from '../hooks/useSmsSync';
 
   // Dynamic items will be generated inside the component using t()
 
@@ -139,6 +140,20 @@ export default function Layout() {
   const { installPrompt } = usePWA();
   const [showInstallBanner, setShowInstallBanner] = useState(true);
   const { enablePush, isSubscribed, isSupported, permission } = usePushNotifications();
+  const { syncSms } = useSmsSync(showToast);
+
+  // Auto SMS Sync
+  useEffect(() => {
+    if (state.settings?.sms_automation_enabled) {
+      syncSms(); // Initial sync on load
+      
+      const intervalId = setInterval(() => {
+        syncSms();
+      }, 5 * 60 * 1000); // Check every 5 minutes
+
+      return () => clearInterval(intervalId);
+    }
+  }, [state.settings?.sms_automation_enabled, syncSms]);
 
   // Auto-enable push notifications if possible
   useEffect(() => {

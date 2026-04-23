@@ -1,8 +1,12 @@
-import { Wallet, TrendingUp, Home as HomeIcon, Zap, Sparkles } from 'lucide-react';
+import { Wallet, TrendingUp, Home as HomeIcon, Zap, Sparkles, RefreshCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useSmsSync } from '../../hooks/useSmsSync';
+import { useOutletContext } from 'react-router-dom';
 
 export default function TabFinancas({ form, setFormDirty, state }) {
   const { t } = useTranslation();
+  const { showToast } = useOutletContext() || {};
+  const { syncSms } = useSmsSync(showToast);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -162,6 +166,16 @@ export default function TabFinancas({ form, setFormDirty, state }) {
                 <div className={`w-4 h-4 rounded-full bg-white transition-all ${form.sms_automation_enabled ? 'translate-x-6' : 'translate-x-0'}`} />
               </div>
             </div>
+
+            {form.sms_automation_enabled && (
+              <button 
+                type="button"
+                onClick={(e) => { e.preventDefault(); syncSms(true); }}
+                className="w-full flex justify-center items-center gap-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-sm"
+              >
+                <RefreshCcw size={14} /> Sincronizar SMS Agora
+              </button>
+            )}
           </div>
         </div>
       </div>

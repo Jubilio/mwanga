@@ -7,3 +7,6 @@ project(':capacitor-push-notifications').projectDir = new File('../node_modules/
 
 include ':capacitor-secure-storage-plugin'
 project(':capacitor-secure-storage-plugin').projectDir = new File('../node_modules/capacitor-secure-storage-plugin/android')
+
+include ':capacitor-sms-inbox'
+project(':capacitor-sms-inbox').projectDir = new File('../node_modules/capacitor-sms-inbox/android')

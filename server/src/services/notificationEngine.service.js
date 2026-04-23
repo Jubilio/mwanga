@@ -54,7 +54,7 @@ async function processUserCandidates(userId) {
   const [statsRes, prefRes, subsRes, candidatesRes] = await Promise.all([
     db.execute({ sql: 'SELECT * FROM user_notification_stats WHERE user_id = ?', args: [userId] }),
     db.execute({ sql: 'SELECT * FROM notification_preferences WHERE user_id = ?', args: [userId] }),
-    db.execute({ sql: 'SELECT id, endpoint, p256dh_key, auth_key FROM push_subscriptions WHERE user_id = ? AND is_active = TRUE', args: [userId] }),
+    db.execute({ sql: 'SELECT id, endpoint, p256dh_key, auth_key, device_type, platform FROM push_subscriptions WHERE user_id = ? AND is_active = TRUE', args: [userId] }),
     db.execute({ sql: 'SELECT * FROM notification_candidates WHERE user_id = ? AND status = \'pending\'', args: [userId] })
   ]);
 

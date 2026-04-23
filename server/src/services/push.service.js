@@ -1,7 +1,27 @@
 const webpush = require('web-push');
+const admin = require('firebase-admin');
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
 const { getNotificationSchema } = require('./notificationSchema.service');
+
+// Initialize Firebase Admin if credentials are provided
+let firebaseApp = null;
+try {
+  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
+    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
+    : null;
+
+  if (serviceAccount) {
+    firebaseApp = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    logger.info('Firebase Admin initialized successfully.');
+  } else {
+    logger.warn('FIREBASE_SERVICE_ACCOUNT not found in .env. Native push will be disabled.');
+  }
+} catch (error) {
+  logger.error('Failed to initialize Firebase Admin:', error.message);
+}
 
 function getVapidKeys() {
   return {
@@ -50,7 +70,7 @@ function buildActions(actionPayload = {}) {
 function buildPushPayload(notification) {
   const actionPayload = notification.action_payload || notification.actionPayload || {};
 
-  return JSON.stringify({
+  return {
     title: notification.title || 'Mwanga',
     body: notification.message,
     icon: '/icon-192.png',
@@ -61,13 +81,13 @@ function buildPushPayload(notification) {
     actions: buildActions(actionPayload),
     data: {
       ...actionPayload,
-      notificationId: notification.id,
+      notificationId: String(notification.id),
       type: notification.type,
       route: actionPayload.route || '/quick-add',
-      date: actionPayload.date,
-      title: notification.title,
+      date: actionPayload.date || '',
+      title: notification.title || '',
     },
-  });
+  };
 }
 
 async function updateNotificationStatus(notificationId, nextStatus, delivered = 0) {
@@ -145,32 +165,59 @@ async function markPushDeliverySuccess(subscriptionId) {
 
 /**
  * Low-level push delivery to a specific subscription.
+ * Handles both Web (VAPID) and Native (FCM).
  */
 async function sendRawPush(payload, subscription, options = {}) {
-  if (!hasPushCredentials()) {
-    throw new Error('Push credentials not configured');
-  }
-
-  configureVapid();
-
-  const pushSubscription = {
-    endpoint: subscription.endpoint,
-    expirationTime: subscription.expiration_time || subscription.expirationTime,
-    keys: {
-      p256dh: subscription.p256dh_key || subscription.keys?.p256dh,
-      auth: subscription.auth_key || subscription.keys?.auth,
-    },
-  };
+  const isNative = subscription.device_type === 'native' || 
+                   subscription.platform === 'android' || 
+                   subscription.platform === 'ios';
 
   try {
-    await webpush.sendNotification(pushSubscription, JSON.stringify(payload), {
-      TTL: options.ttl || 3600,
-      urgency: options.urgency || 'normal',
-    });
+    if (isNative) {
+      if (!firebaseApp) {
+        throw new Error('Firebase not initialized');
+      }
+
+      await admin.messaging().send({
+        token: subscription.endpoint,
+        notification: {
+          title: payload.title,
+          body: payload.body,
+        },
+        data: payload.data,
+        android: {
+          priority: options.urgency === 'high' ? 'high' : 'normal',
+          notification: {
+            sound: 'default',
+            clickAction: 'MWANGA_NOTIFICATION_ACTION'
+          }
+        }
+      });
+    } else {
+      if (!hasPushCredentials()) {
+        throw new Error('Push credentials not configured');
+      }
+
+      configureVapid();
+
+      const pushSubscription = {
+        endpoint: subscription.endpoint,
+        expirationTime: subscription.expiration_time || subscription.expirationTime,
+        keys: {
+          p256dh: subscription.p256dh_key || subscription.keys?.p256dh,
+          auth: subscription.auth_key || subscription.keys?.auth,
+        },
+      };
+
+      await webpush.sendNotification(pushSubscription, JSON.stringify(payload), {
+        TTL: options.ttl || 3600,
+        urgency: options.urgency || 'normal',
+      });
+    }
     return { success: true };
   } catch (error) {
     const statusCode = error.statusCode || error.status_code;
-    const message = error.body || error.message || 'push_failed';
+    const message = error.message || 'push_failed';
     
     return { success: false, statusCode, message };
   }
@@ -179,24 +226,16 @@ async function sendRawPush(payload, subscription, options = {}) {
 async function sendPushNotification(notification) {
   const schema = await getNotificationSchema();
   if (!schema.hasPushSubscriptionsTable) {
-    logger.warn('Push skipped: push_subscriptions table does not exist. Run the notification migration.');
+    logger.warn('Push skipped: push_subscriptions table does not exist.');
     await updateNotificationStatus(notification?.id, 'stored', 0);
     return { attempted: 0, delivered: 0, skipped: true };
   }
 
   if (!notification?.user_id) {
-    logger.warn(`Push skipped: notification has no user_id (notification.id=${notification?.id}).`);
+    logger.warn(`Push skipped: notification has no user_id.`);
     await updateNotificationStatus(notification?.id, 'stored', 0);
     return { attempted: 0, delivered: 0, skipped: true };
   }
-
-  if (!hasPushCredentials()) {
-    logger.warn('Push skipped: VAPID keys are not configured in .env (VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY).');
-    await updateNotificationStatus(notification?.id, 'stored', 0);
-    return { attempted: 0, delivered: 0, skipped: true };
-  }
-
-  configureVapid();
 
   const result = await db.execute({
     sql: `
@@ -212,45 +251,78 @@ async function sendPushNotification(notification) {
 
   const subscriptions = result.rows || [];
   if (subscriptions.length === 0) {
-    logger.warn(`Push skipped: no active subscriptions for user_id=${notification.user_id}, household_id=${notification.household_id}.`);
+    logger.warn(`Push skipped: no active subscriptions for user_id=${notification.user_id}.`);
     await updateNotificationStatus(notification?.id, 'stored', 0);
     return { attempted: 0, delivered: 0, skipped: true };
   }
 
-  logger.info(`Push: attempting delivery to ${subscriptions.length} subscription(s) for user_id=${notification.user_id}...`);
-
   const payload = buildPushPayload(notification);
   let delivered = 0;
 
-  for (const subscription of subscriptions) {
-    const pushSubscription = {
-      endpoint: subscription.endpoint,
-      expirationTime: subscription.expiration_time,
-      keys: {
-        p256dh: subscription.p256dh_key,
-        auth: subscription.auth_key,
-      },
-    };
+  for (const sub of subscriptions) {
+    const isNative = sub.device_type === 'native' || sub.platform === 'android' || sub.platform === 'ios';
 
     try {
-      await webpush.sendNotification(pushSubscription, payload, {
-        TTL: notification.type === 'warning' ? 120 : 3600,
-        urgency: notification.type === 'warning' ? 'high' : 'normal',
-      });
+      if (isNative) {
+        if (!firebaseApp) {
+          logger.warn(`Skipping native push for sub ${sub.id}: Firebase not initialized.`);
+          continue;
+        }
 
-      delivered += 1;
-      await markPushDeliverySuccess(subscription.id);
-    } catch (error) {
-      const statusCode = error.statusCode || error.status_code;
-      const message = error.body || error.message || 'push_failed';
-
-      if (statusCode === 404 || statusCode === 410) {
-        await deactivateSubscription(subscription.id, message);
+        await admin.messaging().send({
+          token: sub.endpoint,
+          notification: {
+            title: payload.title,
+            body: payload.body,
+          },
+          data: payload.data,
+          android: {
+            priority: notification.type === 'warning' ? 'high' : 'normal',
+            notification: {
+              sound: 'default',
+              clickAction: 'MWANGA_NOTIFICATION_ACTION'
+            }
+          }
+        });
       } else {
-        await registerPushDeliveryFailure(subscription.id, message);
+        if (!hasPushCredentials()) {
+          logger.warn(`Skipping web push for sub ${sub.id}: VAPID not configured.`);
+          continue;
+        }
+
+        configureVapid();
+        const webPushSub = {
+          endpoint: sub.endpoint,
+          expirationTime: sub.expiration_time,
+          keys: {
+            p256dh: sub.p256dh_key,
+            auth: sub.auth_key,
+          },
+        };
+
+        await webpush.sendNotification(webPushSub, JSON.stringify(payload), {
+          TTL: notification.type === 'warning' ? 120 : 3600,
+          urgency: notification.type === 'warning' ? 'high' : 'normal',
+        });
       }
 
-      logger.warn(`Push delivery failed for subscription ${subscription.id}: ${message}`);
+      delivered += 1;
+      await markPushDeliverySuccess(sub.id);
+    } catch (error) {
+      const statusCode = error.statusCode || error.status_code;
+      const message = error.message || 'push_failed';
+
+      // FCM uses different error codes (e.g. messaging/registration-token-not-registered)
+      const isExpired = statusCode === 404 || statusCode === 410 || 
+                       message.includes('not-registered') || 
+                       message.includes('invalid-registration-token');
+
+      if (isExpired) {
+        await deactivateSubscription(sub.id, message);
+      } else {
+        await registerPushDeliveryFailure(sub.id, message);
+      }
+      logger.warn(`Push delivery failed for subscription ${sub.id}: ${message}`);
     }
   }
 
@@ -265,3 +337,4 @@ module.exports = {
   sendRawPush,
   getVapidKeys,
 };
+
