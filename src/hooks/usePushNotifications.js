@@ -77,7 +77,13 @@ export function usePushNotifications() {
           throw new Error('PERMISSION_DENIED');
         }
 
-        await PushNotifications.register();
+        try {
+          await PushNotifications.register();
+        } catch (regErr) {
+          console.warn('Push registration failed. Possibly missing google-services.json:', regErr);
+          setIsLoading(false);
+          return null;
+        }
 
         return new Promise((resolve, reject) => {
           PushNotifications.addListener('registration', async (token) => {

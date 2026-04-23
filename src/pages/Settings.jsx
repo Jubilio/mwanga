@@ -51,6 +51,7 @@ export default function Settings() {
     sms_automation_enabled: state.settings.sms_automation_enabled === 'true' || state.settings.sms_automation_enabled === true,
     default_income_account_id: state.settings.default_income_account_id || '',
     default_expense_account_id: state.settings.default_expense_account_id || '',
+    password: '',
   });
 
   const handleSaveAll = useCallback(async () => {
@@ -73,7 +74,13 @@ export default function Settings() {
         updates.push(dispatch({ type: 'UPDATE_HOUSEHOLD', payload: { name: form.household_name, cash_balance: form.cash_balance } }));
       }
 
+      if (form.password) {
+        updates.push(api.put('/auth/profile', { password: form.password }));
+      }
+
       await Promise.all(updates);
+      if (form.password) setForm(f => ({ ...f, password: '' })); // Clear after save
+      showToast(t('settings.toasts.save_success'));
     } catch {
       showToast(t('settings.toasts.save_error'));
     } finally {

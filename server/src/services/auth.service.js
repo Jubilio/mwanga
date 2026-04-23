@@ -120,7 +120,7 @@ const getUserProfile = async (userId) => {
 };
 
 const updateProfile = async (userId, data) => {
-  const { name, nationalId } = data;
+  const { name, nationalId, password } = data;
 
   let updates = [];
   let args = [];
@@ -134,6 +134,13 @@ const updateProfile = async (userId, data) => {
   if (nationalId) {
     updates.push(`"nationalId" = $${paramCount++}`);
     args.push(cryptoService.encrypt(nationalId));
+  }
+
+  if (password) {
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+    updates.push(`password_hash = $${paramCount++}`);
+    args.push(hash);
   }
 
   if (updates.length > 0) {

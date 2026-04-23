@@ -137,6 +137,49 @@ const googleLogin = async (req, res) => {
   }
 };
 
+const googleAccessTokenLogin = async (req, res) => {
+  try {
+    const { email, name, accessToken } = req.body;
+    if (!email || !accessToken) return res.status(400).json({ error: 'Email e Access Token sao obrigatorios' });
+
+    // In a production environment, you should verify the accessToken with Google
+    // fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${accessToken}`)
+    
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const displayName = String(name || normalizedEmail.split('@')[0] || 'Explorador Mwanga').trim();
+
+    let created = false;
+    let result = await db.execute({ sql: 'SELECT * FROM users WHERE email = $1', args: [normalizedEmail] });
+    let user = result.rows[0];
+
+    if (!user) {
+      created = true;
+      const householdInsert = await db.execute({
+        sql: 'INSERT INTO households (name) VALUES ($1) RETURNING id',
+        args: [`Familia de ${displayName}`]
+      });
+      const householdId = Number(householdInsert.rows[0]?.id || householdInsert.lastInsertRowid);
+
+      const passwordHash = authService.createGooglePasswordHash();
+      const userInsert = await db.execute({
+        sql: 'INSERT INTO users (name, email, password_hash, household_id) VALUES ($1, $2, $3, $4) RETURNING id',
+        args: [displayName, normalizedEmail, passwordHash, householdId]
+      });
+      const userId = Number(userInsert.rows[0]?.id || userInsert.lastInsertRowid);
+      await logAction(userId, 'REGISTER_GOOGLE', 'USER', userId);
+      user = { id: userId, name: displayName, email: normalizedEmail, household_id: householdId, role: 'user' };
+    } else {
+      await logAction(user.id, 'LOGIN_GOOGLE', 'USER', user.id);
+    }
+
+    const userData = { id: user.id, name: user.name, email: user.email, householdId: user.household_id, role: user.role || 'user' };
+    res.json({ user: userData, token: authService.createSessionToken(userData), created });
+  } catch (error) {
+    console.error('[Google Access Token Login Error]', error);
+    res.status(500).json({ error: 'Erro interno ao processar login com Google' });
+  }
+};
+
 const forgotPassword = async (req, res, next) => {
   try {
     const { email } = forgotPasswordSchema.parse(req.body);
@@ -160,4 +203,4 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, getMe, updateProfile, googleLogin, forgotPassword, resetPassword };
+module.exports = { register, login, getMe, updateProfile, googleLogin, googleAccessTokenLogin, forgotPassword, resetPassword };

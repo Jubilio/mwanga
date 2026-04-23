@@ -61,7 +61,7 @@ function PageLoader() {
   const quote = FINANCIAL_QUOTES[Math.floor(Math.random() * FINANCIAL_QUOTES.length)];
 
   return (
-    <div className="loading-screen">
+    <div className="loading-screen animate-fade-in" style={{ animationDuration: '0.5s' }}>
       <div className="glass-loading-card">
         <div className="loading-logo-container">
           <img src="/splash-premium.png" alt="Mwanga Logo" className="loading-image" />
@@ -90,7 +90,7 @@ function RequireAuth({ children }) {
   const hasOnboarded = localStorage.getItem('mwanga-onboarded') === 'true';
 
   if (state.loading) return (
-    <div className="loading-screen">
+    <div className="loading-screen animate-fade-in" style={{ animationDuration: '0.5s' }}>
       <div className="glass-loading-card">
         <div className="loading-logo-container">
           <img src="/splash-premium.png" alt="Mwanga Logo" className="loading-image" />

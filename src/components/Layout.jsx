@@ -108,30 +108,36 @@ export default function Layout() {
 
   // Auto SMS Sync
   useEffect(() => {
-    if (state.settings?.sms_automation_enabled) {
-      syncSms(); // Initial sync on load
+    if (state.settings?.sms_automation_enabled && !state.loading) {
+      // Delay initial sync to avoid crashing during transition
+      const timer = setTimeout(() => {
+        syncSms().catch(err => console.warn('Auto SMS sync failed:', err));
+      }, 5000);
       
       const intervalId = setInterval(() => {
-        syncSms();
-      }, 5 * 60 * 1000); // Check every 5 minutes
+        syncSms().catch(err => console.warn('Interval SMS sync failed:', err));
+      }, 5 * 60 * 1000);
 
-      return () => clearInterval(intervalId);
+      return () => {
+        clearTimeout(timer);
+        clearInterval(intervalId);
+      };
     }
-  }, [state.settings?.sms_automation_enabled, syncSms]);
+  }, [state.settings?.sms_automation_enabled, state.loading, syncSms]);
 
   // Auto-enable push notifications if possible
   useEffect(() => {
-    if (isSupported && !isSubscribed && permission !== 'denied') {
-      // Small delay to ensure everything is ready
+    if (isSupported && !isSubscribed && permission !== 'denied' && !state.loading) {
+      // Delay to ensure everything is ready and avoid race conditions
       const timer = setTimeout(() => {
         enablePush().catch(err => {
-          // Silently fail for auto-enable to avoid bothering the user with errors
+          // Silently fail for auto-enable to avoid bothering the user
           console.warn('Auto-enable push failed:', err.message);
         });
-      }, 3000);
+      }, 8000); // 8 seconds delay for stability
       return () => clearTimeout(timer);
     }
-  }, [isSupported, isSubscribed, permission, enablePush]);
+  }, [isSupported, isSubscribed, permission, enablePush, state.loading]);
 
   useEffect(() => {
     let failCount = 0;
@@ -397,7 +403,7 @@ export default function Layout() {
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
           <Header 
-            onMenuClick={() => setIsSidebarOpen(true)}
+            onMenuClick={(val) => setIsSidebarOpen(val)}
             onNotificationClick={() => setIsNotificationsOpen(true)}
             unreadCount={unreadCount}
             darkMode={state.darkMode}

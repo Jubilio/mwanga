@@ -79,12 +79,16 @@ export function useStewardship() {
 
       if (newUnlocks.length > 0) {
         // Trigger Confetti!
-        confetti({
-          particleCount: 150,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#7C3AED', '#4F46E5', '#C9963A', '#00D68F']
-        });
+        try {
+          confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#7C3AED', '#4F46E5', '#C9963A', '#00D68F']
+          });
+        } catch (confettiErr) {
+          console.warn('Confetti failed:', confettiErr);
+        }
 
         // Update local storage
         localStorage.setItem('mwanga-unlocked-badges', JSON.stringify([...storedBadges, ...newUnlocks]));

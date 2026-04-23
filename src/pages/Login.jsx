@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
 import { Wallet, LogIn, UserPlus, Lock, Mail, User } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import MwangaLogo from '../components/MwangaLogo';
@@ -71,23 +71,33 @@ export default function Login() {
     }
   }
 
-  async function handleGoogleSuccess(credentialResponse) {
+  async function handleGoogleSuccess(tokenResponse) {
     setLoading(true);
 
     try {
-      const resp = await fetch(`${getApiUrl()}/auth/google`, {
+      // Fetch user info from Google using the access token
+      const userInfoResp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+      });
+      const userInfo = await userInfoResp.json();
+
+      if (!userInfo.email) {
+        throw new Error('Não foi possível obter o email do Google.');
+      }
+
+      const resp = await fetch(`${getApiUrl()}/auth/google-access-token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: credentialResponse.credential })
+        body: JSON.stringify({ 
+          email: userInfo.email, 
+          name: userInfo.name,
+          accessToken: tokenResponse.access_token 
+        })
       });
 
       const data = await resp.json();
       if (!resp.ok) {
         throw new Error(getApiErrorMessage(data, t('auth.login.toasts.google_failed')));
-      }
-
-      if (!data?.token || !data?.user) {
-        throw new Error(t('auth.login.toasts.google_failed'));
       }
 
       localStorage.setItem('mwanga-token', data.token);
@@ -96,7 +106,7 @@ export default function Login() {
       showToast(data.created ? t('auth.register.toasts.google_success') : t('auth.login.toasts.welcome_google'));
       navigate('/');
     } catch (err) {
-      showToast(`Erro: ${err.message}`);
+      showToast(`Erro Google: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -106,6 +116,40 @@ export default function Login() {
     const originLabel = currentOrigin || 'origem atual';
     showToast(t('auth.login.toasts.google_unavailable', { origin: originLabel }));
   }
+
+  const isNative = typeof window !== 'undefined' && (window.location.protocol === 'http:' || window.location.protocol === 'https:') && !window.location.hostname.includes('.'); 
+  // Simplified native check: if it's localhost or a custom scheme
+
+  const handleManualGoogleLogin = () => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const redirectUri = window.location.origin; // https://localhost
+    const scope = 'email profile openid';
+    const responseType = 'token'; // For implicit flow to get access_token
+    
+    const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}`;
+    
+    window.location.href = googleUrl;
+  };
+
+  const { login: googleLoginAction } = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: handleGoogleError,
+    flow: 'implicit'
+  });
+
+  // Effect to catch the token from URL after redirect (for manual flow)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token=')) {
+      const params = new URLSearchParams(hash.replace('#', '?'));
+      const access_token = params.get('access_token');
+      if (access_token) {
+        handleGoogleSuccess({ access_token });
+        // Clean up hash
+        window.history.replaceState(null, null, ' ');
+      }
+    }
+  }, []);
 
   return (
     <div
@@ -138,18 +182,19 @@ export default function Login() {
         </div>
 
         <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-              useOneTap
-              theme="outline"
-              size="large"
-              shape="pill"
-              locale={t('auth.login.google_locale') || 'pt_BR'}
-              text="continue_with"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={handleManualGoogleLogin}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-2xl border border-slate-200 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
+          >
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-ocean border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+            )}
+            <span>{loading ? 'Processando...' : 'Continuar com Google'}</span>
+          </button>
 
           <p
             style={{

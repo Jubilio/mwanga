@@ -33,7 +33,7 @@ export default function Header({
         {/* Quick Info / Options Button - Mobile Only */}
         <button
           className="md:hidden rounded-2xl p-2.5 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5 flex items-center gap-1.5"
-          onClick={onMenuClick}
+          onClick={() => onMenuClick(true)}
           title="Abrir Menu Principal"
         >
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5 text-ocean dark:text-aurora">
@@ -65,7 +65,7 @@ export default function Header({
 
         {/* User Profile Trigger (Desktop & Mobile) - Now goes to Settings */}
         <button
-          onClick={() => { navigate('/settings'); onMenuClick(false); }}
+          onClick={() => navigate('/settings')}
           className="group flex items-center gap-3 rounded-2xl p-1 pr-2 transition-all hover:bg-black/5 dark:hover:bg-white/5"
         >
           {/* Desktop Info */}

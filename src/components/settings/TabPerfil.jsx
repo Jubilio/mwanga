@@ -1,4 +1,4 @@
-import { User, Sparkles, Home as HomeIcon, Heart } from 'lucide-react';
+import { User, Sparkles, Home as HomeIcon, Heart, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export default function TabPerfil({ form, setFormDirty, state }) {
@@ -64,6 +64,28 @@ export default function TabPerfil({ form, setFormDirty, state }) {
                   <Sparkles size={18} className="text-teal-400" />
                 </div>
               </div>
+            </div>
+
+            <div className="group transition-all mt-6">
+               <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400">
+                    <Lock size={18} />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest">Segurança</h3>
+                </div>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">Definir/Alterar Senha</label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={form.password || ''}
+                    onChange={(e) => setFormDirty(f => ({ ...f, password: e.target.value }))}
+                    className="premium-input"
+                    placeholder="Nova senha (min. 8 caracteres)"
+                  />
+                  <p className="mt-2 text-[10px] text-slate-500 italic">
+                    Utilize isto se entrou com Google e deseja criar um acesso via email/senha.
+                  </p>
+                </div>
             </div>
           </div>
 
