@@ -1,58 +1,14 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
+import { useStewardship } from '../hooks/useStewardship';
 import { motion } from 'framer-motion';
 import { Crown, Heart, Shield, Zap, Star, Trophy, Info, Sparkles, BookOpen, Clock } from 'lucide-react';
-import { fmt } from '../utils/calculations';
 
 export default function Stewardship() {
   const { t } = useTranslation();
   const { state } = useFinance();
-  const currency = state.settings.currency || 'MT';
-  const currentNetWorth = state.contas?.reduce((acc, c) => acc + Number(c.current_balance || 0), 0) + Number(state.settings.cash_balance || 0);
+  const { stats, badges } = useStewardship();
 
-  const stats = useMemo(() => {
-    // 1. Generosidade (Dízimos/Ofertas/Doações)
-    const donations = state.transacoes
-      .filter(t => t.tipo === 'despesa' && (t.cat?.toLowerCase().includes('dízimo') || t.cat?.toLowerCase().includes('oferta') || t.cat?.toLowerCase().includes('doação')))
-      .reduce((acc, t) => acc + Number(t.valor), 0);
-    const totalIncome = state.transacoes
-      .filter(t => t.tipo === 'receita')
-      .reduce((acc, t) => acc + Number(t.valor), 0);
-    const generosityScore = Math.min(100, totalIncome > 0 ? (donations / (totalIncome * 0.1)) * 100 : 0);
-
-    // 2. Prudência (Savings Rate)
-    const totalExpense = state.transacoes
-      .filter(t => t.tipo === 'despesa')
-      .reduce((acc, t) => acc + Number(t.valor), 0);
-    const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome) * 100 : 0;
-    const prudenceScore = Math.min(100, Math.max(0, savingsRate * 5)); // 20% savings = 100 score
-
-    // 3. Diligência (Recording Frequency)
-    const last30Days = new Date();
-    last30Days.setDate(last30Days.getDate() - 30);
-    const recentTrans = state.transacoes.filter(t => new Date(t.data) > last30Days).length;
-    const diligenceScore = Math.min(100, (recentTrans / 15) * 100); // 15 trans/month = 100
-
-    // 4. Integridade (Debt Control)
-    const totalDebts = state.metas?.filter(m => m.type === 'debt' || m.category === 'dívida').length || 0;
-    const integrityScore = Math.max(0, 100 - (totalDebts * 10));
-
-    // 5. Runway (Months of Survival)
-    const monthlyExpense = totalExpense > 0 ? totalExpense : 1;
-    const runwayMonths = Math.floor(currentNetWorth / monthlyExpense);
-
-    const totalScore = Math.round((generosityScore + prudenceScore + diligenceScore + integrityScore) / 4);
-
-    return { generosityScore, prudenceScore, diligenceScore, integrityScore, totalScore, donations, savingsRate, runwayMonths };
-  }, [state, currentNetWorth]);
-
-  const badges = [
-    { id: 'generous', icon: Heart, label: 'Doador Generoso', active: stats.generosityScore > 80, color: 'text-rose-400', desc: 'Dás com alegria e propósito.' },
-    { id: 'prudent', icon: Shield, label: 'Poupador Prudente', active: stats.prudenceScore > 70, color: 'text-emerald-400', desc: 'Preparas o futuro com sabedoria.' },
-    { id: 'diligent', icon: Zap, label: 'Gestor Diligente', active: stats.diligenceScore > 90, color: 'text-amber-400', desc: 'Cuidas bem dos teus registos.' },
-    { id: 'integrity', icon: Star, label: 'Homem de Palavra', active: stats.integrityScore > 95, color: 'text-blue-400', desc: 'Honras os teus compromissos.' },
-  ];
 
   return (
     <div className="flex flex-col gap-6 md:gap-8 pb-20 max-w-7xl mx-auto w-full">

@@ -113,6 +113,7 @@ export default function Layout() {
     { to: '/insights', icon: Brain, label: t('layout.insights') },
     { to: '/sms-import', icon: Globe, label: t('layout.sms_import') },
     { to: '/patrimonio', icon: Landmark, label: t('layout.patrimony') },
+    { to: '/mordomia', icon: Crown, label: 'Mordomia', premium: true },
     { to: '/simuladores', icon: Calculator, label: t('layout.simulators') },
     { to: '/relatorio', icon: BarChart3, label: t('layout.report') },
     { to: '/pricing', icon: Crown, label: t('layout.pricing') || 'Premium', premium: true },

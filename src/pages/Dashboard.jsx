@@ -17,8 +17,9 @@ import {
 // Sub-components
 import DashboardHero from '../components/dashboard/DashboardHero';
 import DashboardQuickActions from '../components/dashboard/DashboardQuickActions';
-import { HealthCard, AlertsCard, AccountsCard, CashFlowCard } from '../components/dashboard/DashboardCards';
+import { HealthCard, AlertsCard, AccountsCard, CashFlowCard, StewardshipCard } from '../components/dashboard/DashboardCards';
 import DashboardTransactions from '../components/dashboard/DashboardTransactions';
+import { useStewardship } from '../hooks/useStewardship';
 
 const MotionDiv = motion.div;
 
@@ -147,6 +148,8 @@ export default function Dashboard() {
     show: { opacity: 1, y: 0 }
   };
 
+  const { stats, badges } = useStewardship();
+
   return (
     <MotionDiv 
       initial="hidden"
@@ -174,7 +177,7 @@ export default function Dashboard() {
         itemVariants={itemVariants} 
       />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <HealthCard 
           navigate={navigate}
           score={score}
@@ -182,6 +185,12 @@ export default function Dashboard() {
           scoreLabel={scoreLabel}
           itemVariants={itemVariants}
           t={t}
+        />
+        <StewardshipCard
+          navigate={navigate}
+          stats={stats}
+          badges={badges}
+          itemVariants={itemVariants}
         />
         <AlertsCard 
           navigate={navigate}

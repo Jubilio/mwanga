@@ -214,3 +214,57 @@ export function CashFlowCard({ navigate, totals, showBalance, currency, savingsR
     </motion.div>
   );
 }
+
+export function StewardshipCard({ navigate, stats, badges, itemVariants }) {
+  const activeBadgesCount = badges.filter(b => b.active).length;
+  
+  return (
+    <motion.div
+      variants={itemVariants}
+      onClick={() => navigate('/mordomia')}
+      className="glass-card group relative flex flex-col gap-4 overflow-hidden p-5 cursor-pointer"
+    >
+      <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gold/5 blur-3xl transition-all group-hover:bg-gold/10" />
+      
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold/10 text-gold shadow-[0_0_10px_rgba(201,150,58,0.2)]">
+            <ShieldCheck size={18} />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Mordomia & Conquistas</span>
+        </div>
+        <ChevronRight size={16} className="text-slate-300 transition-transform group-hover:translate-x-1" />
+      </div>
+
+      <div className="flex items-center gap-6">
+        <div className="flex flex-col">
+          <span className="text-4xl font-black text-white tabular-nums">{stats.totalScore}</span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-gold/60">Índice Global</span>
+        </div>
+        
+        <div className="h-10 w-[1px] bg-white/5" />
+        
+        <div className="flex flex-col">
+          <span className="text-4xl font-black text-indigo-400 tabular-nums">{activeBadgesCount}</span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400/60">Badges Ativos</span>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mt-2">
+        {badges.map(badge => (
+          <div 
+            key={badge.id} 
+            className={`h-2.5 w-2.5 rounded-full shadow-[0_0_5px_rgba(0,0,0,0.5)] ${badge.active ? 'bg-indigo-400' : 'bg-white/5'}`}
+            title={badge.label}
+          />
+        ))}
+      </div>
+
+      <div className="mt-auto flex items-center justify-between border-t border-slate-100 dark:border-white/5 pt-3">
+        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 italic">
+          "{stats.totalScore > 80 ? 'Servo fiel!' : 'Em crescimento...'}"
+        </span>
+      </div>
+    </motion.div>
+  );
+}
