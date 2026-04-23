@@ -33,6 +33,9 @@ import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
 import Toast, { useToast } from './Toast';
 import Sidebar from './layout/Sidebar';
+import NotificationPanel from './layout/NotificationPanel';
+import Header from './layout/Header';
+import BottomNavigation from './layout/BottomNavigation';
 import CustomCursor from './CustomCursor';
 import ConfirmModal from './ConfirmModal';
 import FeedbackModal from './FeedbackModal';
@@ -46,46 +49,6 @@ import { useSmsSync } from '../hooks/useSmsSync';
 
   // Dynamic items will be generated inside the component using t()
 
-const notificationTypePriority = {
-  warning: 1,
-  reminder: 2,
-  motivation: 3,
-  success: 4,
-  info: 5,
-};
-
-function getNotificationPresentation(notification = {}) {
-  const actionPayload = notification.action_payload || {};
-  const quickActions = Array.isArray(actionPayload.quickActions) ? actionPayload.quickActions.slice(0, 3) : [];
-
-  if (notification.type === 'warning') {
-    return {
-      label: 'Pressão',
-      borderClass: 'border-l-4 border-l-amber-500',
-      accentClass: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300',
-      chipClass: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200',
-      quickActions,
-    };
-  }
-
-  if (notification.type === 'motivation' || notification.type === 'success') {
-    return {
-      label: 'Momentum',
-      borderClass: 'border-l-4 border-l-emerald-500',
-      accentClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300',
-      chipClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200',
-      quickActions,
-    };
-  }
-
-  return {
-    label: 'Check-in',
-    borderClass: 'border-l-4 border-l-sky-500',
-    accentClass: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300',
-    chipClass: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-200',
-    quickActions,
-  };
-}
 
 function parseNotificationPayload(payload = {}) {
   return {
@@ -264,20 +227,6 @@ export default function Layout() {
     return () => navigator.serviceWorker.removeEventListener('message', handler);
   }, []);
 
-  const orderedNotifications = [...notifications].sort((a, b) => {
-    const unreadDelta = Number(Boolean(a.read)) - Number(Boolean(b.read));
-    if (unreadDelta !== 0) {
-      return unreadDelta;
-    }
-
-    const aPriority = notificationTypePriority[a.type] || 99;
-    const bPriority = notificationTypePriority[b.type] || 99;
-    if (aPriority !== bPriority) {
-      return aPriority - bPriority;
-    }
-
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
   const unreadCount = notifications.filter((notification) => !notification.read).length;
   const currentTitle = navItems.find((item) => item.to === location.pathname)?.label || 'Dashboard';
   const routeParams = location.pathname === '/quick-add' ? new URLSearchParams(location.search) : null;
@@ -430,205 +379,32 @@ export default function Layout() {
     }
   }
 
-  function getNotificationIcon(type = '') {
-    if (type.includes('renda')) return <Home size={14} className="text-blue-500" />;
-    if (type.includes('meta')) return <Target size={14} className="text-green-500" />;
-    if (type.includes('divida')) return <CreditCard size={14} className="text-red-500" />;
-    if (type === 'warning') return <Bell size={14} className="text-amber-500" />;
-    if (type === 'motivation') return <Sparkles size={14} className="text-emerald-500" />;
-    return <Info size={14} className="text-ocean dark:text-aurora" />;
-  }
-
   return (
     <div className={`app-container premium-bg ${state.darkMode ? 'dark transition-colors' : 'transition-colors'}`}>
       <CustomCursor />
 
-      <div className={`fixed inset-0 z-100 transition-opacity duration-300 ${isNotificationsOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <div className="absolute inset-0 backdrop-blur-xs opacity-20 bg-linear-to-b from-transparent to-black/20" onClick={() => setIsNotificationsOpen(false)} />
-        <div
-          className={`absolute right-0 top-0 h-full w-80 border-l border-white/10 bg-white p-6 shadow-2xl transition-transform duration-300 dark:bg-[#1a1a1a] ${isNotificationsOpen ? 'translate-x-0' : 'translate-x-full'}`}
-          style={{ willChange: 'transform' }}
-        >
-          <div className="mb-6 flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white">
-              <Bell size={20} className="text-ocean dark:text-aurora" /> Notificações
-            </h3>
-            <div className="flex items-center gap-2">
-              {notifications.length > 0 && (
-                <button
-                  onClick={() => setIsConfirmClearOpen(true)}
-                  className="mr-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 transition-colors hover:text-coral"
-                >
-                  Limpar Tudo
-                </button>
-              )}
-              <button
-                onClick={() => setIsNotificationsOpen(false)}
-                className="rounded-full p-2 hover:bg-black/5 dark:hover:bg-white/5"
-              >
-                <X size={20} />
-              </button>
-            </div>
-          </div>
-
-          <div className="custom-scrollbar max-h-[calc(100vh-150px)] space-y-4 overflow-y-auto pr-2">
-            {orderedNotifications.length === 0 ? (
-              <p className="py-10 text-center italic text-gray-500">Nenhuma notificação por agora.</p>
-            ) : (
-              orderedNotifications.map((notification) => {
-                const presentation = getNotificationPresentation(notification);
-
-                return (
-                  <div
-                    key={notification.id}
-                    onClick={() => handleNotificationOpen(notification)}
-                    className={`group relative cursor-pointer rounded-2xl border p-4 transition-all ${presentation.borderClass} ${
-                      notification.read
-                        ? 'border-black/5 bg-black/2 opacity-60 dark:border-white/5 dark:bg-white/2'
-                        : 'border-ocean/20 bg-white shadow-lg dark:border-aurora/20 dark:bg-[#122331]'
-                    }`}
-                  >
-                    <button
-                      onClick={(event) => handleDeleteOne(event, notification.id)}
-                      className="absolute right-2 top-2 rounded-full p-1 opacity-0 transition-opacity hover:bg-red-500/10 group-hover:opacity-100"
-                    >
-                      <X size={12} className="text-gray-400 hover:text-red-500" />
-                    </button>
-
-                    <div className="mb-2 flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="mb-2 flex items-center gap-2">
-                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${presentation.accentClass}`}>
-                            {getNotificationIcon(notification.type)}
-                            {presentation.label}
-                          </span>
-                          {!notification.read && (
-                            <span className="inline-flex rounded-full bg-coral/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-coral">
-                              Novo
-                            </span>
-                          )}
-                        </div>
-                        <div className="pr-4 text-sm font-bold text-slate-800 dark:text-white">
-                          {notification.title || 'Mwanga'}
-                        </div>
-                      </div>
-                      {!notification.read && <div className="h-2 w-2 shrink-0 rounded-full bg-ocean animate-pulse dark:bg-aurora" />}
-                    </div>
-
-                    <p className="pr-4 text-sm leading-6 text-gray-700 dark:text-gray-200">{notification.message}</p>
-
-                    {presentation.quickActions.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {presentation.quickActions.map((item, idx) => (
-                          <span
-                            key={`${notification.id}-${item?.title || item}-${idx}`}
-                            className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${presentation.chipClass}`}
-                          >
-                            {item?.title || item}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    <span className="mt-3 block text-[10px] font-medium uppercase tracking-[0.14em] text-gray-500">
-                      {new Date(notification.created_at).toLocaleString()}
-                    </span>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      </div>
+      <NotificationPanel 
+        isOpen={isNotificationsOpen} 
+        onClose={() => setIsNotificationsOpen(false)} 
+        notifications={notifications} 
+        onNotificationOpen={handleNotificationOpen} 
+        onDeleteOne={handleDeleteOne} 
+        onClearAllClick={() => setIsConfirmClearOpen(true)} 
+      />
 
       <div style={{ display: 'flex', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
-          <header className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200/50 bg-white/70 px-4 pt-[calc(0.5rem+var(--sat))] pb-2 backdrop-blur-xl transition-all duration-300 dark:border-slate-800/50 dark:bg-midnight/80">
-            {/* Left Side: Logo or Minimal Trigger */}
-            <div className="flex items-center">
-              <div className="hidden md:block scale-75 origin-left">
-                <MwangaLogo variant="sidebar" />
-              </div>
-              
-              {/* Mobile trigger is now the user initial/photo but on the right by default, 
-                  let's keep the left side clean for mobile as requested previously, or put a small logo here */}
-              <div className="md:hidden">
-                <span className="text-xs font-black uppercase tracking-[0.2em] text-ocean dark:text-sky/60">Mwanga</span>
-              </div>
-            </div>
-
-            {/* Right Side: Actions & Profile */}
-            <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
-              {/* Quick Info / Options Button - Mobile Only */}
-              <button
-                className="md:hidden rounded-2xl p-2.5 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5 flex items-center gap-1.5"
-                onClick={() => setIsSidebarOpen(true)}
-                title="Abrir Menu Principal"
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5 text-ocean dark:text-aurora">
-                  <Menu size={18} strokeWidth={2.5} />
-                </div>
-              </button>
-
-              <button
-                className="relative rounded-2xl p-2.5 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5"
-                onClick={() => setIsNotificationsOpen(true)}
-              >
-                <Bell size={20} strokeWidth={2} />
-                {unreadCount > 0 && (
-                  <span className="absolute right-2.5 top-2.5 flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-coral opacity-75"></span>
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-coral shadow-[0_0_8px_rgba(224,122,95,0.6)]"></span>
-                  </span>
-                )}
-              </button>
-
-              <button
-                className="hidden sm:block rounded-2xl p-2.5 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5"
-                onClick={() => dispatch({ type: 'TOGGLE_DARK_MODE' })}
-              >
-                {state.darkMode ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
-              
-              <div className="mx-2 h-8 w-[1.5px] bg-linear-to-b from-transparent via-slate-200 to-transparent dark:via-slate-800" />
-
-              {/* User Profile Trigger (Desktop & Mobile) - Now goes to Settings */}
-              <button
-                onClick={() => { navigate('/settings'); setIsSidebarOpen(false); }}
-                className="group flex items-center gap-3 rounded-2xl p-1 pr-2 transition-all hover:bg-black/5 dark:hover:bg-white/5"
-              >
-                {/* Desktop Info */}
-                <div className="hidden md:flex flex-col items-end pl-2">
-                  <span className="text-[12px] font-bold text-midnight dark:text-white leading-tight">
-                    {state.user?.name?.split(' ')[0] || 'Explorador'}
-                  </span>
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-500/80">
-                    {state.settings?.household_name?.slice(0, 15) || 'Mwanga'}
-                  </span>
-                </div>
-
-                {/* Avatar */}
-                <div className="relative">
-                  {state.settings?.profile_pic ? (
-                    <img 
-                      src={state.settings.profile_pic} 
-                      alt="Profile" 
-                      className="h-10 w-10 rounded-xl object-cover shadow-lg border border-white/20 transition-transform group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-ocean to-sky text-sm font-black text-white shadow-xl shadow-ocean/30 transition-transform group-hover:scale-105 border border-white/20">
-                      {state.user?.name?.charAt(0) || 'M'}
-                    </div>
-                  )}
-                  <div className="absolute -bottom-1 -right-1 hidden md:flex h-4 w-4 items-center justify-center rounded-full bg-white dark:bg-midnight shadow-sm border border-slate-100 dark:border-slate-800">
-                    <ChevronDown size={10} className="text-slate-400" />
-                  </div>
-                </div>
-              </button>
-            </div>
-          </header>
+          <Header 
+            onMenuClick={() => setIsSidebarOpen(true)}
+            onNotificationClick={() => setIsNotificationsOpen(true)}
+            unreadCount={unreadCount}
+            darkMode={state.darkMode}
+            onToggleDarkMode={() => dispatch({ type: 'TOGGLE_DARK_MODE' })}
+            user={state.user}
+            settings={state.settings}
+          />
 
           <main className="flex w-full max-w-full flex-1 flex-col overflow-hidden bg-cream pb-[calc(6rem+var(--sab))] dark:bg-midnight md:pb-8">
             <div className="flex w-full flex-1 flex-col p-4 pt-6 md:p-8">
@@ -638,44 +414,11 @@ export default function Layout() {
         </div>
       </div>
 
-      <nav className="hide-desktop fixed bottom-0 left-0 right-0 z-50 flex items-end justify-around border-t border-black/5 bg-white/80 pb-[calc(0.75rem+var(--sab))] pt-3 backdrop-blur-2xl dark:border-white/5 dark:bg-midnight/90">
-        {bottomNavItems.map((item) => {
-          if (item.isFab) {
-            return (
-              <div key="fab-container" className="relative flex flex-col items-center">
-                <div className="fab-container">
-                  <button
-                    onClick={() => setQuickAddPayload({ actionId: 'OPEN', route: '/quick-add' })}
-                    className="fab-button"
-                  >
-                    <Plus size={32} strokeWidth={3} />
-                  </button>
-                </div>
-                <div className="h-8" />
-                <span className="text-[9px] font-black uppercase tracking-wider text-ocean dark:text-sky">Adicionar</span>
-              </div>
-            );
-          }
-
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={({ isActive }) => `flex flex-col items-center gap-1 transition-all ${isActive ? 'scale-110 text-ocean dark:text-sky' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
-            >
-              {({ isActive }) => (
-                <>
-                  <div className={`relative rounded-2xl p-2 ${isActive ? 'bg-ocean/10 dark:bg-sky/10' : ''}`}>
-                    <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                  </div>
-                  <span className="text-[9px] font-bold uppercase tracking-wider">{item.label}</span>
-                </>
-              )}
-            </NavLink>
-          );
-        })}
-      </nav>
+      <BottomNavigation 
+        items={bottomNavItems} 
+        currentPath={location.pathname} 
+        onAddClick={() => setQuickAddPayload({ actionId: 'OPEN', route: '/quick-add' })} 
+      />
 
       <InstallBanner
         installPrompt={installPrompt}
