@@ -116,10 +116,10 @@ const getDashboardSummary = async (req, res) => {
       }).catch((err) => { logger.warn({ err }, 'dashboard: settings query failed'); return { rows: [] }; }),
 
       db.execute({
-        sql: `SELECT id, name, email, avatar_url, role, subscription_tier
-              FROM users WHERE household_id = ? LIMIT 1`,
-        args: [householdId],
-      }).catch((err) => { logger.warn({ err }, 'dashboard: user query failed'); return { rows: [] }; }),
+        sql: `SELECT id, name, email, avatar_url, role, subscription_tier, whatsapp_number
+              FROM users WHERE id = ?`,
+        args: [userId],
+      }).catch((err) => { logger.warn({ err, userId }, 'dashboard: user query failed'); return { rows: [] }; }),
 
       // Dívidas sem payments — buscados separadamente abaixo
       db.execute({
