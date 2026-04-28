@@ -62,7 +62,10 @@ const updateProfile = async (req, res, next) => {
     const result = await authService.updateProfile(req.user.id, data);
     res.json({ ...result, message: 'Perfil e dados PII atualizados com sucesso.' });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json(getValidationErrorPayload(error));
+    if (error instanceof z.ZodError) {
+      console.log('Update Profile Validation Error:', error.errors);
+      return res.status(400).json(getValidationErrorPayload(error));
+    }
     next(error);
   }
 };
