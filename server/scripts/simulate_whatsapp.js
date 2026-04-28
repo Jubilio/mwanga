@@ -31,22 +31,9 @@ async function run() {
 
     if (userCheck.rows.length === 0) {
       console.log('⚠️  Nenhum utilizador encontrado com este número.');
-      console.log('📝 Vinculando o primeiro utilizador da base de dados para o teste...');
-      
-      const firstUser = await db.execute('SELECT id, name FROM users LIMIT 1');
-      if (firstUser.rows.length === 0) {
-        console.error('❌ Erro: Não existem utilizadores na base de dados.');
-        process.exit(1);
-      }
-
-      const userId = firstUser.rows[0].id;
-      await db.execute({
-        sql: 'UPDATE users SET whatsapp_number = ? WHERE id = ?',
-        args: [testPhone, userId]
-      });
-      console.log(`✅ Utilizador "${firstUser.rows[0].name}" vinculado com sucesso!`);
+      console.log('💡 Dica: Regista este número nas definições da App Mwanga ou vincula-o manualmente na DB.');
     } else {
-      console.log(`✅ Utilizador "${userCheck.rows[0].name}" pronto.`);
+      console.log(`✅ Utilizador "${userCheck.rows[0].name}" encontrado.`);
     }
 
     // 2. Mock Evolution API Payload

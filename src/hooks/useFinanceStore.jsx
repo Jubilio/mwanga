@@ -274,8 +274,8 @@ export function FinanceProvider({ children }) {
         }
         return;
       }
-      case 'UPDATE_SETTING': await apiCall('settings', 'PUT', { [payload.key]: payload.value }); break;
-      case 'UPDATE_USER': await apiCall('auth/me', 'PUT', payload); break;
+      case 'UPDATE_SETTING': await apiCall('settings', 'POST', { key: payload.key, value: payload.value }); break;
+      case 'UPDATE_USER': await apiCall('auth/profile', 'PUT', payload); break;
       case 'ADD_ASSET': await apiCall('assets', 'POST', payload); break;
       case 'DELETE_ASSET': await apiCall(`assets/${payload}`, 'DELETE'); break;
       case 'SET_BUDGET': await apiCall('budgets', 'POST', { category: normalizeCategory(payload.category), limit: payload.limit }); break;
