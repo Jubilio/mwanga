@@ -1,4 +1,4 @@
-import { User, Sparkles, Home as HomeIcon, Heart, Lock } from 'lucide-react';
+import { User, Sparkles, Home as HomeIcon, Heart, Lock, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export default function TabPerfil({ form, setFormDirty, state }) {
@@ -64,6 +64,24 @@ export default function TabPerfil({ form, setFormDirty, state }) {
                   <Sparkles size={18} className="text-teal-400" />
                 </div>
               </div>
+            </div>
+            <div className="group transition-all mt-6">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">Número de WhatsApp</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={form.whatsapp_number || ''}
+                  onChange={(e) => setFormDirty(f => ({ ...f, whatsapp_number: e.target.value }))}
+                  className="premium-input"
+                  placeholder="Ex: 258841234567"
+                />
+                <div className="absolute right-5 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:opacity-100 transition-opacity">
+                  <MessageSquare size={18} className="text-teal-400" />
+                </div>
+              </div>
+              <p className="mt-2 text-[10px] text-slate-500 italic">
+                Usado para falar com a Binth via WhatsApp e receber alertas críticos.
+              </p>
             </div>
 
             <div className="group transition-all mt-6">

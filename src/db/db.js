@@ -29,17 +29,17 @@ export async function initializeOfflineData(state) {
     // Sincronizar estado inicial com Dexie se as tabelas estiverem vazias
     if (state.transacoes?.length > 0) {
       const tCount = await db.transacoes.count();
-      if (tCount === 0) await db.transacoes.bulkAdd(state.transacoes);
+      if (tCount === 0) await db.transacoes.bulkPut(state.transacoes);
     }
     
     if (state.budgets?.length > 0) {
       const bCount = await db.budgets.count();
-      if (bCount === 0) await db.budgets.bulkAdd(state.budgets);
+      if (bCount === 0) await db.budgets.bulkPut(state.budgets);
     }
 
     if (state.dividas?.length > 0) {
       const dCount = await db.dividas.count();
-      if (dCount === 0) await db.dividas.bulkAdd(state.dividas);
+      if (dCount === 0) await db.dividas.bulkPut(state.dividas);
     }
   } catch (error) {
     console.error('Dexie Init Error:', error);

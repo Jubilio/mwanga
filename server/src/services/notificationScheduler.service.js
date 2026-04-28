@@ -8,6 +8,9 @@ const cron = require('node-cron');
 const logger = require('../utils/logger');
 const { runScheduledEngagementSweep } = require('./notificationEventEngine.service');
 const { processNotificationCandidates } = require('./notificationEngine.service');
+const axios = require('axios');
+
+const HEARTBEAT_URL = 'https://ping.checklyhq.com/340611d0-3a15-4e1f-beb5-ac7a4e05cdfc';
 
 const SCHEDULER_INTERVAL = process.env.NOTIFICATION_SCHEDULER_CRON || '*/5 * * * *'; // Every 5 minutes
 
@@ -19,6 +22,8 @@ function startNotificationScheduler() {
     try {
       logger.info('[Scheduler] Running engagement sweep...');
       await runScheduledEngagementSweep();
+      // Ping Checkly Heartbeat
+      await axios.get(HEARTBEAT_URL).catch(err => logger.error(`[Scheduler] Heartbeat ping failed: ${err.message}`));
     } catch (error) {
       logger.error(`[Scheduler] Engagement sweep failed: ${error.message}`);
     }
@@ -30,6 +35,8 @@ function startNotificationScheduler() {
     try {
       logger.info('[Scheduler] Running intelligent notification engine...');
       await processNotificationCandidates();
+      // Ping Checkly Heartbeat (redundant but ensures either job keeps it alive)
+      await axios.get(HEARTBEAT_URL).catch(err => logger.error(`[Scheduler] Heartbeat ping failed: ${err.message}`));
     } catch (error) {
       logger.error(`[Scheduler] Intelligent engine loop failed: ${error.message}`);
     }

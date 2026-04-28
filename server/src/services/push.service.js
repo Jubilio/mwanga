@@ -259,63 +259,44 @@ async function sendPushNotification(notification) {
   const payload = buildPushPayload(notification);
   let delivered = 0;
 
+  const urgency = notification.type === 'warning' ? 'high' : 'normal';
+  const ttl    = notification.type === 'warning' ? 120 : 3600;
+
   for (const sub of subscriptions) {
     const isNative = sub.device_type === 'native' || sub.platform === 'android' || sub.platform === 'ios';
 
-    try {
-      if (isNative) {
-        if (!firebaseApp) {
-          logger.warn(`Skipping native push for sub ${sub.id}: Firebase not initialized.`);
-          continue;
-        }
+    // Guard: skip native if Firebase not ready, skip web if VAPID not configured.
+    if (isNative && !firebaseApp) {
+      logger.warn(`Skipping native push for sub ${sub.id}: Firebase not initialized.`);
+      continue;
+    }
+    if (!isNative && !hasPushCredentials()) {
+      logger.warn(`Skipping web push for sub ${sub.id}: VAPID not configured.`);
+      continue;
+    }
 
-        await admin.messaging().send({
-          token: sub.endpoint,
-          notification: {
-            title: payload.title,
-            body: payload.body,
-          },
-          data: payload.data,
-          android: {
-            priority: notification.type === 'warning' ? 'high' : 'normal',
-            notification: {
-              sound: 'default',
-              clickAction: 'MWANGA_NOTIFICATION_ACTION'
-            }
-          }
-        });
-      } else {
-        if (!hasPushCredentials()) {
-          logger.warn(`Skipping web push for sub ${sub.id}: VAPID not configured.`);
-          continue;
-        }
-
-        configureVapid();
-        const webPushSub = {
-          endpoint: sub.endpoint,
-          expirationTime: sub.expiration_time,
-          keys: {
-            p256dh: sub.p256dh_key,
-            auth: sub.auth_key,
-          },
+    // Normalise the DB row into the shape sendRawPush expects
+    const normalisedSub = sub.device_type
+      ? sub  // already has device_type column
+      : {
+          ...sub,
+          device_type: isNative ? 'native' : 'pwa',
+          p256dh_key: sub.p256dh_key,
+          auth_key:   sub.auth_key,
         };
 
-        await webpush.sendNotification(webPushSub, JSON.stringify(payload), {
-          TTL: notification.type === 'warning' ? 120 : 3600,
-          urgency: notification.type === 'warning' ? 'high' : 'normal',
-        });
-      }
+    const result = await sendRawPush(payload, normalisedSub, { urgency, ttl });
 
+    if (result.success) {
       delivered += 1;
       await markPushDeliverySuccess(sub.id);
-    } catch (error) {
-      const statusCode = error.statusCode || error.status_code;
-      const message = error.message || 'push_failed';
+    } else {
+      const { statusCode, message } = result;
 
-      // FCM uses different error codes (e.g. messaging/registration-token-not-registered)
-      const isExpired = statusCode === 404 || statusCode === 410 || 
-                       message.includes('not-registered') || 
-                       message.includes('invalid-registration-token');
+      // FCM token expired / revoked uses non-HTTP error strings
+      const isExpired = statusCode === 404 || statusCode === 410 ||
+                        (message || '').includes('not-registered') ||
+                        (message || '').includes('invalid-registration-token');
 
       if (isExpired) {
         await deactivateSubscription(sub.id, message);

@@ -16,9 +16,11 @@ const notificationRoutes = require('./routes/notification.routes');
 const inviteRoutes = require('./routes/invite.routes');
 const webauthnRoutes = require('./routes/webauthn.routes');
 const feedbackRoutes = require('./routes/feedback.routes');
+const whatsappRoutes = require('./routes/whatsapp.routes');
 const { getNotificationReadValue } = require('./services/notificationRead.service');
 const { initFeedbackTable } = require('./services/feedback.service');
 const { initHouseholdExtras } = require('./services/household.service');
+const { initWhatsAppSchema } = require('./services/whatsappMigration.service');
 const logger = require('./utils/logger');
 const path = require('path');
 
@@ -27,6 +29,7 @@ const app = express();
 // Initialize tables
 initFeedbackTable();
 initHouseholdExtras();
+initWhatsAppSchema();
 
 app.set('trust proxy', 1);
 
@@ -153,6 +156,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/households', inviteRoutes);
 app.use('/api/behavior', require('./routes/behavior.routes'));
+app.use('/api/whatsapp', whatsappRoutes);
 
 app.use('/api', financeRoutes);
 

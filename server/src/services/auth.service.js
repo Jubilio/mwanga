@@ -120,7 +120,7 @@ const getUserProfile = async (userId) => {
 };
 
 const updateProfile = async (userId, data) => {
-  const { name, nationalId, password } = data;
+  const { name, nationalId, whatsapp_number, password } = data;
 
   let updates = [];
   let args = [];
@@ -134,6 +134,11 @@ const updateProfile = async (userId, data) => {
   if (nationalId) {
     updates.push(`"nationalId" = $${paramCount++}`);
     args.push(cryptoService.encrypt(nationalId));
+  }
+
+  if (whatsapp_number !== undefined) {
+    updates.push(`whatsapp_number = $${paramCount++}`);
+    args.push(whatsapp_number ? whatsapp_number.replace(/\D/g, '') : null);
   }
 
   if (password) {

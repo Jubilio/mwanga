@@ -484,16 +484,19 @@ const PROVIDERS = {
     }
   },
 
-  anthropic: {
+  // 'openrouter_free' usa a OpenRouter com modelos gratuitos (ex: Qwen) como último fallback.
+  // NOTA: Este provider NÃO é a API directa da Anthropic — usa OPENROUTER_API_KEY.
+  // O modelo activo é controlado por OPENROUTER_FREE_MODEL no .env.
+  openrouter_free: {
     url: () => 'https://openrouter.ai/api/v1/chat/completions',
     headers: (key) => ({
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${key || process.env.OPENROUTER_API_KEY}`,
+      Authorization: `Bearer ${key}`,
       'HTTP-Referer': 'https://mwanga.app',
-      'X-Title': 'Mwanga Binth (Anthropic Mode)'
+      'X-Title': 'Mwanga Binth (Free Fallback)'
     }),
     body: (messages, system, tools = []) => ({
-      model: process.env.ANTHROPIC_MODEL || 'qwen/qwen-2-vl-7b-instruct:free',
+      model: process.env.OPENROUTER_FREE_MODEL || 'qwen/qwen-2-vl-7b-instruct:free',
       temperature: 0.7,
       messages: [{ role: 'system', content: system }, ...messages],
       tools: tools.length > 0 ? tools : undefined
@@ -506,20 +509,66 @@ const PROVIDERS = {
   }
 };
 
-const disabledProviders = new Map();
+// ─── Provider Blacklist (Redis-backed, Map fallback) ──────────────────────────
+// Quando um provider falha com auth error (401/invalid key), é bloqueado
+// temporariamente para evitar chamadas desnecessárias.
+//
+// Estratégia:
+//   1. PRIMARY: Redis (Upstash) com TTL nativo — sobrevive a restarts do servidor.
+//   2. FALLBACK: Map em memória — usado se Redis não estiver configurado ou falhar.
+//
+// Redis key: binth:disabled:<provider>   Value: '1'   TTL: minutes * 60 (segundos)
 
-function isProviderTemporarilyDisabled(provider) {
-  const disabledUntil = disabledProviders.get(provider);
+let _redis = null;
+function getRedis() {
+  if (_redis) return _redis;
+  try {
+    const { redis } = require('../config/redis');
+    _redis = redis;
+  } catch {
+    // Redis não configurado — fallback silencioso para Map
+  }
+  return _redis;
+}
+
+const _disabledMap = new Map(); // fallback local
+
+async function isProviderTemporarilyDisabled(provider) {
+  const redisKey = `binth:disabled:${provider}`;
+  try {
+    const r = getRedis();
+    if (r) {
+      const val = await r.get(redisKey);
+      return val !== null;
+    }
+  } catch {
+    // Redis inacessível — cai para Map
+  }
+  // Map fallback
+  const disabledUntil = _disabledMap.get(provider);
   if (!disabledUntil) return false;
   if (disabledUntil <= Date.now()) {
-    disabledProviders.delete(provider);
+    _disabledMap.delete(provider);
     return false;
   }
   return true;
 }
 
-function disableProviderTemporarily(provider, minutes = 15) {
-  disabledProviders.set(provider, Date.now() + (minutes * 60 * 1000));
+async function disableProviderTemporarily(provider, minutes = 15) {
+  const redisKey = `binth:disabled:${provider}`;
+  try {
+    const r = getRedis();
+    if (r) {
+      await r.set(redisKey, '1', { ex: minutes * 60 }); // TTL nativo Redis
+      logger.info({ provider, minutes }, '[Binth] Provider bloqueado no Redis');
+      return;
+    }
+  } catch {
+    // Redis inacessível — cai para Map
+  }
+  // Map fallback
+  _disabledMap.set(provider, Date.now() + (minutes * 60 * 1000));
+  logger.info({ provider, minutes }, '[Binth] Provider bloqueado em memória (Redis indisponível)');
 }
 
 function isAuthFailure(errorMessage) {
@@ -738,13 +787,14 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
   const order = [provider, ...Object.keys(PROVIDERS).filter(p => p !== provider)];
 
   for (const p of order) {
-    if (!apiKey && isProviderTemporarilyDisabled(p)) continue;
+    if (!apiKey && await isProviderTemporarilyDisabled(p)) continue;
 
     let activeKey = apiKey;
     if (!activeKey) {
-      if (p === 'openrouter') activeKey = process.env.OPENROUTER_API_KEY;
-      if (p === 'gemini') activeKey = process.env.GEMINI_API_KEY;
-      if (p === 'groq') activeKey = process.env.GROQ_API_KEY;
+      if (p === 'openrouter')      activeKey = process.env.OPENROUTER_API_KEY;
+      if (p === 'openrouter_free') activeKey = process.env.OPENROUTER_API_KEY; // mesmo token, modelo diferente
+      if (p === 'gemini')          activeKey = process.env.GEMINI_API_KEY;
+      if (p === 'groq')            activeKey = process.env.GROQ_API_KEY;
     }
 
     if (!activeKey) continue;
@@ -798,7 +848,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
 
     } catch (err) {
       if (!apiKey && isAuthFailure(err.message)) {
-        disableProviderTemporarily(p);
+        await disableProviderTemporarily(p);
         logger.warn({ provider: p }, 'Binth provider temporarily disabled after auth failure');
         continue;
       }

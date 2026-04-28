@@ -16,6 +16,7 @@ const loginSchema = z.object({
 const updateProfileSchema = z.object({
   name: z.string().trim().min(2).max(100).optional(),
   nationalId: z.string().trim().max(50).optional(),
+  whatsapp_number: z.string().trim().max(20).optional(),
   password: z.string().min(8).max(100).optional()
 }).strict();
 

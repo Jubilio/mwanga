@@ -51,6 +51,7 @@ export default function Settings() {
     sms_automation_enabled: state.settings.sms_automation_enabled === 'true' || state.settings.sms_automation_enabled === true,
     default_income_account_id: state.settings.default_income_account_id || '',
     default_expense_account_id: state.settings.default_expense_account_id || '',
+    whatsapp_number: state.user?.whatsapp_number || '',
     password: '',
   });
 
@@ -59,8 +60,14 @@ export default function Settings() {
     try {
       const updates = [];
 
-      if (form.user_name !== state.user?.name) {
-        updates.push(dispatch({ type: 'UPDATE_USER', payload: { name: form.user_name } }));
+      if (form.user_name !== state.user?.name || form.whatsapp_number !== state.user?.whatsapp_number) {
+        updates.push(dispatch({ 
+          type: 'UPDATE_USER', 
+          payload: { 
+            name: form.user_name,
+            whatsapp_number: form.whatsapp_number 
+          } 
+        }));
       }
 
       const settingsToSave = { ...form };
