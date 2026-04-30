@@ -147,6 +147,10 @@ function reducer(state, action) {
     case 'DELETE_ASSET': return { ...state, activos: state.activos.filter(a => a.id !== action.payload) };
     case 'ADD_LIABILITY': return { ...state, passivos: [...state.passivos, action.payload] };
     case 'DELETE_LIABILITY': return { ...state, passivos: state.passivos.filter(p => p.id !== action.payload) };
+    case 'ADD_XITIQUE': return { ...state, xitiques: [{ ...action.payload, id: `offline-${Date.now()}`, cycles: [], contributions: [], receipts: [] }, ...state.xitiques] };
+    case 'DELETE_XITIQUE': return { ...state, xitiques: state.xitiques.filter(x => x.id !== action.payload) };
+    case 'PAY_XITIQUE': return { ...state, xitiques: state.xitiques.map(x => ({ ...x, contributions: x.contributions.map(c => c.id === action.payload.contributionId ? { ...c, paid: true } : c) })) };
+    case 'RECEIVE_XITIQUE': return { ...state, xitiques: state.xitiques.map(x => ({ ...x, receipts: x.receipts.map(r => r.id === action.payload.receiptId ? { ...r, received_date: action.payload.date } : r) })) };
     case 'SET_XITIQUES': return { ...state, xitiques: action.payload };
     case 'ADD_DEBT': return { ...state, dividas: [action.payload, ...state.dividas] };
     case 'DELETE_DEBT': return { ...state, dividas: state.dividas.filter(d => d.id !== action.payload) };
@@ -246,6 +250,59 @@ export function FinanceProvider({ children }) {
           dispatch({ type: 'SET_DATA', payload: { dividas: d, transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
         } catch {
           await db.pendingActions.add({ type, payload: body, timestamp: Date.now() });
+          dispatch({ type, payload });
+        }
+        return;
+      }
+      case 'ADD_XITIQUE': {
+        const body = { 
+          name: payload.name, 
+          monthlyAmount: payload.monthly_amount, 
+          totalParticipants: payload.total_participants, 
+          startDate: payload.start_date, 
+          yourPosition: payload.your_position 
+        };
+        try {
+          await apiCall('xitiques', 'POST', body);
+          const x = await apiCall('xitiques');
+          dispatch({ type: 'SET_DATA', payload: { xitiques: x.map(mapXitique) } });
+        } catch {
+          await db.pendingActions.add({ type, payload: body, timestamp: Date.now() });
+          dispatch({ type, payload });
+        }
+        return;
+      }
+      case 'DELETE_XITIQUE': {
+        try {
+          await apiCall(`xitiques/${payload}`, 'DELETE');
+          const x = await apiCall('xitiques');
+          dispatch({ type: 'SET_DATA', payload: { xitiques: x.map(mapXitique) } });
+        } catch {
+          await db.pendingActions.add({ type, payload, timestamp: Date.now() });
+        }
+        dispatch({ type, payload });
+        return;
+      }
+      case 'PAY_XITIQUE': {
+        const body = { date: payload.date, account_id: payload.account_id };
+        try {
+          await apiCall(`xitiques/pay/${payload.contributionId}`, 'POST', body);
+          const [x, t, a] = await Promise.all([apiCall('xitiques'), apiCall('transactions'), apiCall('accounts')]);
+          dispatch({ type: 'SET_DATA', payload: { xitiques: x.map(mapXitique), transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
+        } catch {
+          await db.pendingActions.add({ type, payload, timestamp: Date.now() });
+          dispatch({ type, payload });
+        }
+        return;
+      }
+      case 'RECEIVE_XITIQUE': {
+        const body = { date: payload.date, account_id: payload.account_id };
+        try {
+          await apiCall(`xitiques/receive/${payload.receiptId}`, 'POST', body);
+          const [x, t, a] = await Promise.all([apiCall('xitiques'), apiCall('transactions'), apiCall('accounts')]);
+          dispatch({ type: 'SET_DATA', payload: { xitiques: x.map(mapXitique), transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
+        } catch {
+          await db.pendingActions.add({ type, payload, timestamp: Date.now() });
           dispatch({ type, payload });
         }
         return;
