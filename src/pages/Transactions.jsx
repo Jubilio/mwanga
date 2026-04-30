@@ -13,6 +13,7 @@ import SmartScanModal from '../components/transactions/SmartScanModal';
 import TransactionsForm from '../components/transactions/TransactionsForm';
 import TransactionsList from '../components/transactions/TransactionsList';
 import MagicPasteModal from '../components/transactions/MagicPasteModal';
+import ConfirmModal from '../components/ConfirmModal';
 
 const CATEGORIES = MAIN_CATEGORIES.map(key => ({ id: key, key }));
 
@@ -30,6 +31,7 @@ export default function Transactions() {
   const [isScanning, setIsScanning] = useState(false);
   const [isMagicPasteOpen, setIsMagicPasteOpen] = useState(false);
   const [magicText, setMagicText] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: null });
 
   const TYPES = [
     { value: 'receita', label: t('transactions.types.receita') },
@@ -117,10 +119,15 @@ export default function Transactions() {
   }
 
   function handleDelete(id) {
-    if (window.confirm(t('common.confirm_delete'))) {
-      dispatch({ type: 'DELETE_TRANSACTION', payload: id });
+    setDeleteConfirm({ isOpen: true, id });
+  }
+
+  function confirmDelete() {
+    if (deleteConfirm.id) {
+      dispatch({ type: 'DELETE_TRANSACTION', payload: deleteConfirm.id });
       showToast(t('transactions.toast_removed'));
     }
+    setDeleteConfirm({ isOpen: false, id: null });
   }
 
   const filtered = (state.transacoes || [])
@@ -209,6 +216,9 @@ export default function Transactions() {
         TYPES={TYPES}
         CATEGORIES={CATEGORIES}
         currency={currency}
+        accounts={state.contas || []}
+        defaultIncomeAccount={state.settings.default_income_account_id}
+        defaultExpenseAccount={state.settings.default_expense_account_id}
       />
 
       <TransactionsList 
@@ -228,6 +238,16 @@ export default function Transactions() {
         form={form}
         setForm={setForm}
         showToast={showToast}
+      />
+
+      <ConfirmModal 
+        isOpen={deleteConfirm.isOpen}
+        title={t('common.confirm_delete')}
+        message="Esta acção não pode ser revertida."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm({ isOpen: false, id: null })}
+        confirmText={t('debts.yes') || 'Sim'}
+        cancelText={t('debts.no') || 'Não'}
       />
     </div>
   );

@@ -550,7 +550,8 @@
     "toasts": {
       "csv_exported": "📥 CSV exportado!",
       "error_prefix": "Erro: "
-    }
+    },
+    "confirm_delete": "Remover este registo financeiro permanentemente?"
   },
   "patrimony": {
     "title": "Património",

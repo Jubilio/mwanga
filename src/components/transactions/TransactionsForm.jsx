@@ -1,4 +1,4 @@
-import { Calendar, Filter, Plus, CreditCard, Tag, Save, Sparkles } from 'lucide-react';
+import { Calendar, Filter, Plus, CreditCard, Tag, Save, Sparkles, Wallet } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function TransactionsForm({
@@ -11,7 +11,10 @@ export default function TransactionsForm({
   t,
   TYPES,
   CATEGORIES,
-  currency
+  currency,
+  accounts,
+  defaultIncomeAccount,
+  defaultExpenseAccount
 }) {
   return (
     <AnimatePresence>
@@ -34,7 +37,14 @@ export default function TransactionsForm({
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] font-black uppercase tracking-widest text-gray-400"><Filter size={11} className="inline mr-1" /> {t('transactions.type')}</label>
-                <select className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm" value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })}>
+                <select className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm" value={form.tipo} onChange={e => {
+                  const type = e.target.value;
+                  setForm({
+                    ...form,
+                    tipo: type,
+                    account_id: type === 'receita' ? defaultIncomeAccount || '' : defaultExpenseAccount || ''
+                  });
+                }}>
                   {TYPES.map(type => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={type.value} value={type.value}>{type.label}</option>)}
                 </select>
               </div>
@@ -50,6 +60,13 @@ export default function TransactionsForm({
                 <label className="text-[9px] font-black uppercase tracking-widest text-gray-400"><Tag size={11} className="inline mr-1" /> {t('transactions.category')}</label>
                 <select className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm" value={form.cat} onChange={e => setForm({ ...form, cat: e.target.value })}>
                   {CATEGORIES.map(c => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={c.id} value={c.id}>{t(`common.categories.${c.key}`)}</option>)}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-400"><Wallet size={11} className="inline mr-1" /> Conta</label>
+                <select className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm" value={form.account_id || ''} onChange={e => setForm({ ...form, account_id: e.target.value })}>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">Sem conta</option>
+                  {accounts.map(a => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
               </div>
             </div>

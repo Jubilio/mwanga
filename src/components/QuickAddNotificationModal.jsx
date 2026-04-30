@@ -52,9 +52,9 @@ export default function QuickAddNotificationModal({
       valor: '',
       cat: initialType === 'receita' ? 'salary' : 'food',
       nota: '',
-      account_id: '',
+      account_id: initialType === 'receita' ? state.settings.default_income_account_id || '' : state.settings.default_expense_account_id || '',
     });
-  }, [isOpen, payload]);
+  }, [isOpen, payload, state.settings]);
 
   async function registerInteraction(interaction, actionId) {
     if (!payload?.notificationId) {
@@ -146,6 +146,7 @@ export default function QuickAddNotificationModal({
                     ...form,
                     tipo: item.value,
                     cat: item.value === 'receita' ? 'salary' : form.cat,
+                    account_id: item.value === 'receita' ? state.settings.default_income_account_id || '' : state.settings.default_expense_account_id || '',
                   })}
                   className={`flex items-center gap-3 rounded-2xl border px-4 py-4 text-left transition ${
                     active

@@ -142,6 +142,7 @@ function reducer(state, action) {
     }
     case 'DELETE_BUDGET': return { ...state, budgets: state.budgets.filter(b => b.id !== action.payload && b.category !== action.meta?.category) };
     case 'UPDATE_SETTING': return { ...state, settings: { ...state.settings, [action.payload.key]: action.payload.value } };
+    case 'UPDATE_HOUSEHOLD': return { ...state, settings: { ...state.settings, household_name: action.payload.name ?? state.settings.household_name, cash_balance: action.payload.cash_balance ?? state.settings.cash_balance } };
     case 'UPDATE_USER': return { ...state, user: { ...state.user, ...action.payload } };
     case 'ADD_ASSET': return { ...state, activos: [...state.activos, action.payload] };
     case 'DELETE_ASSET': return { ...state, activos: state.activos.filter(a => a.id !== action.payload) };
@@ -332,6 +333,7 @@ export function FinanceProvider({ children }) {
         return;
       }
       case 'UPDATE_SETTING': await apiCall('settings', 'POST', { key: payload.key, value: payload.value }); break;
+      case 'UPDATE_HOUSEHOLD': await apiCall('households', 'PUT', payload); break;
       case 'UPDATE_USER': await apiCall('auth/profile', 'PUT', payload); break;
       case 'ADD_ASSET': await apiCall('assets', 'POST', payload); break;
       case 'DELETE_ASSET': await apiCall(`assets/${payload}`, 'DELETE'); break;

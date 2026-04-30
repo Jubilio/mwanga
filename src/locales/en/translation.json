@@ -550,7 +550,8 @@
     "toasts": {
       "csv_exported": "📥 CSV exported!",
       "error_prefix": "Error: "
-    }
+    },
+    "confirm_delete": "Permanently remove this financial record?"
   },
   "patrimony": {
     "title": "Net Worth",
