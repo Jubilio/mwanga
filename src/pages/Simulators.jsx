@@ -11,7 +11,7 @@ const SimulatorInvest  = lazy(() => import('../components/simulators/SimulatorIn
 const SimulatorFire    = lazy(() => import('../components/simulators/SimulatorFire'));
 const SimulatorXitique = lazy(() => import('../components/simulators/SimulatorXitique'));
 
-function TabButton({ active, label, onClick }) {
+function TabButton({ active, icon: Icon, label, onClick }) {
   return (
     <button
       onClick={onClick}

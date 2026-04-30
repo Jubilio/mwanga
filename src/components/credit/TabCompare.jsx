@@ -14,7 +14,7 @@ export default function TabCompare({ userData }) {
   const maxInstallment = salary / 3;
 
   const OPTIONS = [
-    { id: 'bim', name: 'Millennium BIM', rate: 0.261, color: G.red, desc: t('credit.compare.partner_bim_desc'), isAnnual: true },
+    { id: 'bim', name: 'Millennium BIM', rate: 0.28, color: G.red, desc: t('credit.compare.partner_bim_desc'), isAnnual: true },
     { id: 'bci', name: 'BCI', rate: 0.281, color: G.blue, desc: t('credit.compare.partner_bci_desc'), isAnnual: true },
     { id: 'micro', name: t('credit.simulator.partner_micro'), rate: 0.10, color: G.gold, desc: t('credit.compare.partner_micro_desc'), isAnnual: false },
     { id: 'xitique', name: 'Xitique', rate: 0, color: G.green, desc: t('credit.compare.partner_xitique_desc'), isAnnual: false }
@@ -114,7 +114,7 @@ export default function TabCompare({ userData }) {
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: G.credit, marginBottom: 4 }}>{t('credit.compare.verdict_title')}</div>
               <div style={{ fontSize: 13, color: G.muted, lineHeight: 1.6 }}>
-                {t('credit.compare.verdict_desc_1')} <strong>MT {fmtShort(amount)}</strong> {t('credit.compare.verdict_desc_2')} <strong>{months} {months === 1 ? t('credit.simulator.month_single') : t('credit.simulator.months')}</strong>{t('credit.compare.verdict_desc_3')} <strong style={{color:G.red}}>Millennium BIM</strong> {t('credit.compare.verdict_desc_4')} <strong>MT {fmtShort((CreditEngine.installment(amount, 0.10, months, false) * months) - (CreditEngine.installment(amount, 0.261, months, true) * months))}</strong> {t('credit.compare.verdict_desc_5')}
+                {t('credit.compare.verdict_desc_1')} <strong>MT {fmtShort(amount)}</strong> {t('credit.compare.verdict_desc_2')} <strong>{months} {months === 1 ? t('credit.simulator.month_single') : t('credit.simulator.months')}</strong>{t('credit.compare.verdict_desc_3')} <strong style={{color:G.red}}>Millennium BIM</strong> {t('credit.compare.verdict_desc_4')} <strong>MT {fmtShort((CreditEngine.installment(amount, 0.10, months, false) * months) - (CreditEngine.installment(amount, 0.28, months, true) * months))}</strong> {t('credit.compare.verdict_desc_5')}
               </div>
             </div>
           </div>

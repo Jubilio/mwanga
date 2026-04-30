@@ -8,7 +8,7 @@ import { Card, ProgressBar, ProGate, Badge } from "./CreditUI";
 export default function TabSimulator({ eligData, userData, isPro }) {
   const { t } = useTranslation();
   const BANKS = [
-    { id: "bim", name: "Millennium BIM", rate: 0.261, tag: "26.1% AA", color: G.red, isAnnual: true },
+    { id: "bim", name: "Millennium BIM", rate: 0.28, tag: "28.0% AA", color: G.red, isAnnual: true },
     { id: "bci", name: "BCI", rate: 0.281, tag: "28.1% AA", color: G.blue, isAnnual: true },
     { id: "micro", name: t('credit.simulator.partner_micro', { defaultValue: "Microcrédito Informal" }), rate: 0.10, tag: "10%/mês", color: G.gold, isAnnual: false },
     { id: "xitique", name: "Xitique", rate: 0.00, tag: "0%/mês", color: G.green, isAnnual: false },

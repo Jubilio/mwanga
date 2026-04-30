@@ -7,7 +7,7 @@ import { Card, Btn, ProgressBar } from "./CreditUI";
 
 export default function TabConsolidate({ debts, userData }) {
   const { t } = useTranslation();
-  const [rate, setRate] = useState(0.261); // BIM Reality
+  const [rate, setRate] = useState(0.28); // BIM Reality
   const [months, setMonths] = useState(24);
 
   const salary = userData.salario || 0;
