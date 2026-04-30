@@ -1,20 +1,43 @@
-
 services:
-  evolution_api:
-    image: atendewa/evolution-api:latest
+  api:
     container_name: evolution_api
+    image: evoapicloud/evolution-api:latest
     restart: always
+    depends_on:
+      - redis
+      - db
     ports:
       - "8080:8080"
+    env_file:
+      - evolution-api/.env
+    networks:
+      - mwanga-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  redis:
+    container_name: evolution_redis
+    image: redis:latest
+    restart: always
+    networks:
+      - mwanga-net
+
+  db:
+    container_name: evolution_postgres
+    image: postgres:15
+    restart: always
     environment:
-      - SERVER_URL=http://localhost:8080
-      - DOCKER_HOST_ADDRESS=host.docker.internal
-      - AUTHENTICATION_TYPE=apikey
-      - AUTHENTICATION_API_KEY=mwanga_secret_key_2024
+      - POSTGRES_DB=evolution_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres_pass
     volumes:
-      - evolution_instances:/evolution/instances
-      - evolution_store:/evolution/store
+      - evolution_postgres_data:/var/lib/postgresql/data
+    networks:
+      - mwanga-net
+
+networks:
+  mwanga-net:
+    driver: bridge
 
 volumes:
-  evolution_instances:
-  evolution_store:
+  evolution_postgres_data:

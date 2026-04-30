@@ -9,6 +9,7 @@ router.get('/push-config', notificationController.getPushConfig);
 router.use((req, res, next) => auth.authenticate(req, res, next));
 
 router.get('/', notificationController.list);
+router.post('/', notificationController.create);
 router.post('/subscribe', notificationController.subscribe);
 router.post('/unsubscribe', notificationController.unsubscribe);
 router.post('/push-subscriptions', notificationController.subscribe); // Alias for frontend compatibility

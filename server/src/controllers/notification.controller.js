@@ -11,6 +11,41 @@ const getPushConfig = (req, res) => {
   }
 };
 
+const create = async (req, res) => {
+  try {
+    const { householdId, id: userId } = req.user || {};
+    const { title, message, type, action_payload, metadata, dedupeKey, sendPush, channel, tone } = req.body;
+
+    if (!userId || !householdId) {
+      logger.error(`Create notification failed: Missing user context. UserID: ${userId}, HouseholdID: ${householdId}`);
+      return res.status(401).json({ status: 'error', message: 'Unauthorized: Missing user or household context.' });
+    }
+
+    if (!message) {
+      return res.status(400).json({ status: 'error', message: 'Message is required.' });
+    }
+
+    const notification = await notificationService.createNotification({
+      householdId,
+      userId,
+      title,
+      message,
+      type,
+      channel,
+      tone,
+      actionPayload: action_payload,
+      metadata,
+      dedupeKey,
+      sendPush: sendPush !== false, // default to true if not explicitly false, or follow service defaults
+    });
+
+    res.status(201).json({ status: 'success', data: notification });
+  } catch (error) {
+    logger.error(`Error in create notification: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to create notification.' });
+  }
+};
+
 const subscribe = async (req, res) => {
   try {
     const { subscription, deviceType, platform, userAgent } = req.body;
@@ -190,6 +225,7 @@ const sendTest = async (req, res) => {
 
 module.exports = {
   getPushConfig,
+  create,
   subscribe,
   unsubscribe,
   list,

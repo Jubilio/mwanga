@@ -8,7 +8,8 @@
     "build": "echo 'No build step required'",
     "dev": "nodemon src/server.js",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "setup:whatsapp": "node scripts/setup_evolution.js"
   },
   "keywords": [],
   "author": "",
