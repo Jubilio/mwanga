@@ -27,7 +27,7 @@ function startNotificationScheduler() {
     } catch (error) {
       logger.error(`[Scheduler] Engagement sweep failed: ${error.message}`);
     }
-  });
+  }, { recoverMissedExecutions: false });
 
   // 2. Every 5 minutes (offset by 1 min to avoid DB locks): Run the Decision Engine
   // This processes BOTH the candidates from step 1 AND real-time events.
@@ -40,7 +40,7 @@ function startNotificationScheduler() {
     } catch (error) {
       logger.error(`[Scheduler] Intelligent engine loop failed: ${error.message}`);
     }
-  });
+  }, { recoverMissedExecutions: false });
 }
 
 module.exports = {
