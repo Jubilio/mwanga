@@ -45,7 +45,7 @@ export default function TabOverview({ onApply, scoreData, eligData, hist, isPro 
             <div style={{ borderTop: `1px solid ${G.border}`, paddingTop: 10 }}>
               <div style={{ fontSize: 11, color: G.muted, marginBottom: 4 }}>{t('credit.overview.max_safe_installment')}</div>
               <div style={{ fontSize: 20, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif" }}>
-                MT {fmtShort(eligData.maxParcela)}
+                {fmtShort(eligData.maxParcela)}
               </div>
               <div style={{ fontSize: 11, color: G.muted }}>{t('credit.overview.per_month')}</div>
             </div>
@@ -98,8 +98,8 @@ export default function TabOverview({ onApply, scoreData, eligData, hist, isPro 
               <div key={l.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", borderBottom: i < hist.length - 1 ? `1px solid ${G.border}` : "none" }}>
                 <div style={{ width: 42, height: 42, borderRadius: 13, background: `${G.credit}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>💸</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: G.text }}>MT {fmtShort(l.valor)} · {l.meses} {t('credit.overview.history_months')}</div>
-                  <div style={{ fontSize: 12, color: G.muted }}>{l.data} · {t('credit.overview.history_rate')} {(l.taxa * 100).toFixed(0)}%/mês · {t('credit.overview.history_installment')} MT {fmtShort(l.parcela)}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: G.text }}>{fmtShort(l.valor)} · {l.meses} {t('credit.overview.history_months')}</div>
+                  <div style={{ fontSize: 12, color: G.muted }}>{l.data} · {t('credit.overview.history_rate')} {(l.taxa * 100).toFixed(0)}%/mês · {t('credit.overview.history_installment')} {fmtShort(l.parcela)}</div>
                 </div>
                 <Badge label={l.status === "paid" ? t('credit.overview.history_paid') : t('credit.overview.history_ongoing')} color={l.status === "paid" ? G.green : G.gold} />
               </div>

@@ -41,13 +41,13 @@ export default function TabConsolidate({ debts, userData }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
             <div style={{ background: G.muted3, padding: 16, borderRadius: 16 }}>
               <div style={{ fontSize: 12, color: G.muted, marginBottom: 4 }}>{t('credit.consolidate.current_debt')}</div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: G.red, fontFamily: 'Sora,sans-serif' }}>MT {fmtShort(currentTotal)}</div>
-              <div style={{ fontSize: 12, color: G.muted, marginTop: 8 }}>{t('credit.consolidate.current_pay')} <strong style={{ color: G.text }}>MT {fmtShort(currentMonthly)}{t('credit.consolidate.per_month_in')}</strong> {activeDebts.length} {t('credit.consolidate.debts')}</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: G.red, fontFamily: 'Sora,sans-serif' }}>{fmtShort(currentTotal)}</div>
+              <div style={{ fontSize: 12, color: G.muted, marginTop: 8 }}>{t('credit.consolidate.current_pay')} <strong style={{ color: G.text }}>{fmtShort(currentMonthly)}{t('credit.consolidate.per_month_in')}</strong> {activeDebts.length} {t('credit.consolidate.debts')}</div>
             </div>
             <div style={{ background: 'rgba(16,185,129,0.1)', border: `1px solid ${G.credit}30`, padding: 16, borderRadius: 16 }}>
               <div style={{ fontSize: 12, color: G.muted, marginBottom: 4 }}>{t('credit.consolidate.new_pay')}</div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: G.credit, fontFamily: 'Sora,sans-serif' }}>MT {fmtShort(newInstallment)}</div>
-              <div style={{ fontSize: 12, color: G.muted, marginTop: 8 }}>{t('credit.consolidate.savings')} <strong style={{ color: G.green }}>MT {fmtShort(savingsMonthly)}{t('credit.consolidate.per_month')}</strong></div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: G.credit, fontFamily: 'Sora,sans-serif' }}>{fmtShort(newInstallment)}</div>
+              <div style={{ fontSize: 12, color: G.muted, marginTop: 8 }}>{t('credit.consolidate.savings')} <strong style={{ color: G.green }}>{fmtShort(savingsMonthly)}{t('credit.consolidate.per_month')}</strong></div>
             </div>
           </div>
 

@@ -181,6 +181,12 @@ export function FinanceProvider({ children }) {
 
   const apiDispatch = async (action) => {
     const { payload, type } = action;
+
+    // Optimistic local update for settings and profile to improve perceived performance
+    if (['UPDATE_SETTING', 'UPDATE_HOUSEHOLD', 'UPDATE_USER', 'SET_BUDGET'].includes(type)) {
+      dispatch(action);
+    }
+
     switch (type) {
       case 'ADD_TRANSACTION': {
         const body = { date: payload.data, type: payload.tipo, description: payload.desc, amount: payload.valor, category: normalizeCategory(payload.cat), note: payload.nota, account_id: payload.account_id };
@@ -340,7 +346,9 @@ export function FinanceProvider({ children }) {
       case 'SET_BUDGET': await apiCall('budgets', 'POST', { category: normalizeCategory(payload.category), limit: payload.limit }); break;
       case 'DELETE_BUDGET': await apiCall(`budgets/${payload}`, 'DELETE'); break;
     }
-    dispatch(action);
+    if (!['UPDATE_SETTING', 'UPDATE_HOUSEHOLD', 'UPDATE_USER', 'SET_BUDGET'].includes(type)) {
+      dispatch(action);
+    }
   };
 
   const reloadData = useCallback((opt) => fetchSessionData(dispatch, opt), [dispatch]);

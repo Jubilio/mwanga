@@ -60,40 +60,81 @@ export default function Settings() {
     try {
       const updates = [];
 
-      if (form.user_name !== state.user?.name || form.whatsapp_number !== state.user?.whatsapp_number) {
+      // 1. User Profile & Password (Unified)
+      const userChanged = form.user_name !== state.user?.name || 
+                          form.whatsapp_number !== (state.user?.whatsapp_number || '') ||
+                          form.password;
+      
+      if (userChanged) {
+        const userPayload = {};
+        
+        if (form.user_name !== state.user?.name) {
+          if (form.user_name.trim().length < 2) {
+            showToast(t('settings.toasts.name_too_short') || 'Nome deve ter pelo menos 2 caracteres');
+            setIsSaving(false);
+            return;
+          }
+          userPayload.name = form.user_name;
+        }
+
+        if (form.whatsapp_number !== (state.user?.whatsapp_number || '')) {
+          userPayload.whatsapp_number = form.whatsapp_number;
+        }
+
+        if (form.password) {
+          if (form.password.length < 8) {
+            showToast(t('settings.toasts.pass_too_short') || 'Senha deve ter pelo menos 8 caracteres');
+            setIsSaving(false);
+            return;
+          }
+          userPayload.password = form.password;
+        }
+
         updates.push(dispatch({ 
           type: 'UPDATE_USER', 
+          payload: userPayload 
+        }));
+      }
+
+      // 2. Household Data
+      if (form.household_name !== state.settings.household_name || Number(form.cash_balance) !== Number(state.settings.cash_balance)) {
+        updates.push(dispatch({ 
+          type: 'UPDATE_HOUSEHOLD', 
           payload: { 
-            name: form.user_name,
-            whatsapp_number: form.whatsapp_number 
+            name: form.household_name, 
+            cash_balance: Number(form.cash_balance) 
           } 
         }));
       }
 
+      // 3. Differential Settings Update
       const settingsToSave = { ...form };
       delete settingsToSave.user_name;
+      delete settingsToSave.whatsapp_number;
+      delete settingsToSave.password;
+      delete settingsToSave.household_name;
+      delete settingsToSave.cash_balance;
 
-      Object.entries(settingsToSave).forEach(([key, value]) =>
-        updates.push(dispatch({ type: 'UPDATE_SETTING', payload: { key, value } }))
-      );
+      Object.entries(settingsToSave).forEach(([key, value]) => {
+        // Only update if value is different from current state
+        const currentValue = state.settings[key];
+        if (String(value) !== String(currentValue)) {
+          updates.push(dispatch({ type: 'UPDATE_SETTING', payload: { key, value } }));
+        }
+      });
 
-      if (form.household_name !== state.settings.household_name || form.cash_balance !== state.settings.cash_balance) {
-        updates.push(dispatch({ type: 'UPDATE_HOUSEHOLD', payload: { name: form.household_name, cash_balance: form.cash_balance } }));
+      if (updates.length > 0) {
+        await Promise.all(updates);
+        if (form.password) setForm(f => ({ ...f, password: '' }));
+        showToast(t('settings.toasts.save_success'));
       }
-
-      if (form.password) {
-        updates.push(api.put('/auth/profile', { password: form.password }));
-      }
-
-      await Promise.all(updates);
-      if (form.password) setForm(f => ({ ...f, password: '' })); // Clear after save
-      showToast(t('settings.toasts.save_success'));
-    } catch {
+    } catch (err) {
+      console.error('Settings Save Error:', err);
       showToast(t('settings.toasts.save_error'));
     } finally {
       setTimeout(() => setIsSaving(false), 500);
     }
-  }, [form, state.user?.name, state.settings.household_name, state.settings.cash_balance, dispatch, showToast, t]);
+  }, [form, state.user, state.settings, dispatch, showToast, t]);
 
   const setFormDirty = useCallback((updater) => {
     isDirtyRef.current = true;

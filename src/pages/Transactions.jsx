@@ -14,6 +14,7 @@ import TransactionsForm from '../components/transactions/TransactionsForm';
 import TransactionsList from '../components/transactions/TransactionsList';
 import MagicPasteModal from '../components/transactions/MagicPasteModal';
 import ConfirmModal from '../components/ConfirmModal';
+import AutoAllocateModal from '../components/transactions/AutoAllocateModal';
 
 const CATEGORIES = MAIN_CATEGORIES.map(key => ({ id: key, key }));
 
@@ -32,6 +33,7 @@ export default function Transactions() {
   const [isMagicPasteOpen, setIsMagicPasteOpen] = useState(false);
   const [magicText, setMagicText] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: null });
+  const [allocationPrompt, setAllocationPrompt] = useState({ isOpen: false, amount: 0 });
 
   const TYPES = [
     { value: 'receita', label: t('transactions.types.receita') },
@@ -98,9 +100,31 @@ export default function Transactions() {
         payload: { ...form, valor: parseFloat(form.valor), account_id: form.account_id || null },
       });
       showToast(t('transactions.toast_added'));
+      
+      if (form.tipo === 'receita' && form.cat === 'salary' && parseFloat(form.valor) > 0) {
+        setAllocationPrompt({ isOpen: true, amount: parseFloat(form.valor) });
+      }
     }
     setForm({ ...form, desc: '', valor: '', nota: '', account_id: '' });
     setIsFormOpen(false);
+  }
+
+  function handleAllocateSavings(savingsAmount) {
+    dispatch({
+      type: 'ADD_TRANSACTION',
+      payload: { 
+        id: `auto-${Date.now()}`,
+        data: new Date().toISOString().split('T')[0],
+        tipo: 'poupanca', 
+        desc: 'Alocação Automática (20%)',
+        valor: savingsAmount,
+        cat: 'savings',
+        nota: 'Gerado pela Inteligência Nexo (Regra 50/30/20)',
+        account_id: state.settings.default_expense_account_id || null
+      },
+    });
+    showToast('Poupança alocada com sucesso! 🚀');
+    setAllocationPrompt({ isOpen: false, amount: 0 });
   }
 
   function handleEdit(tr) {
@@ -248,6 +272,14 @@ export default function Transactions() {
         onCancel={() => setDeleteConfirm({ isOpen: false, id: null })}
         confirmText={t('debts.yes') || 'Sim'}
         cancelText={t('debts.no') || 'Não'}
+      />
+
+      <AutoAllocateModal 
+        isOpen={allocationPrompt.isOpen}
+        onClose={() => setAllocationPrompt({ isOpen: false, amount: 0 })}
+        salaryAmount={allocationPrompt.amount}
+        onAllocate={handleAllocateSavings}
+        currency={currency}
       />
     </div>
   );
