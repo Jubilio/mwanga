@@ -1,12 +1,15 @@
-import { Wallet, TrendingUp, Home as HomeIcon, Zap, Sparkles, RefreshCcw } from 'lucide-react';
+import { Wallet, TrendingUp, Home as HomeIcon, Zap, Sparkles, RefreshCcw, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSmsSync } from '../../hooks/useSmsSync';
 import { useOutletContext } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 
 export default function TabFinancas({ form, setFormDirty, state }) {
   const { t } = useTranslation();
   const { showToast } = useOutletContext() || {};
   const { syncSms } = useSmsSync(showToast);
+  const isAndroid = Capacitor.getPlatform() === 'android';
+  const isNative = Capacitor.isNativePlatform();
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -99,9 +102,16 @@ export default function TabFinancas({ form, setFormDirty, state }) {
             <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-500">
               <Zap size={20} />
             </div>
-            <div>
-              <h3 className="text-base font-black text-slate-800 tracking-tight">{t('settings.financas.automation_section')}</h3>
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">{t('settings.financas.automation_subtitle')}</p>
+            <div className="flex-1 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-black text-slate-800 tracking-tight">{t('settings.financas.automation_section')}</h3>
+                <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">{t('settings.financas.automation_subtitle')}</p>
+              </div>
+              {!isNative && (
+                 <div className="flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-[9px] font-black uppercase tracking-tighter">
+                    <Info size={10} /> App Nativa (Android) Apenas
+                 </div>
+              )}
             </div>
           </div>
 
@@ -150,8 +160,14 @@ export default function TabFinancas({ form, setFormDirty, state }) {
             </div>
 
             <div
-              onClick={() => setFormDirty(f => ({ ...f, sms_automation_enabled: !f.sms_automation_enabled }))}
-              className="flex items-center justify-between p-6 rounded-2xl bg-indigo-50 border border-indigo-100/50 cursor-pointer hover:bg-white transition-all group shadow-sm h-fit"
+              onClick={() => {
+                if (!isNative) {
+                  showToast?.(t('settings.financas.native_only_toast') || 'Sincronização SMS só funciona na App Nativa (Android).', 'info');
+                  return;
+                }
+                setFormDirty(f => ({ ...f, sms_automation_enabled: !f.sms_automation_enabled }));
+              }}
+              className={`flex items-center justify-between p-6 rounded-2xl border transition-all group shadow-sm h-fit ${!isNative ? 'bg-slate-50 border-slate-100 opacity-60 grayscale' : 'bg-indigo-50 border-indigo-100/50 cursor-pointer hover:bg-white'}`}
             >
               <div className="flex items-center gap-4">
                 <div className={`p-3 rounded-xl ${form.sms_automation_enabled ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500'}`}>

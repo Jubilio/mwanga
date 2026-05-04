@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function SettingsHero({ 
   form, 
+  state,
   isSaving, 
   showAvatarGallery, 
   setShowAvatarGallery, 
@@ -13,6 +14,8 @@ export default function SettingsHero({
   handleImageUpload 
 }) {
   const { t } = useTranslation();
+  const tier = state.settings?.subscription_tier || 'free';
+  const tierLabel = tier === 'pro' || tier === 'legacy' ? 'Nexo Vibe Premium' : 'Nexo Vibe Free';
 
   return (
     <div className="relative mb-10 md:mb-16 animate-in fade-in slide-in-from-top-12 duration-1000">
@@ -77,7 +80,7 @@ export default function SettingsHero({
 
             <div className="flex-1 text-center md:text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-teal-400 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] mb-3 md:mb-4">
-                <Sparkles size={12} /> {t('settings.hero.premium_account')}
+                <Sparkles size={12} /> {tierLabel}
               </div>
               <h1 className="text-3xl md:text-5xl font-black font-serif text-white tracking-tight drop-shadow-2xl mb-2">
                 {form.user_name || t('settings.hero.default_user_name')}

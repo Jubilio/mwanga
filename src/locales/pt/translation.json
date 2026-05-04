@@ -919,7 +919,8 @@
       "cash_balance_label": "Dinheiro Físico Inicial (Cash)",
       "cash_balance_tip": "Introduza o valor que tem fisicamente consigo para iniciar a reconciliação.",
       "sms_sync_tag": "Sincronização Activa",
-      "sms_sync_label": "Ativar leitura automática de SMS financeiros"
+      "sms_sync_label": "Ativar leitura automática de SMS financeiros",
+      "native_only_toast": "Sincronização SMS só funciona na App Nativa (Android)."
     },
     "pref": {
       "title": "Interface e Regional",
@@ -967,6 +968,7 @@
       "save_error": "Erro ao guardar definições",
       "name_too_short": "O nome deve ter pelo menos 2 caracteres.",
       "pass_too_short": "A senha deve ter pelo menos 8 caracteres.",
+      "whatsapp_duplicate": "Este número de WhatsApp já está registado noutra conta.",
       "img_too_large": "A imagem é muito grande (máx 2MB)",
       "img_updated": "Foto actualizada! ✦",
       "push_enabled": "Push ativado! ✦",

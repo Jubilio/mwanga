@@ -55,45 +55,84 @@ export default function Settings() {
     password: '',
   });
 
+  // Sync form with state when data arrives
+  useEffect(() => {
+    if (!isDirtyRef.current) {
+      setForm(prev => ({
+        ...prev,
+        user_salary: state.settings.user_salary || 50000,
+        default_rent: state.settings.default_rent || 15000,
+        landlord_name: state.settings.landlord_name || '',
+        household_name: state.settings.household_name || 'A Minha Família',
+        user_name: state.user?.name || '',
+        currency: state.settings.currency || 'MT',
+        cycle_start: state.settings.cycle_start || '1',
+        profile_pic: state.settings.profile_pic || AVATARS[0],
+        daily_entry_reminder_enabled: state.settings.daily_entry_reminder_enabled ?? true,
+        daily_entry_reminder_time: state.settings.daily_entry_reminder_time || '20:00',
+        monthly_due_reminder_enabled: state.settings.monthly_due_reminder_enabled ?? true,
+        monthly_due_reminder_time: state.settings.monthly_due_reminder_time || '08:00',
+        monthly_due_reminder_period: state.settings.monthly_due_reminder_period || 'inicio',
+        debt_due_reminder_enabled: state.settings.debt_due_reminder_enabled ?? true,
+        cash_balance: state.settings.cash_balance || 0,
+        sms_automation_enabled: state.settings.sms_automation_enabled === 'true' || state.settings.sms_automation_enabled === true,
+        default_income_account_id: state.settings.default_income_account_id || '',
+        default_expense_account_id: state.settings.default_expense_account_id || '',
+        whatsapp_number: state.user?.whatsapp_number || '',
+      }));
+    }
+  }, [state.user, state.settings]);
+
   const handleSaveAll = useCallback(async () => {
     setIsSaving(true);
     try {
       const updates = [];
 
       // 1. User Profile & Password (Unified)
-      const userChanged = form.user_name !== state.user?.name || 
-                          form.whatsapp_number !== (state.user?.whatsapp_number || '') ||
+      const currentName = state.user?.name || '';
+      const currentWhatsapp = state.user?.whatsapp_number || '';
+      
+      const userChanged = form.user_name !== currentName || 
+                          form.whatsapp_number !== currentWhatsapp ||
                           form.password;
       
       if (userChanged) {
         const userPayload = {};
+        let userSectionValid = true;
         
-        if (form.user_name !== state.user?.name) {
-          if (form.user_name.trim().length < 2) {
+        if (form.user_name !== currentName) {
+          if (form.user_name.trim().length > 0 && form.user_name.trim().length < 2) {
             showToast(t('settings.toasts.name_too_short') || 'Nome deve ter pelo menos 2 caracteres');
-            setIsSaving(false);
-            return;
+            userSectionValid = false;
+          } else if (form.user_name.trim().length >= 2) {
+            userPayload.name = form.user_name;
           }
-          userPayload.name = form.user_name;
         }
 
-        if (form.whatsapp_number !== (state.user?.whatsapp_number || '')) {
+        if (form.whatsapp_number !== currentWhatsapp) {
           userPayload.whatsapp_number = form.whatsapp_number;
         }
 
         if (form.password) {
           if (form.password.length < 8) {
             showToast(t('settings.toasts.pass_too_short') || 'Senha deve ter pelo menos 8 caracteres');
-            setIsSaving(false);
-            return;
+            userSectionValid = false;
+          } else {
+            userPayload.password = form.password;
           }
-          userPayload.password = form.password;
         }
 
-        updates.push(dispatch({ 
-          type: 'UPDATE_USER', 
-          payload: userPayload 
-        }));
+        if (userSectionValid && Object.keys(userPayload).length > 0) {
+          updates.push(dispatch({ 
+            type: 'UPDATE_USER', 
+            payload: userPayload 
+          }));
+        } else if (!userSectionValid) {
+          // If the user section is invalid, we don't return anymore, 
+          // we just skip the user update and allow other sections (like balance) to save.
+          // BUT if the user is on the profile tab, maybe they want to know.
+          // The toast already showed the error.
+        }
       }
 
       // 2. Household Data
@@ -130,7 +169,12 @@ export default function Settings() {
       }
     } catch (err) {
       console.error('Settings Save Error:', err);
-      showToast(t('settings.toasts.save_error'));
+      const errMsg = err.message || '';
+      if (errMsg.includes('whatsapp_number_key') || errMsg.includes('duplicate') || errMsg.includes('já está em uso')) {
+        showToast(t('settings.toasts.whatsapp_duplicate') || 'Este número de WhatsApp já está registado noutra conta.');
+      } else {
+        showToast(t('settings.toasts.save_error'));
+      }
     } finally {
       setTimeout(() => setIsSaving(false), 500);
     }
@@ -178,6 +222,7 @@ export default function Settings() {
     <div className="section-fade max-w-6xl mx-auto pb-24">
       <SettingsHero 
         form={form} 
+        state={state}
         isSaving={isSaving} 
         showAvatarGallery={showAvatarGallery} 
         setShowAvatarGallery={setShowAvatarGallery} 

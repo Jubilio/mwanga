@@ -50,6 +50,7 @@ const getDashboardSummary = async (req, res) => {
       assetsResult,
       liabilitiesResult,
       xitiquesResult,
+      householdResult,
       settingsResult,
       userResult,
       debtsResult,
@@ -99,21 +100,17 @@ const getDashboardSummary = async (req, res) => {
         args: [householdId],
       }).catch((err) => { logger.warn({ err }, 'dashboard: xitiques query failed'); return { rows: [] }; }),
 
-      // Settings vem do JOIN entre households e settings table
-      // .catch() essencial: a tabela 'settings' pode não existir em todos os ambientes
+      // Household basics
       db.execute({
-        sql: `SELECT h.cash_balance, h.name as household_name,
-                s.financial_month_start_day, s.currency, s.user_salary,
-                s.daily_entry_reminder_enabled, s.daily_entry_reminder_time,
-                s.monthly_due_reminder_enabled, s.monthly_due_reminder_time,
-                s.monthly_due_reminder_period, s.housing_type,
-                s.default_rent, s.landlord_name, s.subscription_tier,
-                s.onboarding_completed
-              FROM households h
-              LEFT JOIN settings s ON s.household_id = h.id
-              WHERE h.id = ?`,
+        sql: `SELECT cash_balance, name as household_name FROM households WHERE id = ?`,
         args: [householdId],
-      }).catch((err) => { logger.warn({ err }, 'dashboard: settings query failed'); return { rows: [] }; }),
+      }).catch((err) => { logger.warn({ err, householdId }, 'dashboard: household query failed'); return { rows: [] }; }),
+
+      // Dynamic settings (KeyValue table)
+      db.execute({
+        sql: `SELECT key, value FROM settings WHERE household_id = ?`,
+        args: [householdId],
+      }).catch((err) => { logger.warn({ err, householdId }, 'dashboard: settings query failed'); return { rows: [] }; }),
 
       db.execute({
         sql: `SELECT id, name, email, avatar_url, role, subscription_tier, whatsapp_number
@@ -227,23 +224,34 @@ const getDashboardSummary = async (req, res) => {
     }
 
     // ── Fase 3: Normalizar settings ──────────────────────────────────────────────
-    const settingsRow = settingsResult.rows[0] || {};
+    const householdRow = householdResult.rows[0] || {};
+    const settingsRows = settingsResult.rows || [];
+    const settingsMap = settingsRows.reduce((acc, row) => {
+      acc[row.key] = row.value;
+      return acc;
+    }, {});
+
     const settings = {
-      cash_balance: Number(settingsRow.cash_balance || 0),
-      financial_month_start_day: Number(settingsRow.financial_month_start_day || 1),
-      currency: settingsRow.currency || 'MT',
-      user_salary: Number(settingsRow.user_salary || 0),
-      daily_entry_reminder_enabled: settingsRow.daily_entry_reminder_enabled ?? true,
-      daily_entry_reminder_time: settingsRow.daily_entry_reminder_time || '20:00',
-      monthly_due_reminder_enabled: settingsRow.monthly_due_reminder_enabled ?? true,
-      monthly_due_reminder_time: settingsRow.monthly_due_reminder_time || '08:00',
-      monthly_due_reminder_period: settingsRow.monthly_due_reminder_period || 'inicio',
-      housing_type: settingsRow.housing_type || 'renda',
-      default_rent: Number(settingsRow.default_rent || 0),
-      landlord_name: settingsRow.landlord_name || '',
+      cash_balance: Number(householdRow.cash_balance || 0),
+      household_name: householdRow.household_name || '',
+      financial_month_start_day: Number(settingsMap.financial_month_start_day || 1),
+      currency: settingsMap.currency || 'MT',
+      user_salary: Number(settingsMap.user_salary || 0),
+      daily_entry_reminder_enabled: settingsMap.daily_entry_reminder_enabled ?? true,
+      daily_entry_reminder_time: settingsMap.daily_entry_reminder_time || '20:00',
+      monthly_due_reminder_enabled: settingsMap.monthly_due_reminder_enabled ?? true,
+      monthly_due_reminder_time: settingsMap.monthly_due_reminder_time || '08:00',
+      monthly_due_reminder_period: settingsMap.monthly_due_reminder_period || 'inicio',
+      housing_type: settingsMap.housing_type || 'renda',
+      default_rent: Number(settingsMap.default_rent || 0),
+      landlord_name: settingsMap.landlord_name || '',
+      profile_pic: settingsMap.profile_pic || '',
+      sms_automation_enabled: settingsMap.sms_automation_enabled === 'true' || settingsMap.sms_automation_enabled === true,
+      default_income_account_id: settingsMap.default_income_account_id || '',
+      default_expense_account_id: settingsMap.default_expense_account_id || '',
       // subscription_tier vem da tabela real — nunca do default
-      subscription_tier: settingsRow.subscription_tier || 'free',
-      onboarding_completed: settingsRow.onboarding_completed ?? false,
+      subscription_tier: settingsMap.subscription_tier || 'free',
+      onboarding_completed: settingsMap.onboarding_completed ?? false,
     };
 
     // ── Fase 4: Montar resposta final ────────────────────────────────────────────

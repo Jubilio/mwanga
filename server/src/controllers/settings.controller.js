@@ -1,6 +1,7 @@
 const { db } = require('../config/db');
 const { logAction } = require('../utils/audit');
 const { z } = require('zod');
+const { invalidateDashboardCache } = require('./dashboard.controller');
 
 const upsertSettingSchema = z.object({
   key: z.string().min(1).max(50).trim(),
@@ -51,6 +52,8 @@ const upsertSetting = async (req, res, next) => {
       args: [key, safeValue, householdId, safeValue]
     });
     
+    await invalidateDashboardCache(householdId);
+    
     res.json({ success: true, key, value: safeValue });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
@@ -80,6 +83,7 @@ const updateHousehold = async (req, res, next) => {
         args: args
       });
       await logAction(req.user.id, 'UPDATE_HOUSEHOLD', 'HOUSEHOLD', req.user.householdId);
+      await invalidateDashboardCache(req.user.householdId);
     }
     
     res.json({ success: true, name, cash_balance });

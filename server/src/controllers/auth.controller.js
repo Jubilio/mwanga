@@ -3,6 +3,7 @@ const { z } = require('zod');
 const { db } = require('../config/db');
 const { logAction } = require('../utils/audit');
 const authService = require('../services/auth.service');
+const { invalidateDashboardCache } = require('./dashboard.controller');
 const { 
   registerSchema, 
   loginSchema, 
@@ -60,6 +61,7 @@ const updateProfile = async (req, res, next) => {
   try {
     const data = updateProfileSchema.parse(req.body);
     const result = await authService.updateProfile(req.user.id, data);
+    await invalidateDashboardCache(req.user.householdId);
     res.json({ ...result, message: 'Perfil e dados PII atualizados com sucesso.' });
   } catch (error) {
     if (error instanceof z.ZodError) {
