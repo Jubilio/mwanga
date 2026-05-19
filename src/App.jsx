@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Suspense, lazy, useMemo } from 'react';
+import { Suspense, lazy, useEffect, useMemo } from 'react';
 import { FinanceProvider } from './hooks/useFinanceStore';
 import Layout from './components/Layout';
 import { useFinance } from './hooks/useFinance';
 import ErrorBoundary from './components/ErrorBoundary';
+import Lenis from 'lenis';
+import { MwangaTooltipProvider } from './components/ui/MwangaTooltip';
 
 // Critical path — loaded immediately
 import Dashboard from './pages/Dashboard';
@@ -119,7 +121,31 @@ function RequireAuth({ children }) {
 }
 
 export default function App() {
+  // ── Lenis: Scroll suave global para toda a aplicação ──────────────────────
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.1,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.5,
+    });
+
+    let rafId;
+    function raf(time) {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, []);
+
   return (
+    <MwangaTooltipProvider>
     <FinanceProvider>
       <BrowserRouter>
         <ErrorBoundary context="Aplicação">
@@ -167,5 +193,6 @@ export default function App() {
         </ErrorBoundary>
       </BrowserRouter>
     </FinanceProvider>
+    </MwangaTooltipProvider>
   );
 }

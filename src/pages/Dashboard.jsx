@@ -20,6 +20,7 @@ import DashboardQuickActions from '../components/dashboard/DashboardQuickActions
 import { HealthCard, AlertsCard, AccountsCard, CashFlowCard, StewardshipCard } from '../components/dashboard/DashboardCards';
 import DashboardTransactions from '../components/dashboard/DashboardTransactions';
 import { useStewardship } from '../hooks/useStewardship';
+import { usePageAnimation } from '../hooks/useMwangaAnimations';
 
 const MotionDiv = motion.div;
 
@@ -29,6 +30,9 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const [showBalance, setShowBalance] = useState(() => localStorage.getItem('mwanga-show-balance') !== 'false');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // ── GSAP: Animação de entrada suave ao carregar o dashboard ───────────────
+  usePageAnimation('.dashboard-gsap-root');
 
   const toggleBalance = () => {
     const newState = !showBalance;
@@ -155,7 +159,7 @@ export default function Dashboard() {
       initial="hidden"
       animate="show"
       variants={containerVariants}
-      className="flex flex-col gap-6" 
+      className="flex flex-col gap-6 dashboard-gsap-root" 
       style={{ paddingBottom: '7rem' }}
     >
       <DashboardHero 

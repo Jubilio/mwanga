@@ -1,6 +1,7 @@
 import { ShieldCheck, ChevronRight, Sparkles, Bell, Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fmt } from '../../utils/calculations';
+import { MwangaTooltip } from '../ui/MwangaTooltip';
 
 export function HealthCard({ navigate, score, scoreColor, scoreLabel, itemVariants, t }) {
   return (
@@ -11,9 +12,11 @@ export function HealthCard({ navigate, score, scoreColor, scoreLabel, itemVarian
     >
       <div className="flex items-center justify-between">
          <div className="flex items-center gap-3">
+            <MwangaTooltip content="Índice calculado com base nos seus hábitos de poupança, dívidas e cumprimento de orçamentos">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-ocean/10 text-ocean dark:bg-sky/10 dark:text-sky">
               <ShieldCheck size={18} />
             </div>
+            </MwangaTooltip>
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Saúde Financeira</span>
          </div>
          <ChevronRight size={16} className="text-slate-300 transition-transform group-hover:translate-x-1" />
@@ -89,9 +92,11 @@ export function AccountsCard({ navigate, state, showBalance, currency, maxContaB
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
+          <MwangaTooltip content="Saldo total consolidado de todas as suas contas activas">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-ocean/10 text-ocean dark:bg-sky/10 dark:text-sky">
             <Wallet size={18} />
           </div>
+          </MwangaTooltip>
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Contas Activas</span>
         </div>
         <ChevronRight size={16} className="text-slate-300 transition-transform group-hover:translate-x-1" />
