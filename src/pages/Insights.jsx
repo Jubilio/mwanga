@@ -85,6 +85,8 @@ export default function Insights() {
   const chatEndRef = useRef(null);
   const inputRef   = useRef(null);
   const recognitionRef = useRef(null);
+  const micRetryRef = useRef(0); // Retry counter for network errors
+  const micSupportedRef = useRef(false);
 
   // Scroll to bottom on new messages
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
@@ -138,14 +140,16 @@ export default function Insights() {
     // 3. Initialize Speech Recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
+      micSupportedRef.current = true;
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
-      recognition.interimResults = true; // Permite ver o que está a ser dito em tempo real
+      recognition.interimResults = true;
       recognition.lang = 'pt-PT';
+      recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
         setIsListening(true);
-        console.log('[Binth] Microfone ativo...');
+        micRetryRef.current = 0; // Reset retry on successful start
       };
 
       recognition.onresult = (event) => {
@@ -153,29 +157,44 @@ export default function Insights() {
           .map(result => result[0])
           .map(result => result.transcript)
           .join('');
-        
         setInput(transcript);
       };
 
       recognition.onerror = (event) => {
         console.error('[Binth] Erro no microfone:', event.error);
         setIsListening(false);
+
         if (event.error === 'not-allowed') {
-          showToast(t('insights.mic_errors.not_allowed'), 'error');
+          // Permissão negada — mostrar guia
+          showToast('Permissão do microfone negada. Clica no cadeado na barra de endereços para autorizar.', 'error');
         } else if (event.error === 'network') {
-          showToast(t('insights.mic_errors.network'), 'error');
+          // Erro de rede — tentar novamente automaticamente até 2x
+          if (micRetryRef.current < 2) {
+            micRetryRef.current += 1;
+            setTimeout(() => {
+              try { recognition.start(); } catch (_) { setIsListening(false); }
+            }, 1200);
+            showToast(`Reconhecimento de voz sem rede — tentando novamente (${micRetryRef.current}/2)...`, 'warning');
+          } else {
+            micRetryRef.current = 0;
+            showToast('O reconhecimento de voz precisa de ligação à internet (Chrome/Edge). Escreve a mensagem diretamente.', 'warning');
+          }
+        } else if (event.error === 'no-speech') {
+          showToast('Não foi detetada nenhuma voz. Tenta novamente.', 'warning');
+        } else if (event.error === 'aborted') {
+          // Ignorar — utilizador cancelou intencionalmente
         } else {
-          showToast(t('insights.mic_errors.generic', { error: event.error }), 'error');
+          showToast(`Erro no microfone: ${event.error}`, 'error');
         }
       };
 
       recognition.onend = () => {
         setIsListening(false);
-        console.log('[Binth] Microfone desligado.');
       };
 
       recognitionRef.current = recognition;
     } else {
+      micSupportedRef.current = false;
       console.warn('[Binth] SpeechRecognition não suportado neste browser.');
     }
   }, [t, showToast]);
@@ -439,19 +458,24 @@ export default function Insights() {
 
         {/* Input bar */}
         <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center' }}>
-          <button
-            onClick={toggleListening}
-            className={isListening ? 'animate-pulse' : ''}
-            style={{
-              width: 44, height: 44, borderRadius: 12, border: 'none',
-              background: isListening ? '#EF4444' : 'rgba(255,255,255,0.05)',
-              color: isListening ? '#fff' : '#5a7a9a',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.2s',
-            }}
-          >
-            {isListening ? <Mic size={20} /> : <MicOff size={20} />}
-          </button>
+          {/* Mic button — only shown when browser supports Web Speech API */}
+          {micSupportedRef.current && (
+            <button
+              onClick={toggleListening}
+              title={isListening ? 'Parar gravação' : 'Falar com a Binth (requer internet no Chrome/Edge)'}
+              className={isListening ? 'animate-pulse' : ''}
+              style={{
+                width: 44, height: 44, borderRadius: 12, border: 'none',
+                background: isListening ? '#EF4444' : 'rgba(255,255,255,0.05)',
+                color: isListening ? '#fff' : '#5a7a9a',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.2s', flexShrink: 0,
+                boxShadow: isListening ? '0 0 12px rgba(239,68,68,0.4)' : 'none',
+              }}
+            >
+              {isListening ? <Mic size={20} /> : <MicOff size={20} />}
+            </button>
+          )}
           <div style={{ flex: 1, position: 'relative' }}>
             <Sparkles size={14} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#5a7a9a', pointerEvents: 'none' }} />
             <input
