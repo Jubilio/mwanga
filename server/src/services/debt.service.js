@@ -28,13 +28,24 @@ const getDebts = async (householdId) => {
 };
 
 const addDebt = async (householdId, data) => {
-  const { creditor_name, total_amount, due_date, account_id } = data;
+  const { creditor_name, total_amount, due_date, account_id, interest_rate, interest_period, months_duration, monthly_payment, principal_amount } = data;
 
   const queries = [
     {
-      sql: `INSERT INTO debts (creditor_name, total_amount, remaining_amount, due_date, status, household_id)
-            VALUES ($1, $2, $3, $4, 'pending', $5) RETURNING id`,
-      args: [creditor_name, total_amount, total_amount, due_date || null, householdId]
+      sql: `INSERT INTO debts (creditor_name, total_amount, remaining_amount, due_date, status, household_id, interest_rate, interest_period, months_duration, monthly_payment, principal_amount)
+            VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9, $10) RETURNING id`,
+      args: [
+        creditor_name, 
+        total_amount, 
+        total_amount, 
+        due_date || null, 
+        householdId,
+        interest_rate || 0,
+        interest_period || 'monthly',
+        months_duration || 0,
+        monthly_payment || 0,
+        principal_amount || total_amount
+      ]
     }
   ];
 

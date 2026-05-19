@@ -28,14 +28,97 @@ export default function Dividas() {
   const [paymentAccount, setPaymentAccount] = useState('');
 
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [showScheduleId, setShowScheduleId] = useState(null);
 
   const debts = state.dividas || [];
 
   const getMonthlyRate = (debt) => {
-    if (!debt.interest_rate) return 0;
+    const rawRate = Number(debt.interest_rate || 0);
+    if (rawRate <= 0) return 0;
     // Fallback: if period doesn't exist, assume rate > 0.1 is annual, else monthly
-    const isAnnual = debt.interest_period === 'annual' || (!debt.interest_period && debt.interest_rate > 0.1);
-    return isAnnual ? debt.interest_rate / 12 : debt.interest_rate;
+    const isAnnual = debt.interest_period === 'annual' || (!debt.interest_period && rawRate > 0.1);
+    return isAnnual ? rawRate / 12 : rawRate;
+  };
+
+  const getElapsedMonths = (startDateStr) => {
+    if (!startDateStr) return 0;
+    const start = new Date(startDateStr);
+    const today = new Date();
+    const yearsDiff = today.getFullYear() - start.getFullYear();
+    const monthsDiff = today.getMonth() - start.getMonth();
+    return Math.max(0, (yearsDiff * 12) + monthsDiff);
+  };
+
+  const generateAmortizationSchedule = (debt) => {
+    const principal_amount = Number(debt.principal_amount || 0);
+    const total_amount = Number(debt.total_amount || 0);
+    const remaining_amount = Number(debt.remaining_amount || 0);
+    const months_duration = Number(debt.months_duration || debt.months || 12);
+
+    const principal = principal_amount > 0 ? principal_amount : total_amount;
+    const rate = getMonthlyRate(debt);
+    const months = months_duration > 0 ? months_duration : 12;
+    
+    if (months <= 0) return [];
+    
+    let runningPaid = total_amount - remaining_amount;
+    
+    if (rate <= 0) {
+      const payment = principal / months;
+      const schedule = [];
+      let balance = principal;
+      for (let m = 1; m <= months; m++) {
+        balance = Math.max(0, balance - payment);
+        let status = 'pending';
+        if (runningPaid >= payment) {
+          status = 'paid';
+          runningPaid -= payment;
+        } else if (runningPaid > 0) {
+          status = 'partial';
+          runningPaid = 0;
+        }
+        schedule.push({
+          period: m,
+          payment: Number(payment.toFixed(2)),
+          interest: 0,
+          amortization: Number(payment.toFixed(2)),
+          balance: Number(balance.toFixed(2)),
+          status
+        });
+      }
+      return schedule;
+    }
+    
+    const schedule = [];
+    let balance = principal;
+    
+    // Price Amortization Formula: P = (PV * r * (1+r)^n) / ((1+r)^n - 1)
+    const payment = (principal * rate * Math.pow(1 + rate, months)) / (Math.pow(1 + rate, months) - 1);
+    
+    for (let m = 1; m <= months; m++) {
+      const interest = balance * rate;
+      const amortization = payment - interest;
+      balance = Math.max(0, balance - amortization);
+      
+      let status = 'pending';
+      if (runningPaid >= payment) {
+        status = 'paid';
+        runningPaid -= payment;
+      } else if (runningPaid > 0) {
+        status = 'partial';
+        runningPaid = 0;
+      }
+      
+      schedule.push({
+        period: m,
+        payment: Number(payment.toFixed(2)),
+        interest: Number(interest.toFixed(2)),
+        amortization: Number(amortization.toFixed(2)),
+        balance: Number(balance.toFixed(2)),
+        status
+      });
+    }
+    return schedule;
   };
 
   const sortedDebts = [...debts].sort((a, b) => {
@@ -276,15 +359,34 @@ export default function Dividas() {
                     <div className="flex items-center gap-2">
                       {debt.status !== 'paid' && (
                         <button
-                          onClick={() => setShowPayForm(showPayForm === debt.id ? null : debt.id)}
+                          onClick={() => {
+                            setShowPayForm(showPayForm === debt.id ? null : debt.id);
+                            setShowScheduleId(null);
+                          }}
                           className="text-leaf hover:opacity-70 p-1"
+                          title="Registar Pagamento"
                         >
                           <CheckCircle2 size={18} />
+                        </button>
+                      )}
+                      {debt.status !== 'paid' && (
+                        <button
+                          onClick={() => {
+                            setShowScheduleId(showScheduleId === debt.id ? null : debt.id);
+                            setShowPayForm(null);
+                          }}
+                          className={`p-1 transition-colors ${showScheduleId === debt.id ? 'text-indigo-400' : 'text-gray-400 hover:text-indigo-400'}`}
+                          title="Ver Fluxo da Dívida"
+                        >
+                          <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                          </svg>
                         </button>
                       )}
                       <button
                         onClick={() => setConfirmDelete(debt.id)}
                         className="text-coral hover:opacity-70 p-1"
+                        title="Eliminar Dívida"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -334,6 +436,156 @@ export default function Dividas() {
                     </td>
                   </tr>
                 )}
+                {showScheduleId === debt.id && (() => {
+                  const interest_rate = Number(debt.interest_rate || 0);
+                  const total_amount = Number(debt.total_amount || 0);
+                  const remaining_amount = Number(debt.remaining_amount || 0);
+                  const principal_amount = Number(debt.principal_amount || 0);
+                  const months_duration = Number(debt.months_duration || debt.months || 12);
+                  const monthly_payment = Number(debt.monthly_payment || 0);
+                  
+                  const mRate = getMonthlyRate(debt);
+                  const principal = principal_amount > 0 ? principal_amount : total_amount;
+                  const elapsed = getElapsedMonths(debt.due_date || debt.created_at);
+                  const accumInt = principal * mRate * elapsed;
+                  const updRemaining = Math.max(0, principal + accumInt - (total_amount - remaining_amount));
+                  
+                  const projectedInterest = Math.max(0, total_amount - principal);
+                  const realPaid = total_amount - remaining_amount;
+                  const finalMonthlyPayment = monthly_payment > 0 ? monthly_payment : (total_amount / (months_duration > 0 ? months_duration : 12));
+                  
+                  return (
+                    <tr className="bg-gray-50/70 dark:bg-[#0e1420]">
+                      <td colSpan="5" className="p-6 border-t border-gray-100 dark:border-white/5">
+                        <div className="space-y-5 animate-fade-in text-slate-800 dark:text-gray-200">
+                          {/* Header Title */}
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 dark:border-white/5 pb-3">
+                            <div>
+                              <h4 className="text-xs font-black uppercase tracking-widest text-indigo-500 dark:text-indigo-400">Fluxo da Dívida e Cronograma de Amortização</h4>
+                              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Calculado dinamicamente com base na Tabela Price (Amortização Francesa).</p>
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                              Juros: {(interest_rate * 100).toFixed(1)}% {debt.interest_period === 'annual' ? 'ao Ano' : 'ao Mês'}
+                            </span>
+                          </div>
+
+                          {/* Arrears Warning Alert */}
+                          {elapsed > 0 && mRate > 0.05 && (
+                            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-800 dark:text-red-200 text-xs space-y-2 mb-4">
+                              <div className="flex items-center gap-2 font-bold text-red-600 dark:text-red-400">
+                                <span className="animate-pulse flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                                ALERTA DE ANÁLISE DE MORA: Dívida Tóxica em Acumulação!
+                              </div>
+                              <p className="leading-relaxed">
+                                Esta dívida foi contraída em <strong className="text-black dark:text-white">Março/Início</strong> (há <strong>{elapsed} meses decorridos</strong>) e possui uma taxa de juro severa de <strong className="text-black dark:text-white">{(mRate * 100).toFixed(0)}% ao mês</strong>. Como não foram registados pagamentos suficientes, acumulou um montante significativo de juros de mora.
+                              </p>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                                <div className="p-2.5 rounded-lg bg-black/5 dark:bg-black/35">
+                                  <span className="text-[9px] uppercase text-gray-500 dark:text-gray-400 block font-semibold">Juros Acumulados</span>
+                                  <span className="text-sm font-bold text-red-600 dark:text-red-400">{showBalance ? fmt(accumInt, currency) : '••••'}</span>
+                                </div>
+                                <div className="p-2.5 rounded-lg bg-black/5 dark:bg-black/35">
+                                  <span className="text-[9px] uppercase text-gray-500 dark:text-gray-400 block font-semibold">Total Amortizado</span>
+                                  <span className="text-sm font-bold text-leaf">{showBalance ? fmt(realPaid, currency) : '••••'}</span>
+                                </div>
+                                <div className="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-500/30">
+                                  <span className="text-[9px] uppercase text-red-600 dark:text-red-300 block font-semibold">Saldo Atualizado Real</span>
+                                  <span className="text-sm font-bold text-gray-900 dark:text-white">{showBalance ? fmt(updRemaining, currency) : '••••'}</span>
+                                </div>
+                              </div>
+                              <p className="text-[10px] text-red-600 dark:text-red-300/80 italic pt-1">
+                                * Nota: No mercado informal, taxas elevadas (como 30%) tornam a dívida insustentável rapidamente. Priorize a liquidação integral desta obrigação.
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Dynamic Cards Grid */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div className="p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                              <span className="text-[9px] font-black uppercase text-gray-400">Valor Inicial (Principal)</span>
+                              <div className="text-sm font-bold text-gray-900 dark:text-white mt-0.5">
+                                {showBalance ? fmt(principal, currency) : '••••'}
+                              </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                              <span className="text-[9px] font-black uppercase text-gray-400">Total de Juros Projetados</span>
+                              <div className="text-sm font-bold text-amber-600 dark:text-amber-500 mt-0.5">
+                                {showBalance ? fmt(projectedInterest, currency) : '••••'}
+                              </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                              <span className="text-[9px] font-black uppercase text-gray-400">Parcela Mensal Projetada</span>
+                              <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">
+                                {showBalance ? fmt(finalMonthlyPayment, currency) : '••••'}
+                              </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                              <span className="text-[9px] font-black uppercase text-gray-400">Total Pago Acumulado</span>
+                              <div className="text-sm font-bold text-leaf mt-0.5">
+                                {showBalance ? fmt(realPaid, currency) : '••••'}
+                              </div>
+                            </div>
+                          </div>
+
+                        {/* Amortization Table */}
+                        <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-white/5">
+                          <table className="w-full text-left text-xs bg-gray-50/50 dark:bg-black/15">
+                            <thead>
+                              <tr className="border-b border-gray-100 dark:border-white/5 bg-gray-100/55 dark:bg-black/30 text-[10px] font-black uppercase text-gray-400 tracking-wider">
+                                <th className="p-2.5 pl-4">Período</th>
+                                <th className="p-2.5">Prestação</th>
+                                <th className="p-2.5">Juros Pagos</th>
+                                <th className="p-2.5">Capital Amortizado</th>
+                                <th className="p-2.5">Saldo Devedor Restante</th>
+                                <th className="p-2.5 pr-4 text-right">Estado</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {generateAmortizationSchedule(debt).map((item) => (
+                                <tr key={item.period} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-100/10 dark:hover:bg-white/5 transition-colors">
+                                  <td className="p-2.5 pl-4 font-bold text-gray-500 dark:text-gray-400">Parcela {item.period}</td>
+                                  <td className="p-2.5 font-semibold text-gray-900 dark:text-white">{showBalance ? fmt(item.payment, currency) : '••••'}</td>
+                                  <td className="p-2.5 text-amber-600 dark:text-amber-500/90">{showBalance ? fmt(item.interest, currency) : '••••'}</td>
+                                  <td className="p-2.5 text-indigo-600 dark:text-indigo-300">{showBalance ? fmt(item.amortization, currency) : '••••'}</td>
+                                  <td className="p-2.5 font-bold text-gray-700 dark:text-gray-300">{showBalance ? fmt(item.balance, currency) : '••••'}</td>
+                                  <td className="p-2.5 pr-4 text-right">
+                                    {item.status === 'paid' && (
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-leaf/10 text-leaf text-[9px] font-black uppercase tracking-wider border border-leaf/20">
+                                        ✓ Pago
+                                      </span>
+                                    )}
+                                    {item.status === 'partial' && (
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500 text-[9px] font-black uppercase tracking-wider border border-amber-500/20">
+                                        • Parcial
+                                      </span>
+                                    )}
+                                    {item.status === 'pending' && (
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-[9px] font-black uppercase tracking-wider border border-gray-200 dark:border-white/5">
+                                        A Vencer
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* CFO Insight Banner */}
+                        <div className="flex gap-3 p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-indigo-600 dark:text-indigo-300 text-[11px] leading-relaxed">
+                          <span className="text-lg shrink-0 mt-0.5">💡</span>
+                          <div className="space-y-1 text-left">
+                            <span className="font-bold text-indigo-700 dark:text-white uppercase tracking-wider text-[9px] block">Conselho Estratégico do CFO Binth</span>
+                            <span>
+                              Ao amortizares mais do que a prestação mensal, reduzes diretamente o <strong>Saldo Devedor Restante</strong>. Como os juros são calculados sobre este saldo, qualquer pagamento extra diminui significativamente os juros totais que irás pagar nos próximos meses!
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })()}
                 </React.Fragment>
               )})}
             </tbody>

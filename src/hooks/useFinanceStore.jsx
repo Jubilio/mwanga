@@ -237,7 +237,17 @@ export function FinanceProvider({ children }) {
         return;
       }
       case 'ADD_DEBT': {
-        const body = { name: payload.name, total_amount: payload.total_amount, due_date: payload.due_date, interest_rate: payload.interest_rate || 0, account_id: payload.account_id };
+        const body = {
+          creditor_name: payload.creditor_name || payload.name,
+          total_amount: payload.total_amount,
+          due_date: payload.due_date,
+          account_id: payload.account_id,
+          interest_rate: payload.interest_rate || 0,
+          interest_period: payload.interest_period || 'monthly',
+          months_duration: payload.months_duration || 0,
+          monthly_payment: payload.monthly_payment || 0,
+          principal_amount: payload.principal_amount || payload.total_amount
+        };
         try {
           await apiCall('debts', 'POST', body);
           const [d, t, a] = await Promise.all([apiCall('debts'), apiCall('transactions'), apiCall('accounts')]);
