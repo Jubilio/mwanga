@@ -242,7 +242,7 @@ async function buildUserContext(householdId, userId) {
     const unreadValue = await getNotificationReadValue(false);
 
     // Fetch all context data in parallel
-    const [userRes, summaryRes, recentTxRes, budgetsRes, assetsRes, liabsRes, goalsRes, accountsRes, housingRes, notificationsRes, rentTotalRes, xitiqueTotalRes, debtMonthlyRes] = await Promise.all([
+    const [userRes, summaryRes, recentTxRes, budgetsRes, assetsRes, liabsRes, goalsRes, accountsRes, housingRes, notificationsRes, rentTotalRes, xitiqueTotalRes, debtMonthlyRes, debtsRes] = await Promise.all([
       db.execute({
         sql: 'SELECT name FROM public.users WHERE id = ?',
         args: [userId]
@@ -320,6 +320,10 @@ async function buildUserContext(householdId, userId) {
       db.execute({
         sql: `SELECT SUM(remaining_amount) as total FROM debts WHERE household_id = ? AND status = 'pending' AND substr(due_date, 1, 7) = ?`,
         args: [householdId, monthStart.substring(0, 7)]
+      }),
+      db.execute({
+        sql: `SELECT * FROM debts WHERE household_id = ? AND status = 'pending' ORDER BY created_at DESC`,
+        args: [householdId]
       })
     ]);
 
@@ -392,7 +396,8 @@ async function buildUserContext(householdId, userId) {
         rentTotal: rentMonthlyTotal,
         xitiqueTotal: xitiqueMonthlyTotal,
         debtMonthlyTotal: debtMonthlyTotal,
-        priority
+        priority,
+        debts: debtsRes.rows || []
       }
     };
   } catch (err) {
@@ -512,11 +517,10 @@ const PROVIDERS = {
     url: () => process.env.OLLAMA_URL || 'http://localhost:11434/api/chat',
     headers: () => ({ 'Content-Type': 'application/json' }),
     body: (messages, system, tools = []) => ({
-      model: process.env.OLLAMA_MODEL || 'llama3.2',
+      model: process.env.OLLAMA_MODEL || 'phi3:latest',
       messages: [{ role: 'system', content: system }, ...messages.map(m => ({ role: m.role, content: m.content }))],
       options: { temperature: 0.7 },
-      stream: false,
-      format: 'json'
+      stream: false
     }),
     extract: (data) => data.message?.content || data.response,
     extractToolCall: () => null
@@ -691,6 +695,51 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
   const priority = contextSummary.priority || {};
   const msg = (userMessage || '').toLowerCase();
   
+  // ─── Direct overrides for highly specific queries ───
+  if (msg.includes('juro') || msg.includes('taxa')) {
+    const list = Array.isArray(contextSummary.debts) ? contextSummary.debts : [];
+    const debtsWithInterest = list.filter(d => Number(d.interest_rate) > 0);
+    
+    if (debtsWithInterest.length > 0) {
+      const topInterest = debtsWithInterest[0];
+      return personalizeBinthPayload({
+        message: `Sim, ${name}! Tens dívidas registradas com juros ativos no sistema. A dívida com o credor **${topInterest.creditor_name}** tem uma taxa de **${(Number(topInterest.interest_rate) * 100).toFixed(0)}% ao mês** e o saldo devedor restante é de **${Number(topInterest.remaining_amount || 0).toLocaleString('pt-MZ')} MT**. Recomendo priorizar a liquidação destas obrigações para evitar o acúmulo de juros de mora!`,
+        insight_type: "warning",
+        biblical_insight: "Evitar Dívidas: A dívida com juros severos consome o fruto do teu trabalho. Livra-te dela o quanto antes.",
+        quick_actions: ["Plano de Amortização", "Ver Dívidas"],
+        data: { intent_matched: true, local_intelligence: true }
+      }, contextSummary);
+    } else {
+      return personalizeBinthPayload({
+        message: `Olá ${name}! De momento não tens nenhuma dívida ativa registrada com taxa de juros superior a 0%. Se tens alguma dívida contratada com juros (como a dívida de 30.000 MT com 30% de juros contraída em Março), podes clicar em "Ver Fluxo da Dívida" na aba de Dívidas e usar o simulador para configurar os juros e acompanhar a evolução em tempo real!`,
+        insight_type: "info",
+        biblical_insight: "Evitar Dívidas: Quem aceita juros pesados torna-se escravo do credor. Planeia para viver livre de obrigações.",
+        quick_actions: ["Ver Dívidas", "Simular Crédito"],
+        data: { intent_matched: true, local_intelligence: true }
+      }, contextSummary);
+    }
+  }
+
+  if (msg.includes('plano') || msg.includes('amortiza') || msg.includes('cronograma')) {
+    return personalizeBinthPayload({
+      message: `Podes visualizar o plano de amortização detalhado de qualquer dívida diretamente na aba de **Dívidas** clicando no ícone do gráfico 📊 ao lado da dívida. O Mwanga calcula dinamicamente as prestações pela Tabela Price, discriminando os juros e o capital amortizado mês a mês!`,
+      insight_type: "info",
+      biblical_insight: "Planeamento e Sabedoria: O sábio calcula os custos antes de assumir um compromisso para não ser envergonhado.",
+      quick_actions: ["Ver Dívidas", "Simular Crédito"],
+      data: { intent_matched: true, local_intelligence: true }
+    }, contextSummary);
+  }
+
+  if (msg.includes('simular') || msg.includes('simula') || msg.includes('calculadora')) {
+    return personalizeBinthPayload({
+      message: `Podes simular novos créditos, poupanças e xitiques diretamente no Mwanga. Se queres simular os juros de uma dívida já existente, podes aceder à aba de Dívidas e clicar em "Ver Fluxo da Dívida" para ajustar as taxas e ver o impacto!`,
+      insight_type: "info",
+      biblical_insight: "Planeamento e Sabedoria: O prudente vê o perigo de longe e desvia-se; o ingénuo avança e sofre as consequências.",
+      quick_actions: ["Simular Crédito", "Simular Poupança", "Ver Dívidas"],
+      data: { intent_matched: true, local_intelligence: true }
+    }, contextSummary);
+  }
+
   // 1. Intent Detection
   let selectedRule = null;
   let intentMatched = false;
@@ -773,29 +822,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
   const userContext = await buildUserContext(householdId, userId);
   const userMessage = messages[messages.length - 1]?.content || '';
 
-  // ─── Local-First Detection ───
-  // If the message is a direct data request (common suggestions), 
-  // use local intelligence immediately for instant response.
-  const isSuggestion = [
-    'Como estão as minhas finanças?',
-    'Onde estou a gastar mais?',
-    'Como posso poupar mais?',
-    'Analisa o meu orçamento',
-    'Analisar Gastos', 'Ver Metas', 'Estado das Dívidas',
-    'Categorias Maiores', 'Ver Orçamentos', 'Últimas Saídas',
-    'Ver Receitas', 'Relatório Mensal', 'Prever Próximo Mês',
-    'Ver Relatórios', 'Relatórios', 'Registar Transação',
-    'Simular Crédito', 'Simular Poupança', 'Simular Xitique',
-    'Simular', 'Simula',
-    'PAGAR PRIMEIRO', 'CANALIZAR SALÁRIO', 'O QUE PAGAR',
-    'Pagar Renda', 'Liquidar Xitique', 'Amortizar Dívida',
-    'Reforçar meta', 'Novas Metas', 'Ver Poupança'
-  ].some(suggest => userMessage.toLowerCase().includes(suggest.toLowerCase()));
 
-  if (isSuggestion) {
-    logger.info({ userMessage }, 'Binth using Local-First logic for data query');
-    return getFallbackResponse(userMessage, userContext.summary);
-  }
 
   const system = BINTH_SYSTEM_PROMPT.replace('{user_context}', userContext.text);
   
@@ -826,11 +853,12 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
       const tools = ToolRegistry.getToolsSchema();
       const payload = config.body(messages, system, tools);
       
+      const timeoutMs = p === 'ollama' ? 120000 : 30000;
       const res = await fetch(config.url(activeKey), {
         method: 'POST',
         headers: hdrs,
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(30000)
+        signal: AbortSignal.timeout(timeoutMs)
       });
 
       if (!res.ok) {
