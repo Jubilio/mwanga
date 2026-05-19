@@ -189,6 +189,31 @@ function buildPrioritySummary({
   };
 }
 
+const OLLAMA_SYSTEM_PROMPT = `
+És a Binth — a mentora inteligente de gestão financeira do Mwanga.
+Persona: Feminina, sábia, empática, prática e humana. Estilo fintech premium. Trata o utilizador pelo nome. Usa termos de Moçambique como "xitique", "pé de meia", "refresco".
+Baseia as tuas respostas unicamente no contexto real do utilizador:
+{user_context}
+
+Diretrizes:
+- Responde em português de forma concisa (máximo 2 a 3 parágrafos curtos).
+- Se houver pressão financeira (como falta de dinheiro ou saldo crítico), foca inteiramente em dar uma recomendação prática e realista para acalmar e guiar o utilizador nas próximas 24-72 horas.
+- Se o utilizador perguntar por juros, planos ou simulações, encoraja-o a usar as novas abas dedicadas de Dívidas e Simulação do Mwanga que estão totalmente prontas e funcionais!
+`;
+
+function formatUserContextTextMinimized(context) {
+  return `
+NOME: ${context.userName}
+RECEITAS DO MÊS: MT ${context.format(context.monthlyIncome)}
+DESPESAS DO MÊS: MT ${context.format(context.monthlyExpenses)}
+SALDO LÍQUIDO DO MÊS: MT ${context.format(context.netMonth)}
+SALDOS DISPONÍVEIS: MT ${context.format(context.cashAvailable)}
+BALANÇO PATRIMONIAL: Activos MT ${context.format(context.assetsTotal)} | Dívidas MT ${context.format(context.debtTotal)}
+PRIORIDADE ATUAL: ${context.priority.priority}
+PORQUÊ: ${context.priority.reason}
+  `.trim();
+}
+
 function formatUserContextText(context) {
   const savingsRate = context.monthlyIncome > 0
     ? Math.round(((context.monthlyIncome - context.monthlyExpenses) / context.monthlyIncome) * 100)
@@ -379,6 +404,17 @@ async function buildUserContext(householdId, userId) {
         goals,
         format
       }),
+      textMinimized: formatUserContextTextMinimized({
+        userName,
+        monthlyIncome,
+        monthlyExpenses,
+        netMonth: monthlyIncome - monthlyExpenses,
+        debtTotal,
+        assetsTotal,
+        cashAvailable,
+        priority,
+        format
+      }),
       summary: {
         userName,
         monthlyIncome,
@@ -517,7 +553,7 @@ const PROVIDERS = {
     url: () => process.env.OLLAMA_URL || 'http://localhost:11434/api/chat',
     headers: () => ({ 'Content-Type': 'application/json' }),
     body: (messages, system, tools = []) => ({
-      model: process.env.OLLAMA_MODEL || 'phi3:latest',
+      model: process.env.OLLAMA_MODEL || 'gemma4',
       messages: [{ role: 'system', content: system }, ...messages.map(m => ({ role: m.role, content: m.content }))],
       options: { temperature: 0.7 },
       stream: false
@@ -851,7 +887,10 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
     try {
       const hdrs = config.headers(activeKey);
       const tools = ToolRegistry.getToolsSchema();
-      const payload = config.body(messages, system, tools);
+      const activeSystem = p === 'ollama'
+        ? OLLAMA_SYSTEM_PROMPT.replace('{user_context}', userContext.textMinimized)
+        : system;
+      const payload = config.body(messages, activeSystem, tools);
       
       const timeoutMs = p === 'ollama' ? 120000 : 30000;
       const res = await fetch(config.url(activeKey), {
@@ -883,7 +922,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
         const res2 = await fetch(config.url(activeKey), {
           method: 'POST',
           headers: hdrs,
-          body: JSON.stringify(config.body(nextMessages, system)),
+          body: JSON.stringify(config.body(nextMessages, activeSystem)),
           signal: AbortSignal.timeout(10000)
         });
 
