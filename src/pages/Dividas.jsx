@@ -49,6 +49,23 @@ export default function Dividas() {
     return Math.max(0, (yearsDiff * 12) + monthsDiff);
   };
 
+  const getDynamicRemainingAmount = (debt) => {
+    const total_amount = Number(debt.total_amount || 0);
+    const remaining_amount = Number(debt.remaining_amount || 0);
+    const principal_amount = Number(debt.principal_amount || 0);
+    
+    const rate = getMonthlyRate(debt);
+    const principal = principal_amount > 0 ? principal_amount : total_amount;
+    const elapsed = getElapsedMonths(debt.due_date || debt.created_at);
+    
+    if (elapsed > 0 && rate > 0.05 && debt.status !== 'paid') {
+      const accumInt = principal * rate * elapsed;
+      const paidAmount = total_amount - remaining_amount;
+      return Math.max(0, principal + accumInt - paidAmount);
+    }
+    return remaining_amount;
+  };
+
   const generateAmortizationSchedule = (debt) => {
     const principal_amount = Number(debt.principal_amount || 0);
     const total_amount = Number(debt.total_amount || 0);
@@ -129,9 +146,9 @@ export default function Dividas() {
 
   const hasToxicDebtsPending = sortedDebts.some(d => d.status !== 'paid' && getMonthlyRate(d) > 0.05);
 
-  const totalDebt = debts.reduce((sum, d) => sum + d.total_amount, 0);
-  const totalRemaining = debts.reduce((sum, d) => sum + d.remaining_amount, 0);
-  const totalPaid = totalDebt - totalRemaining;
+  const totalRemaining = debts.reduce((sum, d) => sum + getDynamicRemainingAmount(d), 0);
+  const totalPaid = debts.reduce((sum, d) => sum + (Number(d.total_amount || 0) - Number(d.remaining_amount || 0)), 0);
+  const totalDebt = totalRemaining + totalPaid;
 
   const handleAddDebt = (e) => {
     e.preventDefault();
@@ -346,7 +363,7 @@ export default function Dividas() {
                     <div className="text-[10px] text-muted hide-desktop">{debt.due_date || t('debts.table.no_date')}</div>
                   </td>
                   <td className="hide-mobile text-muted">{showBalance ? fmt(debt.total_amount, currency) : '••••'}</td>
-                  <td className="font-bold text-coral">{showBalance ? fmt(debt.remaining_amount, currency) : '••••'}</td>
+                  <td className="font-bold text-coral">{showBalance ? fmt(getDynamicRemainingAmount(debt), currency) : '••••'}</td>
                   <td className="hide-mobile">
                     {debt.due_date ? (
                       <div className="flex items-center gap-2">
@@ -468,6 +485,63 @@ export default function Dividas() {
                               Juros: {(interest_rate * 100).toFixed(1)}% {debt.interest_period === 'annual' ? 'ao Ano' : 'ao Mês'}
                             </span>
                           </div>
+
+                          {/* Simulador de Taxa de Juro/Dívida Ativa */}
+                          {interest_rate === 0 && (
+                            <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-xs space-y-3 mb-4">
+                              <div className="font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                                💡 Ajustar Taxa de Juros e Data de Início
+                              </div>
+                              <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-[11px]">
+                                Esta dívida foi registrada com <strong>0% de juros</strong>. Para simular e acompanhar o acúmulo de juros de mora reais (ex: os 30% contraídos em Março), ajuste os valores abaixo para atualizar o banco de dados:
+                              </p>
+                              <form onSubmit={(e) => {
+                                e.preventDefault();
+                                const rateInput = Number(e.target.rate.value) / 100;
+                                const dateInput = e.target.due_date.value;
+                                const principalInput = Number(e.target.principal.value) || total_amount;
+                                const durationInput = Number(e.target.duration.value) || 12;
+                                
+                                const newMonthlyPayment = (principalInput * rateInput * Math.pow(1 + rateInput, durationInput)) / (Math.pow(1 + rateInput, durationInput) - 1);
+                                const newTotal = rateInput > 0 ? (newMonthlyPayment * durationInput) : principalInput;
+                                
+                                dispatch({
+                                  type: 'UPDATE_DEBT',
+                                  payload: {
+                                    id: debt.id,
+                                    creditor_name: debt.creditor_name,
+                                    principal_amount: principalInput,
+                                    interest_rate: rateInput,
+                                    interest_period: 'monthly',
+                                    months_duration: durationInput,
+                                    monthly_payment: rateInput > 0 ? Number(newMonthlyPayment.toFixed(2)) : (principalInput / durationInput),
+                                    total_amount: Number(newTotal.toFixed(2)),
+                                    due_date: dateInput
+                                  }
+                                });
+                              }} className="flex flex-wrap items-end gap-3 pt-1">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">Capital Principal</label>
+                                  <input type="number" name="principal" defaultValue={principal} className="input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-28 border border-gray-200 dark:border-gray-800" required />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">Taxa de Juro (% ao Mês)</label>
+                                  <input type="number" name="rate" defaultValue={30} className="input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-24 border border-gray-200 dark:border-gray-800" required />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">Duração (Meses)</label>
+                                  <input type="number" name="duration" defaultValue={months_duration} className="input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-24 border border-gray-200 dark:border-gray-800" required />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">Início da Contração</label>
+                                  <input type="date" name="due_date" defaultValue={debt.due_date || debt.created_at?.split('T')[0] || '2026-03-01'} className="input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-32 border border-gray-200 dark:border-gray-800" required />
+                                </div>
+                                <button type="submit" className="btn py-1.5 px-4 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white border-none shrink-0 shadow-md">
+                                  Simular e Salvar
+                                </button>
+                              </form>
+                            </div>
+                          )}
 
                           {/* Arrears Warning Alert */}
                           {elapsed > 0 && mRate > 0.05 && (

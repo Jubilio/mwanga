@@ -129,9 +129,42 @@ const addPayment = async (householdId, debtId, paymentData) => {
   return { success: true };
 };
 
+const updateDebt = async (householdId, debtId, data) => {
+  const { creditor_name, total_amount, due_date, interest_rate, interest_period, months_duration, monthly_payment, principal_amount } = data;
+  
+  await db.execute({
+    sql: `UPDATE debts 
+          SET creditor_name = $1, 
+              total_amount = $2, 
+              due_date = $3, 
+              interest_rate = $4, 
+              interest_period = $5, 
+              months_duration = $6, 
+              monthly_payment = $7, 
+              principal_amount = $8
+          WHERE id = $9 AND household_id = $10`,
+    args: [
+      creditor_name,
+      Number(total_amount),
+      due_date || null,
+      Number(interest_rate || 0),
+      interest_period || 'monthly',
+      Number(months_duration || 0),
+      Number(monthly_payment || 0),
+      Number(principal_amount || total_amount),
+      debtId,
+      householdId
+    ]
+  });
+  
+  await logAction(householdId, 'DEBT_UPDATE', 'DEBT', debtId);
+  return { success: true };
+};
+
 module.exports = {
   getDebts,
   addDebt,
   deleteDebt,
-  addPayment
+  addPayment,
+  updateDebt
 };

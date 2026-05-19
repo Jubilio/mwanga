@@ -506,6 +506,20 @@ const PROVIDERS = {
       const call = data.choices?.[0]?.message?.tool_calls?.[0]?.function;
       return call ? { name: call.name, args: JSON.parse(call.arguments || '{}') } : null;
     }
+  },
+
+  ollama: {
+    url: () => process.env.OLLAMA_URL || 'http://localhost:11434/api/chat',
+    headers: () => ({ 'Content-Type': 'application/json' }),
+    body: (messages, system, tools = []) => ({
+      model: process.env.OLLAMA_MODEL || 'llama3.2',
+      messages: [{ role: 'system', content: system }, ...messages.map(m => ({ role: m.role, content: m.content }))],
+      options: { temperature: 0.7 },
+      stream: false,
+      format: 'json'
+    }),
+    extract: (data) => data.message?.content || data.response,
+    extractToolCall: () => null
   }
 };
 
@@ -784,20 +798,27 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
   }
 
   const system = BINTH_SYSTEM_PROMPT.replace('{user_context}', userContext.text);
-  const order = [provider, ...Object.keys(PROVIDERS).filter(p => p !== provider)];
+  
+  let order = [provider, ...Object.keys(PROVIDERS).filter(p => p !== provider)];
+  const isLocal = process.env.NODE_ENV !== 'production' || process.env.OLLAMA_ENABLED === 'true';
+  if (isLocal) {
+    order = ['ollama', ...order.filter(p => p !== 'ollama')];
+  } else {
+    order = order.filter(p => p !== 'ollama');
+  }
 
   for (const p of order) {
-    if (!apiKey && await isProviderTemporarilyDisabled(p)) continue;
+    if (!apiKey && p !== 'ollama' && await isProviderTemporarilyDisabled(p)) continue;
 
     let activeKey = apiKey;
-    if (!activeKey) {
+    if (!activeKey && p !== 'ollama') {
       if (p === 'openrouter')      activeKey = process.env.OPENROUTER_API_KEY;
       if (p === 'openrouter_free') activeKey = process.env.OPENROUTER_API_KEY; // mesmo token, modelo diferente
       if (p === 'gemini')          activeKey = process.env.GEMINI_API_KEY;
       if (p === 'groq')            activeKey = process.env.GROQ_API_KEY;
     }
 
-    if (!activeKey) continue;
+    if (!activeKey && p !== 'ollama') continue;
 
     const config = PROVIDERS[p];
     try {

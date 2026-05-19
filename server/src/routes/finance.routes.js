@@ -7,7 +7,7 @@ const { getAssets, createAsset, deleteAsset, getLiabilities, createLiability, de
 const { getXitiques, createXitique, deleteXitique, payContribution, receiveFunds } = require('../controllers/xitique.controller');
 const { getSettings, upsertSetting, updateHousehold } = require('../controllers/settings.controller');
 const { getOverview: getInsights } = require('../controllers/insights.controller');
-const { getDebts, addDebt, deleteDebt, addPayment } = require('../controllers/debt.controller');
+const { getDebts, addDebt, deleteDebt, addPayment, updateDebt } = require('../controllers/debt.controller');
 const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require('../controllers/account.controller');
 const { chat: binthChat, getScore: binthScore, getPageInsight } = require('../controllers/binth.controller');
 const { getDashboardSummary } = require('../controllers/dashboard.controller');
@@ -73,6 +73,7 @@ router.put('/households', updateHousehold);
 // Debts
 router.get('/debts', getDebts);
 router.post('/debts', addDebt);
+router.put('/debts/:id', updateDebt);
 router.delete('/debts/:id', deleteDebt);
 router.post('/debts/:id/pay', addPayment);
 

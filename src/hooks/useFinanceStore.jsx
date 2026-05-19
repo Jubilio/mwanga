@@ -154,6 +154,7 @@ function reducer(state, action) {
     case 'RECEIVE_XITIQUE': return { ...state, xitiques: state.xitiques.map(x => ({ ...x, receipts: x.receipts.map(r => r.id === action.payload.receiptId ? { ...r, received_date: action.payload.date } : r) })) };
     case 'SET_XITIQUES': return { ...state, xitiques: action.payload };
     case 'ADD_DEBT': return { ...state, dividas: [action.payload, ...state.dividas] };
+    case 'UPDATE_DEBT': return { ...state, dividas: state.dividas.map(d => d.id === action.payload.id ? { ...d, ...action.payload } : d) };
     case 'DELETE_DEBT': return { ...state, dividas: state.dividas.filter(d => d.id !== action.payload) };
     case 'SET_DEBTS': return { ...state, dividas: action.payload };
     case 'ADD_ACCOUNT': return { ...state, contas: [action.payload, ...state.contas] };
@@ -255,6 +256,27 @@ export function FinanceProvider({ children }) {
         } catch {
           await db.dividas.add({ ...body, id: `offline-${Date.now()}`, remaining_amount: body.total_amount, status: 'pending' });
           await db.pendingActions.add({ type, payload: body, timestamp: Date.now() });
+          dispatch({ type, payload });
+        }
+        return;
+      }
+      case 'UPDATE_DEBT': {
+        const body = {
+          creditor_name: payload.creditor_name,
+          total_amount: Number(payload.total_amount),
+          due_date: payload.due_date,
+          interest_rate: Number(payload.interest_rate),
+          interest_period: payload.interest_period,
+          months_duration: Number(payload.months_duration),
+          monthly_payment: Number(payload.monthly_payment),
+          principal_amount: Number(payload.principal_amount)
+        };
+        try {
+          await apiCall(`debts/${payload.id}`, 'PUT', body);
+          const [d, t, a] = await Promise.all([apiCall('debts'), apiCall('transactions'), apiCall('accounts')]);
+          dispatch({ type: 'SET_DATA', payload: { dividas: d, transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
+        } catch {
+          await db.pendingActions.add({ type, payload: { id: payload.id, ...body }, timestamp: Date.now() });
           dispatch({ type, payload });
         }
         return;

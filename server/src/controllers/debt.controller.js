@@ -46,4 +46,15 @@ const addPayment = async (req, res, next) => {
   }
 };
 
-module.exports = { getDebts, addDebt, deleteDebt, addPayment };
+const updateDebt = async (req, res, next) => {
+  try {
+    const data = addDebtSchema.parse(req.body);
+    await debtService.updateDebt(req.user.householdId, req.params.id, data);
+    res.json({ message: 'Dívida atualizada com sucesso' });
+  } catch (error) {
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    next(error);
+  }
+};
+
+module.exports = { getDebts, addDebt, deleteDebt, addPayment, updateDebt };

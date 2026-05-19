@@ -113,7 +113,7 @@ const getDashboardSummary = async (req, res) => {
       }).catch((err) => { logger.warn({ err, householdId }, 'dashboard: settings query failed'); return { rows: [] }; }),
 
       db.execute({
-        sql: `SELECT id, name, email, avatar_url, role, subscription_tier, whatsapp_number
+        sql: `SELECT id, name, email, role
               FROM users WHERE id = ?`,
         args: [userId],
       }).catch((err) => { logger.warn({ err, userId }, 'dashboard: user query failed'); return { rows: [] }; }),
@@ -264,7 +264,12 @@ const getDashboardSummary = async (req, res) => {
       liabilities: liabilitiesResult.rows,
       xitiques: xitiquesWithData,
       settings,
-      user: userResult.rows[0] || null,
+      user: userResult.rows[0] ? {
+        ...userResult.rows[0],
+        avatar_url: settings.profile_pic || '',
+        subscription_tier: settings.subscription_tier || 'free',
+        whatsapp_number: ''
+      } : null,
       debts: debtsWithPayments,
       accounts: accountsResult.rows,
       loanApplications: loanApplicationsResult.rows,
