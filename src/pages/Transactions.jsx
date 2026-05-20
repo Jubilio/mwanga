@@ -6,6 +6,7 @@ import { Search } from 'lucide-react';
 import { fmt, exportToCSV } from '../utils/calculations';
 import { motion } from 'framer-motion';
 import { MAIN_CATEGORIES } from '../utils/categories';
+import { usePageAnimation } from '../hooks/useMwangaAnimations';
 
 // Sub-components
 import TransactionsHeader from '../components/transactions/TransactionsHeader';
@@ -19,6 +20,8 @@ import AutoAllocateModal from '../components/transactions/AutoAllocateModal';
 const CATEGORIES = MAIN_CATEGORIES.map(key => ({ id: key, key }));
 
 export default function Transactions() {
+  usePageAnimation('.transactions-gsap-root');
+  
   const { state, dispatch } = useFinance();
   const { t } = useTranslation();
   const currency = state.settings.currency || 'MT';
@@ -173,7 +176,7 @@ export default function Transactions() {
   const balance = totals.in - totals.out;
 
   return (
-    <div className="flex flex-col gap-6" style={{ paddingBottom: '7rem' }}>
+    <div className="flex flex-col gap-6 transactions-gsap-root" style={{ paddingBottom: '7rem' }}>
       
       <TransactionsHeader 
         t={t}

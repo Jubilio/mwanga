@@ -16,6 +16,7 @@ const INSIGHT_COLORS = {
   celebration: { bg: 'rgba(0,214,143,0.1)',    border: 'rgba(0,214,143,0.4)',   dot: '#00D68F' },
   action:      { bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.3)', dot: '#6366F1' },
   info:        { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)', dot: '#8a9ab8' },
+  wisdom:      { bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.4)',  dot: '#D4AF37' },
 };
 
 function renderBold(text) {

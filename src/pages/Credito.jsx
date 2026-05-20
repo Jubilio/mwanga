@@ -13,8 +13,11 @@ import TabCompare from "../components/credit/TabCompare";
 import TabConsolidate from "../components/credit/TabConsolidate";
 import TabApplication from "../components/credit/TabApplication";
 import TabStrategy from "../components/credit/TabStrategy";
+import { usePageAnimation } from '../hooks/useMwangaAnimations';
 
 export default function MwangaCredito() {
+  usePageAnimation('.credito-gsap-root');
+  
   const { t } = useTranslation();
   const { state } = useFinance();
   const [tab, setTab] = useState("overview");
@@ -68,7 +71,7 @@ export default function MwangaCredito() {
   function handleApply() { setTab("apply"); }
 
   return (
-    <div style={{ minHeight: "100vh", background: G.bg, fontFamily: "'DM Sans','Segoe UI',sans-serif", color: G.text }}>
+    <div className="credito-gsap-root" style={{ minHeight: "100vh", background: G.bg, fontFamily: "'DM Sans','Segoe UI',sans-serif", color: G.text }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@700;800;900&display=swap');
         * { box-sizing: border-box; }

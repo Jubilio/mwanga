@@ -4,8 +4,11 @@ import { useOutletContext, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TrendingUp, TrendingDown, Medal, Plus, Trash2, Home, Car, Smartphone, Briefcase, Star, Shield, Zap, Flame, Target, Info, ArrowRight, ShieldAlert, Wallet } from 'lucide-react';
 import { fmt } from '../utils/calculations';
+import { usePageAnimation } from '../hooks/useMwangaAnimations';
 
 export default function Patrimony() {
+  usePageAnimation('.patrimony-gsap-root');
+  
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
@@ -123,7 +126,7 @@ export default function Patrimony() {
   };
 
   return (
-    <div className="animate-fade-in pb-20">
+    <div className="patrimony-gsap-root pb-20">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-black text-white tracking-tighter">{t('patrimony.title')}</h1>
