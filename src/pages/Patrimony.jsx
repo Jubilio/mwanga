@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useFinance } from '../hooks/useFinance';
 import { useOutletContext, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { TrendingUp, TrendingDown, Medal, Plus, Trash2, Home, Car, Smartphone, Briefcase, Star, Shield, Zap, Flame, Target, Info, ArrowRight, ShieldAlert, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown, Medal, Plus, Trash2, Pencil, Home, Car, Smartphone, Briefcase, Star, Shield, Zap, Flame, Target, Info, ArrowRight, ShieldAlert, Wallet } from 'lucide-react';
 import { fmt } from '../utils/calculations';
 import { usePageAnimation } from '../hooks/useMwangaAnimations';
 
@@ -17,6 +17,8 @@ export default function Patrimony() {
 
   const [showAssetModal, setShowAssetModal] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const [editingAccount, setEditingAccount] = useState(null);
+  const [editBalance, setEditBalance] = useState('');
   const [errorModal, setErrorModal] = useState(null);
 
   const [assetForm, setAssetForm] = useState({ name: '', type: 'imóvel', value: '' });
@@ -110,6 +112,27 @@ export default function Patrimony() {
     showToast(t('patrimony.toasts.account_added'));
   };
 
+  const handleEditAccount = async (e) => {
+    e.preventDefault();
+    if (!editingAccount || editBalance === '') return;
+    try {
+      await dispatch({ 
+        type: 'UPDATE_ACCOUNT_BALANCE', 
+        payload: { id: editingAccount.id, balance: parseFloat(editBalance) } 
+      });
+      showToast('Saldo actualizado com sucesso!');
+    } catch (err) {
+      showToast('Erro ao actualizar saldo.');
+    }
+    setEditingAccount(null);
+    setEditBalance('');
+  };
+
+  const openEditAccount = (account) => {
+    setEditingAccount(account);
+    setEditBalance(String(account.current_balance || 0));
+  };
+
   const assetIcons = { 'imóvel': Home, 'veiculo': Car, 'poupanca': Smartphone, 'investimento': TrendingUp, 'outro': Star };
   const accountIcons = { 'bank': Briefcase, 'banco': Briefcase, 'mobile': Smartphone, 'carteira_movel': Smartphone, 'cash': Zap, 'dinheiro': Zap, 'other': Briefcase, 'outro': Briefcase };
 
@@ -173,14 +196,17 @@ export default function Patrimony() {
                   <div className="text-2xl font-black mt-2">{showBalance ? fmt(state.settings.cash_balance, currency) : '••••'}</div>
                 </div>
              )}
-             {state.contas?.filter(acc => Number(acc.current_balance || 0) > 0).map(account => (
+             {state.contas?.map(account => (
                <div key={account.id} className={`glass-card p-5 bg-linear-to-br ${getAccountCardStyle(account.type, account.name)} relative overflow-hidden group`}>
                   <div className="flex justify-between items-start mb-4">
                     <span className="px-2 py-1 rounded-lg bg-black/20 text-[8px] font-black uppercase tracking-widest">{getTypeLabel(account.type)}</span>
-                    <button onClick={() => dispatch({ type: 'DELETE_ACCOUNT', payload: account.id })} className="p-1.5 rounded-lg bg-black/10 hover:bg-coral text-white transition-colors"><Trash2 size={12} /></button>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => openEditAccount(account)} className="p-1.5 rounded-lg bg-black/10 hover:bg-sky text-white transition-colors" title="Editar saldo"><Pencil size={12} /></button>
+                      <button onClick={() => dispatch({ type: 'DELETE_ACCOUNT', payload: account.id })} className="p-1.5 rounded-lg bg-black/10 hover:bg-coral text-white transition-colors" title="Eliminar conta"><Trash2 size={12} /></button>
+                    </div>
                   </div>
                   <span className="text-xs font-bold opacity-80">{account.name}</span>
-                  <div className="text-2xl font-black mt-1">{showBalance ? fmt(account.current_balance, currency) : '••••'}</div>
+                  <div className={`text-2xl font-black mt-1 ${Number(account.current_balance || 0) < 0 ? 'text-red-300' : ''}`}>{showBalance ? fmt(account.current_balance, currency) : '••••'}</div>
                </div>
              ))}
           </div>
@@ -305,6 +331,38 @@ export default function Patrimony() {
               <div className="flex gap-4 pt-4">
                 <button type="button" className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-gray-400" onClick={() => setShowAccountModal(false)}>Cancelar</button>
                 <button type="submit" className="flex-1 btn-primary py-3 rounded-xl text-xs font-black uppercase tracking-widest">Adicionar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT ACCOUNT MODAL */}
+      {editingAccount && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-midnight/80 backdrop-blur-md" onClick={() => setEditingAccount(null)}>
+          <div className="glass-card p-8 w-full max-w-md animate-scale-in" onClick={e => e.stopPropagation()}>
+            <h3 className="text-xl font-black text-white mb-2">Editar Conta</h3>
+            <p className="text-sm text-gray-400 mb-6">Corrigir o saldo de <span className="text-sky font-bold">{editingAccount.name}</span></p>
+            <form onSubmit={handleEditAccount} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Saldo Actual ({currency})</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  className="form-input text-lg font-black" 
+                  placeholder="0.00" 
+                  required 
+                  value={editBalance} 
+                  onChange={e => setEditBalance(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="p-3 rounded-xl bg-sky/10 border border-sky/20">
+                <p className="text-[10px] text-sky font-bold">💡 Insira o saldo real que tem agora nesta conta. O sistema irá actualizar automaticamente.</p>
+              </div>
+              <div className="flex gap-4 pt-4">
+                <button type="button" className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors" onClick={() => setEditingAccount(null)}>Cancelar</button>
+                <button type="submit" className="flex-1 btn-primary py-3 rounded-xl text-xs font-black uppercase tracking-widest">Guardar</button>
               </div>
             </form>
           </div>

@@ -67,14 +67,14 @@ export default function SimulatorEstrutura({ salary: globalSalary, currency, dis
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 min-w-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
             {pieData.map((item) => (
-              <div key={item.name} className="p-3.5 rounded-[16px] bg-black/5 dark:bg-white/5 border border-white/5 flex flex-col justify-center">
-                <div className="flex items-center gap-2 mb-1">
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
-                  <div className="text-[10px] font-black uppercase text-gray-500 line-clamp-1">{item.name} ({item.percent}%)</div>
+              <div key={item.name} className="p-4 rounded-[20px] bg-black/5 dark:bg-white/5 border border-white/5 flex items-start gap-3 min-w-0 overflow-hidden">
+                <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color, marginTop: 4, flexShrink: 0 }} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] font-black uppercase text-gray-400 mb-1 wrap-anywhere leading-tight">{item.name} ({item.percent}%)</div>
+                  <div className="text-sm md:text-base font-black dark:text-white wrap-anywhere leading-tight">{fmt(item.value, currency)}</div>
                 </div>
-                <div className="text-sm md:text-base font-black dark:text-white pl-4 truncate">{fmt(item.value, currency)}</div>
               </div>
             ))}
           </div>

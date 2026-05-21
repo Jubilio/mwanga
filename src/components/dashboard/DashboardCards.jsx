@@ -105,16 +105,17 @@ export function AccountsCard({ navigate, state, showBalance, currency, maxContaB
       {state.contas?.length > 0 ? (
         <div className="flex flex-col gap-3">
           {state.contas
-            .filter(conta => Number(conta.current_balance || 0) > 0)
             .sort((a, b) => Number(b.current_balance || 0) - Number(a.current_balance || 0))
             .slice(0, 4)
             .map((conta) => {
-              const pct = Math.min((Number(conta.current_balance || 0) / maxContaBalance) * 100, 100);
+              const bal = Number(conta.current_balance || 0);
+              const pct = maxContaBalance > 0 ? Math.min(Math.max((bal / maxContaBalance) * 100, 0), 100) : 0;
+              const isNegative = bal < 0;
               return (
                 <div key={conta.id} className="flex flex-col gap-1">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[55%]">{conta.name}</span>
-                    <span className="text-xs font-black tabular-nums text-midnight dark:text-white">
+                    <span className={`text-xs font-black tabular-nums ${isNegative ? 'text-coral' : 'text-midnight dark:text-white'}`}>
                       {showBalance ? fmt(conta.current_balance, currency) : '••••'}
                     </span>
                   </div>
@@ -123,19 +124,16 @@ export function AccountsCard({ navigate, state, showBalance, currency, maxContaB
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
                       transition={{ duration: 0.8, ease: 'easeOut' }}
-                      className="h-full bg-linear-to-r from-ocean/40 to-sky"
+                      className={`h-full bg-linear-to-r ${isNegative ? 'from-coral/40 to-coral' : 'from-ocean/40 to-sky'}`}
                     />
                   </div>
                 </div>
               );
             })}
-          {state.contas.filter(c => Number(c.current_balance || 0) > 0).length > 4 && (
+          {state.contas.length > 4 && (
             <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-              +{state.contas.filter(c => Number(c.current_balance || 0) > 0).length - 4} contas...
+              +{state.contas.length - 4} contas...
             </span>
-          )}
-          {state.contas.filter(c => Number(c.current_balance || 0) > 0).length === 0 && (
-            <div className="py-4 text-center text-xs text-slate-400 italic">Todas as contas com saldo zero</div>
           )}
         </div>
       ) : (
