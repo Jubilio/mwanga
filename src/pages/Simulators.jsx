@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
-import { Banknote, Flame, Info, RefreshCcw, TrendingUp, Briefcase, LayoutGrid } from 'lucide-react';
+import { Banknote, Flame, Info, RefreshCcw, TrendingUp, Briefcase, Layers } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { useFinance } from '../hooks/useFinance';
 
@@ -69,7 +69,7 @@ export default function Simulators() {
       {/* Tab navigation */}
       <div className="flex gap-2 mb-8 overflow-x-auto p-1.5 rounded-[20px] bg-white/5 border border-white/5">
         <TabButton active={activeTab === 'budget'}  icon={Banknote}   label={t('simulators.tabs.budget')}  onClick={() => setActiveTab('budget')}  />
-        <TabButton active={activeTab === 'estrutura'} icon={LayoutGrid} label="Estrutura do Salário" onClick={() => setActiveTab('estrutura')} />
+        <TabButton active={activeTab === 'estrutura'} icon={Layers} label="Estrutura do Salário" onClick={() => setActiveTab('estrutura')} />
         <TabButton active={activeTab === 'invest'}  icon={TrendingUp} label={t('simulators.tabs.invest')}  onClick={() => setActiveTab('invest')}  />
         <TabButton active={activeTab === 'quality'} icon={Briefcase}  label="Qualidade Buffett" onClick={() => setActiveTab('quality')} />
         <TabButton active={activeTab === 'fire'}    icon={Flame}      label={t('simulators.tabs.fire')}    onClick={() => setActiveTab('fire')}    />

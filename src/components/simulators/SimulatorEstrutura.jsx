@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Banknote, Wallet, LayoutGrid } from 'lucide-react';
+import { Banknote, Wallet, Layers } from 'lucide-react';
 import { Pie, PieChart, ResponsiveContainer, Tooltip as RTooltip, Cell } from 'recharts';
 import { motion } from 'framer-motion';
 import { fmt } from '../../utils/calculations';
@@ -52,7 +52,7 @@ export default function SimulatorEstrutura({ salary: globalSalary, currency, dis
       <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-8 min-w-0">
         <div className="space-y-6 min-w-0">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-ocean/10 flex items-center justify-center text-ocean"><LayoutGrid size={20} /></div>
+            <div className="w-10 h-10 rounded-xl bg-ocean/10 flex items-center justify-center text-ocean"><Layers size={20} /></div>
             <div className="min-w-0">
               <h2 className="text-xl font-black text-midnight dark:text-white">Estrutura Financeira</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">Modelo financeiro de 8 categorias baseado em Arcélio Tivane</p>
