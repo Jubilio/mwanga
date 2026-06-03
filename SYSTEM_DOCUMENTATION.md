@@ -400,7 +400,11 @@ GROQ_API_KEY=...                       # Provider secundário (llama-3.1-8b-inst
 OPENROUTER_API_KEY=...                 # Provider openrouter + openrouter_free (fallback)
 OPENROUTER_MODEL=...                   # Modelo OpenRouter pago (default: meta-llama/llama-3.1-8b-instruct)
 OPENROUTER_FREE_MODEL=...              # Modelo OpenRouter gratuito (default: qwen/qwen-2-vl-7b-instruct:free)
-```
+
+# Local Ollama (offline / on-premise)
+OLLAMA_ENABLED=true                    # Habilita o uso de Ollama local como primeira opção em desenvolvimento
+OLLAMA_URL=http://localhost:11434/api/chat
+OLLAMA_MODEL=gemma4                    # Modelo local instalado no Ollama
 
 ### Comandos de Execução
 

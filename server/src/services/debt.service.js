@@ -51,15 +51,17 @@ const addDebt = async (householdId, data) => {
 
   if (account_id) {
     const today = new Date().toISOString().split('T')[0];
+    const injectionAmount = principal_amount || total_amount;
+    
     queries.push({
       sql: `INSERT INTO transactions (date, type, description, amount, category, household_id, account_id)
             VALUES ($1, 'receita', $2, $3, 'Empréstimo', $4, $5)`,
-      args: [today, `Empréstimo recebido de: ${creditor_name}`, total_amount, householdId, account_id]
+      args: [today, `Empréstimo recebido de: ${creditor_name}`, injectionAmount, householdId, account_id]
     });
 
     queries.push({
       sql: 'UPDATE accounts SET current_balance = current_balance + $1 WHERE id = $2 AND household_id = $3',
-      args: [total_amount, account_id, householdId]
+      args: [injectionAmount, account_id, householdId]
     });
   }
 

@@ -9,7 +9,7 @@ const { getSettings, upsertSetting, updateHousehold } = require('../controllers/
 const { getOverview: getInsights } = require('../controllers/insights.controller');
 const { getDebts, addDebt, deleteDebt, addPayment, updateDebt } = require('../controllers/debt.controller');
 const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require('../controllers/account.controller');
-const { chat: binthChat, getScore: binthScore, getPageInsight } = require('../controllers/binth.controller');
+const { chat: binthChat, getScore: binthScore, getPageInsight, getPriority } = require('../controllers/binth.controller');
 const { getDashboardSummary } = require('../controllers/dashboard.controller');
 const auth = require('../middleware/auth.middleware');
 const vslaRoutes = require('./vsla.routes');
@@ -87,5 +87,6 @@ router.delete('/accounts/:id', deleteAccount);
 router.post('/binth/chat', binthChat);
 router.get('/binth/score', binthScore);
 router.get('/binth/insights/:page', getPageInsight);
+router.get('/binth/priority', getPriority);
 
 module.exports = router;

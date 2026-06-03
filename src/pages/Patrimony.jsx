@@ -24,26 +24,56 @@ export default function Patrimony() {
   const [assetForm, setAssetForm] = useState({ name: '', type: 'imóvel', value: '' });
   const [accountForm, setAccountForm] = useState({ institution: 'M-Pesa', customName: '', type: 'mobile', initial_balance: '' });
 
+  // Tipos alinhados com o que a BD guarda: 'banco', 'mobile', 'dinheiro', 'outro'
   const MOZ_INSTITUTIONS = [
-    { id: 'mpesa', name: 'M-Pesa', type: 'mobile' },
-    { id: 'emola', name: 'e-Mola', type: 'mobile' },
-    { id: 'mkesh', name: 'mKesh', type: 'mobile' },
-    { id: 'bim', name: 'Millennium BIM', type: 'bank' },
-    { id: 'bci', name: 'BCI', type: 'bank' },
-    { id: 'moza', name: 'Moza Banco', type: 'bank' },
-    { id: 'standard', name: 'Standard Bank', type: 'bank' },
-    { id: 'absa', name: 'Absa', type: 'bank' },
-    { id: 'fnb', name: 'FNB Moçambique', type: 'bank' },
-    { id: 'access', name: 'Access Bank', type: 'bank' },
-    { id: 'cash', name: 'Dinheiro em Mão', type: 'cash' },
-    { id: 'other', name: 'Outro', type: 'other' }
+    { id: 'mpesa',    name: 'M-Pesa',           type: 'mobile'   },
+    { id: 'emola',   name: 'e-Mola',            type: 'mobile'   },
+    { id: 'mkesh',   name: 'mKesh',             type: 'mobile'   },
+    { id: 'millennium', name: 'Millennium BIM', type: 'banco'    },
+    { id: 'bci',     name: 'BCI',               type: 'banco'    },
+    { id: 'moza',    name: 'Moza Banco',         type: 'banco'    },
+    { id: 'standard', name: 'Standard Bank',    type: 'banco'    },
+    { id: 'absa',    name: 'Absa',              type: 'banco'    },
+    { id: 'fnb',     name: 'FNB Moçambique',    type: 'banco'    },
+    { id: 'access',  name: 'Access Bank',       type: 'banco'    },
+    { id: 'cash',    name: 'Dinheiro em Mão',   type: 'dinheiro' },
+    { id: 'other',   name: 'Outro',             type: 'outro'    }
   ];
 
+  // Deduplica contas com nomes similares (ex: "BIM" + "Millennium BIM")
+  // Mantém apenas a conta com saldo mais alto (ou a mais recente)
+  const dedupAccounts = (accounts) => {
+    if (!accounts) return [];
+    const seen = new Map();
+    for (const acc of accounts) {
+      const key = acc.name
+        .toLowerCase()
+        .replace(/millennium\s*/i, '')
+        .replace(/banco\s*/i, '')
+        .replace(/\s+/g, '')
+        .trim();
+      if (!seen.has(key)) {
+        seen.set(key, acc);
+      } else {
+        // Mantém o que tiver maior saldo absoluto ou ID mais alto
+        const prev = seen.get(key);
+        if (Math.abs(Number(acc.current_balance)) > Math.abs(Number(prev.current_balance))) {
+          seen.set(key, acc);
+        }
+      }
+    }
+    return Array.from(seen.values());
+  };
+
+  const displayAccounts = dedupAccounts(state.contas);
+
   const getTypeLabel = (type) => {
-    const tLower = typeof type === 'string' ? type.toLowerCase() : '';
-    if (tLower === 'bank' || tLower === 'banco') return 'Conta Bancária';
-    if (tLower === 'mobile' || tLower === 'carteira_movel' || tLower === 'movel') return 'Carteira Móvel';
-    if (tLower === 'cash' || tLower === 'dinheiro') return 'Dinheiro';
+    const t = typeof type === 'string' ? type.toLowerCase().trim() : '';
+    if (['bank', 'banco'].includes(t))                            return 'Conta Bancária';
+    if (['mobile', 'carteira_movel', 'movel'].includes(t))        return 'Carteira Móvel';
+    if (['cash', 'dinheiro'].includes(t))                         return 'Dinheiro em Mão';
+    if (['poupanca', 'poupança', 'savings'].includes(t))          return 'Poupança';
+    if (t === 'outro' || t === 'other' || t === '')               return 'Conta';
     return type || 'Conta';
   };
 
@@ -138,14 +168,21 @@ export default function Patrimony() {
 
   const getAccountCardStyle = (type, name) => {
     const n = name.toLowerCase();
-    if (n.includes('m-pesa') || n.includes('mpesa')) return 'from-[#E3000F] to-[#99000a] text-white';
-    if (n.includes('e-mola') || n.includes('emola')) return 'from-[#F58220] to-[#c75e0c] text-white';
-    if (n.includes('bim')) return 'from-[#002f6c] to-[#001031] text-white';
-    if (n.includes('bci')) return 'from-[#0070bc] to-[#003666] text-white';
-    if (n.includes('moza')) return 'from-[#004e38] to-[#002e21] text-white';
-    if (type === 'mobile') return 'from-rose-500 to-rose-800 text-white';
-    if (type === 'cash') return 'from-emerald-500 to-emerald-800 text-white';
-    return 'from-ocean to-midnight text-white';
+    const t = (type || '').toLowerCase();
+    // Gradientes por nome (marca)
+    if (n.includes('m-pesa') || n.includes('mpesa'))     return 'from-[#E3000F] to-[#99000a] text-white';
+    if (n.includes('e-mola') || n.includes('emola'))     return 'from-[#F58220] to-[#c75e0c] text-white';
+    if (n.includes('mkesh') || n.includes('m-kesh'))     return 'from-[#6D28D9] to-[#3b0764] text-white';
+    if (n.includes('bim'))                               return 'from-[#002f6c] to-[#001031] text-white';
+    if (n.includes('bci'))                               return 'from-[#0070bc] to-[#003666] text-white';
+    if (n.includes('moza'))                              return 'from-[#004e38] to-[#002e21] text-white';
+    if (n.includes('standard'))                          return 'from-[#0033a0] to-[#001a5c] text-white';
+    if (n.includes('absa'))                              return 'from-[#dc2626] to-[#7f1d1d] text-white';
+    // Gradientes por tipo
+    if (t === 'mobile' || t === 'movel' || t === 'carteira_movel') return 'from-rose-500 to-rose-800 text-white';
+    if (t === 'banco' || t === 'bank')                   return 'from-ocean to-midnight text-white';
+    if (t === 'cash' || t === 'dinheiro')                return 'from-emerald-500 to-emerald-800 text-white';
+    return 'from-slate-700 to-slate-900 text-white';
   };
 
   return (
@@ -196,7 +233,7 @@ export default function Patrimony() {
                   <div className="text-2xl font-black mt-2">{showBalance ? fmt(state.settings.cash_balance, currency) : '••••'}</div>
                 </div>
              )}
-             {state.contas?.map(account => (
+             {displayAccounts.map(account => (
                <div key={account.id} className={`glass-card p-5 bg-linear-to-br ${getAccountCardStyle(account.type, account.name)} relative overflow-hidden group`}>
                   <div className="flex justify-between items-start mb-4">
                     <span className="px-2 py-1 rounded-lg bg-black/20 text-[8px] font-black uppercase tracking-widest">{getTypeLabel(account.type)}</span>
@@ -257,7 +294,21 @@ export default function Patrimony() {
                     <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Dívida Ativa</p>
                   </div>
                 </div>
-                <span className="text-sm font-black text-coral">{showBalance ? fmt(d.remaining_amount, currency) : '••••'}</span>
+                <div className="flex flex-col items-end gap-0.5">
+                  {d.principal_amount > 0 && d.principal_amount !== d.total_amount && (
+                    <span className="text-[9px] font-bold text-gray-500">
+                      Pedido: {showBalance ? fmt(d.principal_amount, currency) : '••••'}
+                    </span>
+                  )}
+                  <span className="text-sm font-black text-coral">
+                    {showBalance ? fmt(d.remaining_amount, currency) : '••••'}
+                  </span>
+                  {d.total_amount > d.principal_amount && (
+                    <span className="text-[9px] font-bold text-red-500/70">
+                      Total: {showBalance ? fmt(d.total_amount, currency) : '••••'}
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>

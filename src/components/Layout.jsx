@@ -153,7 +153,15 @@ export default function Layout() {
 
       try {
         const response = await api.get('/notifications');
-        setNotifications(response.data || []);
+        const data = response.data;
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.notifications)
+          ? data.notifications
+          : Array.isArray(data?.data)
+          ? data.data
+          : [];
+        setNotifications(list);
         failCount = 0; // Reset on success
       } catch (error) {
         if (error.response?.status === 401) {
@@ -233,7 +241,9 @@ export default function Layout() {
     return () => navigator.serviceWorker.removeEventListener('message', handler);
   }, []);
 
-  const unreadCount = notifications.filter((notification) => !notification.read).length;
+  const unreadCount = Array.isArray(notifications)
+    ? notifications.filter((notification) => !notification.read).length
+    : 0;
   const currentTitle = navItems.find((item) => item.to === location.pathname)?.label || 'Dashboard';
   const routeParams = location.pathname === '/quick-add' ? new URLSearchParams(location.search) : null;
   const routeQuickAddPayload = routeParams

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useOutletContext, useLocation } from 'react-router-dom';
-import { Send, Sparkles, Brain, Mic, MicOff } from 'lucide-react';
+import { useOutletContext, useLocation, useNavigate } from 'react-router-dom';
+import { Send, Sparkles, Brain, Mic, MicOff, Database, Layers, Compass, AlertTriangle } from 'lucide-react';
 import api from '../utils/api';
 import { db } from '../db/db';
 import { useFinance } from '../hooks/useFinance';
+import { useStewardship } from '../hooks/useStewardship';
 import { parseMobileMoneySMS } from '../utils/smsParser';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -75,6 +76,8 @@ export default function Insights() {
   const { t } = useTranslation();
   const { showToast } = useOutletContext();
   const { state } = useFinance();
+  const navigate = useNavigate();
+  const { stats } = useStewardship();
 
   // Chat state
   const [messages, setMessages] = useState([]);
@@ -510,6 +513,188 @@ export default function Insights() {
           >
             <Send size={18} />
           </button>
+        </div>
+      </div>
+
+      {/* ─── Painel de Aprendizado & Inteligência ─── */}
+      <div style={{
+        marginTop: 24,
+        background: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        borderRadius: 20,
+        padding: '24px 20px',
+        fontFamily: "'DM Sans', sans-serif"
+      }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: 'rgba(124,58,237,0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: '1px solid rgba(124,58,237,0.2)'
+            }}>
+              <Database size={18} color="#a78bfa" />
+            </div>
+            <div>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff', margin: 0 }}>
+                Como a Binth Aprende dos Teus Dados
+              </h3>
+              <p style={{ fontSize: 11, color: '#5a7a9a', margin: '2px 0 0' }}>
+                IA ativa a mapear o teu ecossistema financeiro real
+              </p>
+            </div>
+          </div>
+          
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'rgba(0,214,143,0.08)',
+            border: '1px solid rgba(0,214,143,0.2)',
+            borderRadius: 20, padding: '4px 12px',
+            fontSize: 11, fontWeight: 700, color: '#00D68F'
+          }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: '50%',
+              background: '#00D68F',
+              animation: 'binthBounce 1.2s infinite'
+            }} />
+            APRENDIZADO ATIVO (100%)
+          </div>
+        </div>
+
+        {/* Dynamic Learning Stats */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: 12,
+          marginBottom: 20
+        }}>
+          {/* 1. Transactions Synced */}
+          <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 14 }}>
+            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Dados Mapeados</span>
+            <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              {state.transacoes?.length || 0}
+              <span style={{ fontSize: 11, color: '#5a7a9a', fontWeight: 500 }}>itens</span>
+            </div>
+            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}>
+              Padrões de gastos e receitas analisados automaticamente.
+            </p>
+          </div>
+
+          {/* 2. Savings Rate */}
+          <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 14 }}>
+            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Taxa de Poupança</span>
+            <div style={{
+              fontSize: 20, fontWeight: 900,
+              color: stats.savingsRate > 20 ? '#00D68F' : stats.savingsRate > 0 ? '#F59E0B' : '#FF4C4C',
+              marginTop: 4
+            }}>
+              {stats.savingsRate ? `${Math.round(stats.savingsRate)}%` : '0%'}
+            </div>
+            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}>
+              Margem livre detetada após subtrair despesas de receitas.
+            </p>
+          </div>
+
+          {/* 3. Cash Runway */}
+          <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 14 }}>
+            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Reserva de Emergência</span>
+            <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              {stats.runwayMonths || 0}
+              <span style={{ fontSize: 11, color: '#5a7a9a', fontWeight: 500 }}>meses</span>
+            </div>
+            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}>
+              Tempo que sobreviverias com os saldos líquidos atuais.
+            </p>
+          </div>
+
+          {/* 4. Active Accounts */}
+          <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 14 }}>
+            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Canais Conectados</span>
+            <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              {state.contas?.length || 0}
+              <span style={{ fontSize: 11, color: '#5a7a9a', fontWeight: 500 }}>contas</span>
+            </div>
+            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}>
+              M-Pesa, e-mola, carteira física e contas sincronizadas.
+            </p>
+          </div>
+        </div>
+
+        {/* AI Recommendations */}
+        <div style={{
+          background: 'rgba(124,58,237,0.04)',
+          border: '1px solid rgba(124,58,237,0.12)',
+          borderRadius: 16,
+          padding: '16px 18px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <Sparkles size={14} color="#a78bfa" />
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Intervenções Inteligentes Recomendadas
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {/* 1. Liquidity Recommendation */}
+            {state.contas?.reduce((acc, c) => acc + Number(c.current_balance || 0), 0) < 1000 ? (
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <AlertTriangle size={14} color="#FF4C4C" style={{ marginTop: 2, flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>Alerta de Liquidez Crítica</div>
+                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}>
+                    O teu caixa disponível é muito baixo. <strong>Evita qualquer despesa supérflua</strong> nas próximas 72 horas para proteger a tua estabilidade básica.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            {/* 2. Budget Recommendation */}
+            {state.budgets?.length > 0 ? (
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <Layers size={14} color="#F59E0B" style={{ marginTop: 2, flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>Mapeamento Orçamental Ativo</div>
+                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}>
+                    A Binth detetou que os teus limites de orçamentos cobrem todas as categorias essenciais. Rever orçamentos pode liberar até 15% de margem no teu mês.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <Layers size={14} color="#F59E0B" style={{ marginTop: 2, flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>Criar Limites de Orçamento</div>
+                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}>
+                    Sem limites definidos, o teu dinheiro flui sem direção. Cria o teu primeiro orçamento para ensinar a IA a proteger o teu consumo.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* 3. Goal Recommendation */}
+            {state.metas?.length > 0 ? (
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <Compass size={14} color="#00D68F" style={{ marginTop: 2, flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>Reforçar a meta "{state.metas[0].name}"</div>
+                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}>
+                    Aproveita as entradas livres para aproximar-te do teu sonho. Que tal alocar um aporte extra de 10% do teu caixa nesta meta?
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <Compass size={14} color="#00D68F" style={{ marginTop: 2, flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>Criar uma Meta de Poupança (Pé de Meia)</div>
+                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}>
+                    O sábio guarda para o amanhã. Inicia uma meta de poupança comunitária (como Xitique) ou uma meta individual no Mwanga hoje.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

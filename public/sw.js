@@ -44,7 +44,7 @@ self.addEventListener('notificationclick', (event) => {
   const finalAction = action || data.action || 'OPEN';
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       // 1. Try to find an existing window and focus it
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
@@ -61,9 +61,9 @@ self.addEventListener('notificationclick', (event) => {
       }
 
       // 3. If no window is open, open a new one
-      if (clients.openWindow) {
+      if (self.clients.openWindow) {
         const url = data.route || '/';
-        return clients.openWindow(url).then((newClient) => {
+        return self.clients.openWindow(url).then((newClient) => {
           // Wait a bit for the app to init before sending message
           return new Promise(resolve => setTimeout(() => {
             newClient.postMessage({

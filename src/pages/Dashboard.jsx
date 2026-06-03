@@ -18,8 +18,10 @@ import {
 import DashboardHero from '../components/dashboard/DashboardHero';
 import DashboardQuickActions from '../components/dashboard/DashboardQuickActions';
 import { HealthCard, AlertsCard, AccountsCard, CashFlowCard, StewardshipCard } from '../components/dashboard/DashboardCards';
+import FinancialCoachCard from '../components/dashboard/FinancialCoachCard';
 import DashboardTransactions from '../components/dashboard/DashboardTransactions';
 import { useStewardship } from '../hooks/useStewardship';
+import { useBinthPriority } from '../hooks/useBinthPriority';
 import { usePageAnimation } from '../hooks/useMwangaAnimations';
 
 const MotionDiv = motion.div;
@@ -30,6 +32,9 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const [showBalance, setShowBalance] = useState(() => localStorage.getItem('mwanga-show-balance') !== 'false');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // IA State
+  const { coach, loading: binthLoading, error: binthError, refetch: refetchBinth } = useBinthPriority();
 
   // ── GSAP: Animação de entrada suave ao carregar o dashboard ───────────────
   usePageAnimation('.dashboard-gsap-root');
@@ -139,7 +144,11 @@ export default function Dashboard() {
   const handleRefresh = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
-    try { await reloadData(); } finally { setIsRefreshing(false); }
+    try { 
+      await Promise.all([reloadData(), refetchBinth()]); 
+    } finally { 
+      setIsRefreshing(false); 
+    }
   };
 
   const containerVariants = {
@@ -181,53 +190,187 @@ export default function Dashboard() {
         itemVariants={itemVariants} 
       />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <HealthCard 
-          navigate={navigate}
-          score={score}
-          scoreColor={scoreColor}
-          scoreLabel={scoreLabel}
-          itemVariants={itemVariants}
-          t={t}
-        />
-        <StewardshipCard
-          navigate={navigate}
-          stats={stats}
-          badges={badges}
-          itemVariants={itemVariants}
-        />
-        <AlertsCard 
-          navigate={navigate}
-          totalAlerts={totalAlerts}
-          pendingDebts={pendingDebts}
-          pendingHousing={pendingHousing}
-          itemVariants={itemVariants}
-        />
-      </div>
-
       <MotionDiv variants={itemVariants}>
-         <BalanceTrendChart data={trendData} currency={currency} />
+        <FinancialCoachCard 
+          coach={coach} 
+          loading={binthLoading} 
+          error={binthError} 
+          onRefresh={refetchBinth} 
+        />
       </MotionDiv>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <AccountsCard 
-          navigate={navigate}
-          state={state}
-          showBalance={showBalance}
-          currency={currency}
-          maxContaBalance={maxContaBalance}
-          totalContas={totalContas}
-          itemVariants={itemVariants}
-        />
-        <CashFlowCard 
-          navigate={navigate}
-          totals={totals}
-          showBalance={showBalance}
-          currency={currency}
-          savingsRate={savingsRate}
-          itemVariants={itemVariants}
-        />
-      </div>
+      {/* Harness Design: Dynamic Layout Engine */}
+      {(() => {
+        const priorityId = coach?.priority?.id;
+        const isCritical = ['emergency_liquidity', 'severe_overbudget', 'debt_pressure', 'housing_pending'].includes(priorityId);
+        const isGrowth = ['goal_accelerator', 'stability_celebration'].includes(priorityId);
+
+        if (isCritical) {
+          return (
+            <>
+              {/* Critical State: Alerts & Cash Flow taking precedence */}
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <AlertsCard 
+                  navigate={navigate}
+                  totalAlerts={totalAlerts}
+                  pendingDebts={pendingDebts}
+                  pendingHousing={pendingHousing}
+                  itemVariants={itemVariants}
+                />
+                <CashFlowCard 
+                  navigate={navigate}
+                  totals={totals}
+                  showBalance={showBalance}
+                  currency={currency}
+                  savingsRate={savingsRate}
+                  itemVariants={itemVariants}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <HealthCard 
+                  navigate={navigate}
+                  score={score}
+                  scoreColor={scoreColor}
+                  scoreLabel={scoreLabel}
+                  itemVariants={itemVariants}
+                  t={t}
+                />
+                <AccountsCard 
+                  navigate={navigate}
+                  state={state}
+                  showBalance={showBalance}
+                  currency={currency}
+                  maxContaBalance={maxContaBalance}
+                  totalContas={totalContas}
+                  itemVariants={itemVariants}
+                />
+                <StewardshipCard
+                  navigate={navigate}
+                  stats={stats}
+                  badges={badges}
+                  itemVariants={itemVariants}
+                />
+              </div>
+
+              <MotionDiv variants={itemVariants}>
+                <BalanceTrendChart data={trendData} currency={currency} />
+              </MotionDiv>
+            </>
+          );
+        }
+
+        if (isGrowth) {
+          return (
+            <>
+              {/* Growth State: Gamification (Stewardship) & Health prioritized */}
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <HealthCard 
+                  navigate={navigate}
+                  score={score}
+                  scoreColor={scoreColor}
+                  scoreLabel={scoreLabel}
+                  itemVariants={itemVariants}
+                  t={t}
+                />
+                <div className="lg:col-span-2 relative">
+                   <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-gold to-leaf opacity-20 blur-md pointer-events-none"></div>
+                   <StewardshipCard
+                     navigate={navigate}
+                     stats={stats}
+                     badges={badges}
+                     itemVariants={itemVariants}
+                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <AccountsCard 
+                  navigate={navigate}
+                  state={state}
+                  showBalance={showBalance}
+                  currency={currency}
+                  maxContaBalance={maxContaBalance}
+                  totalContas={totalContas}
+                  itemVariants={itemVariants}
+                />
+                <AlertsCard 
+                  navigate={navigate}
+                  totalAlerts={totalAlerts}
+                  pendingDebts={pendingDebts}
+                  pendingHousing={pendingHousing}
+                  itemVariants={itemVariants}
+                />
+                <CashFlowCard 
+                  navigate={navigate}
+                  totals={totals}
+                  showBalance={showBalance}
+                  currency={currency}
+                  savingsRate={savingsRate}
+                  itemVariants={itemVariants}
+                />
+              </div>
+
+              <MotionDiv variants={itemVariants}>
+                <BalanceTrendChart data={trendData} currency={currency} />
+              </MotionDiv>
+            </>
+          );
+        }
+
+        // Default State (Maintenance / Neutral)
+        return (
+          <>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <HealthCard 
+                navigate={navigate}
+                score={score}
+                scoreColor={scoreColor}
+                scoreLabel={scoreLabel}
+                itemVariants={itemVariants}
+                t={t}
+              />
+              <StewardshipCard
+                navigate={navigate}
+                stats={stats}
+                badges={badges}
+                itemVariants={itemVariants}
+              />
+              <AlertsCard 
+                navigate={navigate}
+                totalAlerts={totalAlerts}
+                pendingDebts={pendingDebts}
+                pendingHousing={pendingHousing}
+                itemVariants={itemVariants}
+              />
+            </div>
+
+            <MotionDiv variants={itemVariants}>
+              <BalanceTrendChart data={trendData} currency={currency} />
+            </MotionDiv>
+
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <AccountsCard 
+                navigate={navigate}
+                state={state}
+                showBalance={showBalance}
+                currency={currency}
+                maxContaBalance={maxContaBalance}
+                totalContas={totalContas}
+                itemVariants={itemVariants}
+              />
+              <CashFlowCard 
+                navigate={navigate}
+                totals={totals}
+                showBalance={showBalance}
+                currency={currency}
+                savingsRate={savingsRate}
+                itemVariants={itemVariants}
+              />
+            </div>
+          </>
+        );
+      })()}
 
       <MotionDiv variants={itemVariants}>
          <BinthContextual page="dashboard" />

@@ -58,8 +58,11 @@ export default function Dividas() {
     const principal = principal_amount > 0 ? principal_amount : total_amount;
     const elapsed = getElapsedMonths(debt.due_date || debt.created_at);
     
-    if (elapsed > 0 && rate > 0.05 && debt.status !== 'paid') {
-      const accumInt = principal * rate * elapsed;
+    if (elapsed > 0 && rate > 0 && debt.status !== 'paid') {
+      // Cálculo de Juros Compostos (Compound Interest)
+      // Fórmula: M = P * (1 + i)^n
+      const compoundAmount = principal * Math.pow(1 + rate, elapsed);
+      const accumInt = compoundAmount - principal;
       const paidAmount = total_amount - remaining_amount;
       return Math.max(0, principal + accumInt - paidAmount);
     }
@@ -302,7 +305,7 @@ export default function Dividas() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">Receber dinheiro na conta (Opcional)</label>
+              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">Depositar valor pedido na conta (Opcional)</label>
               <select 
                 className="input bg-green-50/30 dark:bg-green-900/10 border-green-200/50 focus:border-green-500"
                 value={newDebt.account_id}
@@ -313,7 +316,62 @@ export default function Dividas() {
                   <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={acc.id} value={acc.id}>{acc.name} • {fmt(acc.current_balance, currency)}</option>
                 ))}
               </select>
+              {newDebt.account_id && (
+                <p className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                  💳 Apenas o <strong>Valor Pedido</strong> (capital) será depositado nesta conta — os juros não entram.
+                </p>
+              )}
             </div>
+
+            {/* Live Loan Preview */}
+            {(() => {
+              const principal = Number(newDebt.principal_amount) || 0;
+              const rawRate = Number(newDebt.interest_rate) || 0;
+              const months = Number(newDebt.months) || 0;
+              const isAnnual = newDebt.interest_period === 'annual';
+              const monthlyRate = isAnnual ? rawRate / 100 / 12 : rawRate / 100;
+              let parcela = 0;
+              let totalPagar = principal;
+              let totalJuros = 0;
+              if (monthlyRate > 0 && months > 0) {
+                parcela = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+                totalPagar = parcela * months;
+                totalJuros = totalPagar - principal;
+              } else if (months > 0 && principal > 0) {
+                parcela = principal / months;
+                totalPagar = principal;
+              }
+              if (principal <= 0) return null;
+              return (
+                <div className="md:col-span-2 rounded-xl border border-gold/30 bg-gradient-to-br from-gold/5 to-yellow-900/10 p-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gold mb-3">✦ Resumo do Empréstimo</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="text-center p-2 rounded-lg bg-white/5">
+                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">Valor Pedido</p>
+                      <p className="text-sm font-black text-white">{fmt(principal, currency)}</p>
+                      <p className="text-[9px] text-emerald-400">entra na conta</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-white/5">
+                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">Juros Total</p>
+                      <p className="text-sm font-black text-red-400">{fmt(totalJuros, currency)}</p>
+                      <p className="text-[9px] text-gray-500">
+                        {rawRate > 0 ? `${rawRate}% ${isAnnual ? 'a.a.' : 'a.m.'}` : 'sem juros'}
+                      </p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-coral/10 border border-coral/20">
+                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">Valor a Pagar</p>
+                      <p className="text-sm font-black text-coral">{fmt(totalPagar, currency)}</p>
+                      <p className="text-[9px] text-gray-500">{months > 0 ? `em ${months} meses` : '—'}</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-white/5">
+                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">Parcela / Mês</p>
+                      <p className="text-sm font-black text-sky">{parcela > 0 ? fmt(parcela, currency) : '—'}</p>
+                      <p className="text-[9px] text-gray-500">{months > 0 ? `× ${months}` : ''}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div className="md:col-span-2 flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-white/5">
               <button type="button" className="btn bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-6" onClick={() => setShowAddForm(false)}>{t('debts.form.cancel')}</button>
@@ -336,7 +394,7 @@ export default function Dividas() {
             <thead>
               <tr>
                 <th>{t('debts.table.debt')}</th>
-                <th className="hide-mobile">{t('debts.table.total_value')}</th>
+                <th className="hide-mobile">Valor Pedido / Final</th>
                 <th>{t('debts.table.remaining')}</th>
                 <th className="hide-mobile">{t('debts.table.due_date')}</th>
                 <th>{t('debts.table.actions')}</th>
@@ -362,8 +420,24 @@ export default function Dividas() {
                     </div>
                     <div className="text-[10px] text-muted hide-desktop">{debt.due_date || t('debts.table.no_date')}</div>
                   </td>
-                  <td className="hide-mobile text-muted">{showBalance ? fmt(debt.total_amount, currency) : '••••'}</td>
-                  <td className="font-bold text-coral">{showBalance ? fmt(getDynamicRemainingAmount(debt), currency) : '••••'}</td>
+                  <td className="hide-mobile text-muted">
+                    <div className="flex flex-col gap-1">
+                      <span className="font-bold text-gray-800 dark:text-gray-200" title="Valor Pedido (Principal)">
+                        {showBalance ? fmt(debt.principal_amount || debt.total_amount, currency) : '••••'}
+                      </span>
+                      <span className="text-[10px] uppercase font-semibold text-gray-500" title="Valor Final com Juros Projetados">
+                        Final: {showBalance ? fmt(debt.total_amount, currency) : '••••'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="font-bold text-coral flex flex-col justify-center">
+                    <span>{showBalance ? fmt(getDynamicRemainingAmount(debt), currency) : '••••'}</span>
+                    {getElapsedMonths(debt.due_date || debt.created_at) > 0 && getMonthlyRate(debt) > 0 && debt.status !== 'paid' && (
+                      <span className="text-[9px] text-red-500 uppercase tracking-wider font-bold animate-pulse">
+                        + Juros Compostos
+                      </span>
+                    )}
+                  </td>
                   <td className="hide-mobile">
                     {debt.due_date ? (
                       <div className="flex items-center gap-2">
@@ -464,8 +538,11 @@ export default function Dividas() {
                   const mRate = getMonthlyRate(debt);
                   const principal = principal_amount > 0 ? principal_amount : total_amount;
                   const elapsed = getElapsedMonths(debt.due_date || debt.created_at);
-                  const accumInt = principal * mRate * elapsed;
-                  const updRemaining = Math.max(0, principal + accumInt - (total_amount - remaining_amount));
+                  
+                  // Juros compostos: M = P * (1 + i)^n
+                  const compoundAmount = principal * Math.pow(1 + mRate, elapsed);
+                  const accumInt = compoundAmount - principal;
+                  const updRemaining = Math.max(0, compoundAmount - (total_amount - remaining_amount));
                   
                   const projectedInterest = Math.max(0, total_amount - principal);
                   const realPaid = total_amount - remaining_amount;

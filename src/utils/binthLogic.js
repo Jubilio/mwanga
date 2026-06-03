@@ -19,80 +19,87 @@ export function generateLocalBinthInsight(state, page) {
   };
 
   if (page === 'dashboard') {
-    // 1. Check if user is burning cash too fast
-    const daysInMonth = 30; // Approximation
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const todayDay = now.getDate();
-    const daysPassed = todayDay >= startDay ? todayDay - startDay + 1 : (30 - startDay + todayDay + 1);
-    
-    // Check if expenses are disproportionate to the days passed 
-    if (daysPassed > 3 && totals.totalIncome > 0) {
-      const burnRate = totals.totalExpenses / daysPassed;
-      const expectedExpensesEnd = burnRate * daysInMonth;
-      
-      if (expectedExpensesEnd > totals.totalIncome * 0.95) {
-        return {
-          insight_type: 'warning',
-          message: `Estás a gastar em média ${Math.round(burnRate)} MT por dia. Se continuares assim, o teu saldo vai acabar antes do fim do mês!`,
-          alerta: 'Velocidade de gastos alta detectada.',
-          biblical_insight: 'O sábio poupa e tem sempre o suficiente, mas o tolo gasta tudo o que ganha. (Provérbios 21:20)',
-          quick_actions: ['Rever Orçamento', 'Adicionar Meta']
-        };
-      }
+    const daysPassed = todayDay >= startDay ? todayDay - startDay + 1 : (daysInMonth - startDay + todayDay + 1);
+    const burnRate = totals.totalExpenses / Math.max(daysPassed, 1);
+    const expectedExpensesEnd = burnRate * daysInMonth;
+    const topCategory = categories[0] || null;
+    const budgetWarnings = (budgets || []).map((b) => ({
+      ...b,
+      spent: categories.find((c) => c.category === b.category)?.amount || 0,
+      pct: b.limit > 0 ? (categories.find((c) => c.category === b.category)?.amount || 0) / b.limit : 0
+    }));
+    const overBudget = budgetWarnings.find((b) => b.spent > b.limit);
+    const nearBudget = budgetWarnings.find((b) => b.pct >= 0.85 && b.pct <= 1);
+
+    if (daysPassed > 5 && totals.totalIncome > 0 && expectedExpensesEnd > totals.totalIncome * 0.95) {
+      return {
+        insight_type: 'warning',
+        message: `Com base na tua velocidade de gasto, podes usar quase tudo o que ganhas até ao fim do mês. Reduz as saídas não essenciais hoje.`,
+        alerta: 'A velocidade de gasto está alta.',
+        biblical_insight: 'Quem planeja com cuidado evita a escassez. (Provérbios 21:5)',
+        quick_actions: ['Rever Orçamento', 'Ver Despesas']
+      };
     }
 
-    // 2. Budget vs Categories Alerts
-    if (budgets && budgets.length > 0) {
-      for (let b of budgets) {
-        const catSpent = categories.find(c => c.category === b.category)?.amount || 0;
-        if (catSpent > b.limit) {
-          return {
-            insight_type: 'warning',
-            message: `Já gastaste ${catSpent} MT em ${b.category}, ultrapassando o teu limite de ${b.limit} MT para este mês.`,
-            alerta: 'Orçamento estourado!',
-            biblical_insight: 'Não te deixes vencer pelas dívidas. (Provérbios 22:7)',
-            quick_actions: ['Ajustar Orçamento']
-          };
-        } else if (catSpent > b.limit * 0.85) {
-          return {
-            insight_type: 'action',
-            message: `Atenção: Já consumiste ${Math.round((catSpent/b.limit)*100)}% do teu orçamento para ${b.category}. Tem cuidado com os próximos gastos!`,
-            alerta: null,
-            biblical_insight: null,
-            quick_actions: ['Ver Despesas']
-          };
-        }
-      }
+    if (overBudget) {
+      return {
+        insight_type: 'warning',
+        message: `Já ultrapassaste o orçamento de ${overBudget.category}: gastaste ${Math.round(overBudget.spent)} MT de ${Math.round(overBudget.limit)} MT. Ajusta já essa categoria.`,
+        alerta: 'Orçamento estourado!',
+        biblical_insight: 'O gestor prudente ajusta o curso quando percebe que ultrapassou o limite.',
+        quick_actions: ['Ajustar Orçamento', 'Ver Despesas']
+      };
     }
 
-    // 3. Positive reinforcement for savings
+    if (nearBudget) {
+      return {
+        insight_type: 'action',
+        message: `Atenção: ${nearBudget.category} já está em ${Math.round(nearBudget.pct * 100)}% do limite. Segura nos próximos gastos dessa categoria.`,
+        alerta: null,
+        biblical_insight: 'O cuidado com os detalhes evita perdas maiores no futuro.',
+        quick_actions: ['Abrir Orçamento', 'Ver Despesas']
+      };
+    }
+
+    if (topCategory && totals.totalExpenses > 0 && topCategory.amount > totals.totalExpenses * 0.35) {
+      return {
+        insight_type: 'opportunity',
+        message: `A categoria com maior gasto é ${topCategory.category}. Reduzir essa linha em 15% pode melhorar claramente o teu saldo final.`,
+        alerta: null,
+        biblical_insight: 'Melhorar uma área crítica dá liberdade para o resto do plano.',
+        quick_actions: ['Ver Despesas', 'Ajustar Orçamento']
+      };
+    }
+
     const income = totals.totalIncome;
-    if (income > 0 && totals.poupanca > income * 0.1) {
+    if (income > 0 && totals.poupanca >= income * 0.15) {
       return {
         insight_type: 'celebration',
-        message: `Parabéns! Já poupaste mais de 10% da tua renda este mês. Estás no bom caminho.`,
+        message: `Excelente progresso: já conseguiste poupar ${Math.round((totals.poupanca / income) * 100)}% da tua renda. Mantém este ritmo!`,
         alerta: null,
-        biblical_insight: 'A riqueza de procedência vã diminuirá, mas quem a ajunta com o próprio trabalho a aumentará. (Provérbios 13:11)',
-        quick_actions: ['Ver Metas']
+        biblical_insight: 'Guardar com sabedoria cria espaço para futuras bênçãos.',
+        quick_actions: ['Ver Metas', 'Ver Orçamento']
       };
     }
-    
-    // 4. Default proactive insight
+
     if (totals.totalExpenses === 0 && totals.totalIncome > 0) {
-       return {
+      return {
         insight_type: 'opportunity',
-        message: `Recebeste fundos recentemente. É o momento ideal para dar um destino a cada metical: paga as despesas fixas e separa a poupança agora!`,
+        message: `Recebeste fundos este mês e ainda não registaste saídas. Aproveita para organizar um plano simples de despesas e poupança.`,
         alerta: null,
-        biblical_insight: 'O homem bom deixa herança aos filhos de seus filhos. (Provérbios 13:22)',
-        quick_actions: ['Dividir em Envelopes']
+        biblical_insight: 'O primeiro passo para gerir bem é nomear cada moeda.',
+        quick_actions: ['Adicionar Despesa', 'Criar Meta']
       };
     }
-    
+
     return {
       insight_type: 'info',
-      message: `Este mês já tiveste ${totals.totalExpenses} MT em saídas. Tens a certeza de que apontaste tudo?`,
+      message: `A tua situação parece estável, mas o importante é continuar a apontar cada transação para manter o controlo.`,
       alerta: null,
-      biblical_insight: null,
-      quick_actions: ['Adicionar Despesa']
+      biblical_insight: 'A consistência nos registos constrói confiança financeira.',
+      quick_actions: ['Adicionar Despesa', 'Ver Metas']
     };
   }
 

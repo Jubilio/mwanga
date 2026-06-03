@@ -1,4 +1,4 @@
-const { callBinth } = require('../services/binthService');
+const { callBinth, buildUserContext } = require('../services/binthService');
 const { db } = require('../config/db');
 const { z } = require('zod');
 
@@ -250,4 +250,30 @@ const getPageInsight = async (req, res, next) => {
   }
 };
 
-module.exports = { chat, getScore, getPageInsight };
+const getPriority = async (req, res) => {
+  try {
+    const userContext = await buildUserContext(req.user.householdId, req.user.id);
+    const { priority, overdueBudgetCount, topOverBudgetCategory, topGoalName, topGoalPct, rentTotal, xitiqueTotal, debtMonthlyTotal, monthlyIncome, monthlyExpenses, debtTotal, assetsTotal, cashAvailable } = userContext.summary;
+
+    return res.json({
+      priority,
+      overdueBudgetCount,
+      topOverBudgetCategory,
+      topGoalName,
+      topGoalPct,
+      rentTotal,
+      xitiqueTotal,
+      debtMonthlyTotal,
+      monthlyIncome,
+      monthlyExpenses,
+      debtTotal,
+      assetsTotal,
+      cashAvailable,
+    });
+  } catch (err) {
+    console.error('[Binth Priority Error]', err.message);
+    return res.status(500).json({ error: 'Não foi possível gerar o plano financeiro agora.' });
+  }
+};
+
+module.exports = { chat, getScore, getPageInsight, getPriority };

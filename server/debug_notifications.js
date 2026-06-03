@@ -60,6 +60,7 @@ async function debugNotifications() {
 
         // 4. Push Subscriptions Check
         console.log('✅ 4. CHECKING ACTIVE PUSH SUBSCRIPTIONS');
+        let activeSubscriptions = 0;
         try {
             const result = await db.execute({
                 sql: `
@@ -72,11 +73,12 @@ async function debugNotifications() {
                 args: [],
             });
             const row = result.rows?.[0] || {};
+            activeSubscriptions = row.active || 0;
             console.log(`   - Total Subscriptions: ${row.total || 0}`);
-            console.log(`   - Active: ✅ ${row.active || 0}`);
+            console.log(`   - Active: ✅ ${activeSubscriptions}`);
             console.log(`   - Inactive: ${row.inactive || 0}\n`);
 
-            if ((row.active || 0) === 0) {
+            if (activeSubscriptions === 0) {
                 console.log('⚠️  WARNING: No active subscriptions! Users need to enable push first.\n');
             }
         } catch (error) {
@@ -139,7 +141,7 @@ async function debugNotifications() {
         const issues = [];
 
         if (!hasCredentials) issues.push('🔴 VAPID keys missing - configure VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY');
-        if ((row?.active || 0) === 0) issues.push('🟡 No active subscriptions - users need to enable push in Settings');
+        if (activeSubscriptions === 0) issues.push('🟡 No active subscriptions - users need to enable push in Settings');
 
         if (issues.length === 0) {
             console.log('   ✅ Everything looks good!');

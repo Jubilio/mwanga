@@ -670,6 +670,11 @@ const BINTH_INTENT_RULES = {
     keywords: ['simular', 'simulação', 'calculadora', 'quanto custa', 'prestação', 'juro'],
     message: "Posso ajudar-te a simular créditos, poupanças ou xitiques. O Mwanga tem ferramentas específicas para cálculos rigorosos de juros e prazos. O que queres calcular?",
     actions: ["Simular Crédito", "Simular Poupança", "Simular Xitique"]
+  },
+  learning: {
+    keywords: ['aprende', 'aprendizado', 'inteligência', 'como funciona', 'gerir', 'ajuda-me', 'me ajuda', 'gerir finanças', 'analisa os meus dados', 'dados financeiros'],
+    message: "Olá {name}! Eu aprendo diretamente com o teu histórico real de transações, contas, orçamentos, dívidas e metas no Mwanga. Ao analisar o teu ecossistema financeiro atual, detetei:\n\n📊 **Score de Mordomia:** A tua nota geral é **{score}/100**.\n💰 **Caixa Disponível:** Tens **MT {cash}** de saldo líquido nas tuas contas.\n📉 **Pista de Caixa (Runway):** Os teus saldos cobrem **{runway_months} meses** de gastos.\n📈 **Desvios:** {overdue_msg}\n\nCom base nestes padrões reais, a tua prioridade número um hoje é **{priority}** porque *{priority_reason}*.\n\nA minha próxima recomendação de ação para ti é: **{priority_next}**.",
+    actions: ["Ver Diagnóstico", "Analisar Gastos", "Rever Orçamentos"]
   }
 };
 
@@ -801,12 +806,26 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
   const income = Number(contextSummary.monthlyIncome || 0);
   const expenses = Number(contextSummary.monthlyExpenses || 0);
   const debts = Number(contextSummary.debtTotal || 0);
+  const cashAvailable = Number(contextSummary.cashAvailable || 0);
   const topGoal = contextSummary.topGoalName || 'Pé de Meia';
-  const topGoalPct = contextSummary.topGoalPct || 0; // Might need updating in buildUserContext or calculation here
+  const topGoalPct = contextSummary.topGoalPct || 0;
+  const overdueBudgetCount = Number(contextSummary.overdueBudgetCount || 0);
+  const goalCount = Number(contextSummary.goalCount || 0);
+
+  // Calculate local Stewardship Score
+  const savingsRate = income > 0 ? (income - expenses) / income : 0;
+  const savingsPts = Math.min(25, Math.max(0, Math.round(savingsRate * 125)));
+  const budgetPts = Math.max(0, 25 - overdueBudgetCount * 8);
+  const goalPts = Math.min(20, goalCount * 5);
+  const debtPts = debts > income * 3 ? 0 : Math.max(0, Math.round(20 - (debts / (income * 12 || 1)) * 6));
+  const localScore = Math.min(100, Math.max(0, savingsPts + budgetPts + goalPts + debtPts + 10)); // base offset
+
+  // Calculate Runway
+  const runwayMonths = expenses > 0 ? Math.max(0, Math.floor(cashAvailable / expenses)) : 6;
   
   // Calculate specific sub-messages
-  const overdueMsg = contextSummary.overdueBudgetCount > 0 
-    ? `Tens ${contextSummary.overdueBudgetCount} categorias acima do limite (ex: ${contextSummary.topOverBudgetCategory}). `
+  const overdueMsg = overdueBudgetCount > 0 
+    ? `Tens ${overdueBudgetCount} categorias acima do limite (ex: ${contextSummary.topOverBudgetCategory}). `
     : 'Os teus orçamentos estão sob controlo. ';
   
   const debtPriorityMsg = debts > income * 3
@@ -815,7 +834,7 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
 
   let finalMessage = selectedRule.message
     .replace(/{name}/g, name)
-    .replace(/{cash}/g, Number(contextSummary.cashAvailable || 0).toLocaleString('pt-MZ'))
+    .replace(/{cash}/g, cashAvailable.toLocaleString('pt-MZ'))
     .replace(/{income}/g, income.toLocaleString('pt-MZ'))
     .replace(/{expenses}/g, expenses.toLocaleString('pt-MZ'))
     .replace(/{net_month}/g, (income - expenses).toLocaleString('pt-MZ'))
@@ -824,7 +843,7 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
     .replace(/{goal}/g, topGoal)
     .replace(/{top_goal}/g, topGoal)
     .replace(/{top_goal_pct}/g, topGoalPct)
-    .replace(/{goal_count}/g, contextSummary.goalCount || 0)
+    .replace(/{goal_count}/g, goalCount)
     .replace(/{cat}/g, contextSummary.topOverBudgetCategory || 'Geral')
     .replace(/{rent_total}/g, (contextSummary.rentTotal || 0).toLocaleString('pt-MZ'))
     .replace(/{xitique_total}/g, (contextSummary.xitiqueTotal || 0).toLocaleString('pt-MZ'))
@@ -832,7 +851,12 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
     .replace(/{extra_msg}/g, overdueMsg)
     .replace(/{overdue_msg}/g, overdueMsg)
     .replace(/{debt_priority_msg}/g, debtPriorityMsg)
-    .replace(/{debt_msg}/g, debtPriorityMsg);
+    .replace(/{debt_msg}/g, debtPriorityMsg)
+    .replace(/{score}/g, localScore)
+    .replace(/{runway_months}/g, runwayMonths)
+    .replace(/{priority}/g, priority.priority || 'manter o registo disciplinado')
+    .replace(/{priority_reason}/g, priority.reason || 'os teus dados mostram uma operação regular sob controlo')
+    .replace(/{priority_next}/g, priority.nextAction || 'garantir que todas as pequenas transações do dia estão no Mwanga');
 
   const biblicalPrinciple = priority.biblical_principle || null;
 
