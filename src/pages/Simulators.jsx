@@ -13,7 +13,8 @@ const SimulatorXitique = lazy(() => import('../components/simulators/SimulatorXi
 const SimulatorQuality = lazy(() => import('../components/simulators/SimulatorQuality'));
 const SimulatorEstrutura = lazy(() => import('../components/simulators/SimulatorEstrutura'));
 
-function TabButton({ active, icon: Icon, label, onClick }) {
+function TabButton({ active, icon, label, onClick }) {
+  const IconComponent = icon;
   return (
     <button
       onClick={onClick}
@@ -35,7 +36,7 @@ function TabButton({ active, icon: Icon, label, onClick }) {
         boxShadow: active ? '0 8px 20px rgba(10, 77, 104, 0.35)' : 'none',
       }}
     >
-      <Icon size={16} />
+      <IconComponent size={16} />
       {label}
     </button>
   );
