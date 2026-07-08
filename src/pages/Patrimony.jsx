@@ -233,19 +233,23 @@ export default function Patrimony() {
                   <div className="text-2xl font-black mt-2">{showBalance ? fmt(state.settings.cash_balance, currency) : '••••'}</div>
                 </div>
              )}
-             {displayAccounts.map(account => (
+             {displayAccounts.map(account => {
+               const AccIcon = accountIcons[(account.type || '').toLowerCase()] || Briefcase;
+               return (
                <div key={account.id} className={`glass-card p-5 bg-linear-to-br ${getAccountCardStyle(account.type, account.name)} relative overflow-hidden group`}>
-                  <div className="flex justify-between items-start mb-4">
+                  <AccIcon size={80} className="absolute -right-4 -bottom-4 opacity-10 transition-transform group-hover:scale-110 group-hover:rotate-6 duration-500" />
+                  <div className="flex justify-between items-start mb-4 relative z-10">
                     <span className="px-2 py-1 rounded-lg bg-black/20 text-[8px] font-black uppercase tracking-widest">{getTypeLabel(account.type)}</span>
                     <div className="flex items-center gap-1">
                       <button onClick={() => openEditAccount(account)} className="p-1.5 rounded-lg bg-black/10 hover:bg-sky text-white transition-colors" title="Editar saldo"><Pencil size={12} /></button>
                       <button onClick={() => dispatch({ type: 'DELETE_ACCOUNT', payload: account.id })} className="p-1.5 rounded-lg bg-black/10 hover:bg-coral text-white transition-colors" title="Eliminar conta"><Trash2 size={12} /></button>
                     </div>
                   </div>
-                  <span className="text-xs font-bold opacity-80">{account.name}</span>
-                  <div className={`text-2xl font-black mt-1 ${Number(account.current_balance || 0) < 0 ? 'text-red-300' : ''}`}>{showBalance ? fmt(account.current_balance, currency) : '••••'}</div>
+                  <span className="text-xs font-bold opacity-80 relative z-10">{account.name}</span>
+                  <div className={`text-2xl font-black mt-1 relative z-10 ${Number(account.current_balance || 0) < 0 ? 'text-red-300' : ''}`}>{showBalance ? fmt(account.current_balance, currency) : '••••'}</div>
                </div>
-             ))}
+               );
+             })}
           </div>
         </div>
 

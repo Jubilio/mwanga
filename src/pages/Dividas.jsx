@@ -231,20 +231,20 @@ export default function Dividas() {
 
       {/* Summary Cards */}
       <div className="responsive-grid mb-6">
-        <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-coral">
-          <div className="text-xs uppercase tracking-widest text-muted mb-1">{t('debts.total_debt')}</div>
-          <div className="text-2xl font-bold text-coral">{showBalance ? fmt(totalRemaining, currency) : '••••'}</div>
-          <Wallet size={32} className="absolute right-4 bottom-4 text-coral opacity-20" />
+        <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-coral group">
+          <div className="text-xs uppercase tracking-widest text-muted mb-1 relative z-10">{t('debts.total_debt')}</div>
+          <div className="text-2xl font-bold text-coral relative z-10">{showBalance ? fmt(totalRemaining, currency) : '••••'}</div>
+          <Wallet size={80} className="absolute -right-4 -bottom-4 text-coral opacity-10 transition-transform group-hover:scale-110 group-hover:-rotate-6 duration-500" />
         </div>
-        <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-leaf">
-          <div className="text-xs uppercase tracking-widest text-muted mb-1">{t('debts.total_paid')}</div>
-          <div className="text-2xl font-bold text-leaf">{showBalance ? fmt(totalPaid, currency) : '••••'}</div>
-          <CheckCircle size={32} className="absolute right-4 bottom-4 text-leaf opacity-20" />
+        <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-leaf group">
+          <div className="text-xs uppercase tracking-widest text-muted mb-1 relative z-10">{t('debts.total_paid')}</div>
+          <div className="text-2xl font-bold text-leaf relative z-10">{showBalance ? fmt(totalPaid, currency) : '••••'}</div>
+          <CheckCircle size={80} className="absolute -right-4 -bottom-4 text-leaf opacity-10 transition-transform group-hover:scale-110 group-hover:rotate-6 duration-500" />
         </div>
-        <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-gold text-white bg-linear-to-br from-gray-900 to-black">
-          <div className="text-xs uppercase tracking-widest text-gray-400 mb-1">{t('debts.active_debts')}</div>
-          <div className="text-2xl font-bold text-gold">{debts.filter(d => d.status !== 'paid').length}</div>
-          <AlertTriangle size={32} className="absolute right-4 bottom-4 text-gold opacity-20" />
+        <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-gold text-white bg-linear-to-br from-gray-900 to-black group">
+          <div className="text-xs uppercase tracking-widest text-gray-400 mb-1 relative z-10">{t('debts.active_debts')}</div>
+          <div className="text-2xl font-bold text-gold relative z-10">{debts.filter(d => d.status !== 'paid').length}</div>
+          <AlertTriangle size={80} className="absolute -right-4 -bottom-4 text-gold opacity-10 transition-transform group-hover:scale-110 group-hover:rotate-6 duration-500" />
         </div>
       </div>
 
