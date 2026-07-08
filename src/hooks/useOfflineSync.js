@@ -71,6 +71,11 @@ export function useOfflineSync(FINANCE_API_URL, dispatch, reloadData) {
         } else if (resp && resp.status === 401) {
           // Token expirado, parar sincronização
           return;
+        } else if (resp && resp.status >= 400 && resp.status < 500) {
+          // Erro do cliente (ex: 400 Bad Request) significa que o payload é inválido.
+          // Não adianta tentar de novo. Vamos descartar a acção para evitar loop infinito.
+          console.error(`[Sync] Erro do cliente (${resp.status}) em ${action.type}. Acção descartada.`);
+          await db.pendingActions.delete(action.id);
         }
       } catch (err) {
         console.error(`[Sync] Erro ao processar ${action.type}:`, err.message);
