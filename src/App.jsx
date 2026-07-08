@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Suspense, lazy, useEffect, useMemo } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { FinanceProvider } from './hooks/useFinanceStore';
 import Layout from './components/Layout';
 import { useFinance } from './hooks/useFinance';
@@ -60,7 +60,7 @@ const FINANCIAL_QUOTES = [
 ];
 
 function PageLoader() {
-  const quote = FINANCIAL_QUOTES[Math.floor(Math.random() * FINANCIAL_QUOTES.length)];
+  const [quote] = useState(() => FINANCIAL_QUOTES[Math.floor(Math.random() * FINANCIAL_QUOTES.length)]);
 
   return (
     <div className="loading-screen animate-fade-in" style={{ animationDuration: '0.5s' }}>
@@ -90,6 +90,7 @@ function RequireAuth({ children }) {
   // Fast synchronous check — written by Onboarding on completion.
   // This prevents a flash-redirect while the API is still loading.
   const hasOnboarded = localStorage.getItem('mwanga-onboarded') === 'true';
+  const [quote] = useState(() => FINANCIAL_QUOTES[Math.floor(Math.random() * FINANCIAL_QUOTES.length)]);
 
   if (state.loading) return (
     <div className="loading-screen animate-fade-in" style={{ animationDuration: '0.5s' }}>
@@ -99,7 +100,7 @@ function RequireAuth({ children }) {
         </div>
         <div className="loading-brand">Mwanga ✶</div>
         <div className="loading-quote">
-          "{FINANCIAL_QUOTES[Math.floor(Math.random() * FINANCIAL_QUOTES.length)]}"
+          "{quote}"
         </div>
         <div className="loading-progress-track">
           <div className="loading-progress-fill"></div>

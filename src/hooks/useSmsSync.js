@@ -123,7 +123,7 @@ export function useSmsSync(showToast) {
       console.error('SMS Sync Error:', error);
       if (manual) showToast?.('Erro ao tentar sincronizar SMS.', 'error');
     }
-  }, [state.settings, state.contas, state.transacoes, dispatch, showToast]);
+  }, [settings, contas, transacoes, dispatch, showToast]);
 
   return { syncSms };
 }

@@ -15,7 +15,6 @@ export default defineConfig([
     ],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
@@ -23,6 +22,7 @@ export default defineConfig([
       },
       globals: {
         ...globals.browser,
+        ...globals.node,
         jest: 'readonly',
         describe: 'readonly',
         it: 'readonly',
@@ -38,6 +38,7 @@ export default defineConfig([
       'no-empty': 'warn',
       'no-empty-pattern': 'warn',
       'react-hooks/set-state-in-effect': 'warn',
+      'react-refresh/only-export-components': 'warn',
     },
   },
   {
