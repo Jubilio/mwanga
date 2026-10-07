@@ -4,6 +4,7 @@ import { FinanceContext } from './FinanceContext';
 import { generateDemoData } from '../utils/calculations';
 import { db } from '../db/db';
 import { normalizeCategory } from '../utils/categories';
+import { JOURNEY_SETTING_KEY } from '../utils/financialJourney';
 import { useOfflineSync } from './useOfflineSync';
 
 import { 
@@ -143,6 +144,7 @@ function reducer(state, action) {
     }
     case 'DELETE_BUDGET': return { ...state, budgets: state.budgets.filter(b => b.id !== action.payload && b.category !== action.meta?.category) };
     case 'UPDATE_SETTING': return { ...state, settings: { ...state.settings, [action.payload.key]: action.payload.value } };
+    case 'JOURNEY_SAVED': return { ...state, settings: { ...state.settings, [JOURNEY_SETTING_KEY]: action.payload } };
     case 'UPDATE_HOUSEHOLD': return { ...state, settings: { ...state.settings, household_name: action.payload.name ?? state.settings.household_name, cash_balance: action.payload.cash_balance ?? state.settings.cash_balance } };
     case 'UPDATE_USER': return { ...state, user: { ...state.user, ...action.payload } };
     case 'ADD_ASSET': return { ...state, activos: [...state.activos, action.payload] };
@@ -191,6 +193,15 @@ export function FinanceProvider({ children }) {
     }
 
     switch (type) {
+      case 'SAVE_JOURNEY': {
+        // Unlike generic optimistic settings, a failed save must leave the saved
+        // journey unchanged so the UI can report the error and retain the draft.
+        const result = await apiCall('settings', 'POST', { key: JOURNEY_SETTING_KEY, value: payload });
+        dispatch({ type: 'JOURNEY_SAVED', payload: result.value });
+        try { await db.settings.update('current', { [JOURNEY_SETTING_KEY]: result.value }); }
+        catch (error) { console.warn('Journey offline cache update failed:', error); }
+        return result;
+      }
       case 'ADD_TRANSACTION': {
         const body = { date: payload.data, type: payload.tipo, description: payload.desc, amount: payload.valor, category: normalizeCategory(payload.cat), note: payload.nota, account_id: payload.account_id };
         try {

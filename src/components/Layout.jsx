@@ -66,6 +66,7 @@ export default function Layout() {
   const { state, dispatch } = useFinance();
   const { toast, showToast } = useToast();
   const navItems = [
+    { to: '/jornada', icon: Clock, label: t('journey.nav') },
     { to: '/', icon: LayoutDashboard, label: t('layout.dashboard') },
     { to: '/transacoes', icon: ArrowRightLeft, label: t('layout.transactions') },
     { to: '/orcamento', icon: PieChart, label: t('layout.budget') },

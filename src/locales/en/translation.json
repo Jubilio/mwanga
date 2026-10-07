@@ -2079,5 +2079,229 @@
     "scf54dbe78f14": "Refresh dashboard",
     "s5967a78a8842": "Active cash burn",
     "s5c38a44eae85": "Mwanga Finance - Smart management and digital stewardship"
+  },
+  "journey": {
+    "nav": "Financial journey",
+    "title": "Your money, your goals",
+    "subtitle": "Clarity to manage today. Discipline to build tomorrow.",
+    "brand": "MWANGA · NEXOVIBE",
+    "intro": "Connect your goals to your records, learn one step at a time and review your progress.",
+    "plan_tab": "My plan",
+    "review_tab": "Review and habits",
+    "learn_tab": "Learn",
+    "saved": "Journey saved.",
+    "save_error": "Could not save. Check your connection and try again.",
+    "saving": "Saving…",
+    "save": "Save plan",
+    "edit": "Edit plan",
+    "cancel": "Cancel",
+    "open": "Open",
+    "done": "Completed",
+    "remaining": "Remaining",
+    "loading": "Loading your journey…",
+    "shared": "This plan is shared with your household, like your goals and financial records.",
+    "base_currency": "Enter amounts in MT.",
+    "empty_plan": "Start with a goal that matters to you.",
+    "start_plan": "Create my plan",
+    "summary": {
+      "title": "Your journey",
+      "body": "Plan, review and learn in one place.",
+      "cta": "Continue journey",
+      "progress": "{{count}} of 10 lessons completed"
+    },
+    "plan": {
+      "title": "A plan with purpose",
+      "purpose": "What do you want your money to make possible?",
+      "purpose_placeholder": "E.g. study, support your family or start a business",
+      "priority": "My priority",
+      "goal": "Main goal",
+      "choose": "Choose an existing goal",
+      "new_goal": "Create a new goal",
+      "none": "No main goal yet",
+      "name": "Goal name",
+      "target": "Target amount (MT)",
+      "deadline": "By when?",
+      "monthly": "How much do you plan to set aside each month? (MT)",
+      "create_goal": "Create goal",
+      "goal_created": "Goal created. Save the plan to connect it to your journey.",
+      "goal_error": "Could not create the goal. Your entered values have been kept.",
+      "goal_missing": "The linked goal is no longer available. Choose another goal.",
+      "view_goal": "Track and contribute to the goal",
+      "monthly_required": "Required monthly contribution",
+      "contribution": "Planned contribution",
+      "required_note": "Divides the remaining amount across contribution months, including the current month and deadline month. No returns included.",
+      "no_deadline": "Set a goal deadline to calculate the required contribution.",
+      "overdue": "The deadline has passed. Review the goal and choose a new deadline.",
+      "achieved": "Goal achieved!",
+      "zero_contribution": "Set a contribution to estimate the time needed.",
+      "estimate": "About {{count}} months at the planned contribution, with no returns.",
+      "plan_not_transfer": "Planning a contribution does not transfer money or record savings.",
+      "purpose_required": "Enter a purpose before saving the plan."
+    },
+    "priorities": {
+      "stability": "Stability and reserves",
+      "debt": "Organise debts",
+      "housing": "Housing",
+      "education": "Education",
+      "business": "Business",
+      "investment": "Capital to invest"
+    },
+    "review": {
+      "title": "Binth weekly review",
+      "subtitle": "A review of your records with one priority action. Works without an AI provider.",
+      "window": "Last 7 days: {{start}} — {{end}}",
+      "recorded": "{{count}} transactions recorded across {{days}} days.",
+      "income": "Recorded inflows",
+      "expenses": "Recorded expenses",
+      "saving": "Recorded savings",
+      "balance": "Difference between inflows and expenses",
+      "scope": "This summary uses transactions recorded in Mwanga. No records does not mean no income or expenses in real life.",
+      "month_scope": "Budget and balance alerts use financial cycle {{month}}, according to your settings.",
+      "evidence": "What supports this suggestion",
+      "action": "Take the next step",
+      "ask": "Explore this review with Binth",
+      "ack": "I completed this week’s review",
+      "ack_done": "This week’s review completed",
+      "record_note": "Acknowledging records the review without creating financial transactions.",
+      "outstanding": "Recorded outstanding debt",
+      "budgets": "Categories over budget",
+      "goals": "Main goal",
+      "none": "No linked goal yet",
+      "missing_rates": "Compare rates, costs and dates in Debts; this review does not rank debts by interest when data is missing."
+    },
+    "actions": {
+      "start": {
+        "title": "Start with your records",
+        "body": "Record inflows and expenses to build a view based on your own data."
+      },
+      "debt_due": {
+        "title": "Confirm upcoming commitments",
+        "body": "There are {{count}} debts overdue or due in the next 7 days. The earliest date is {{date}}. Confirm payments and outstanding amounts."
+      },
+      "missing_income": {
+        "title": "Confirm inflows for this cycle",
+        "body": "No inflows have been recorded for this cycle. Check for missing transactions before drawing conclusions about your balance."
+      },
+      "budget": {
+        "title": "Review the {{category}} budget",
+        "body": "Recorded spending in this category exceeds its limit by {{excess}}. Check transactions and decide whether to adjust the limit or future spending."
+      },
+      "cashflow": {
+        "title": "Reconcile inflows and expenses",
+        "body": "Recorded expenses exceed inflows by {{difference}} this cycle. Check for missing transactions and upcoming commitments."
+      },
+      "goal": {
+        "title": "Choose a main goal",
+        "body": "Connect a goal to your plan to track the remaining amount and the contribution needed."
+      },
+      "goal_gap": {
+        "title": "Align the goal with your plan",
+        "body": "The deadline or planned contribution needs a review. Compare the remaining amount, monthly contribution and deadline before changing your plan."
+      },
+      "steady": {
+        "title": "Keep your habits consistent",
+        "body": "Check the week’s records and keep the plan aligned with your commitments. This analysis cannot guarantee that all transactions have been recorded."
+      }
+    },
+    "habits": {
+      "title": "Small steps, real progress",
+      "score": "Habit progress",
+      "explanation": "Combines days checked in the last 7 days, this week’s review and completed lessons. Does not measure wealth or creditworthiness.",
+      "days": "{{count}} of 7 days checked",
+      "lessons": "{{count}} of 10 lessons completed",
+      "check_today": "I checked today’s records",
+      "checked_today": "Today has already been checked",
+      "daily_note": "You may confirm a day with no transactions after checking your records. This is your acknowledgement, not bank verification."
+    },
+    "scenarios": {
+      "title": "Explore the future with clear assumptions",
+      "body": "Compare three contribution levels for the goal. You can change the assumed annual return.",
+      "months": "Horizon (months)",
+      "rate": "Annual assumption (%)",
+      "lower": "80% of contribution",
+      "planned": "Planned contribution",
+      "higher": "120% of contribution",
+      "monthly": "Per month",
+      "balance": "Projected value",
+      "contributed": "Starting capital and contributions",
+      "growth": "Projected change",
+      "note": "Mathematical simulation: contributions at month-end and an effective annual rate converted to a monthly rate. Excludes fees, taxes and inflation. Values may fall; this is not a promise of returns.",
+      "no_goal": "Connect a goal to simulate from the amount saved towards that goal.",
+      "open": "Explore the Time Machine",
+      "assumptions": "Assumptions used: {{months}} months; annual return {{rate}}%."
+    },
+    "learn": {
+      "title": "Learn with Mwanga",
+      "body": "Ten ideas, ten practical actions. Your choices and progress are saved with the plan.",
+      "mark": "Mark as learned",
+      "undo": "Study again",
+      "action": "Apply in Mwanga",
+      "resource": "Explore financial education resources",
+      "read": "Read the idea and choose an action that makes sense for your plan.",
+      "lesson": "Lesson {{number}}"
+    },
+    "lessons": {
+      "purpose": {
+        "title": "Give money a purpose",
+        "body": "Choose a concrete change you want to achieve. A goal with a target amount and deadline helps connect everyday decisions to what matters to you.",
+        "takeaway": "A goal should serve your life."
+      },
+      "assets": {
+        "title": "Understand your assets",
+        "body": "Distinguish the value of your assets, associated debts and income actually received. An asset may carry costs and risk; its value is not the same as available cash.",
+        "takeaway": "Value, income and liquidity are different."
+      },
+      "saving": {
+        "title": "Save for a purpose",
+        "body": "Separate reserve and investment goals. Choose a contribution that fits your commitments and track what you actually managed to set aside.",
+        "takeaway": "An intention becomes useful when you track it."
+      },
+      "debt": {
+        "title": "Understand the cost of debt",
+        "body": "Check principal, interest, fees and due dates. Before taking on or repaying debt early, compare costs and the effect of payments on your plan.",
+        "takeaway": "A small instalment can hide a high cost."
+      },
+      "mentor": {
+        "title": "Seek guidance with context",
+        "body": "Use Binth to explore your records and understand alternatives. Check the numbers, ask about assumptions and keep the final decision in your own hands.",
+        "takeaway": "Good guidance explains its reasoning."
+      },
+      "ambition": {
+        "title": "Turn ambition into scenarios",
+        "body": "A large goal can be divided into stages. Compare different deadlines and contributions, and identify what would need to change to reach each scenario.",
+        "takeaway": "A projection depends on its assumptions."
+      },
+      "habits": {
+        "title": "Build consistent habits",
+        "body": "Checking transactions and reviewing your plan regularly reduces omissions. Start with a small routine you can maintain, even in difficult months.",
+        "takeaway": "Consistency does not require a high income."
+      },
+      "knowledge": {
+        "title": "Learn before deciding",
+        "body": "Study one concept at a time and apply it to a real situation. When reading about finances, check the source, date and whether the conditions apply to your context.",
+        "takeaway": "Understand before choosing."
+      },
+      "respect": {
+        "title": "Pay attention to each transaction",
+        "body": "Categorise spending, confirm amounts and identify fees. A budget helps allocate resources according to your priorities while recognising essential needs.",
+        "takeaway": "Careful records improve your plan."
+      },
+      "awareness": {
+        "title": "Track what changed",
+        "body": "Compare periods and confirm the reasons for changes. Higher spending may reflect a one-off expense, a new commitment or a previously missing transaction.",
+        "takeaway": "A change needs context before a conclusion."
+      }
+    },
+    "links": {
+      "title": "Your ecosystem",
+      "budget": "Budget",
+      "debts": "Debts",
+      "goals": "Goals and reserves",
+      "assets": "Assets",
+      "simulators": "Simulators",
+      "reports": "Reports",
+      "binth": "Binth"
+    },
+    "ask_prompt": "Help me review the records from {{start}} to {{end}}: income {{income}}, expenses {{expenses}}. Identified priority: {{title}}. Evidence: {{body}}. Explain one next action grounded in these records; do not assume unrecorded earnings or returns."
   }
 }

@@ -16,6 +16,7 @@ import {
 } from '../utils/calculations';
 
 // Sub-components
+import JourneySummary from '../components/journey/JourneySummary';
 import DashboardHero from '../components/dashboard/DashboardHero';
 import DashboardQuickActions from '../components/dashboard/DashboardQuickActions';
 import { HealthCard, AlertsCard, AccountsCard, CashFlowCard, StewardshipCard } from '../components/dashboard/DashboardCards';
@@ -185,6 +186,8 @@ export default function Dashboard() {
         state={state}
         itemVariants={itemVariants}
       />
+
+      <JourneySummary />
 
       <DashboardQuickActions 
         quickActions={quickActions} 
