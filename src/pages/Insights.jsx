@@ -73,7 +73,7 @@ function ScoreRing({ score, label, biblicalLabel }) {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function Insights() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { showToast } = useOutletContext();
   const { state } = useFinance();
   const navigate = useNavigate();
@@ -91,6 +91,10 @@ export default function Insights() {
   const recognitionRef = useRef(null);
   const micRetryRef = useRef(0); // Retry counter for network errors
   const micSupportedRef = useRef(false);
+
+  useEffect(() => {
+    if (recognitionRef.current) recognitionRef.current.lang = i18n.resolvedLanguage === 'en' ? 'en-GB' : 'pt-PT';
+  }, [i18n.resolvedLanguage]);
 
   // Scroll to bottom on new messages
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
@@ -148,7 +152,7 @@ export default function Insights() {
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = true;
-      recognition.lang = 'pt-PT';
+      recognition.lang = i18n.resolvedLanguage === 'en' ? 'en-GB' : 'pt-PT';
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
@@ -246,7 +250,7 @@ export default function Insights() {
     setInput('');
 
     const userMsg = { role: 'user', content: msg, timestamp: Date.now() };
-    const history = messages.filter(m => m.role !== 'system');
+    const history = messages.filter(m => m.role === 'user' || m.role === 'assistant').slice(-30);
 
     // Verificação de SMS Mobile Money
     const smsData = parseMobileMoneySMS(msg);
@@ -277,7 +281,8 @@ export default function Insights() {
     try {
       const res = await api.post('/binth/chat', {
         message: msg,
-        history: history.map(m => ({ role: m.role, content: m.content || m.message || '' }))
+        language: i18n.resolvedLanguage || 'pt',
+        history: history.map(m => ({ role: m.role, content: String(m.content || m.message || '').slice(0, 4000) }))
       });
 
       const { message: aiMessage, ...rest } = res.data;

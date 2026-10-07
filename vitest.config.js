@@ -8,6 +8,7 @@ export default defineConfig({
       '**/node_modules/**',
       '**/dist/**',
       '**/server/**',
+      '**/src/__checks__/**', // Checkly browser checks use a separate Playwright runner.
       '**/.{idea,git,cache,output,temp}/**'
     ],
   },

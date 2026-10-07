@@ -17,6 +17,7 @@ i18n
     resources,
     fallbackLng: 'pt',
     supportedLngs: ['pt', 'en'],
+    load: 'languageOnly',
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
@@ -25,5 +26,11 @@ i18n
       escapeValue: false, // React already safes from xss
     },
   });
+
+const updateDocumentLanguage = (language) => {
+  if (typeof document !== 'undefined') document.documentElement.lang = language?.startsWith('en') ? 'en' : 'pt';
+};
+i18n.on('languageChanged', updateDocumentLanguage);
+updateDocumentLanguage(i18n.resolvedLanguage || i18n.language);
 
 export default i18n;

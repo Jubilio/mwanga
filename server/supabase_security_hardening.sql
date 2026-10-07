@@ -22,11 +22,20 @@ BEGIN
             'push_subscriptions', 'behavior_events', 'passkeys', 
             'notification_events', 'user_notification_stats', 
             'notification_candidates', 'notification_preferences', 
-            'notification_delivery_logs', 'feedbacks'
+            'notification_delivery_logs', 'feedbacks', 'loan_applications'
         ) 
     LOOP 
         EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', tbl);
     END LOOP;
+END $$;
+
+-- Loan applications are backend-only; neither browser Data API role needs grants.
+-- Keep the postgres/backend role unchanged.
+DO $$
+BEGIN
+    IF to_regclass('public.loan_applications') IS NOT NULL THEN
+        REVOKE ALL PRIVILEGES ON TABLE public.loan_applications FROM PUBLIC, anon, authenticated;
+    END IF;
 END $$;
 
 -- 2. CREATE DEFAULT 'DENY ALL' POLICIES FOR EXTERNAL API
