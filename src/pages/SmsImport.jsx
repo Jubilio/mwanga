@@ -1,3 +1,4 @@
+import { ui, useUiLanguage, uiLocale } from '../utils/uiTranslation';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, Clipboard, MessageSquare, RefreshCw, ShieldCheck, Smartphone, Zap } from 'lucide-react';
@@ -26,6 +27,7 @@ const TYPE_COLORS = (t) => ({
 });
 
 function ConfidenceBar({ score }) {
+  useUiLanguage();
   const pct = Math.round((score || 0) * 100);
   const colorClass = pct >= 85 ? 'bg-aurora shadow-[0_0_8px_rgba(46,204,113,0.5)]' : pct >= 60 ? 'bg-gold shadow-[0_0_8px_rgba(201,150,58,0.5)]' : 'bg-coral shadow-[0_0_8px_rgba(224,122,95,0.5)]';
   const textColor = pct >= 85 ? 'text-aurora' : pct >= 60 ? 'text-gold' : 'text-coral';
@@ -41,11 +43,12 @@ function ConfidenceBar({ score }) {
 }
 
 function DataRow({ label, value, accentClass }) {
+  useUiLanguage();
   if (value === null || value === undefined || value === '') return null;
 
   return (
     <div className="flex justify-between items-start gap-4 py-2 border-b border-white/5 last:border-0">
-      <span className="text-slate-400 text-xs font-mono uppercase tracking-wider min-w-[120px]">{label}</span>
+      <span className="text-slate-400 text-xs font-mono uppercase tracking-wider min-w-[120px]">{ui(label)}</span>
       <span className={`text-sm font-medium text-right max-w-[260px] break-words ${accentClass || 'text-slate-200'}`}>
         {String(value)}
       </span>
@@ -69,7 +72,7 @@ function inferCategory(result) {
 
 function buildDescription(result, t) {
   const types = TYPE_COLORS(t);
-  const label = types[result.transaction_type]?.label || result.transaction_type || 'Movimento';
+  const label = types[result.transaction_type]?.label || result.transaction_type || ui("Movimento");
   const extras = [result.recipient_name, result.agent_code].filter(Boolean).join(' • ');
   return [result.bank_name || 'SMS', label, extras].filter(Boolean).join(' - ').slice(0, 255);
 }
@@ -89,6 +92,7 @@ function buildNote(result, rawText, t) {
 }
 
 export default function SmsImport() {
+  const uiLanguage = useUiLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [smsText, setSmsText] = useState(SAMPLE_SMS[0]);
   const [result, setResult] = useState(null);
@@ -103,10 +107,10 @@ export default function SmsImport() {
     if (!result?.transaction_type) return null;
     const types = TYPE_COLORS(t);
     return types[result.transaction_type] || types.unknown;
-  }, [result?.transaction_type, t]);
+  }, [result?.transaction_type, t, uiLanguage]);
   const incomingSharedText = useMemo(
     () => searchParams.get('text') || searchParams.get('sms') || searchParams.get('body') || '',
-    [searchParams],
+    [searchParams, uiLanguage],
   );
 
   const parseText = useCallback(async (textToParse) => {
@@ -126,13 +130,13 @@ export default function SmsImport() {
 
       const parsedData = res.data.data.parsed_data;
       setResult(parsedData);
-      showToast('SMS analisado com sucesso!', 'success');
+      showToast(ui("SMS analisado com sucesso!"), 'success');
     } catch (error) {
       console.error(error);
       if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
-        showToast('A análise demorou demasiado. Verifique a sua conexão e tente novamente.', 'error');
+        showToast(ui("A análise demorou demasiado. Verifique a sua conexão e tente novamente."), 'error');
       } else {
-        showToast(error.response?.data?.message || error.response?.data?.error || 'Erro ao processar o SMS.', 'error');
+        showToast(error.response?.data?.message || error.response?.data?.error || ui("Erro ao processar o SMS."), 'error');
       }
     } finally {
       setLoading(false);
@@ -322,7 +326,7 @@ export default function SmsImport() {
                       {typeInfo?.label || 'UNKNOWN'}
                     </span>
                     <span className="text-lg md:text-xl font-bold text-white tracking-tight text-right break-words">
-                      {result.amount ? `${Number(result.amount).toLocaleString('pt-MZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${result.currency || 'MZN'}` : '—'}
+                      {result.amount ? `${Number(result.amount).toLocaleString(uiLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${result.currency || 'MZN'}` : '—'}
                     </span>
                   </>
                 )}
@@ -347,12 +351,12 @@ export default function SmsImport() {
                     <DataRow label={t('sms_import.result.labels.account_ref')} value={result.account_number} accentClass="text-sky" />
                     <DataRow label={t('sms_import.result.labels.tx_id')} value={result.transaction_id} />
                     <DataRow label={t('sms_import.result.labels.datetime')} value={result.transaction_datetime} />
-                    <DataRow label={t('sms_import.result.labels.balance_after')} value={result.balance_after !== null && result.balance_after !== undefined ? `${Number(result.balance_after).toLocaleString('pt-MZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${result.currency || 'MZN'}` : null} accentClass="text-aurora" />
-                    <DataRow label={t('sms_import.result.labels.fee')} value={result.fee_amount ? `${Number(result.fee_amount).toLocaleString('pt-MZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${result.currency || 'MZN'}` : null} accentClass="text-coral" />
+                    <DataRow label={t('sms_import.result.labels.balance_after')} value={result.balance_after !== null && result.balance_after !== undefined ? `${Number(result.balance_after).toLocaleString(uiLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${result.currency || 'MZN'}` : null} accentClass="text-aurora" />
+                    <DataRow label={t('sms_import.result.labels.fee')} value={result.fee_amount ? `${Number(result.fee_amount).toLocaleString(uiLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${result.currency || 'MZN'}` : null} accentClass="text-coral" />
                     <DataRow label={t('sms_import.result.labels.recipient')} value={result.recipient_name} />
                     <DataRow label={t('sms_import.result.labels.recipient_acc')} value={result.recipient_account} />
                     <DataRow label={t('sms_import.result.labels.agent')} value={result.agent_code} />
-                    <DataRow label={t('sms_import.result.labels.description')} value={result.description} />
+                    <DataRow label={t('sms_import.result.labels.description')} value={ui(result.description)} />
                   </div>
 
                   <div className="mt-6 space-y-3">

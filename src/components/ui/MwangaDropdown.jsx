@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 /**
  * MwangaDropdown.jsx
  * ─────────────────────────────────────────────────────────────────────────────
@@ -16,6 +17,7 @@
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 
 export function MwangaDropdown({ trigger, items = [], align = 'end', sideOffset = 8 }) {
+  useUiLanguage();
   return (
     <DropdownMenuPrimitive.Root>
       <DropdownMenuPrimitive.Trigger asChild>
@@ -84,7 +86,7 @@ export function MwangaDropdown({ trigger, items = [], align = 'end', sideOffset 
                 }}
               >
                 {Icon && <Icon size={15} />}
-                {item.label}
+                {ui(item.label)}
               </DropdownMenuPrimitive.Item>
             );
           })}

@@ -1,9 +1,11 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import React, { useState } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { Check, Star, Zap, Crown, Globe, Shield, Rocket, ArrowRight } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 
 export default function Pricing() {
+  useUiLanguage();
   const { t } = useTranslation();
   const { } = useFinance();
   const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' or 'annual'
@@ -173,13 +175,13 @@ export default function Pricing() {
               }}>
                 <plan.icon size={26} />
               </div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>{plan.name}</h3>
-              <p style={{ fontSize: '0.9rem', opacity: 0.7, marginBottom: '1.5rem' }}>{plan.desc}</p>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>{ui(plan.name)}</h3>
+              <p style={{ fontSize: '0.9rem', opacity: 0.7, marginBottom: '1.5rem' }}>{ui(plan.desc)}</p>
               
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
                 <span style={{ fontSize: '2rem', fontWeight: 900 }}>{plan.price}</span>
                 <span style={{ fontSize: '0.9rem', fontWeight: 600, opacity: 0.7 }}>MZN</span>
-                <span style={{ fontSize: '0.85rem', opacity: 0.5 }}>/mês</span>
+                <span style={{ fontSize: '0.85rem', opacity: 0.5 }}>{ui("/mês")}</span>
               </div>
               {billingCycle === 'annual' && plan.price > 0 && (
                 <div style={{ fontSize: '0.7rem', color: 'var(--color-leaf)', fontWeight: 600, marginTop: '0.2rem' }}>

@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,7 @@ import HousingInsights from '../components/housing/HousingInsights';
 import HousingSummaryCard from '../components/housing/HousingSummaryCard';
 
 export default function Habitacao() {
+  const uiLanguage = useUiLanguage();
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
@@ -87,8 +89,8 @@ export default function Habitacao() {
 
   // For backward compatibility with old hardcoded strings in DB
   const legacyPropriaNames = [
-    'Casa Própria', 'Condomínio', 'Energia (Credelec)', 'Água (FIPAG)',
-    'Impostos (IMI / IPRA)', 'Obras e Manutenção', 'Seguro Habitação', 'Outras Despesas'
+    ui("Casa Própria"), ui("Condomínio"), ui("Energia (Credelec)"), ui("Água (FIPAG)"),
+    ui("Impostos (IMI / IPRA)"), ui("Obras e Manutenção"), ui("Seguro Habitação"), ui("Outras Despesas")
   ];
 
   const filteredRendas = useMemo(() => {
@@ -99,7 +101,7 @@ export default function Habitacao() {
                         r.proprietario === ownLabel;
       return type === 'propria' ? isPropria : !isPropria;
     });
-  }, [state.rendas, type, t]);
+  }, [state.rendas, type, t, uiLanguage]);
 
   const totalPago = filteredRendas.filter(r => r.estado === 'pago').reduce((sum, r) => sum + r.valor, 0);
   const totalMesAtual = filteredRendas.filter(r => r.mes === monthKey).reduce((sum, r) => sum + r.valor, 0);
@@ -115,7 +117,7 @@ export default function Habitacao() {
     return Object.entries(monthlyMap)
       .map(([mes, valor]) => ({ mes, valor }))
       .sort((a, b) => a.mes.localeCompare(b.mes));
-  }, [filteredRendas]);
+  }, [filteredRendas, uiLanguage]);
 
   const committedIncome = useMemo(() => {
     const rendasMes = filteredRendas.filter(r => r.mes === monthKey).reduce((sum, r) => sum + r.valor, 0);
@@ -128,7 +130,7 @@ export default function Habitacao() {
     }
 
     return Math.min(100, Math.round((rendasMes / receitasMes) * 100));
-  }, [filteredRendas, state.transacoes, monthKey]);
+  }, [filteredRendas, state.transacoes, monthKey, uiLanguage]);
 
   const momComparison = useMemo(() => {
     const [y, m] = monthKey.split('-');
@@ -143,7 +145,7 @@ export default function Habitacao() {
     }
 
     return Math.round(((curVal - lastVal) / lastVal) * 100);
-  }, [filteredRendas, monthKey]);
+  }, [filteredRendas, monthKey, uiLanguage]);
 
   return (
     <div className="animate-fade-in pb-20 w-full max-w-none space-y-6">
@@ -215,6 +217,7 @@ export default function Habitacao() {
 }
 
 function MiniStat({ icon, label, value, tone }) {
+  useUiLanguage();
   const tones = {
     ocean: 'bg-ocean/10 text-ocean border-ocean/20',
     gold: 'bg-gold/10 text-gold border-gold/20',
@@ -227,7 +230,7 @@ function MiniStat({ icon, label, value, tone }) {
       <div className={`inline-flex items-center justify-center rounded-xl border px-2.5 py-2 ${tones[tone] || tones.slate}`}>
         {icon}
       </div>
-      <div className="mt-3 text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{label}</div>
+      <div className="mt-3 text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{ui(label)}</div>
       <div className="mt-1 text-lg font-semibold text-gray-800 dark:text-white">{value}</div>
     </div>
   );

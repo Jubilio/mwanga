@@ -1,9 +1,11 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
 
 export default function ForgotPassword() {
+  useUiLanguage();
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -67,7 +69,7 @@ export default function ForgotPassword() {
                 </label>
                 <input
                   type="email" required className="form-input"
-                  placeholder="seu@email.com"
+                  placeholder={ui("seu@email.com")}
                   value={email} onChange={e => setEmail(e.target.value)}
                 />
               </div>

@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -60,6 +61,7 @@ function parseNotificationPayload(payload = {}) {
 }
 
 export default function Layout() {
+  useUiLanguage();
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const { toast, showToast } = useToast();
@@ -76,11 +78,11 @@ export default function Layout() {
     { to: '/insights', icon: Brain, label: t('layout.insights') },
     { to: '/sms-import', icon: Globe, label: t('layout.sms_import') },
     { to: '/patrimonio', icon: Landmark, label: t('layout.patrimony') },
-    { to: '/mordomia', icon: Crown, label: 'Mordomia', premium: true },
+    { to: '/mordomia', icon: Crown, label: ui("Mordomia"), premium: true },
     { to: '/simuladores', icon: Calculator, label: t('layout.simulators') },
     { to: '/relatorio', icon: BarChart3, label: t('layout.report') },
     { to: '/pricing', icon: Crown, label: t('layout.pricing') || 'Premium', premium: true },
-    { to: '/time-machine', icon: Clock, label: 'Máquina do Tempo', premium: true },
+    { to: '/time-machine', icon: Clock, label: ui("Máquina do Tempo"), premium: true },
     { to: '/help', icon: HelpCircle, label: t('layout.help') },
     { to: '/settings', icon: SettingsIcon, label: t('layout.settings') },
     ...(state.user?.role === 'admin' ? [{ to: '/admin', icon: Shield, label: t('layout.admin') }] : []),
@@ -309,8 +311,8 @@ export default function Layout() {
           const todayStr = new Date().toISOString().split('T')[0];
           const lastNotified = localStorage.getItem('mwanga-last-daily-alert');
           if (lastNotified !== todayStr) {
-            new Notification('Mwanga ✦ Lembrete', {
-              body: 'Ainda não registaste os teus gastos de hoje. Que tal fazê-lo agora?',
+            new Notification(ui("Mwanga ✦ Lembrete"), {
+              body: ui("Ainda não registaste os teus gastos de hoje. Que tal fazê-lo agora?"),
               icon: '/favicon.png'
             });
             localStorage.setItem('mwanga-last-daily-alert', todayStr);
@@ -370,11 +372,11 @@ export default function Layout() {
     try {
       await api.delete('/notifications');
       setNotifications([]);
-      showToast('Notificações limpas.', 'success');
+      showToast(ui("Notificações limpas."), 'success');
       setIsConfirmClearOpen(false);
     } catch (error) {
       console.error(error);
-      showToast('Erro ao limpar notificações.', 'error');
+      showToast(ui("Erro ao limpar notificações."), 'error');
     }
   }
 
@@ -449,14 +451,14 @@ export default function Layout() {
         showToast={showToast}
       />
 
-      <Toast message={toast.message} visible={toast.visible} variant={toast.variant} />
+      <Toast message={ui(toast.message)} visible={toast.visible} variant={toast.variant} />
 
       <ConfirmModal
         isOpen={isConfirmClearOpen}
-        title="Limpar Notificações?"
-        message="Esta ação irá eliminar permanentemente todos os lembretes e alertas. Tens a certeza?"
-        confirmText="Sim, Limpar Tudo"
-        cancelText="Não, Manter"
+        title={ui("Limpar Notificações?")}
+        message={ui("Esta ação irá eliminar permanentemente todos os lembretes e alertas. Tens a certeza?")}
+        confirmText={ui("Sim, Limpar Tudo")}
+        cancelText={ui("Não, Manter")}
         onConfirm={handleClearAll}
         onCancel={() => setIsConfirmClearOpen(false)}
       />
@@ -471,7 +473,7 @@ export default function Layout() {
       <button
         onClick={() => setIsFeedbackModalOpen(true)}
         className="fixed bottom-24 right-4 z-49 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-ocean/90 text-white shadow-xl shadow-ocean/30 backdrop-blur-md transition-all hover:scale-110 hover:bg-ocean active:scale-95 dark:border-white/10 dark:bg-aurora/90 dark:shadow-aurora/20 md:bottom-8 md:right-8"
-        title="Enviar Feedback ou Reportar Erro"
+        title={ui("Enviar Feedback ou Reportar Erro")}
       >
         <MessageSquare size={20} className="animate-pulse" />
       </button>

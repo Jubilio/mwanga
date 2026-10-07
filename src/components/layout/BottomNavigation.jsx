@@ -1,7 +1,9 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { NavLink } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 
 export default function BottomNavigation({ items, currentPath, onAddClick }) {
+  useUiLanguage();
   return (
     <nav className="hide-desktop fixed bottom-0 left-0 right-0 z-50 flex items-end justify-around border-t border-black/5 bg-white/80 pb-[calc(0.75rem+var(--sab))] pt-3 backdrop-blur-2xl dark:border-white/5 dark:bg-midnight/90">
       {items.map((item) => {
@@ -17,7 +19,7 @@ export default function BottomNavigation({ items, currentPath, onAddClick }) {
                 </button>
               </div>
               <div className="h-8" />
-              <span className="text-[9px] font-black uppercase tracking-wider text-ocean dark:text-sky">Adicionar</span>
+              <span className="text-[9px] font-black uppercase tracking-wider text-ocean dark:text-sky">{ui("Adicionar")}</span>
             </div>
           );
         }
@@ -47,7 +49,7 @@ export default function BottomNavigation({ items, currentPath, onAddClick }) {
                   )}
                 </div>
                 <span className={`text-[10px] uppercase tracking-wider font-bold transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-0 translate-y-2'}`}>
-                  {item.label}
+                  {ui(item.label)}
                 </span>
               </>
             )}

@@ -1,3 +1,4 @@
+import { ui, useUiLanguage, uiLocale } from '../utils/uiTranslation';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { 
@@ -16,6 +17,7 @@ const G = {
 };
 
 export default function AdminFeedback() {
+  useUiLanguage();
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -37,7 +39,7 @@ export default function AdminFeedback() {
       setFeedback(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching feedback:', err);
-      setError(err.response?.data?.error || 'Falha ao carregar mensagens de feedback.');
+      setError(err.response?.data?.error || ui("Falha ao carregar mensagens de feedback."));
     } finally {
       setLoading(false);
     }
@@ -58,12 +60,8 @@ export default function AdminFeedback() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: 900, margin: 0, fontFamily: "'Sora', sans-serif" }}>
-            <MessageSquare size={22} style={{ verticalAlign: 'middle', marginRight: '10px', color: G.gold }} />
-            Feedback dos Utilizadores
-          </h1>
-          <p style={{ color: G.muted, fontSize: '13px', margin: '4px 0 0' }}>
-            Sugestões, reclamações e relatórios de bugs submetidos via app.
-          </p>
+            <MessageSquare size={22} style={{ verticalAlign: 'middle', marginRight: '10px', color: G.gold }} /> {ui("Feedback dos Utilizadores")} </h1>
+          <p style={{ color: G.muted, fontSize: '13px', margin: '4px 0 0' }}> {ui("Sugestões, reclamações e relatórios de bugs submetidos via app.")} </p>
         </div>
         <button
           onClick={fetchFeedback}
@@ -77,7 +75,7 @@ export default function AdminFeedback() {
           }}
         >
           <RefreshCw size={14} style={{ opacity: loading ? 0.4 : 1 }} />
-          {loading ? 'Atualizando...' : 'Atualizar'}
+          {loading ? ui("Atualizando...") : ui("Atualizar")}
         </button>
       </div>
 
@@ -90,7 +88,7 @@ export default function AdminFeedback() {
         <Search size={16} color={G.muted} />
         <input
           type="text"
-          placeholder="Pesquisar por mensagem ou utilizador..."
+          placeholder={ui("Pesquisar por mensagem ou utilizador...")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{
@@ -135,19 +133,18 @@ export default function AdminFeedback() {
                   <User size={20} />
                 </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '14px' }}>{item.user_name || 'Anónimo'}</div>
-                  <div style={{ fontSize: '11px', color: G.muted }}>{item.user_email || 'Sem email'}</div>
+                  <div style={{ fontWeight: 700, fontSize: '14px' }}>{item.user_name || ui("Anónimo")}</div>
+                  <div style={{ fontSize: '11px', color: G.muted }}>{item.user_email || ui("Sem email")}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: G.muted }}>
                   <Calendar size={12} />
-                  {new Date(item.created_at).toLocaleDateString('pt-MZ', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  {new Date(item.created_at).toLocaleDateString(uiLocale(), { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </div>
                 {item.screenshot_url && (
                   <span style={{ fontSize: '10px', fontWeight: 700, color: G.blue, background: `${G.blue}15`, padding: '2px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <ImageIcon size={10} /> Inclui Screenshot
-                  </span>
+                    <ImageIcon size={10} /> {ui("Inclui Screenshot")} </span>
                 )}
               </div>
             </div>
@@ -161,7 +158,7 @@ export default function AdminFeedback() {
               color: G.text,
               whiteSpace: 'pre-wrap'
             }}>
-              {item.message}
+              {ui(item.message)}
             </div>
 
             {item.screenshot_url && (
@@ -177,7 +174,7 @@ export default function AdminFeedback() {
               >
                 <img 
                   src={`${api.defaults.baseURL.replace('/api', '')}${item.screenshot_url}`} 
-                  alt="Anexo" 
+                  alt={ui("Anexo")}
                   crossOrigin="anonymous"
                   style={{ maxHeight: '120px', maxWidth: '100%', objectFit: 'cover' }}
                 />
@@ -188,7 +185,7 @@ export default function AdminFeedback() {
 
         {filtered.length === 0 && (
           <div style={{ padding: '48px', textAlign: 'center', color: G.muted, background: G.bg2, borderRadius: '20px', border: `2px dashed ${G.border}` }}>
-            {loading ? 'A carregar mensagens...' : 'Nenhum feedback encontrado.'}
+            {loading ? ui("A carregar mensagens...") : ui("Nenhum feedback encontrado.")}
           </div>
         )}
       </div>
@@ -212,7 +209,7 @@ export default function AdminFeedback() {
           </button>
           <img 
             src={selectedImage} 
-            alt="Feedback Full Size" 
+            alt={ui("Feedback Full Size")}
             crossOrigin="anonymous"
             style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }}
           />

@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import React, { useState } from 'react';
 import { useFinance } from '../hooks/useFinance';
 import { Wallet, AlertTriangle, CheckCircle, Plus, Trash2, CalendarDays, CheckCircle2 } from 'lucide-react';
@@ -7,6 +8,7 @@ import { getPaymentMethodLabel } from '../utils/paymentMethods';
 import BinthContextual from '../components/BinthContextual';
 
 export default function Dividas() {
+  useUiLanguage();
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
@@ -293,8 +295,8 @@ export default function Dividas() {
                   value={newDebt.interest_period}
                   onChange={e => setNewDebt({ ...newDebt, interest_period: e.target.value })}
                 >
-                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="monthly">Ao Mês</option>
-                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="annual">Ao Ano</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="monthly">{ui("Ao Mês")}</option>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="annual">{ui("Ao Ano")}</option>
                 </select>
               </div>
             </div>
@@ -305,21 +307,19 @@ export default function Dividas() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">Depositar valor pedido na conta (Opcional)</label>
+              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{ui("Depositar valor pedido na conta (Opcional)")}</label>
               <select 
                 className="input bg-green-50/30 dark:bg-green-900/10 border-green-200/50 focus:border-green-500"
                 value={newDebt.account_id}
                 onChange={e => setNewDebt({ ...newDebt, account_id: e.target.value })}
               >
-                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">Não registar entrada em conta</option>
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">{ui("Não registar entrada em conta")}</option>
                 {state.contas?.map(acc => (
                   <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={acc.id} value={acc.id}>{acc.name} • {fmt(acc.current_balance, currency)}</option>
                 ))}
               </select>
               {newDebt.account_id && (
-                <p className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-                  💳 Apenas o <strong>Valor Pedido</strong> (capital) será depositado nesta conta — os juros não entram.
-                </p>
+                <p className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium"> {ui("💳 Apenas o")} <strong>{ui("Valor Pedido")}</strong> {ui("(capital) será depositado nesta conta — os juros não entram.")} </p>
               )}
             </div>
 
@@ -344,27 +344,27 @@ export default function Dividas() {
               if (principal <= 0) return null;
               return (
                 <div className="md:col-span-2 rounded-xl border border-gold/30 bg-gradient-to-br from-gold/5 to-yellow-900/10 p-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gold mb-3">✦ Resumo do Empréstimo</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gold mb-3">{ui("✦ Resumo do Empréstimo")}</p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="text-center p-2 rounded-lg bg-white/5">
-                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">Valor Pedido</p>
+                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">{ui("Valor Pedido")}</p>
                       <p className="text-sm font-black text-white">{fmt(principal, currency)}</p>
-                      <p className="text-[9px] text-emerald-400">entra na conta</p>
+                      <p className="text-[9px] text-emerald-400">{ui("entra na conta")}</p>
                     </div>
                     <div className="text-center p-2 rounded-lg bg-white/5">
-                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">Juros Total</p>
+                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">{ui("Juros Total")}</p>
                       <p className="text-sm font-black text-red-400">{fmt(totalJuros, currency)}</p>
                       <p className="text-[9px] text-gray-500">
-                        {rawRate > 0 ? `${rawRate}% ${isAnnual ? 'a.a.' : 'a.m.'}` : 'sem juros'}
+                        {rawRate > 0 ? `${rawRate}% ${isAnnual ? 'a.a.' : 'a.m.'}` : ui("sem juros")}
                       </p>
                     </div>
                     <div className="text-center p-2 rounded-lg bg-coral/10 border border-coral/20">
-                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">Valor a Pagar</p>
+                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">{ui("Valor a Pagar")}</p>
                       <p className="text-sm font-black text-coral">{fmt(totalPagar, currency)}</p>
                       <p className="text-[9px] text-gray-500">{months > 0 ? `em ${months} meses` : '—'}</p>
                     </div>
                     <div className="text-center p-2 rounded-lg bg-white/5">
-                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">Parcela / Mês</p>
+                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">{ui("Parcela / Mês")}</p>
                       <p className="text-sm font-black text-sky">{parcela > 0 ? fmt(parcela, currency) : '—'}</p>
                       <p className="text-[9px] text-gray-500">{months > 0 ? `× ${months}` : ''}</p>
                     </div>
@@ -394,7 +394,7 @@ export default function Dividas() {
             <thead>
               <tr>
                 <th>{t('debts.table.debt')}</th>
-                <th className="hide-mobile">Valor Pedido / Final</th>
+                <th className="hide-mobile">{ui("Valor Pedido / Final")}</th>
                 <th>{t('debts.table.remaining')}</th>
                 <th className="hide-mobile">{t('debts.table.due_date')}</th>
                 <th>{t('debts.table.actions')}</th>
@@ -412,7 +412,7 @@ export default function Dividas() {
                     <div className="flex items-center gap-2">
                       <div className="font-semibold">{debt.creditor_name}</div>
                       {isToxic && (
-                        <span className="flex h-2 w-2 relative" title="Dívida Tóxica (Juros muito altos)">
+                        <span className="flex h-2 w-2 relative" title={ui("Dívida Tóxica (Juros muito altos)")}>
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                         </span>
@@ -422,10 +422,10 @@ export default function Dividas() {
                   </td>
                   <td className="hide-mobile text-muted">
                     <div className="flex flex-col gap-1">
-                      <span className="font-bold text-gray-800 dark:text-gray-200" title="Valor Pedido (Principal)">
+                      <span className="font-bold text-gray-800 dark:text-gray-200" title={ui("Valor Pedido (Principal)")}>
                         {showBalance ? fmt(debt.principal_amount || debt.total_amount, currency) : '••••'}
                       </span>
-                      <span className="text-[10px] uppercase font-semibold text-gray-500" title="Valor Final com Juros Projetados">
+                      <span className="text-[10px] uppercase font-semibold text-gray-500" title={ui("Valor Final com Juros Projetados")}>
                         Final: {showBalance ? fmt(debt.total_amount, currency) : '••••'}
                       </span>
                     </div>
@@ -433,9 +433,7 @@ export default function Dividas() {
                   <td className="font-bold text-coral flex flex-col justify-center">
                     <span>{showBalance ? fmt(getDynamicRemainingAmount(debt), currency) : '••••'}</span>
                     {getElapsedMonths(debt.due_date || debt.created_at) > 0 && getMonthlyRate(debt) > 0 && debt.status !== 'paid' && (
-                      <span className="text-[9px] text-red-500 uppercase tracking-wider font-bold animate-pulse">
-                        + Juros Compostos
-                      </span>
+                      <span className="text-[9px] text-red-500 uppercase tracking-wider font-bold animate-pulse"> {ui("+ Juros Compostos")} </span>
                     )}
                   </td>
                   <td className="hide-mobile">
@@ -455,7 +453,7 @@ export default function Dividas() {
                             setShowScheduleId(null);
                           }}
                           className="text-leaf hover:opacity-70 p-1"
-                          title="Registar Pagamento"
+                          title={ui("Registar Pagamento")}
                         >
                           <CheckCircle2 size={18} />
                         </button>
@@ -467,7 +465,7 @@ export default function Dividas() {
                             setShowPayForm(null);
                           }}
                           className={`p-1 transition-colors ${showScheduleId === debt.id ? 'text-indigo-400' : 'text-gray-400 hover:text-indigo-400'}`}
-                          title="Ver Fluxo da Dívida"
+                          title={ui("Ver Fluxo da Dívida")}
                         >
                           <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -477,7 +475,7 @@ export default function Dividas() {
                       <button
                         onClick={() => setConfirmDelete(debt.id)}
                         className="text-coral hover:opacity-70 p-1"
-                        title="Eliminar Dívida"
+                        title={ui("Eliminar Dívida")}
                       >
                         <Trash2 size={18} />
                       </button>
@@ -492,16 +490,14 @@ export default function Dividas() {
                           <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-700/30 text-orange-700 dark:text-orange-400 shadow-sm">
                             <span className="text-sm shrink-0 mt-0.5">⚠️</span>
                             <div className="text-[12px] leading-snug">
-                              <span className="font-bold">Intervenção Binth: </span>
-                              Estás prestes a pagar uma dívida mais barata enquanto uma <strong>Dívida Tóxica</strong> continua a sugar o teu dinheiro com juros altíssimos. Recomendamos fechar a dívida tóxica primeiro!
-                            </div>
+                              <span className="font-bold">{ui("Intervenção Binth:")} </span> {ui("Estás prestes a pagar uma dívida mais barata enquanto uma")} <strong>{ui("Dívida Tóxica")}</strong> {ui("continua a sugar o teu dinheiro com juros altíssimos. Recomendamos fechar a dívida tóxica primeiro!")} </div>
                           </div>
                         )}
                         <div className="flex flex-wrap items-center gap-3">
                           <input 
                             type="number" 
                             className="input py-2 text-sm w-32 border-gray-200 dark:border-gray-700 focus:border-gold" 
-                            placeholder="Valor a Pagar..." 
+                            placeholder={ui("Valor a Pagar...")}
                             value={paymentAmount} 
                             onChange={e => setPaymentAmount(e.target.value)} 
                             autoFocus
@@ -511,7 +507,7 @@ export default function Dividas() {
                             value={paymentAccount}
                             onChange={e => setPaymentAccount(e.target.value)}
                           >
-                            <option value="">Sem Saída de Conta</option>
+                            <option value="">{ui("Sem Saída de Conta")}</option>
                             {state.contas?.map(acc => (
                               <option key={acc.id} value={acc.id}>{acc.name} • {fmt(acc.current_balance, currency)}</option>
                             ))}
@@ -519,9 +515,7 @@ export default function Dividas() {
                           <button 
                             className="btn bg-leaf hover:bg-green-600 border-none text-white font-bold py-2 px-5 text-sm shadow-md shadow-leaf/20"
                             onClick={() => handlePay(debt.id)}
-                          >
-                            Confirmar Pagamento
-                          </button>
+                          > {ui("Confirmar Pagamento")} </button>
                         </div>
                       </div>
                     </td>
@@ -555,23 +549,18 @@ export default function Dividas() {
                           {/* Header Title */}
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 dark:border-white/5 pb-3">
                             <div>
-                              <h4 className="text-xs font-black uppercase tracking-widest text-indigo-500 dark:text-indigo-400">Fluxo da Dívida e Cronograma de Amortização</h4>
-                              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Calculado dinamicamente com base na Tabela Price (Amortização Francesa).</p>
+                              <h4 className="text-xs font-black uppercase tracking-widest text-indigo-500 dark:text-indigo-400">{ui("Fluxo da Dívida e Cronograma de Amortização")}</h4>
+                              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">{ui("Calculado dinamicamente com base na Tabela Price (Amortização Francesa).")}</p>
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                              Juros: {(interest_rate * 100).toFixed(1)}% {debt.interest_period === 'annual' ? 'ao Ano' : 'ao Mês'}
+                            <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"> {ui("Juros:")} {(interest_rate * 100).toFixed(1)}% {debt.interest_period === 'annual' ? ui("ao Ano") : ui("ao Mês")}
                             </span>
                           </div>
 
                           {/* Simulador de Taxa de Juro/Dívida Ativa */}
                           {interest_rate === 0 && (
                             <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-xs space-y-3 mb-4">
-                              <div className="font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
-                                💡 Ajustar Taxa de Juros e Data de Início
-                              </div>
-                              <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-[11px]">
-                                Esta dívida foi registrada com <strong>0% de juros</strong>. Para simular e acompanhar o acúmulo de juros de mora reais (ex: os 30% contraídos em Março), ajuste os valores abaixo para atualizar o banco de dados:
-                              </p>
+                              <div className="font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5"> {ui("💡 Ajustar Taxa de Juros e Data de Início")} </div>
+                              <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-[11px]"> {ui("Esta dívida foi registrada com")} <strong>{ui("0% de juros")}</strong>{ui(". Para simular e acompanhar o acúmulo de juros de mora reais (ex: os 30% contraídos em Março), ajuste os valores abaixo para atualizar o banco de dados:")} </p>
                               <form onSubmit={(e) => {
                                 e.preventDefault();
                                 const rateInput = Number(e.target.rate.value) / 100;
@@ -598,24 +587,22 @@ export default function Dividas() {
                                 });
                               }} className="flex flex-wrap items-end gap-3 pt-1">
                                 <div className="space-y-1">
-                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">Capital Principal</label>
+                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">{ui("Capital Principal")}</label>
                                   <input type="number" name="principal" defaultValue={principal} className="input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-28 border border-gray-200 dark:border-gray-800" required />
                                 </div>
                                 <div className="space-y-1">
-                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">Taxa de Juro (% ao Mês)</label>
+                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">{ui("Taxa de Juro (% ao Mês)")}</label>
                                   <input type="number" name="rate" defaultValue={30} className="input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-24 border border-gray-200 dark:border-gray-800" required />
                                 </div>
                                 <div className="space-y-1">
-                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">Duração (Meses)</label>
+                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">{ui("Duração (Meses)")}</label>
                                   <input type="number" name="duration" defaultValue={months_duration} className="input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-24 border border-gray-200 dark:border-gray-800" required />
                                 </div>
                                 <div className="space-y-1">
-                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">Início da Contração</label>
+                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">{ui("Início da Contração")}</label>
                                   <input type="date" name="due_date" defaultValue={debt.due_date || debt.created_at?.split('T')[0] || '2026-03-01'} className="input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-32 border border-gray-200 dark:border-gray-800" required />
                                 </div>
-                                <button type="submit" className="btn py-1.5 px-4 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white border-none shrink-0 shadow-md">
-                                  Simular e Salvar
-                                </button>
+                                <button type="submit" className="btn py-1.5 px-4 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white border-none shrink-0 shadow-md"> {ui("Simular e Salvar")} </button>
                               </form>
                             </div>
                           )}
@@ -624,54 +611,48 @@ export default function Dividas() {
                           {elapsed > 0 && mRate > 0.05 && (
                             <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-800 dark:text-red-200 text-xs space-y-2 mb-4">
                               <div className="flex items-center gap-2 font-bold text-red-600 dark:text-red-400">
-                                <span className="animate-pulse flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
-                                ALERTA DE ANÁLISE DE MORA: Dívida Tóxica em Acumulação!
-                              </div>
-                              <p className="leading-relaxed">
-                                Esta dívida foi contraída em <strong className="text-black dark:text-white">Março/Início</strong> (há <strong>{elapsed} meses decorridos</strong>) e possui uma taxa de juro severa de <strong className="text-black dark:text-white">{(mRate * 100).toFixed(0)}% ao mês</strong>. Como não foram registados pagamentos suficientes, acumulou um montante significativo de juros de mora.
-                              </p>
+                                <span className="animate-pulse flex h-2.5 w-2.5 rounded-full bg-red-500"></span> {ui("ALERTA DE ANÁLISE DE MORA: Dívida Tóxica em Acumulação!")} </div>
+                              <p className="leading-relaxed"> {ui("Esta dívida foi contraída em")} <strong className="text-black dark:text-white">{ui("Março/Início")}</strong> {ui("(há")} <strong>{elapsed} {ui("meses decorridos")}</strong>{ui(") e possui uma taxa de juro severa de")} <strong className="text-black dark:text-white">{(mRate * 100).toFixed(0)}{ui("% ao mês")}</strong>{ui(". Como não foram registados pagamentos suficientes, acumulou um montante significativo de juros de mora.")} </p>
                               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                                 <div className="p-2.5 rounded-lg bg-black/5 dark:bg-black/35">
-                                  <span className="text-[9px] uppercase text-gray-500 dark:text-gray-400 block font-semibold">Juros Acumulados</span>
+                                  <span className="text-[9px] uppercase text-gray-500 dark:text-gray-400 block font-semibold">{ui("Juros Acumulados")}</span>
                                   <span className="text-sm font-bold text-red-600 dark:text-red-400">{showBalance ? fmt(accumInt, currency) : '••••'}</span>
                                 </div>
                                 <div className="p-2.5 rounded-lg bg-black/5 dark:bg-black/35">
-                                  <span className="text-[9px] uppercase text-gray-500 dark:text-gray-400 block font-semibold">Total Amortizado</span>
+                                  <span className="text-[9px] uppercase text-gray-500 dark:text-gray-400 block font-semibold">{ui("Total Amortizado")}</span>
                                   <span className="text-sm font-bold text-leaf">{showBalance ? fmt(realPaid, currency) : '••••'}</span>
                                 </div>
                                 <div className="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-500/30">
-                                  <span className="text-[9px] uppercase text-red-600 dark:text-red-300 block font-semibold">Saldo Atualizado Real</span>
+                                  <span className="text-[9px] uppercase text-red-600 dark:text-red-300 block font-semibold">{ui("Saldo Atualizado Real")}</span>
                                   <span className="text-sm font-bold text-gray-900 dark:text-white">{showBalance ? fmt(updRemaining, currency) : '••••'}</span>
                                 </div>
                               </div>
-                              <p className="text-[10px] text-red-600 dark:text-red-300/80 italic pt-1">
-                                * Nota: No mercado informal, taxas elevadas (como 30%) tornam a dívida insustentável rapidamente. Priorize a liquidação integral desta obrigação.
-                              </p>
+                              <p className="text-[10px] text-red-600 dark:text-red-300/80 italic pt-1"> {ui("* Nota: No mercado informal, taxas elevadas (como 30%) tornam a dívida insustentável rapidamente. Priorize a liquidação integral desta obrigação.")} </p>
                             </div>
                           )}
 
                           {/* Dynamic Cards Grid */}
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             <div className="p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                              <span className="text-[9px] font-black uppercase text-gray-400">Valor Inicial (Principal)</span>
+                              <span className="text-[9px] font-black uppercase text-gray-400">{ui("Valor Inicial (Principal)")}</span>
                               <div className="text-sm font-bold text-gray-900 dark:text-white mt-0.5">
                                 {showBalance ? fmt(principal, currency) : '••••'}
                               </div>
                             </div>
                             <div className="p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                              <span className="text-[9px] font-black uppercase text-gray-400">Total de Juros Projetados</span>
+                              <span className="text-[9px] font-black uppercase text-gray-400">{ui("Total de Juros Projetados")}</span>
                               <div className="text-sm font-bold text-amber-600 dark:text-amber-500 mt-0.5">
                                 {showBalance ? fmt(projectedInterest, currency) : '••••'}
                               </div>
                             </div>
                             <div className="p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                              <span className="text-[9px] font-black uppercase text-gray-400">Parcela Mensal Projetada</span>
+                              <span className="text-[9px] font-black uppercase text-gray-400">{ui("Parcela Mensal Projetada")}</span>
                               <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">
                                 {showBalance ? fmt(finalMonthlyPayment, currency) : '••••'}
                               </div>
                             </div>
                             <div className="p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                              <span className="text-[9px] font-black uppercase text-gray-400">Total Pago Acumulado</span>
+                              <span className="text-[9px] font-black uppercase text-gray-400">{ui("Total Pago Acumulado")}</span>
                               <div className="text-sm font-bold text-leaf mt-0.5">
                                 {showBalance ? fmt(realPaid, currency) : '••••'}
                               </div>
@@ -683,37 +664,31 @@ export default function Dividas() {
                           <table className="w-full text-left text-xs bg-gray-50/50 dark:bg-black/15">
                             <thead>
                               <tr className="border-b border-gray-100 dark:border-white/5 bg-gray-100/55 dark:bg-black/30 text-[10px] font-black uppercase text-gray-400 tracking-wider">
-                                <th className="p-2.5 pl-4">Período</th>
-                                <th className="p-2.5">Prestação</th>
-                                <th className="p-2.5">Juros Pagos</th>
-                                <th className="p-2.5">Capital Amortizado</th>
-                                <th className="p-2.5">Saldo Devedor Restante</th>
-                                <th className="p-2.5 pr-4 text-right">Estado</th>
+                                <th className="p-2.5 pl-4">{ui("Período")}</th>
+                                <th className="p-2.5">{ui("Prestação")}</th>
+                                <th className="p-2.5">{ui("Juros Pagos")}</th>
+                                <th className="p-2.5">{ui("Capital Amortizado")}</th>
+                                <th className="p-2.5">{ui("Saldo Devedor Restante")}</th>
+                                <th className="p-2.5 pr-4 text-right">{ui("Estado")}</th>
                               </tr>
                             </thead>
                             <tbody>
                               {generateAmortizationSchedule(debt).map((item) => (
                                 <tr key={item.period} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-100/10 dark:hover:bg-white/5 transition-colors">
-                                  <td className="p-2.5 pl-4 font-bold text-gray-500 dark:text-gray-400">Parcela {item.period}</td>
+                                  <td className="p-2.5 pl-4 font-bold text-gray-500 dark:text-gray-400">{ui("Parcela")} {item.period}</td>
                                   <td className="p-2.5 font-semibold text-gray-900 dark:text-white">{showBalance ? fmt(item.payment, currency) : '••••'}</td>
                                   <td className="p-2.5 text-amber-600 dark:text-amber-500/90">{showBalance ? fmt(item.interest, currency) : '••••'}</td>
                                   <td className="p-2.5 text-indigo-600 dark:text-indigo-300">{showBalance ? fmt(item.amortization, currency) : '••••'}</td>
                                   <td className="p-2.5 font-bold text-gray-700 dark:text-gray-300">{showBalance ? fmt(item.balance, currency) : '••••'}</td>
                                   <td className="p-2.5 pr-4 text-right">
                                     {item.status === 'paid' && (
-                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-leaf/10 text-leaf text-[9px] font-black uppercase tracking-wider border border-leaf/20">
-                                        ✓ Pago
-                                      </span>
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-leaf/10 text-leaf text-[9px] font-black uppercase tracking-wider border border-leaf/20"> {ui("✓ Pago")} </span>
                                     )}
                                     {item.status === 'partial' && (
-                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500 text-[9px] font-black uppercase tracking-wider border border-amber-500/20">
-                                        • Parcial
-                                      </span>
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500 text-[9px] font-black uppercase tracking-wider border border-amber-500/20"> {ui("• Parcial")} </span>
                                     )}
                                     {item.status === 'pending' && (
-                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-[9px] font-black uppercase tracking-wider border border-gray-200 dark:border-white/5">
-                                        A Vencer
-                                      </span>
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-[9px] font-black uppercase tracking-wider border border-gray-200 dark:border-white/5"> {ui("A Vencer")} </span>
                                     )}
                                   </td>
                                 </tr>
@@ -726,10 +701,8 @@ export default function Dividas() {
                         <div className="flex gap-3 p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-indigo-600 dark:text-indigo-300 text-[11px] leading-relaxed">
                           <span className="text-lg shrink-0 mt-0.5">💡</span>
                           <div className="space-y-1 text-left">
-                            <span className="font-bold text-indigo-700 dark:text-white uppercase tracking-wider text-[9px] block">Conselho Estratégico do CFO Binth</span>
-                            <span>
-                              Ao amortizares mais do que a prestação mensal, reduzes diretamente o <strong>Saldo Devedor Restante</strong>. Como os juros são calculados sobre este saldo, qualquer pagamento extra diminui significativamente os juros totais que irás pagar nos próximos meses!
-                            </span>
+                            <span className="font-bold text-indigo-700 dark:text-white uppercase tracking-wider text-[9px] block">{ui("Conselho Estratégico do CFO Binth")}</span>
+                            <span> {ui("Ao amortizares mais do que a prestação mensal, reduzes diretamente o")} <strong>{ui("Saldo Devedor Restante")}</strong>{ui(". Como os juros são calculados sobre este saldo, qualquer pagamento extra diminui significativamente os juros totais que irás pagar nos próximos meses!")} </span>
                           </div>
                         </div>
                       </div>

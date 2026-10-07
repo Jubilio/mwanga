@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, HelpCircle, X } from 'lucide-react';
 
@@ -18,10 +19,11 @@ export default function ConfirmModal({
   message, 
   onConfirm, 
   onCancel, 
-  confirmText = "Confirmar", 
-  cancelText = "Cancelar",
+  confirmText = ui("Confirmar"),
+  cancelText = ui("Cancelar"),
   variant = 'danger'
 }) {
+  useUiLanguage();
   const themes = {
     danger:  { icon: AlertCircle, color: '#FF4C4C', bg: 'rgba(255, 76, 76, 0.1)', shadow: 'rgba(255, 76, 76, 0.2)' },
     warning: { icon: AlertCircle, color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)', shadow: 'rgba(245, 158, 11, 0.2)' },
@@ -69,11 +71,11 @@ export default function ConfirmModal({
               </div>
 
               <h3 className="text-lg font-black text-midnight dark:text-white mb-2 leading-tight">
-                {title}
+                {ui(title)}
               </h3>
               
               <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-8">
-                {message}
+                {ui(message)}
               </p>
 
               <div className="flex flex-col w-full gap-3">
@@ -86,14 +88,14 @@ export default function ConfirmModal({
                     boxShadow: variant === 'danger' ? '0 8px 20px rgba(255, 76, 76, 0.3)' : '0 8px 20px rgba(10, 77, 104, 0.3)'
                   }}
                 >
-                  {confirmText}
+                  {ui(confirmText)}
                 </button>
                 
                 <button
                   onClick={onCancel}
                   className="w-full py-3 rounded-2xl font-bold text-sm text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                 >
-                  {cancelText}
+                  {ui(cancelText)}
                 </button>
               </div>
             </div>

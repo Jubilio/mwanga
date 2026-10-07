@@ -1,9 +1,11 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useTranslation } from 'react-i18next';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { fmt } from '../utils/calculations';
 import { motion } from 'framer-motion';
 
 export default function BalanceTrendChart({ data, currency }) {
+  useUiLanguage();
   const { t } = useTranslation();
   
   // Se não houver dados, mostramos um estado vazio elegante
@@ -11,7 +13,7 @@ export default function BalanceTrendChart({ data, currency }) {
     return (
       <div className="glass-card p-6 flex flex-col items-center justify-center min-h-[200px] text-center">
         <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-xl mb-3">📈</div>
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.charts.trend_empty') || 'Tendência não disponível'}</p>
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('dashboard.charts.trend_empty') || ui("Tendência não disponível")}</p>
       </div>
     );
   }
@@ -24,12 +26,12 @@ export default function BalanceTrendChart({ data, currency }) {
     >
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Fluxo de Património</h3>
-          <p className="text-xs font-bold text-midnight dark:text-white mt-1">Histórico dos últimos meses</p>
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{ui("Fluxo de Património")}</h3>
+          <p className="text-xs font-bold text-midnight dark:text-white mt-1">{ui("Histórico dos últimos meses")}</p>
         </div>
         <div className="flex items-center gap-2">
            <div className="h-2 w-2 rounded-full bg-sky" />
-           <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Saldo Consolidado</span>
+           <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{ui("Saldo Consolidado")}</span>
         </div>
       </div>
 
@@ -66,7 +68,7 @@ export default function BalanceTrendChart({ data, currency }) {
               }}
               itemStyle={{ color: '#fff', fontSize: '11px', fontWeight: 800 }}
               labelStyle={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px' }}
-              formatter={(value) => [fmt(value, currency), 'Saldo']}
+              formatter={(value) => [fmt(value, currency), ui("Saldo")]}
             />
             <Area 
               type="monotone" 

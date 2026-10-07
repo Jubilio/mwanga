@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import {
@@ -15,6 +16,7 @@ const G = {
 };
 
 export default function AdminUsers() {
+  useUiLanguage();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -32,7 +34,7 @@ export default function AdminUsers() {
       });
       setUsers(Array.isArray(resp.data) ? resp.data : []);
     } catch (err) {
-      setError(err.response?.data?.error || 'Falha ao carregar utilizadores.');
+      setError(err.response?.data?.error || ui("Falha ao carregar utilizadores."));
     } finally {
       setLoading(false);
     }
@@ -46,7 +48,7 @@ export default function AdminUsers() {
       });
       fetchUsers();
     } catch (err) {
-      setError(err.response?.data?.error || 'Falha ao atualizar estado KYC.');
+      setError(err.response?.data?.error || ui("Falha ao atualizar estado KYC."));
     }
   }
 
@@ -61,11 +63,9 @@ export default function AdminUsers() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: 900, margin: 0, fontFamily: "'Sora', sans-serif" }}>
-            <Users size={22} style={{ verticalAlign: 'middle', marginRight: '10px', color: G.gold }} />
-            Gestão de Utilizadores
-          </h1>
+            <Users size={22} style={{ verticalAlign: 'middle', marginRight: '10px', color: G.gold }} /> {ui("Gestão de Utilizadores")} </h1>
           <p style={{ color: G.muted, fontSize: '13px', margin: '4px 0 0' }}>
-            {users.length} utilizador{users.length !== 1 ? 'es' : ''} registado{users.length !== 1 ? 's' : ''}
+            {ui(users.length === 1 ? "{{count}} utilizador registado" : "{{count}} utilizadores registados", { count: users.length })}
           </p>
         </div>
         <button
@@ -80,7 +80,7 @@ export default function AdminUsers() {
           }}
         >
           <RefreshCw size={14} style={{ opacity: loading ? 0.4 : 1 }} />
-          {loading ? 'Atualizando...' : 'Atualizar'}
+          {loading ? ui("Atualizando...") : ui("Atualizar")}
         </button>
       </div>
 
@@ -93,7 +93,7 @@ export default function AdminUsers() {
         <Search size={16} color={G.muted} />
         <input
           type="text"
-          placeholder="Pesquisar por nome ou email..."
+          placeholder={ui("Pesquisar por nome ou email...")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{
@@ -122,11 +122,11 @@ export default function AdminUsers() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ color: G.muted, fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: `1px solid ${G.border}` }}>
-                <th style={{ padding: '14px 16px', textAlign: 'left' }}>Utilizador</th>
+                <th style={{ padding: '14px 16px', textAlign: 'left' }}>{ui("Utilizador")}</th>
                 <th style={{ padding: '14px 16px', textAlign: 'left' }}>KYC</th>
                 <th style={{ padding: '14px 16px', textAlign: 'left' }}>Score</th>
                 <th style={{ padding: '14px 16px', textAlign: 'left' }}>Docs</th>
-                <th style={{ padding: '14px 16px', textAlign: 'left' }}>Ações</th>
+                <th style={{ padding: '14px 16px', textAlign: 'left' }}>{ui("Ações")}</th>
               </tr>
             </thead>
             <tbody>
@@ -136,7 +136,7 @@ export default function AdminUsers() {
                     <div style={{ fontWeight: 700 }}>{user.name}</div>
                     <div style={{ fontSize: '11px', color: G.muted }}>{user.email}</div>
                     <div style={{ fontSize: '10px', color: G.muted, marginTop: '2px' }}>
-                      {user.role === 'admin' ? '🛡️ Admin' : 'Utilizador'}
+                      {user.role === 'admin' ? '🛡️ Admin' : ui("Utilizador")}
                     </div>
                   </td>
                   <td style={{ padding: '16px' }}>
@@ -178,7 +178,7 @@ export default function AdminUsers() {
                           background: 'none', border: 'none', cursor: user.kyc_status === 'approved' ? 'not-allowed' : 'pointer',
                           color: G.green, opacity: user.kyc_status === 'approved' ? 0.3 : 1,
                         }}
-                        title="Aprovar"
+                        title={ui("Aprovar")}
                       >
                         <CheckCircle size={18} />
                       </button>
@@ -189,7 +189,7 @@ export default function AdminUsers() {
                           background: 'none', border: 'none', cursor: user.kyc_status === 'rejected' ? 'not-allowed' : 'pointer',
                           color: G.red, opacity: user.kyc_status === 'rejected' ? 0.3 : 1,
                         }}
-                        title="Rejeitar"
+                        title={ui("Rejeitar")}
                       >
                         <XCircle size={18} />
                       </button>
@@ -200,7 +200,7 @@ export default function AdminUsers() {
               {filtered.length === 0 && (
                 <tr>
                   <td colSpan="5" style={{ padding: '32px', textAlign: 'center', color: G.muted }}>
-                    {loading ? 'A carregar...' : 'Nenhum utilizador encontrado.'}
+                    {loading ? ui("A carregar...") : ui("Nenhum utilizador encontrado.")}
                   </td>
                 </tr>
               )}
@@ -213,10 +213,11 @@ export default function AdminUsers() {
 }
 
 function KycBadge({ status }) {
+  useUiLanguage();
   const styles = {
-    pending: { bg: `${G.gold}18`, color: G.gold, label: 'Pendente' },
-    approved: { bg: `${G.green}18`, color: G.green, label: 'Aprovado' },
-    rejected: { bg: `${G.red}18`, color: G.red, label: 'Rejeitado' },
+    pending: { bg: `${G.gold}18`, color: G.gold, label: ui("Pendente") },
+    approved: { bg: `${G.green}18`, color: G.green, label: ui("Aprovado") },
+    rejected: { bg: `${G.red}18`, color: G.red, label: ui("Rejeitado") },
   }[status] || { bg: `${G.muted}18`, color: G.muted, label: status || 'N/A' };
 
   return (
@@ -224,7 +225,7 @@ function KycBadge({ status }) {
       fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '99px',
       background: styles.bg, color: styles.color, border: `1px solid ${styles.color}30`,
     }}>
-      {styles.label}
+      {ui(styles.label)}
     </span>
   );
 }

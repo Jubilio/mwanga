@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useTranslation } from 'react-i18next';
 import { useOutletContext } from 'react-router-dom';
 import { Download } from 'lucide-react';
@@ -27,6 +28,7 @@ import {
 import { normalizeCategory } from '../utils/categories';
 
 export default function Reports() {
+  useUiLanguage();
   const { state } = useFinance();
   const currency = state.settings.currency || 'MT';
   const startDay = state.settings.financial_month_start_day || 1;
@@ -104,7 +106,7 @@ export default function Reports() {
               </div>
             </div>
             <div style={{ fontSize: '0.85rem', fontWeight: 600, marginTop: '0.5rem' }}>
-              {risk.emoji} {risk.label}
+              {risk.emoji} {ui(risk.label)}
             </div>
           </div>
 
@@ -157,7 +159,7 @@ export default function Reports() {
               <div key={category.category}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.3rem' }}>
                   <span style={{ fontWeight: 500 }}>{getCategoryLabel(category.category)}</span>
-                  <span style={{ color: 'var(--color-muted)' }}>{fmt(category.amount, currency)} ({category.percent}%)</span>
+                  <span style={{ color: 'var(--color-muted)' }}>{fmt(category.amount, currency)} {ui("(")}{category.percent}%)</span>
                 </div>
                 <div className="progress-bar-track" style={{ height: '8px' }}>
                   <div className="progress-bar-fill" style={{ width: `${category.percent}%`, background: 'var(--color-coral)', height: '8px' }} />
@@ -206,7 +208,7 @@ export default function Reports() {
               ) : (
                 [...history].reverse().map(month => (
                   <tr key={month.month}>
-                    <td style={{ fontWeight: 500 }}>{month.label}</td>
+                    <td style={{ fontWeight: 500 }}>{ui(month.label)}</td>
                     <td style={{ color: 'var(--color-leaf)' }}>{fmt(month.receitas, currency)}</td>
                     <td style={{ color: 'var(--color-coral)' }}>{fmt(month.despesas, currency)}</td>
                     <td style={{ color: 'var(--color-gold)' }}>{fmt(month.renda, currency)}</td>
@@ -225,10 +227,11 @@ export default function Reports() {
 }
 
 function Metric({ label, value, color }) {
+  useUiLanguage();
   return (
     <div>
       <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-muted)', marginBottom: '0.2rem' }}>
-        {label}
+        {ui(label)}
       </div>
       <div style={{ fontWeight: 700, fontSize: '1.1rem', color }}>{value}</div>
     </div>

@@ -1,7 +1,9 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { Plus, X, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function InstallBanner({ installPrompt, onClose }) {
+  useUiLanguage();
   if (!installPrompt) return null;
 
   return (
@@ -18,8 +20,8 @@ export default function InstallBanner({ installPrompt, onClose }) {
               <Download className="text-white" size={24} />
             </div>
             <div>
-              <h4 className="text-sm font-black uppercase tracking-wider">Instalar Mwanga</h4>
-              <p className="text-xs text-white/70">Acesso rápido e offline no teu ecrã.</p>
+              <h4 className="text-sm font-black uppercase tracking-wider">{ui("Instalar Mwanga")}</h4>
+              <p className="text-xs text-white/70">{ui("Acesso rápido e offline no teu ecrã.")}</p>
             </div>
           </div>
 
@@ -31,9 +33,7 @@ export default function InstallBanner({ installPrompt, onClose }) {
                 if (outcome === 'accepted') onClose();
               }}
               className="rounded-xl bg-white px-4 py-2 text-xs font-black uppercase tracking-wider text-ocean transition active:scale-95"
-            >
-              Instalar
-            </button>
+            > {ui("Instalar")} </button>
             <button
               onClick={onClose}
               className="rounded-xl bg-white/10 p-2 text-white/60 hover:bg-white/20"

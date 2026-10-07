@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Lock, Mail, LogIn, AlertTriangle } from 'lucide-react';
@@ -11,6 +12,7 @@ function getApiUrl() {
 }
 
 export default function AdminLogin() {
+  useUiLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,11 +34,11 @@ export default function AdminLogin() {
       const data = await resp.json();
 
       if (!resp.ok) {
-        throw new Error(data?.error || data?.message || 'Autenticação falhou.');
+        throw new Error(data?.error || data?.message || ui("Autenticação falhou."));
       }
 
       if (data.user?.role !== 'admin') {
-        throw new Error('Acesso negado. Esta conta não tem privilégios de administrador.');
+        throw new Error(ui("Acesso negado. Esta conta não tem privilégios de administrador."));
       }
 
       localStorage.setItem('mwanga-admin-token', data.token);
@@ -105,9 +107,7 @@ export default function AdminLogin() {
 
             <p style={{
               color: '#6b7fa3', fontSize: '0.85rem', margin: 0, lineHeight: 1.6,
-            }}>
-              Acesso restrito à gestão da plataforma.
-            </p>
+            }}> {ui("Acesso restrito à gestão da plataforma.")} </p>
           </div>
 
           {/* Error */}
@@ -169,8 +169,7 @@ export default function AdminLogin() {
                 textTransform: 'uppercase', letterSpacing: '0.08em',
                 marginBottom: '0.5rem',
               }}>
-                <Lock size={13} /> Senha
-              </label>
+                <Lock size={13} /> {ui("Senha")} </label>
               <input
                 type="password"
                 required
@@ -219,7 +218,7 @@ export default function AdminLogin() {
                 boxShadow: loading ? 'none' : '0 8px 24px rgba(245,158,11,0.25)',
               }}
             >
-              {loading ? 'A verificar...' : <><LogIn size={18} /> Entrar no Painel</>}
+              {loading ? ui("A verificar...") : <><LogIn size={18} /> {ui("Entrar no Painel")}</>}
             </button>
           </form>
 
@@ -229,9 +228,7 @@ export default function AdminLogin() {
             paddingTop: '1.5rem',
             borderTop: '1px solid rgba(255,255,255,0.06)',
           }}>
-            <p style={{ color: '#4a5568', fontSize: '0.75rem', margin: 0 }}>
-              Área restrita Mwanga Intelligence ✦
-            </p>
+            <p style={{ color: '#4a5568', fontSize: '0.75rem', margin: 0 }}> {ui("Área restrita Mwanga Intelligence ✦")} </p>
           </div>
         </div>
       </div>

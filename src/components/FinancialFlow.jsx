@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useEffect, useRef, useMemo } from 'react';
 import * as d3 from 'd3';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
@@ -6,6 +7,7 @@ import { fmt, calcMonthlyTotals, calcCategoryBreakdown } from '../utils/calculat
 import { normalizeCategory } from '../utils/categories';
 
 export default function FinancialFlow({ transactions, currency, monthKey, rendas, startDay }) {
+  const uiLanguage = useUiLanguage();
   const { t } = useTranslation();
   const svgRef = useRef();
 
@@ -87,7 +89,7 @@ export default function FinancialFlow({ transactions, currency, monthKey, rendas
     })).filter(l => l.source !== undefined && l.target !== undefined);
 
     return { nodes, links: finalLinks };
-  }, [transactions, monthKey, rendas, startDay, t]);
+  }, [transactions, monthKey, rendas, startDay, t, uiLanguage]);
 
   useEffect(() => {
     if (!data || !svgRef.current || data.nodes.length === 0) return;
@@ -185,8 +187,8 @@ export default function FinancialFlow({ transactions, currency, monthKey, rendas
   return (
     <div className="glass-card p-6 overflow-visible">
       <div className="mb-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{t('reports.chart.sankey_title') || 'Fluxo de Caixa Sankey'}</h3>
-        <p className="text-xs font-bold text-midnight dark:text-white mt-1">{t('reports.chart.sankey_subtitle') || 'Sincronizado com os teus relatórios mensais'}</p>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{t('reports.chart.sankey_title') || ui("Fluxo de Caixa Sankey")}</h3>
+        <p className="text-xs font-bold text-midnight dark:text-white mt-1">{t('reports.chart.sankey_subtitle') || ui("Sincronizado com os teus relatórios mensais")}</p>
       </div>
       <div className="dark:text-white" style={{ minHeight: '350px' }}>
         <svg ref={svgRef}></svg>

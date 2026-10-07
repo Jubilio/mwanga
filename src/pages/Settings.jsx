@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +21,7 @@ const AVATARS = [
 ];
 
 export default function Settings() {
+  useUiLanguage();
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const { showToast } = useOutletContext();
@@ -36,7 +38,7 @@ export default function Settings() {
     user_salary: state.settings.user_salary || 50000,
     default_rent: state.settings.default_rent || 15000,
     landlord_name: state.settings.landlord_name || '',
-    household_name: state.settings.household_name || 'A Minha Família',
+    household_name: state.settings.household_name || ui("A Minha Família"),
     user_name: state.user?.name || '',
     currency: state.settings.currency || 'MT',
     cycle_start: state.settings.cycle_start || '1',
@@ -63,7 +65,7 @@ export default function Settings() {
         user_salary: state.settings.user_salary || 50000,
         default_rent: state.settings.default_rent || 15000,
         landlord_name: state.settings.landlord_name || '',
-        household_name: state.settings.household_name || 'A Minha Família',
+        household_name: state.settings.household_name || ui("A Minha Família"),
         user_name: state.user?.name || '',
         currency: state.settings.currency || 'MT',
         cycle_start: state.settings.cycle_start || '1',
@@ -102,7 +104,7 @@ export default function Settings() {
         
         if (form.user_name !== currentName) {
           if (form.user_name.trim().length > 0 && form.user_name.trim().length < 2) {
-            showToast(t('settings.toasts.name_too_short') || 'Nome deve ter pelo menos 2 caracteres');
+            showToast(t('settings.toasts.name_too_short') || ui("Nome deve ter pelo menos 2 caracteres"));
             userSectionValid = false;
           } else if (form.user_name.trim().length >= 2) {
             userPayload.name = form.user_name;
@@ -115,7 +117,7 @@ export default function Settings() {
 
         if (form.password) {
           if (form.password.length < 8) {
-            showToast(t('settings.toasts.pass_too_short') || 'Senha deve ter pelo menos 8 caracteres');
+            showToast(t('settings.toasts.pass_too_short') || ui("Senha deve ter pelo menos 8 caracteres"));
             userSectionValid = false;
           } else {
             userPayload.password = form.password;
@@ -171,7 +173,7 @@ export default function Settings() {
       console.error('Settings Save Error:', err);
       const errMsg = err.message || '';
       if (errMsg.includes('whatsapp_number_key') || errMsg.includes('duplicate') || errMsg.includes('já está em uso')) {
-        showToast(t('settings.toasts.whatsapp_duplicate') || 'Este número de WhatsApp já está registado noutra conta.');
+        showToast(t('settings.toasts.whatsapp_duplicate') || ui("Este número de WhatsApp já está registado noutra conta."));
       } else {
         showToast(t('settings.toasts.save_error'));
       }
@@ -244,7 +246,7 @@ export default function Settings() {
               }`}
           >
             <tab.icon size={18} />
-            <span className="hidden sm:inline">{tab.label}</span>
+            <span className="hidden sm:inline">{ui(tab.label)}</span>
           </button>
         ))}
       </div>

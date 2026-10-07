@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useOutletContext, useLocation, useNavigate } from 'react-router-dom';
@@ -31,6 +32,7 @@ function renderBold(text) {
 
 // ─── Typing Indicator ─────────────────────────────────────────────────────────
 function TypingDots() {
+  useUiLanguage();
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '12px 16px' }}>
       {[0, 1, 2].map(i => (
@@ -46,6 +48,7 @@ function TypingDots() {
 
 // ─── Score Ring ───────────────────────────────────────────────────────────────
 function ScoreRing({ score, label, biblicalLabel }) {
+  useUiLanguage();
   const pct = score || 0;
   const color = pct >= 75 ? '#00D68F' : pct >= 50 ? '#F59E0B' : '#FF4C4C';
   const r = 28, circ = 2 * Math.PI * r;
@@ -62,9 +65,9 @@ function ScoreRing({ score, label, biblicalLabel }) {
       </svg>
       <div>
         <div style={{ fontSize: 26, fontWeight: 900, color, lineHeight: 1 }}>{pct}</div>
-        <div style={{ fontSize: 11, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
+        <div style={{ fontSize: 11, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{ui(label)}</div>
         {biblicalLabel && (
-          <div style={{ fontSize: 11, color, fontWeight: 700, marginTop: 3 }}>{biblicalLabel}</div>
+          <div style={{ fontSize: 11, color, fontWeight: 700, marginTop: 3 }}>{ui(biblicalLabel)}</div>
         )}
       </div>
     </div>
@@ -73,6 +76,7 @@ function ScoreRing({ score, label, biblicalLabel }) {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function Insights() {
+  useUiLanguage();
   const { t, i18n } = useTranslation();
   const { showToast } = useOutletContext();
   const { state } = useFinance();
@@ -94,6 +98,14 @@ export default function Insights() {
 
   useEffect(() => {
     if (recognitionRef.current) recognitionRef.current.lang = i18n.resolvedLanguage === 'en' ? 'en-GB' : 'pt-PT';
+  }, [i18n.resolvedLanguage]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    api.get('/binth/score', { signal: controller.signal })
+      .then(response => setScore(response.data))
+      .catch(() => {});
+    return () => controller.abort();
   }, [i18n.resolvedLanguage]);
 
   // Scroll to bottom on new messages
@@ -137,10 +149,6 @@ export default function Insights() {
           });
       }
 
-      // 2. Load Score
-      api.get('/binth/score')
-        .then(r => setScore(r.data))
-        .catch(() => {});
     };
 
     loadData();
@@ -174,7 +182,7 @@ export default function Insights() {
 
         if (event.error === 'not-allowed') {
           // Permissão negada — mostrar guia
-          showToast('Permissão do microfone negada. Clica no cadeado na barra de endereços para autorizar.', 'error');
+          showToast(ui("Permissão do microfone negada. Clica no cadeado na barra de endereços para autorizar."), 'error');
         } else if (event.error === 'network') {
           // Erro de rede — tentar novamente automaticamente até 2x
           if (micRetryRef.current < 2) {
@@ -182,13 +190,13 @@ export default function Insights() {
             setTimeout(() => {
               try { recognition.start(); } catch (_) { setIsListening(false); }
             }, 1200);
-            showToast(`Reconhecimento de voz sem rede — tentando novamente (${micRetryRef.current}/2)...`, 'warning');
+            showToast(ui("Reconhecimento de voz sem rede — tentando novamente ({{p0}}/2)...", { p0: micRetryRef.current }), 'warning');
           } else {
             micRetryRef.current = 0;
-            showToast('O reconhecimento de voz precisa de ligação à internet (Chrome/Edge). Escreve a mensagem diretamente.', 'warning');
+            showToast(ui("O reconhecimento de voz precisa de ligação à internet (Chrome/Edge). Escreve a mensagem diretamente."), 'warning');
           }
         } else if (event.error === 'no-speech') {
-          showToast('Não foi detetada nenhuma voz. Tenta novamente.', 'warning');
+          showToast(ui("Não foi detetada nenhuma voz. Tenta novamente."), 'warning');
         } else if (event.error === 'aborted') {
           // Ignorar — utilizador cancelou intencionalmente
         } else {
@@ -213,7 +221,7 @@ export default function Insights() {
         recognitionRef.current?.stop();
       } else {
         if (!recognitionRef.current) {
-          showToast('O teu browser não suporta comandos de voz.', 'warning');
+          showToast(ui("O teu browser não suporta comandos de voz."), 'warning');
           return;
         }
         recognitionRef.current.start();
@@ -228,7 +236,7 @@ export default function Insights() {
     const msg = (text || input).trim();
     if (!msg || loading) return;
 
-    if (msg === 'Sim, registar agora') {
+    if (['Sim, registar agora', 'Yes, record now'].includes(msg)) {
       const lastMsg = messages.filter(m => m.pending_transaction).pop();
       if (lastMsg?.pending_transaction) {
         const tr = lastMsg.pending_transaction;
@@ -240,7 +248,7 @@ export default function Insights() {
           cat: tr.category,
           account_id: state.settings.default_expense_account_id || null
         }).then(() => {
-          showToast('Transação registada pela Binth! 🚀', 'success');
+          showToast(ui("Transação registada pela Binth! 🚀"), 'success');
           // Update state manually or reload
           window.location.reload(); 
         });
@@ -260,9 +268,9 @@ export default function Insights() {
       
       const assistantMsg = {
         role: 'assistant',
-        content: `Detetei um SMS do **${smsData.service}**!\n\n**Valor:** ${smsData.amount} MT\n**Tipo:** ${smsData.type === 'receita' ? 'Entrada' : 'Saída'}\n**Origem/Destino:** ${smsData.description}\n\nQueres que eu registe esta transação agora?`,
+        content: ui("Detetei um SMS do **{{p0}}**! **Valor:** {{p1}} MT **Tipo:** {{p2}} **Origem/Destino:** {{p3}} Queres que eu registe esta transação agora?", { p0: smsData.service, p1: smsData.amount, p2: smsData.type === 'receita' ? ui("Entrada") : ui("Saída"), p3: smsData.description }),
         insight_type: 'action',
-        quick_actions: ['Sim, registar agora', 'Não, obrigado'],
+        quick_actions: [ui("Sim, registar agora"), ui("Não, obrigado")],
         pending_transaction: smsData,
         timestamp: Date.now()
       };
@@ -439,7 +447,7 @@ export default function Insights() {
                           color: '#a78bfa', cursor: 'pointer',
                           transition: 'all 0.15s', fontFamily: "'DM Sans', sans-serif",
                         }}
-                      >{qa}</button>
+                      >{ui(qa)}</button>
                     ))}
                   </div>
                 )}
@@ -471,7 +479,7 @@ export default function Insights() {
           {micSupportedRef.current && (
             <button
               onClick={toggleListening}
-              title={isListening ? 'Parar gravação' : 'Falar com a Binth (requer internet no Chrome/Edge)'}
+              title={isListening ? ui("Parar gravação") : ui("Falar com a Binth (requer internet no Chrome/Edge)")}
               className={isListening ? 'animate-pulse' : ''}
               style={{
                 width: 44, height: 44, borderRadius: 12, border: 'none',
@@ -542,12 +550,8 @@ export default function Insights() {
               <Database size={18} color="#a78bfa" />
             </div>
             <div>
-              <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff', margin: 0 }}>
-                Como a Binth Aprende dos Teus Dados
-              </h3>
-              <p style={{ fontSize: 11, color: '#5a7a9a', margin: '2px 0 0' }}>
-                IA ativa a mapear o teu ecossistema financeiro real
-              </p>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff', margin: 0 }}> {ui("Como a Binth Aprende dos Teus Dados")} </h3>
+              <p style={{ fontSize: 11, color: '#5a7a9a', margin: '2px 0 0' }}> {ui("IA ativa a mapear o teu ecossistema financeiro real")} </p>
             </div>
           </div>
           
@@ -562,9 +566,7 @@ export default function Insights() {
               width: 6, height: 6, borderRadius: '50%',
               background: '#00D68F',
               animation: 'binthBounce 1.2s infinite'
-            }} />
-            APRENDIZADO ATIVO (100%)
-          </div>
+            }} /> {ui("APRENDIZADO ATIVO (100%)")} </div>
         </div>
 
         {/* Dynamic Learning Stats */}
@@ -576,19 +578,17 @@ export default function Insights() {
         }}>
           {/* 1. Transactions Synced */}
           <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 14 }}>
-            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Dados Mapeados</span>
+            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{ui("Dados Mapeados")}</span>
             <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
               {state.transacoes?.length || 0}
-              <span style={{ fontSize: 11, color: '#5a7a9a', fontWeight: 500 }}>itens</span>
+              <span style={{ fontSize: 11, color: '#5a7a9a', fontWeight: 500 }}>{ui("itens")}</span>
             </div>
-            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}>
-              Padrões de gastos e receitas analisados automaticamente.
-            </p>
+            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}> {ui("Padrões de gastos e receitas analisados automaticamente.")} </p>
           </div>
 
           {/* 2. Savings Rate */}
           <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 14 }}>
-            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Taxa de Poupança</span>
+            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{ui("Taxa de Poupança")}</span>
             <div style={{
               fontSize: 20, fontWeight: 900,
               color: stats.savingsRate > 20 ? '#00D68F' : stats.savingsRate > 0 ? '#F59E0B' : '#FF4C4C',
@@ -596,33 +596,27 @@ export default function Insights() {
             }}>
               {stats.savingsRate ? `${Math.round(stats.savingsRate)}%` : '0%'}
             </div>
-            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}>
-              Margem livre detetada após subtrair despesas de receitas.
-            </p>
+            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}> {ui("Margem livre detetada após subtrair despesas de receitas.")} </p>
           </div>
 
           {/* 3. Cash Runway */}
           <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 14 }}>
-            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Reserva de Emergência</span>
+            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{ui("Reserva de Emergência")}</span>
             <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
               {stats.runwayMonths || 0}
-              <span style={{ fontSize: 11, color: '#5a7a9a', fontWeight: 500 }}>meses</span>
+              <span style={{ fontSize: 11, color: '#5a7a9a', fontWeight: 500 }}>{ui("meses")}</span>
             </div>
-            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}>
-              Tempo que sobreviverias com os saldos líquidos atuais.
-            </p>
+            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}> {ui("Tempo que sobreviverias com os saldos líquidos atuais.")} </p>
           </div>
 
           {/* 4. Active Accounts */}
           <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 14 }}>
-            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Canais Conectados</span>
+            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{ui("Canais Conectados")}</span>
             <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
               {state.contas?.length || 0}
-              <span style={{ fontSize: 11, color: '#5a7a9a', fontWeight: 500 }}>contas</span>
+              <span style={{ fontSize: 11, color: '#5a7a9a', fontWeight: 500 }}>{ui("contas")}</span>
             </div>
-            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}>
-              M-Pesa, e-mola, carteira física e contas sincronizadas.
-            </p>
+            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}> {ui("M-Pesa, e-mola, carteira física e contas sincronizadas.")} </p>
           </div>
         </div>
 
@@ -635,9 +629,7 @@ export default function Insights() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <Sparkles size={14} color="#a78bfa" />
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Intervenções Inteligentes Recomendadas
-            </span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em' }}> {ui("Intervenções Inteligentes Recomendadas")} </span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -646,10 +638,8 @@ export default function Insights() {
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <AlertTriangle size={14} color="#FF4C4C" style={{ marginTop: 2, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>Alerta de Liquidez Crítica</div>
-                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}>
-                    O teu caixa disponível é muito baixo. <strong>Evita qualquer despesa supérflua</strong> nas próximas 72 horas para proteger a tua estabilidade básica.
-                  </p>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{ui("Alerta de Liquidez Crítica")}</div>
+                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}> {ui("O teu caixa disponível é muito baixo.")} <strong>{ui("Evita qualquer despesa supérflua")}</strong> {ui("nas próximas 72 horas para proteger a tua estabilidade básica.")} </p>
                 </div>
               </div>
             ) : null}
@@ -659,20 +649,16 @@ export default function Insights() {
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <Layers size={14} color="#F59E0B" style={{ marginTop: 2, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>Mapeamento Orçamental Ativo</div>
-                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}>
-                    A Binth detetou que os teus limites de orçamentos cobrem todas as categorias essenciais. Rever orçamentos pode liberar até 15% de margem no teu mês.
-                  </p>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{ui("Mapeamento Orçamental Ativo")}</div>
+                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}> {ui("A Binth detetou que os teus limites de orçamentos cobrem todas as categorias essenciais. Rever orçamentos pode liberar até 15% de margem no teu mês.")} </p>
                 </div>
               </div>
             ) : (
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <Layers size={14} color="#F59E0B" style={{ marginTop: 2, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>Criar Limites de Orçamento</div>
-                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}>
-                    Sem limites definidos, o teu dinheiro flui sem direção. Cria o teu primeiro orçamento para ensinar a IA a proteger o teu consumo.
-                  </p>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{ui("Criar Limites de Orçamento")}</div>
+                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}> {ui("Sem limites definidos, o teu dinheiro flui sem direção. Cria o teu primeiro orçamento para ensinar a IA a proteger o teu consumo.")} </p>
                 </div>
               </div>
             )}
@@ -682,20 +668,16 @@ export default function Insights() {
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <Compass size={14} color="#00D68F" style={{ marginTop: 2, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>Reforçar a meta "{state.metas[0].name}"</div>
-                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}>
-                    Aproveita as entradas livres para aproximar-te do teu sonho. Que tal alocar um aporte extra de 10% do teu caixa nesta meta?
-                  </p>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{ui("Reforçar a meta \"")}{state.metas[0].name}"</div>
+                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}> {ui("Aproveita as entradas livres para aproximar-te do teu sonho. Que tal alocar um aporte extra de 10% do teu caixa nesta meta?")} </p>
                 </div>
               </div>
             ) : (
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <Compass size={14} color="#00D68F" style={{ marginTop: 2, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>Criar uma Meta de Poupança (Pé de Meia)</div>
-                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}>
-                    O sábio guarda para o amanhã. Inicia uma meta de poupança comunitária (como Xitique) ou uma meta individual no Mwanga hoje.
-                  </p>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{ui("Criar uma Meta de Poupança (Pé de Meia)")}</div>
+                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}> {ui("O sábio guarda para o amanhã. Inicia uma meta de poupança comunitária (como Xitique) ou uma meta individual no Mwanga hoje.")} </p>
                 </div>
               </div>
             )}
@@ -729,7 +711,7 @@ export default function Insights() {
                 <div key={i}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                     <div>
-                      <span style={{ fontSize: 12, color: '#8a9ab8' }}>{f.name}</span>
+                      <span style={{ fontSize: 12, color: '#8a9ab8' }}>{ui(f.name)}</span>
                       {f.biblical_principle && (
                         <span style={{ fontSize: 10, color: '#c8a84b', marginLeft: 8, opacity: 0.8 }}>&#128214; {f.biblical_principle}</span>
                       )}

@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -25,10 +26,10 @@ const G = {
 };
 
 const adminNavItems = [
-  { to: '/admin', icon: LayoutDashboard, label: 'Painel Geral', end: true },
-  { to: '/admin/users', icon: Users, label: 'Utilizadores', end: false },
+  { to: '/admin', icon: LayoutDashboard, label: ui("Painel Geral"), end: true },
+  { to: '/admin/users', icon: Users, label: ui("Utilizadores"), end: false },
   { to: '/admin/feedback', icon: MessageSquare, label: 'Feedback', end: false },
-  { to: '/admin/settings', icon: Settings, label: 'Configuração', end: false },
+  { to: '/admin/settings', icon: Settings, label: ui("Configuração"), end: false },
 ];
 
 function getAdminUser() {
@@ -41,6 +42,7 @@ function getAdminUser() {
 }
 
 export default function AdminLayout() {
+  useUiLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -72,7 +74,7 @@ export default function AdminLayout() {
         color: G.muted,
         fontFamily: "'Inter', system-ui, sans-serif",
       }}>
-        <div className="animate-pulse">A carregar painel...</div>
+        <div className="animate-pulse">{ui("A carregar painel...")}</div>
       </div>
     );
   }
@@ -141,9 +143,7 @@ export default function AdminLayout() {
               <div style={{ fontSize: '14px', fontWeight: 800, letterSpacing: '-0.01em' }}>
                 Mwanga <span style={{ color: G.gold }}>Admin</span>
               </div>
-              <div style={{ fontSize: '10px', color: G.muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                Gestão de plataforma
-              </div>
+              <div style={{ fontSize: '10px', color: G.muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}> {ui("Gestão de plataforma")} </div>
             </div>
           </div>
 
@@ -180,7 +180,7 @@ export default function AdminLayout() {
               })}
             >
               <item.icon size={18} />
-              <span>{item.label}</span>
+              <span>{ui(item.label)}</span>
               <ChevronRight size={14} style={{ marginLeft: 'auto', opacity: 0.4 }} />
             </NavLink>
           ))}
@@ -233,8 +233,7 @@ export default function AdminLayout() {
               transition: 'all 0.2s',
             }}
           >
-            <LogOut size={14} /> Terminar Sessão Admin
-          </button>
+            <LogOut size={14} /> {ui("Terminar Sessão Admin")} </button>
         </div>
       </aside>
 
@@ -294,9 +293,7 @@ export default function AdminLayout() {
                 fontWeight: 700,
                 display: 'flex', alignItems: 'center', gap: '6px',
               }}
-            >
-              Ir para App
-            </button>
+            > {ui("Ir para App")} </button>
             <div style={{
               width: '36px', height: '36px',
               background: `linear-gradient(135deg, ${G.gold}, ${G.gold2})`,

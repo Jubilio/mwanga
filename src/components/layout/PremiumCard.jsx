@@ -1,8 +1,10 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useFinance } from '../../hooks/useFinance';
 
 export default function PremiumCard() {
+  useUiLanguage();
   const { state } = useFinance();
 
   // Don't show card if user is already Pro
@@ -24,16 +26,12 @@ export default function PremiumCard() {
           <span className="text-xs font-bold text-white uppercase tracking-widest">Nexo Vibe Premium</span>
         </div>
 
-        <p className="text-xs text-slate-300 mb-4 leading-relaxed">
-          Desbloqueie Inteligência Avançada, Relatórios Detalhados e Simuladores Exclusivos.
-        </p>
+        <p className="text-xs text-slate-300 mb-4 leading-relaxed"> {ui("Desbloqueie Inteligência Avançada, Relatórios Detalhados e Simuladores Exclusivos.")} </p>
 
         <Link
           to="/pricing"
           className="w-full inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold text-midnight bg-linear-to-r from-[#D4AF37] to-[#e6ca73] hover:from-[#e6ca73] hover:to-sand transition-all transform active:scale-95 shadow-[0_0_15px_rgba(212,175,55,0.4)]"
-        >
-          Fazer Upgrade
-        </Link>
+        > {ui("Fazer Upgrade")} </Link>
       </div>
     </div>
   );

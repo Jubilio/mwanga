@@ -1,8 +1,10 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { G } from "../../theme/tokens";
 
 export function Card({ children, style = {}, onClick, glow }) {
+  useUiLanguage();
   const [h, setH] = useState(false);
   return (
     <div onClick={onClick}
@@ -22,6 +24,7 @@ export function Card({ children, style = {}, onClick, glow }) {
 }
 
 export function Btn({ children, onClick, variant = "gold", size = "md", disabled, style = {} }) {
+  useUiLanguage();
   const bg = {
     gold: `linear-gradient(135deg,${G.gold},${G.gold2})`,
     green: `linear-gradient(135deg,${G.credit},${G.credit2})`,
@@ -46,6 +49,7 @@ export function Btn({ children, onClick, variant = "gold", size = "md", disabled
 }
 
 export function ProgressBar({ value, color, height = 7, animated }) {
+  useUiLanguage();
   return (
     <div style={{ height, background: G.muted3, borderRadius: 99, overflow: "hidden" }}>
       <div style={{
@@ -59,15 +63,17 @@ export function ProgressBar({ value, color, height = 7, animated }) {
 }
 
 export function Badge({ label, color }) {
+  useUiLanguage();
   return (
     <span style={{
       fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99,
       background: `${color}18`, color, border: `1px solid ${color}30`,
-    }}>{label}</span>
+    }}>{ui(label)}</span>
   );
 }
 
 export function ScoreRing({ score, color, size = 80 }) {
+  useUiLanguage();
   const r = (size / 2) - 8;
   const circ = 2 * Math.PI * r;
   const dash = (score / 100) * circ;
@@ -86,10 +92,12 @@ export function ScoreRing({ score, color, size = 80 }) {
 }
 
 export function Divider() {
+  useUiLanguage();
   return <div style={{ height: 1, background: G.border, margin: "4px 0" }} />;
 }
 
 export function ProGate({ children, isPro, title, description }) {
+  useUiLanguage();
   const { t } = useTranslation();
   if (isPro) return children;
   return (

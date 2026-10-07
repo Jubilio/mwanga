@@ -1,3 +1,4 @@
+import { ui } from '../utils/uiTranslation';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, Link } from 'react-router-dom';
@@ -90,7 +91,7 @@ export default function ResetPassword() {
 
               <div>
                 <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Lock size={14} /> {t('auth.reset.confirm_label') || 'Confirmar Senha'}
+                  <Lock size={14} /> {t('auth.reset.confirm_label') || ui("Confirmar Senha")}
                 </label>
                 <input
                   type="password" required minLength={8} className="form-input"

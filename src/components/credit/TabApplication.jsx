@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { G } from "../../theme/tokens";
@@ -8,6 +9,7 @@ import { useToast } from "../Toast";
 import { Card, Btn, Badge } from "./CreditUI";
 
 export default function TabApplication({ scoreData, eligData, onSuccess }) {
+  useUiLanguage();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [step, setStep] = useState(1); // 1-pre | 2-form | 3-docs | 4-review | 5-submitted
@@ -37,9 +39,9 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
   const totalDue = parcela * form.months;
 
   const PARTNERS = [
-    { id: "parceiro_a", name: t('credit.apply.partner_a_name'), rate: "5%/mês", rating: "⭐⭐⭐⭐⭐", tempo: "2–4h" },
-    { id: "parceiro_b", name: t('credit.apply.partner_b_name'), rate: "8%/mês", rating: "⭐⭐⭐⭐", tempo: "1–2h" },
-    { id: "parceiro_c", name: t('credit.apply.partner_c_name'), rate: "15%/mês", rating: "⭐⭐⭐", tempo: "30min" },
+    { id: "parceiro_a", name: t('credit.apply.partner_a_name'), rate: ui("5%/mês"), rating: "⭐⭐⭐⭐⭐", tempo: "2–4h" },
+    { id: "parceiro_b", name: t('credit.apply.partner_b_name'), rate: ui("8%/mês"), rating: "⭐⭐⭐⭐", tempo: "1–2h" },
+    { id: "parceiro_c", name: t('credit.apply.partner_c_name'), rate: ui("15%/mês"), rating: "⭐⭐⭐", tempo: "30min" },
   ];
 
   const PURPOSES = [
@@ -101,7 +103,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
     );
   }
 
-  const steps = t('credit.apply.steps', { returnObjects: true }) || ["Verificação", "Proposta", "Documentos", "Revisão"];
+  const steps = t('credit.apply.steps', { returnObjects: true }) || [ui("Verificação"), ui("Proposta"), ui("Documentos"), ui("Revisão")];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -140,7 +142,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
             <div style={{ fontSize: 14, color: G.muted, lineHeight: 1.7, marginBottom: 20 }}>
               {t('credit.apply.pre_desc_1')}
               <strong style={{ color: G.text }}> MT {fmtShort(scoreData.maxAmount)}</strong>.
-              {t('credit.apply.pre_desc_2')} <strong style={{ color: G.credit }}>{scoreData.score}/100 — {scoreData.label}</strong>
+              {t('credit.apply.pre_desc_2')} <strong style={{ color: G.credit }}>{scoreData.score}/100 — {ui(scoreData.label)}</strong>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
               {[
@@ -277,7 +279,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
                     {docs[doc.key] ? "✅" : doc.icon}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: docs[doc.key] ? G.credit : G.text }}>{doc.label}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: docs[doc.key] ? G.credit : G.text }}>{ui(doc.label)}</div>
                     <div style={{ fontSize: 12, color: docs[doc.key] ? G.credit : G.muted }}>
                       {docs[doc.key] ? docs[doc.key].name : doc.desc}
                     </div>

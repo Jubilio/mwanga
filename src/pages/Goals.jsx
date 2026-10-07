@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useOutletContext } from 'react-router-dom';
@@ -41,6 +42,7 @@ const GOAL_ICONS = {
 };
 
 export default function Goals() {
+  const uiLanguage = useUiLanguage();
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const currency = state.settings.currency || 'MT';
@@ -58,7 +60,7 @@ export default function Goals() {
     poupado: '', 
     prazo: '', 
     icon: 'general',
-    cat: 'Geral' 
+    cat: "Geral"
   });
 
   // Calculate global stats
@@ -69,7 +71,7 @@ export default function Goals() {
     const activeGoals = state.metas?.filter(m => Number(m.poupado) < Number(m.alvo)).length || 0;
     
     return { totalTarget, totalSaved, globalProgress, activeGoals };
-  }, [state.metas]);
+  }, [state.metas, uiLanguage]);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -85,7 +87,7 @@ export default function Goals() {
         poupado: parseFloat(form.poupado) || 0 
       },
     });
-    setForm({ nome: '', alvo: '', poupado: '', prazo: '', icon: 'general', cat: 'Geral' });
+    setForm({ nome: '', alvo: '', poupado: '', prazo: '', icon: 'general', cat: "Geral" });
     setIsFormOpen(false);
     showToast(t('goals.form.toast_success'));
   }

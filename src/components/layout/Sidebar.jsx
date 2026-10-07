@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Settings, LogOut } from 'lucide-react';
@@ -8,6 +9,7 @@ import MwangaLogo from '../MwangaLogo';
 
 // ─── PRO Badge ───────────────────────────────────────────────────────────────
 function ProBadge() {
+  useUiLanguage();
   return (
     <span style={{
       fontSize: 9, fontWeight: 800, letterSpacing: '0.08em',
@@ -20,6 +22,7 @@ function ProBadge() {
 
 // ─── Pro Locked Modal ─────────────────────────────────────────────────────────
 function ProLockedPanel({ item, onClose, onUpgrade }) {
+  useUiLanguage();
   const { t } = useTranslation();
   return (
     <div
@@ -93,6 +96,7 @@ function ProLockedPanel({ item, onClose, onUpgrade }) {
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 export default function Sidebar({ isOpen, onClose }) {
+  useUiLanguage();
   const [proModal, setProModal] = useState(null);
   const { state } = useFinance();
   const navigate = useNavigate();
@@ -140,8 +144,8 @@ export default function Sidebar({ isOpen, onClose }) {
         { icon: '⇩', label: t('layout.sms_import'), to: '/sms-import', pro: true, highlight: true },
         { icon: '◧', label: t('layout.patrimony'), to: '/patrimonio', pro: true },
         { icon: '⧉', label: t('layout.simulators'), to: '/simuladores', pro: true },
-        { icon: '⏳', label: 'Máquina do Tempo', to: '/time-machine', pro: true },
-        { icon: '👑', label: 'Mordomia', to: '/mordomia', pro: true },
+        { icon: '⏳', label: ui("Máquina do Tempo"), to: '/time-machine', pro: true },
+        { icon: '👑', label: ui("Mordomia"), to: '/mordomia', pro: true },
         { icon: '↗', label: t('layout.report'), to: '/relatorio', pro: true },
       ],
     },
@@ -263,7 +267,7 @@ export default function Sidebar({ isOpen, onClose }) {
                             fontSize: 14.5, flex: 1,
                             color: isActive ? '#F59E0B' : item.highlight ? '#e0a840' : '#4a5568',
                             fontWeight: isActive ? 600 : item.highlight ? 500 : 400,
-                          }}>{item.label}</span>
+                          }}>{ui(item.label)}</span>
                           {!isPro && <ProBadge />}
                         </>
                       )}
@@ -296,7 +300,7 @@ export default function Sidebar({ isOpen, onClose }) {
                             color: isActive ? '#F59E0B' : '#c8d6e8',
                             fontWeight: isActive ? 600 : 400,
                             transition: 'color 0.18s',
-                          }}>{item.label}</span>
+                          }}>{ui(item.label)}</span>
                         </>
                       )}
                     </NavLink>
@@ -323,7 +327,7 @@ export default function Sidebar({ isOpen, onClose }) {
                     {({ isActive }) => (
                       <>
                         <span style={{ fontSize: 17, width: 22, textAlign: 'center', flexShrink: 0, color: isActive ? '#F59E0B' : '#8a9ab8' }}>{item.icon}</span>
-                        <span style={{ fontSize: 14.5, flex: 1, color: isActive ? '#F59E0B' : '#c8d6e8', fontWeight: isActive ? 600 : 400 }}>{item.label}</span>
+                        <span style={{ fontSize: 14.5, flex: 1, color: isActive ? '#F59E0B' : '#c8d6e8', fontWeight: isActive ? 600 : 400 }}>{ui(item.label)}</span>
                       </>
                     )}
                   </NavLink>

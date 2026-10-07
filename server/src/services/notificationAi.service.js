@@ -31,6 +31,7 @@ function buildFallbackContent({
   eventContext = {},
   summary = {},
   actionPayload = {},
+  language = 'pt',
 }) {
   const userName = summary.userName || 'amigo';
   const tone = resolveTone(notificationType, eventContext, summary);
@@ -38,6 +39,19 @@ function buildFallbackContent({
   const usagePercent = Number(eventContext.usagePercent || 0);
   const streakDays = Number(eventContext.streakDays || 0);
   const date = actionPayload.date || new Date().toISOString().slice(0, 10);
+
+  if (language === 'en') {
+    const name = summary.userName || 'friend';
+    const budgetCategory = eventContext.category || summary.topOverBudgetCategory || 'your budget';
+    const content = notificationType === 'warning'
+      ? { title: `Pressure on ${budgetCategory}`, message: `${name}, you have used ${usagePercent}% of the limit for ${budgetCategory}. Review spending to stay on plan.`, quickActions: ['View budget', 'Adjust spending', 'Close the day'] }
+      : notificationType === 'motivation'
+      ? { title: 'Your financial streak is active', message: `${name}, you have stayed consistent for ${streakDays} days. A quick entry today keeps your streak going.`, quickActions: ['Record now', 'View progress', 'Continue streak'] }
+      : eventContext.triggerType === 'monthly_commitments_due'
+      ? { title: 'Monthly commitments ahead', message: `${name}, you have commitments to confirm this cycle. Do a quick check-in before the month catches you off guard.`, quickActions: ['Open summary', 'Confirm payment', 'Close the day'] }
+      : { title: 'Your financial day is still blank', message: `${name}, you still need to close ${date}. It takes less than 20 seconds to keep your financial habits on track.`, quickActions: ['Add expense', 'Add income', 'Close the day'] };
+    return { ...content, title: truncate(content.title, 42), message: truncate(content.message, 128), tone };
+  }
 
   if (notificationType === 'warning') {
     return {
@@ -117,9 +131,13 @@ async function generatePersonalizedNotification({
     actionPayload,
   });
 
+  // Keep English system copy with the existing JSON payload; no schema change is needed.
+  const localizedContent = { en: buildFallbackContent({ notificationType, eventContext, summary: contextSummary, actionPayload, language: 'en' }) };
+
   if (process.env.NOTIFICATION_AI_DISABLED === 'true' || !hasAiProvider()) {
     return {
       ...fallback,
+      localizedContent,
       aiPersonalized: false,
       contextSummary,
     };
@@ -179,6 +197,7 @@ Responde em JSON puro com:
       quickActions: actions.slice(0, 2),
       aiPersonalized: true,
       contextSummary,
+      localizedContent,
     };
   } catch (error) {
     logger.warn(`AI notification personalization fallback activated: ${error.message}`);
@@ -190,4 +209,4 @@ Responde em JSON puro com:
   }
 }
 
-module.exports = { generatePersonalizedNotification };
+module.exports = { generatePersonalizedNotification, buildFallbackContent };

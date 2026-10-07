@@ -1,3 +1,4 @@
+import { uiLocale } from '../utils/uiTranslation';
 import { Plus, ArrowUpRight, Coins, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useMemo } from 'react';
@@ -127,12 +128,12 @@ export default function Dashboard() {
     const now = new Date();
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = d.toLocaleString('pt-PT', { month: 'short' }).replace('.', '');
+      const key = d.toLocaleString(uiLocale(), { month: 'short' }).replace('.', '');
       months[key] = { name: key, total: 0, rawDate: d };
     }
     state.transacoes.forEach(t => {
       const tDate = new Date(t.data);
-      const key = tDate.toLocaleString('pt-PT', { month: 'short' }).replace('.', '');
+      const key = tDate.toLocaleString(uiLocale(), { month: 'short' }).replace('.', '');
       if (months[key]) {
         if (t.tipo === 'receita') months[key].total += Number(t.valor);
         else months[key].total -= Number(t.valor);

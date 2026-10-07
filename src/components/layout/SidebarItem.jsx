@@ -1,6 +1,8 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { NavLink } from 'react-router-dom';
 
 export default function SidebarItem({ to, icon: Icon, label, premium, end }) {
+  useUiLanguage();
   return (
     <NavLink
       to={to}
@@ -32,7 +34,7 @@ export default function SidebarItem({ to, icon: Icon, label, premium, end }) {
               ${isActive ? "text-white" : "text-slate-300 group-hover:text-white"}
             `}
           >
-            {label}
+            {ui(label)}
           </span>
           
           {premium && (
