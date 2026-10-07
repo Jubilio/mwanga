@@ -1,21 +1,21 @@
-import { Camera, Sparkles, Loader2, CloudCheck, Home as HomeIcon } from 'lucide-react';
+import { Camera, Sparkles, Loader2, CloudCheck, Clock, AlertTriangle, Home as HomeIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-export default function SettingsHero({ 
-  form, 
+export default function SettingsHero({
+  form,
   state,
-  isSaving, 
-  showAvatarGallery, 
-  setShowAvatarGallery, 
-  AVATARS, 
-  setFormDirty, 
-  dispatch, 
-  fileInputRef, 
-  handleImageUpload 
+  isSaving,
+  showAvatarGallery,
+  setShowAvatarGallery,
+  AVATARS,
+  setFormDirty,
+  saveStatus,
+  fileInputRef,
+  handleImageUpload
 }) {
   const { t } = useTranslation();
   const tier = state.settings?.subscription_tier || 'free';
-  const tierLabel = tier === 'pro' || tier === 'legacy' ? 'Nexo Vibe Premium' : 'Nexo Vibe Free';
+  const tierLabel = t(`settings.reliable.tiers.${tier}`, { defaultValue: t('settings.reliable.tiers.free') });
 
   return (
     <div className="relative mb-10 md:mb-16 animate-in fade-in slide-in-from-top-12 duration-1000">
@@ -24,18 +24,20 @@ export default function SettingsHero({
         <div className="absolute inset-0 bg-linear-to-br from-ocean/40 via-transparent to-indigo-900/40" />
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px] animate-pulse" />
         <div className="absolute top-1/2 -right-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-[100px]" />
-        
+
         <div className="relative px-6 md:px-12 z-10 h-full flex items-center">
           <div className="flex flex-col md:flex-row items-center gap-10 w-full">
             <div className="relative group shrink-0">
               <div className="w-28 h-28 md:w-40 md:h-40 rounded-3xl md:rounded-[2.5rem] p-1 bg-linear-to-br from-white/20 to-transparent backdrop-blur-2xl border border-white/20 shadow-2xl relative overflow-hidden transition-transform duration-500 group-hover:scale-105">
                 <img
                   src={form.profile_pic}
-                  alt="Profile"
+                  alt={t('settings.reliable.avatar')}
                   className="w-full h-full object-cover rounded-[2.2rem]"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <button
+                    disabled={isSaving}
+                    aria-label={t('settings.reliable.change_avatar')} aria-expanded={showAvatarGallery}
                     onClick={() => setShowAvatarGallery(!showAvatarGallery)}
                     className="p-3 bg-white text-midnight rounded-2xl shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform"
                   >
@@ -44,38 +46,7 @@ export default function SettingsHero({
                 </div>
               </div>
 
-              {showAvatarGallery && (
-                <div className="absolute top-full mt-6 left-1/2 -translate-x-1/2 p-6 glass-card shadow-[0_30px_60px_-12px_rgba(0,0,0,0.5)] z-50 flex gap-4 animate-in fade-in zoom-in-95 duration-300 min-w-[300px]">
-                  <div className="grid grid-cols-5 gap-3">
-                    {AVATARS.map((url, i) => (
-                      <button
-                        key={i}
-                        onClick={() => {
-                          setFormDirty(f => ({ ...f, profile_pic: url }));
-                          setShowAvatarGallery(false);
-                          dispatch({ type: 'UPDATE_SETTING', payload: { key: 'profile_pic', value: url } });
-                        }}
-                        className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all ${form.profile_pic === url ? 'border-teal-400 scale-110 shadow-lg shadow-teal-500/20' : 'border-transparent hover:scale-105 opacity-60 hover:opacity-100'}`}
-                      >
-                        <img src={url} className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-12 h-12 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center text-white/40 hover:border-teal-400 hover:text-teal-400 transition-colors bg-white/5"
-                    >
-                      <Camera size={20} />
-                    </button>
-                  </div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(e.target.files[0])}
-                  />
-                </div>
-              )}
+
             </div>
 
             <div className="flex-1 text-center md:text-left">
@@ -96,7 +67,7 @@ export default function SettingsHero({
                   </div>
                 ) : (
                   <div className="flex items-center gap-3 px-4 md:px-5 py-2 md:py-2.5 rounded-xl md:rounded-2xl bg-teal-500/10 backdrop-blur-xl border border-teal-500/20 text-teal-400 text-[10px] md:text-xs font-bold animate-in fade-in slide-in-from-left-4">
-                    <CloudCheck size={14} /> {t('settings.hero.synced')}
+                    {saveStatus === 'error' ? <AlertTriangle size={14} className="text-red-400" /> : saveStatus === 'pending' ? <Clock size={14} className="text-amber-400" /> : <CloudCheck size={14} />} {t(`settings.reliable.status.${saveStatus}`)}
                   </div>
                 )}
               </div>
@@ -109,12 +80,48 @@ export default function SettingsHero({
               </div>
               <div className="glass-card bg-white/5! border-white/5! p-6 min-w-[140px] text-center backdrop-blur-3xl group">
                 <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-2 group-hover:text-indigo-400 transition-colors">{t('settings.hero.cycle_label')}</p>
-                <p className="text-2xl font-black font-serif text-white">{t('settings.hero.day_label', { day: form.cycle_start })}</p>
+                <p className="text-2xl font-black font-serif text-white">{t('settings.hero.day_label', { day: form.financial_month_start_day })}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
+              {showAvatarGallery && (
+                <div className="glass-card mt-4 p-5 flex gap-4">
+                  <div className="grid grid-cols-5 gap-3">
+                    {AVATARS.map((url, i) => (
+                      <button
+                        disabled={isSaving}
+                        aria-label={t('settings.reliable.choose_avatar', { number: i + 1 })}
+                        key={i}
+                        onClick={() => {
+                          setFormDirty(f => ({ ...f, profile_pic: url }));
+                          setShowAvatarGallery(false);
+                        }}
+                        className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all ${form.profile_pic === url ? 'border-teal-400 scale-110 shadow-lg shadow-teal-500/20' : 'border-transparent hover:scale-105 opacity-60 hover:opacity-100'}`}
+                      >
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                    <button
+                      disabled={isSaving}
+                        aria-label={t('settings.reliable.upload_avatar')}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-12 h-12 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center text-slate-500 hover:border-teal-400 hover:text-teal-400 transition-colors bg-white/5"
+                    >
+                      <Camera size={20} />
+                    </button>
+                  </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    disabled={isSaving}
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={(e) => handleImageUpload(e.target.files[0])}
+                  />
+                </div>
+              )}
     </div>
   );
 }

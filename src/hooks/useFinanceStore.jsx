@@ -146,7 +146,10 @@ function reducer(state, action) {
     case 'UPDATE_SETTING': return { ...state, settings: { ...state.settings, [action.payload.key]: action.payload.value } };
     case 'JOURNEY_SAVED': return { ...state, settings: { ...state.settings, [JOURNEY_SETTING_KEY]: action.payload } };
     case 'UPDATE_HOUSEHOLD': return { ...state, settings: { ...state.settings, household_name: action.payload.name ?? state.settings.household_name, cash_balance: action.payload.cash_balance ?? state.settings.cash_balance } };
-    case 'UPDATE_USER': return { ...state, user: { ...state.user, ...action.payload } };
+    case 'UPDATE_USER': {
+      const { password: _password, ...publicProfile } = action.payload;
+      return { ...state, user: { ...state.user, ...publicProfile } };
+    }
     case 'ADD_ASSET': return { ...state, activos: [...state.activos, action.payload] };
     case 'DELETE_ASSET': return { ...state, activos: state.activos.filter(a => a.id !== action.payload) };
     case 'ADD_LIABILITY': return { ...state, passivos: [...state.passivos, action.payload] };
@@ -187,8 +190,9 @@ export function FinanceProvider({ children }) {
   const apiDispatch = async (action) => {
     const { payload, type } = action;
 
-    // Optimistic local update for settings and profile to improve perceived performance
-    if (['UPDATE_SETTING', 'UPDATE_HOUSEHOLD', 'UPDATE_USER', 'SET_BUDGET'].includes(type)) {
+    // Budget keeps its existing optimistic flow. Profile and settings are committed
+    // locally only after the server confirms success. Passwords never enter state.
+    if (['SET_BUDGET'].includes(type)) {
       dispatch(action);
     }
 
@@ -383,15 +387,34 @@ export function FinanceProvider({ children }) {
         }
         return;
       }
-      case 'UPDATE_SETTING': await apiCall('settings', 'POST', { key: payload.key, value: payload.value }); break;
-      case 'UPDATE_HOUSEHOLD': await apiCall('households', 'PUT', payload); break;
-      case 'UPDATE_USER': await apiCall('auth/profile', 'PUT', payload); break;
+      case 'UPDATE_SETTING': {
+        await apiCall('settings', 'POST', { key: payload.key, value: payload.value });
+        dispatch(action);
+        try { await db.settings.update('current', { [payload.key]: payload.value }); } catch { /* Server save already succeeded. */ }
+        return;
+      }
+      case 'UPDATE_HOUSEHOLD': {
+        await apiCall('households', 'PUT', payload);
+        dispatch(action);
+        const cached = {};
+        if (payload.name !== undefined) cached.household_name = payload.name;
+        if (payload.cash_balance !== undefined) cached.cash_balance = payload.cash_balance;
+        try { await db.settings.update('current', cached); } catch { /* Server save already succeeded. */ }
+        return;
+      }
+      case 'UPDATE_USER': {
+        await apiCall('auth/profile', 'PUT', payload);
+        const { password: _password, ...publicProfile } = payload;
+        dispatch({ type: 'UPDATE_USER', payload: publicProfile });
+        try { await db.settings.update('user_profile', publicProfile); } catch { /* Server save already succeeded. */ }
+        return;
+      }
       case 'ADD_ASSET': await apiCall('assets', 'POST', payload); break;
       case 'DELETE_ASSET': await apiCall(`assets/${payload}`, 'DELETE'); break;
       case 'SET_BUDGET': await apiCall('budgets', 'POST', { category: normalizeCategory(payload.category), limit: payload.limit }); break;
       case 'DELETE_BUDGET': await apiCall(`budgets/${payload}`, 'DELETE'); break;
     }
-    if (!['UPDATE_SETTING', 'UPDATE_HOUSEHOLD', 'UPDATE_USER', 'SET_BUDGET'].includes(type)) {
+    if (!['SET_BUDGET'].includes(type)) {
       dispatch(action);
     }
   };

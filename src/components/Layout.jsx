@@ -106,7 +106,7 @@ export default function Layout() {
 
   const { installPrompt } = usePWA();
   const [showInstallBanner, setShowInstallBanner] = useState(true);
-  const { enablePush, isSubscribed, isSupported, permission } = usePushNotifications();
+  const { isSubscribed } = usePushNotifications();
   const { syncSms } = useSmsSync(showToast);
 
   // Auto SMS Sync
@@ -127,20 +127,6 @@ export default function Layout() {
       };
     }
   }, [state.settings?.sms_automation_enabled, state.loading, syncSms]);
-
-  // Auto-enable push notifications if possible
-  useEffect(() => {
-    if (isSupported && !isSubscribed && permission !== 'denied' && !state.loading) {
-      // Delay to ensure everything is ready and avoid race conditions
-      const timer = setTimeout(() => {
-        enablePush().catch(err => {
-          // Silently fail for auto-enable to avoid bothering the user
-          console.warn('Auto-enable push failed:', err.message);
-        });
-      }, 8000); // 8 seconds delay for stability
-      return () => clearTimeout(timer);
-    }
-  }, [isSupported, isSubscribed, permission, enablePush, state.loading]);
 
   useEffect(() => {
     let failCount = 0;
@@ -308,7 +294,7 @@ export default function Layout() {
         }
         
         // Try to trigger a local notification if supported and permitted
-        if ('Notification' in window && Notification.permission === 'granted') {
+        if (isSubscribed && state.settings?.daily_entry_reminder_enabled && 'Notification' in window && Notification.permission === 'granted') {
           const todayStr = new Date().toISOString().split('T')[0];
           const lastNotified = localStorage.getItem('mwanga-last-daily-alert');
           if (lastNotified !== todayStr) {
@@ -334,7 +320,7 @@ export default function Layout() {
     
     const interval = setInterval(checkDailySpending, 15 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [state.transacoes]);
+  }, [state.transacoes, isSubscribed, state.settings?.daily_entry_reminder_enabled]);
 
   async function handleMarkRead(id) {
     try {

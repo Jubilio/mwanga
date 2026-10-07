@@ -1,273 +1,101 @@
-import { ui, useUiLanguage } from '../utils/uiTranslation';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
 import { usePushNotifications } from '../hooks/usePushNotifications';
-import { User, Wallet, Palette } from 'lucide-react';
-
-// Sub-components
+import { User, Wallet, Palette, Bell } from 'lucide-react';
 import SettingsHero from '../components/settings/SettingsHero';
 import TabPerfil from '../components/settings/TabPerfil';
 import TabFinancas from '../components/settings/TabFinancas';
 import TabPreferences from '../components/settings/TabPreferences';
 import SettingsSidebar from '../components/settings/SettingsSidebar';
+import PasswordSettings from '../components/settings/PasswordSettings';
+import { DEFAULT_AVATAR, settingsForm, changedSettings, validateSettings, settingsActions } from '../utils/settingsForm';
 
-const AVATARS = [
-  'https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff&size=128',
-  'https://ui-avatars.com/api/?name=Fam&background=20c997&color=fff&size=128',
-  'https://ui-avatars.com/api/?name=Mwanga&background=0a4d68&color=fff&size=128',
-  'https://ui-avatars.com/api/?name=Admin&background=6c757d&color=fff&size=128',
-];
-
+const AVATARS = [DEFAULT_AVATAR, 'https://ui-avatars.com/api/?name=Fam&background=20c997&color=fff&size=128', 'https://ui-avatars.com/api/?name=Mwanga&background=0a4d68&color=fff&size=128', 'https://ui-avatars.com/api/?name=Admin&background=6c757d&color=fff&size=128'];
 export default function Settings() {
-  useUiLanguage();
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const { showToast } = useOutletContext();
   const pushProps = usePushNotifications();
-  
   const [activeTab, setActiveTab] = useState('perfil');
   const [showAvatarGallery, setShowAvatarGallery] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [form, setForm] = useState(() => settingsForm(state));
+  const [busy, setBusy] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('saved');
+  const [error, setError] = useState('');
+  const dirty = useRef(new Set());
+  const lock = useRef(false);
   const fileInputRef = useRef(null);
-  const isDirtyRef = useRef(false);
-  const saveTimeoutRef = useRef(null);
-
-  const [form, setForm] = useState({
-    user_salary: state.settings.user_salary || 50000,
-    default_rent: state.settings.default_rent || 15000,
-    landlord_name: state.settings.landlord_name || '',
-    household_name: state.settings.household_name || ui("A Minha Família"),
-    user_name: state.user?.name || '',
-    currency: state.settings.currency || 'MT',
-    cycle_start: state.settings.cycle_start || '1',
-    profile_pic: state.settings.profile_pic || AVATARS[0],
-    daily_entry_reminder_enabled: state.settings.daily_entry_reminder_enabled ?? true,
-    daily_entry_reminder_time: state.settings.daily_entry_reminder_time || '20:00',
-    monthly_due_reminder_enabled: state.settings.monthly_due_reminder_enabled ?? true,
-    monthly_due_reminder_time: state.settings.monthly_due_reminder_time || '08:00',
-    monthly_due_reminder_period: state.settings.monthly_due_reminder_period || 'inicio',
-    debt_due_reminder_enabled: state.settings.debt_due_reminder_enabled ?? true,
-    cash_balance: state.settings.cash_balance || 0,
-    sms_automation_enabled: state.settings.sms_automation_enabled === 'true' || state.settings.sms_automation_enabled === true,
-    default_income_account_id: state.settings.default_income_account_id || '',
-    default_expense_account_id: state.settings.default_expense_account_id || '',
-    whatsapp_number: state.user?.whatsapp_number || '',
-    password: '',
-  });
-
-  // Sync form with state when data arrives
+  const { user, settings } = state;
+  const base = settingsForm({ user, settings });
+  const pending = changedSettings(form, base).length;
   useEffect(() => {
-    if (!isDirtyRef.current) {
-      setForm(prev => ({
-        ...prev,
-        user_salary: state.settings.user_salary || 50000,
-        default_rent: state.settings.default_rent || 15000,
-        landlord_name: state.settings.landlord_name || '',
-        household_name: state.settings.household_name || ui("A Minha Família"),
-        user_name: state.user?.name || '',
-        currency: state.settings.currency || 'MT',
-        cycle_start: state.settings.cycle_start || '1',
-        profile_pic: state.settings.profile_pic || AVATARS[0],
-        daily_entry_reminder_enabled: state.settings.daily_entry_reminder_enabled ?? true,
-        daily_entry_reminder_time: state.settings.daily_entry_reminder_time || '20:00',
-        monthly_due_reminder_enabled: state.settings.monthly_due_reminder_enabled ?? true,
-        monthly_due_reminder_time: state.settings.monthly_due_reminder_time || '08:00',
-        monthly_due_reminder_period: state.settings.monthly_due_reminder_period || 'inicio',
-        debt_due_reminder_enabled: state.settings.debt_due_reminder_enabled ?? true,
-        cash_balance: state.settings.cash_balance || 0,
-        sms_automation_enabled: state.settings.sms_automation_enabled === 'true' || state.settings.sms_automation_enabled === true,
-        default_income_account_id: state.settings.default_income_account_id || '',
-        default_expense_account_id: state.settings.default_expense_account_id || '',
-        whatsapp_number: state.user?.whatsapp_number || '',
-      }));
-    }
-  }, [state.user, state.settings]);
-
-  const handleSaveAll = useCallback(async () => {
-    setIsSaving(true);
-    try {
-      const updates = [];
-
-      // 1. User Profile & Password (Unified)
-      const currentName = state.user?.name || '';
-      const currentWhatsapp = state.user?.whatsapp_number || '';
-      
-      const userChanged = form.user_name !== currentName || 
-                          form.whatsapp_number !== currentWhatsapp ||
-                          form.password;
-      
-      if (userChanged) {
-        const userPayload = {};
-        let userSectionValid = true;
-        
-        if (form.user_name !== currentName) {
-          if (form.user_name.trim().length > 0 && form.user_name.trim().length < 2) {
-            showToast(t('settings.toasts.name_too_short') || ui("Nome deve ter pelo menos 2 caracteres"));
-            userSectionValid = false;
-          } else if (form.user_name.trim().length >= 2) {
-            userPayload.name = form.user_name;
-          }
-        }
-
-        if (form.whatsapp_number !== currentWhatsapp) {
-          userPayload.whatsapp_number = form.whatsapp_number;
-        }
-
-        if (form.password) {
-          if (form.password.length < 8) {
-            showToast(t('settings.toasts.pass_too_short') || ui("Senha deve ter pelo menos 8 caracteres"));
-            userSectionValid = false;
-          } else {
-            userPayload.password = form.password;
-          }
-        }
-
-        if (userSectionValid && Object.keys(userPayload).length > 0) {
-          updates.push(dispatch({ 
-            type: 'UPDATE_USER', 
-            payload: userPayload 
-          }));
-        } else if (!userSectionValid) {
-          // If the user section is invalid, we don't return anymore, 
-          // we just skip the user update and allow other sections (like balance) to save.
-          // BUT if the user is on the profile tab, maybe they want to know.
-          // The toast already showed the error.
-        }
-      }
-
-      // 2. Household Data
-      if (form.household_name !== state.settings.household_name || Number(form.cash_balance) !== Number(state.settings.cash_balance)) {
-        updates.push(dispatch({ 
-          type: 'UPDATE_HOUSEHOLD', 
-          payload: { 
-            name: form.household_name, 
-            cash_balance: Number(form.cash_balance) 
-          } 
-        }));
-      }
-
-      // 3. Differential Settings Update
-      const settingsToSave = { ...form };
-      delete settingsToSave.user_name;
-      delete settingsToSave.whatsapp_number;
-      delete settingsToSave.password;
-      delete settingsToSave.household_name;
-      delete settingsToSave.cash_balance;
-
-      Object.entries(settingsToSave).forEach(([key, value]) => {
-        // Only update if value is different from current state
-        const currentValue = state.settings[key];
-        if (String(value) !== String(currentValue)) {
-          updates.push(dispatch({ type: 'UPDATE_SETTING', payload: { key, value } }));
-        }
-      });
-
-      if (updates.length > 0) {
-        await Promise.all(updates);
-        if (form.password) setForm(f => ({ ...f, password: '' }));
-        showToast(t('settings.toasts.save_success'));
-      }
-    } catch (err) {
-      console.error('Settings Save Error:', err);
-      const errMsg = err.message || '';
-      if (errMsg.includes('whatsapp_number_key') || errMsg.includes('duplicate') || errMsg.includes('já está em uso')) {
-        showToast(t('settings.toasts.whatsapp_duplicate') || ui("Este número de WhatsApp já está registado noutra conta."));
-      } else {
-        showToast(t('settings.toasts.save_error'));
-      }
-    } finally {
-      setTimeout(() => setIsSaving(false), 500);
-    }
-  }, [form, state.user, state.settings, dispatch, showToast, t]);
-
-  const setFormDirty = useCallback((updater) => {
-    isDirtyRef.current = true;
-    setForm(updater);
-  }, []);
-
-  const handleImageUpload = (file) => {
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        showToast(t('settings.toasts.img_too_large'));
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result;
-        setFormDirty(f => ({ ...f, profile_pic: base64 }));
-        dispatch({ type: 'UPDATE_SETTING', payload: { key: 'profile_pic', value: base64 } });
-        showToast(t('settings.toasts.img_updated'));
-      };
-      reader.readAsDataURL(file);
-    }
+    const incoming = settingsForm({ user, settings });
+    setForm(previous => Object.fromEntries(Object.entries(incoming).map(([key, value]) => [key, dirty.current.has(key) ? previous[key] : value])));
+  }, [user, settings]);
+  const setFormDirty = updater => {
+    setForm(previous => {
+      const next = typeof updater === 'function' ? updater(previous) : updater;
+      for (const key of Object.keys(next)) if (String(next[key]) !== String(previous[key])) dirty.current.add(key);
+      return next;
+    });
+    setSaveStatus('pending'); setError('');
   };
-
-  useEffect(() => {
-    if (!isDirtyRef.current) return;
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    saveTimeoutRef.current = setTimeout(() => {
-      isDirtyRef.current = false;
-      handleSaveAll();
-    }, 1500);
-    return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
-  }, [form, handleSaveAll]);
-
-  const tabs = [
-    { id: 'perfil', label: t('settings.tabs.perfil'), icon: User },
-    { id: 'financas', label: t('settings.tabs.financas'), icon: Wallet },
-    { id: 'pref', label: t('settings.tabs.pref'), icon: Palette },
-  ];
-
-  return (
-    <div className="section-fade max-w-6xl mx-auto pb-24">
-      <SettingsHero 
-        form={form} 
-        state={state}
-        isSaving={isSaving} 
-        showAvatarGallery={showAvatarGallery} 
-        setShowAvatarGallery={setShowAvatarGallery} 
-        AVATARS={AVATARS} 
-        setFormDirty={setFormDirty} 
-        dispatch={dispatch} 
-        fileInputRef={fileInputRef} 
-        handleImageUpload={handleImageUpload} 
-      />
-
-      <div className="flex p-1.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-2xl backdrop-blur-md mb-8 max-w-md mx-auto sticky top-20 z-40 border border-white/20 shadow-lg">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === tab.id
-                ? 'bg-white dark:bg-slate-700 text-ocean dark:text-teal-400 shadow-md scale-100'
-                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
-              }`}
-          >
-            <tab.icon size={18} />
-            <span className="hidden sm:inline">{ui(tab.label)}</span>
-          </button>
-        ))}
+  async function save() {
+    if (lock.current || !pending) return;
+    const invalid = validateSettings(form, state.contas);
+    if (invalid) { setError(invalid); setSaveStatus('error'); return; }
+    lock.current = true; setBusy(true); setSaveStatus('saving'); setError('');
+    const actions = settingsActions(form, base);
+    const results = await Promise.allSettled(actions.map(action => dispatch(action)));
+    results.forEach((result, index) => {
+      if (result.status !== 'fulfilled') return;
+      const action = actions[index];
+      const keys = action.type === 'UPDATE_SETTING' ? [action.payload.key] : action.type === 'UPDATE_USER' ? Object.keys(action.payload).map(key => key === 'name' ? 'user_name' : key) : Object.keys(action.payload).map(key => key === 'name' ? 'household_name' : key);
+      keys.forEach(key => dirty.current.delete(key));
+      const confirmed = action.type === 'UPDATE_SETTING' ? { [action.payload.key]: action.payload.value } : Object.fromEntries(keys.map(key => [key, action.payload[key === 'user_name' || key === 'household_name' ? 'name' : key]]));
+      setForm(previous => ({ ...previous, ...confirmed }));
+    });
+    const failed = results.some(result => result.status === 'rejected');
+    setSaveStatus(failed ? 'error' : 'saved');
+    if (failed) setError('partial_error');
+    else { dirty.current.clear(); showToast(t('settings.toasts.save_success'), 'success'); }
+    lock.current = false; setBusy(false);
+  }
+  function discard() { dirty.current.clear(); setForm(settingsForm(state)); setSaveStatus('saved'); setError(''); }
+  async function handleImageUpload(file) {
+    if (!file) return;
+    // A 600 KiB image remains below the API's 1 MiB JSON limit after base64 encoding.
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 600 * 1024) { showToast(t('settings.reliable.image_limit'), 'error'); return; }
+    const reader = new FileReader();
+    reader.onerror = () => showToast(t('settings.reliable.image_error'), 'error');
+    reader.onload = () => setFormDirty(previous => ({ ...previous, profile_pic: reader.result }));
+    reader.readAsDataURL(file);
+  }
+  const tabs = [{ id: 'perfil', icon: User }, { id: 'financas', icon: Wallet }, { id: 'pref', icon: Palette }, { id: 'notifications', icon: Bell }];
+  const status = busy ? 'saving' : saveStatus === 'error' ? 'error' : pending ? 'pending' : 'saved';
+  return <div className="settings-surface section-fade max-w-6xl mx-auto pb-28">
+    <SettingsHero form={form} state={state} isSaving={busy} saveStatus={status} showAvatarGallery={showAvatarGallery} setShowAvatarGallery={setShowAvatarGallery} AVATARS={AVATARS} setFormDirty={setFormDirty} fileInputRef={fileInputRef} handleImageUpload={handleImageUpload} />
+    <nav aria-label={t('settings.reliable.navigation')} className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-8">
+      {tabs.map(tab => <button key={tab.id} aria-pressed={activeTab === tab.id} onClick={() => setActiveTab(tab.id)} className={`btn ${activeTab === tab.id ? 'btn-primary' : 'btn-ghost'}`}><tab.icon size={18} />{t(`settings.reliable.tabs.${tab.id}`)}</button>)}
+    </nav>
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="lg:col-span-8">
+        <p className="text-xs text-slate-500 mb-4">{t(activeTab === 'perfil' ? 'settings.reliable.account_scope' : activeTab === 'notifications' ? 'settings.reliable.device_scope' : 'settings.reliable.household_scope')}</p>
+        <fieldset disabled={busy} className="min-w-0 disabled:opacity-60">
+          {activeTab === 'perfil' ? <TabPerfil form={form} setFormDirty={setFormDirty} state={state} /> : null}
+          {activeTab === 'financas' ? <TabFinancas form={form} setFormDirty={setFormDirty} state={state} /> : null}
+          {['pref', 'notifications'].includes(activeTab) ? <TabPreferences section={activeTab} form={form} setFormDirty={setFormDirty} state={state} dispatch={dispatch} pushProps={pushProps} showToast={showToast} /> : null}
+        </fieldset>
+        {activeTab === 'perfil' ? <PasswordSettings dispatch={dispatch} /> : null}
+        <section className="glass-card p-5 mt-6" aria-live="polite">
+          <p className="text-sm font-bold">{t(`settings.reliable.status.${status}`)}</p>
+          {error ? <p role="alert" className="text-sm text-red-600 dark:text-red-400 mt-2">{t(`settings.reliable.${error}`)}</p> : null}
+          <div className="flex flex-wrap gap-3 mt-4"><button disabled={busy || !pending} onClick={save} className="btn btn-primary disabled:opacity-50">{t('settings.reliable.save')}</button><button disabled={busy || !pending} onClick={discard} className="btn btn-ghost disabled:opacity-50">{t('settings.reliable.discard')}</button></div>
+        </section>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-2">
-        <div className="lg:col-span-8">
-          {activeTab === 'perfil' && <TabPerfil form={form} setFormDirty={setFormDirty} state={state} />}
-          {activeTab === 'financas' && <TabFinancas form={form} setFormDirty={setFormDirty} state={state} />}
-          {activeTab === 'pref' && (
-            <TabPreferences 
-              form={form} 
-              setFormDirty={setFormDirty} 
-              state={state} 
-              dispatch={dispatch} 
-              pushProps={pushProps} 
-              showToast={showToast} 
-            />
-          )}
-        </div>
-        <SettingsSidebar t={t} />
-      </div>
+      <SettingsSidebar t={t} />
     </div>
-  );
+  </div>;
 }
