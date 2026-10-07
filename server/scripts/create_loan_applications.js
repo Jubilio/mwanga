@@ -20,6 +20,17 @@ async function run() {
     `);
     await client.query('ALTER TABLE public.loan_applications ENABLE ROW LEVEL SECURITY');
     await client.query('REVOKE ALL PRIVILEGES ON TABLE public.loan_applications FROM PUBLIC, anon, authenticated');
+    await client.query(`DO $
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE schemaname='public'
+      AND tablename='loan_applications' AND policyname='Block direct Data API access'
+  ) THEN
+    CREATE POLICY "Block direct Data API access"
+    ON public.loan_applications AS RESTRICTIVE FOR ALL
+    TO anon, authenticated USING (false) WITH CHECK (false);
+  END IF;
+END $;`);
     await client.query('COMMIT');
     logger.info('SUCCESS: loan_applications table is verified/created.');
   } catch (err) {
