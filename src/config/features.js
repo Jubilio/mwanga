@@ -16,13 +16,13 @@ export const SUBSCRIPTION_TIERS = {
 
 export const TIER_FEATURES = {
     free: [
-        'transacoes',
+        'jornada', 'transacoes',
         'orcamento',
         'habitacao',
         'metas'
     ],
     growth: [
-        'transacoes',
+        'jornada', 'transacoes',
         'orcamento',
         'habitacao',
         'metas',
@@ -31,7 +31,7 @@ export const TIER_FEATURES = {
         'relatorio'
     ],
     pro: [
-        'transacoes',
+        'jornada', 'transacoes',
         'orcamento',
         'habitacao',
         'metas',

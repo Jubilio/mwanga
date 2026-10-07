@@ -2,6 +2,7 @@ const { db } = require('../config/db');
 const { logAction } = require('../utils/audit');
 const { z } = require('zod');
 const { invalidateDashboardCache } = require('./dashboard.controller');
+const { parseJourneySetting } = require('../schemas/journey.schema');
 
 const upsertSettingSchema = z.object({
   key: z.string().min(1).max(50).trim(),
@@ -44,8 +45,21 @@ const getSettings = async (req, res, next) => {
 const upsertSetting = async (req, res, next) => {
   try {
     const { key, value } = upsertSettingSchema.parse(req.body);
-    const safeValue = value === null || value === undefined ? '' : value.toString();
     const householdId = req.user.householdId;
+    let safeValue;
+    if (key === 'financial_journey_v1') {
+      const journey = parseJourneySetting(value);
+      if (journey.goalId !== null) {
+        const goal = await db.execute({
+          sql: 'SELECT id FROM goals WHERE id = ? AND household_id = ?',
+          args: [journey.goalId, householdId]
+        });
+        if (!goal.rows.length) return res.status(400).json({ error: 'Invalid journey goal' });
+      }
+      safeValue = JSON.stringify(journey);
+    } else {
+      safeValue = value === null || value === undefined ? '' : value.toString();
+    }
 
     await db.execute({
       sql: 'INSERT INTO settings (key, value, household_id) VALUES (?, ?, ?) ON CONFLICT(key, household_id) DO UPDATE SET value = ?',

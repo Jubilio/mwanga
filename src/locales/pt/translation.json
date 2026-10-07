@@ -2079,5 +2079,229 @@
     "scf54dbe78f14": "Atualizar painel",
     "s5967a78a8842": "Queima ativa",
     "s5c38a44eae85": "Mwanga Finance - Gestão Inteligente e Mordomia Digital"
+  },
+  "journey": {
+    "nav": "Jornada financeira",
+    "title": "O teu dinheiro, os teus objetivos",
+    "subtitle": "Clareza para gerir hoje. Disciplina para construir o amanhã.",
+    "brand": "MWANGA · NEXOVIBE",
+    "intro": "Liga as tuas metas aos registos, aprende um passo de cada vez e revê o teu progresso.",
+    "plan_tab": "O meu plano",
+    "review_tab": "Revisão e hábitos",
+    "learn_tab": "Aprender",
+    "saved": "Jornada guardada.",
+    "save_error": "Não foi possível guardar. Verifica a ligação e tenta novamente.",
+    "saving": "A guardar…",
+    "save": "Guardar plano",
+    "edit": "Editar plano",
+    "cancel": "Cancelar",
+    "open": "Abrir",
+    "done": "Concluído",
+    "remaining": "Falta",
+    "loading": "A carregar a tua jornada…",
+    "shared": "Este plano é partilhado com o teu agregado, tal como as metas e os registos financeiros.",
+    "base_currency": "Valores introduzidos em MT.",
+    "empty_plan": "Começa com um objetivo que tenha significado para ti.",
+    "start_plan": "Criar o meu plano",
+    "summary": {
+      "title": "A tua jornada",
+      "body": "Plano, revisão e aprendizagem num só lugar.",
+      "cta": "Continuar jornada",
+      "progress": "{{count}} de 10 lições concluídas"
+    },
+    "plan": {
+      "title": "Um plano com propósito",
+      "purpose": "O que queres que o dinheiro permita?",
+      "purpose_placeholder": "Ex.: estudar, dar estabilidade à família ou abrir um negócio",
+      "priority": "A minha prioridade",
+      "goal": "Meta principal",
+      "choose": "Escolher uma meta existente",
+      "new_goal": "Criar uma nova meta",
+      "none": "Ainda sem meta principal",
+      "name": "Nome da meta",
+      "target": "Valor-alvo (MT)",
+      "deadline": "Até quando?",
+      "monthly": "Quanto planeias reservar por mês? (MT)",
+      "create_goal": "Criar meta",
+      "goal_created": "Meta criada. Guarda o plano para a ligar à tua jornada.",
+      "goal_error": "Não foi possível criar a meta. Os valores preenchidos foram mantidos.",
+      "goal_missing": "A meta ligada já não está disponível. Escolhe outra meta.",
+      "view_goal": "Acompanhar e contribuir para a meta",
+      "monthly_required": "Contribuição mensal necessária",
+      "contribution": "Contribuição planeada",
+      "required_note": "Distribui o valor em falta pelos meses de contribuição, incluindo o mês atual e o mês do prazo. Não inclui rendimentos.",
+      "no_deadline": "Define um prazo na meta para calcular a contribuição necessária.",
+      "overdue": "O prazo passou. Revê a meta e escolhe um novo prazo.",
+      "achieved": "Meta alcançada!",
+      "zero_contribution": "Define uma contribuição para estimar o tempo necessário.",
+      "estimate": "Cerca de {{count}} meses à contribuição planeada, sem rendimentos.",
+      "plan_not_transfer": "Planear uma contribuição não transfere dinheiro nem regista uma poupança.",
+      "purpose_required": "Escreve um propósito antes de guardar o plano."
+    },
+    "priorities": {
+      "stability": "Estabilidade e reserva",
+      "debt": "Organizar dívidas",
+      "housing": "Habitação",
+      "education": "Formação",
+      "business": "Negócio",
+      "investment": "Capital para investir"
+    },
+    "review": {
+      "title": "Revisão semanal da Binth",
+      "subtitle": "Uma leitura dos teus registos, com uma ação prioritária. Funciona sem depender de um fornecedor de IA.",
+      "window": "Últimos 7 dias: {{start}} — {{end}}",
+      "recorded": "{{count}} movimentos registados em {{days}} dias.",
+      "income": "Entradas registadas",
+      "expenses": "Despesas registadas",
+      "saving": "Poupança registada",
+      "balance": "Diferença entre entradas e despesas",
+      "scope": "Este resumo usa os movimentos registados no Mwanga. Zero registos não significa zero receitas ou despesas na realidade.",
+      "month_scope": "Os alertas de orçamento e de saldo usam o ciclo financeiro {{month}}, de acordo com as tuas definições.",
+      "evidence": "O que sustenta esta sugestão",
+      "action": "Dar o próximo passo",
+      "ask": "Explorar esta revisão com a Binth",
+      "ack": "Concluí a revisão desta semana",
+      "ack_done": "Revisão desta semana concluída",
+      "record_note": "O reconhecimento regista a revisão, sem criar movimentos financeiros.",
+      "outstanding": "Dívida pendente registada",
+      "budgets": "Categorias acima do orçamento",
+      "goals": "Meta principal",
+      "none": "Ainda sem meta ligada",
+      "missing_rates": "Compara taxas, custos e datas no módulo Dívidas; esta revisão não escolhe uma dívida pela taxa quando faltam dados."
+    },
+    "actions": {
+      "start": {
+        "title": "Começar pelos registos",
+        "body": "Regista entradas e despesas para construir uma visão baseada nos teus próprios dados."
+      },
+      "debt_due": {
+        "title": "Confirmar os próximos compromissos",
+        "body": "Há {{count}} dívidas vencidas ou com vencimento nos próximos 7 dias. A primeira data é {{date}}. Confirma os pagamentos e os valores em falta."
+      },
+      "missing_income": {
+        "title": "Confirmar as entradas deste ciclo",
+        "body": "Ainda não existem entradas registadas neste ciclo. Confirma se falta algum movimento antes de tirar conclusões sobre o saldo."
+      },
+      "budget": {
+        "title": "Rever o orçamento de {{category}}",
+        "body": "Os gastos registados nesta categoria excedem o limite em {{excess}}. Confere os movimentos e decide se deves ajustar o limite ou os próximos gastos."
+      },
+      "cashflow": {
+        "title": "Reconciliar entradas e despesas",
+        "body": "As despesas registadas excedem as entradas em {{difference}} neste ciclo. Verifica movimentos em falta e compromissos próximos."
+      },
+      "goal": {
+        "title": "Escolher uma meta principal",
+        "body": "Liga uma meta ao teu plano para acompanhar o valor em falta e a contribuição necessária."
+      },
+      "goal_gap": {
+        "title": "Ajustar a meta ao teu plano",
+        "body": "O prazo ou a contribuição planeada precisa de revisão. Compara o valor em falta, a contribuição mensal e o prazo antes de alterar o plano."
+      },
+      "steady": {
+        "title": "Manter a consistência",
+        "body": "Confere os registos da semana e mantém o plano alinhado com os teus compromissos. Esta análise não garante que todos os movimentos foram registados."
+      }
+    },
+    "habits": {
+      "title": "Pequenos passos, progresso real",
+      "score": "Progresso dos hábitos",
+      "explanation": "Combina dias conferidos nos últimos 7 dias, revisão desta semana e lições concluídas. Não mede riqueza nem capacidade de crédito.",
+      "days": "{{count}} de 7 dias conferidos",
+      "lessons": "{{count}} de 10 lições concluídas",
+      "check_today": "Conferi os registos de hoje",
+      "checked_today": "Hoje já foi conferido",
+      "daily_note": "Podes confirmar um dia sem movimentos depois de verificares os teus registos. Esta é uma confirmação tua, não uma verificação bancária."
+    },
+    "scenarios": {
+      "title": "Pensar no futuro com hipóteses claras",
+      "body": "Compara três ritmos de contribuição para a meta. Podes alterar a hipótese de rendimento anual.",
+      "months": "Horizonte (meses)",
+      "rate": "Hipótese anual (%)",
+      "lower": "80% da contribuição",
+      "planned": "Contribuição planeada",
+      "higher": "120% da contribuição",
+      "monthly": "Por mês",
+      "balance": "Valor projetado",
+      "contributed": "Capital e contribuições",
+      "growth": "Variação projetada",
+      "note": "Simulação matemática: contribuição no fim de cada mês e taxa anual efetiva convertida em taxa mensal. Não inclui taxas, impostos ou inflação. Os valores podem diminuir; não são uma promessa de retorno.",
+      "no_goal": "Liga uma meta para simular a partir do valor poupado nessa meta.",
+      "open": "Explorar a Máquina do Tempo",
+      "assumptions": "Hipóteses utilizadas: {{months}} meses; retorno anual de {{rate}}%."
+    },
+    "learn": {
+      "title": "Aprender com o Mwanga",
+      "body": "Dez ideias, dez ações práticas. As tuas respostas e o progresso ficam guardados com o plano.",
+      "mark": "Marcar como aprendida",
+      "undo": "Voltar a estudar",
+      "action": "Aplicar no Mwanga",
+      "resource": "Explorar recursos de educação financeira",
+      "read": "Lê a ideia e escolhe a ação que faz sentido para o teu plano.",
+      "lesson": "Lição {{number}}"
+    },
+    "lessons": {
+      "purpose": {
+        "title": "Dar um propósito ao dinheiro",
+        "body": "Escolhe uma mudança concreta que queres alcançar. Um objetivo com valor-alvo e prazo ajuda a ligar as decisões do dia a dia ao que é importante para ti.",
+        "takeaway": "Uma meta deve servir a tua vida."
+      },
+      "assets": {
+        "title": "Compreender o teu património",
+        "body": "Distingue o valor dos teus bens, as dívidas associadas e os rendimentos efetivamente recebidos. Um ativo pode ter custos e risco; o seu valor não equivale a dinheiro disponível.",
+        "takeaway": "Valor, rendimento e liquidez são diferentes."
+      },
+      "saving": {
+        "title": "Poupar com destino",
+        "body": "Separa os objetivos de reserva e de investimento. Decide uma contribuição compatível com os teus compromissos e acompanha o que realmente conseguiste reservar.",
+        "takeaway": "Uma intenção torna-se útil quando é acompanhada."
+      },
+      "debt": {
+        "title": "Entender o custo das dívidas",
+        "body": "Confere capital, juros, encargos e vencimentos. Antes de assumir ou antecipar uma dívida, compara o custo e o impacto dos pagamentos no teu plano.",
+        "takeaway": "Uma prestação pequena pode esconder um custo elevado."
+      },
+      "mentor": {
+        "title": "Pedir orientação com contexto",
+        "body": "Usa a Binth para explorar os teus registos e compreender as alternativas. Confere os números, pergunta pelas hipóteses e mantém a decisão final nas tuas mãos.",
+        "takeaway": "Uma boa orientação explica o raciocínio."
+      },
+      "ambition": {
+        "title": "Transformar ambição em cenários",
+        "body": "Um objetivo grande pode ser dividido em etapas. Compara prazos e contribuições diferentes e identifica o que precisaria de mudar para alcançar cada cenário.",
+        "takeaway": "Uma projeção depende das suas hipóteses."
+      },
+      "habits": {
+        "title": "Construir hábitos consistentes",
+        "body": "Conferir movimentos e rever o plano regularmente reduz esquecimentos. Começa com uma rotina pequena que possas manter, mesmo em meses difíceis.",
+        "takeaway": "Consistência não depende de ter um rendimento elevado."
+      },
+      "knowledge": {
+        "title": "Aprender antes de decidir",
+        "body": "Estuda um conceito de cada vez e aplica-o a uma situação real. Ao ler sobre finanças, verifica a origem, a data e se as condições se aplicam ao teu contexto.",
+        "takeaway": "Compreender vem antes de escolher."
+      },
+      "respect": {
+        "title": "Dar atenção a cada movimento",
+        "body": "Classifica os gastos, confirma valores e identifica encargos. O orçamento ajuda-te a distribuir os recursos conforme as tuas prioridades, sem ignorar as necessidades essenciais.",
+        "takeaway": "Registos cuidados melhoram a qualidade do plano."
+      },
+      "awareness": {
+        "title": "Acompanhar o que mudou",
+        "body": "Compara períodos e confirma as razões das mudanças. Um gasto maior pode refletir uma despesa pontual, um novo compromisso ou um registo que antes estava em falta.",
+        "takeaway": "Uma mudança precisa de contexto antes de uma conclusão."
+      }
+    },
+    "links": {
+      "title": "O teu ecossistema",
+      "budget": "Orçamento",
+      "debts": "Dívidas",
+      "goals": "Metas e reserva",
+      "assets": "Património",
+      "simulators": "Simuladores",
+      "reports": "Relatórios",
+      "binth": "Binth"
+    },
+    "ask_prompt": "Ajuda-me a rever os registos de {{start}} a {{end}}: receitas {{income}}, despesas {{expenses}}. Prioridade identificada: {{title}}. Evidência: {{body}}. Explica uma próxima ação com base nestes dados; não pressuponhas rendimentos ou retornos que não foram registados."
   }
 }

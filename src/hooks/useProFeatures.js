@@ -12,9 +12,9 @@ export function useProFeatures() {
     const hasFeature = (featureName) => {
         // Mapeamento de features por tier
         const features = {
-            free: ['transacoes', 'orcamento', 'habitacao', 'metas'],
-            growth: ['transacoes', 'orcamento', 'habitacao', 'metas', 'dividas', 'patrimonio', 'relatorio'],
-            pro: ['transacoes', 'orcamento', 'habitacao', 'metas', 'dividas', 'patrimonio', 'relatorio',
+            free: ['jornada', 'transacoes', 'orcamento', 'habitacao', 'metas'],
+            growth: ['jornada', 'transacoes', 'orcamento', 'habitacao', 'metas', 'dividas', 'patrimonio', 'relatorio'],
+            pro: ['jornada', 'transacoes', 'orcamento', 'habitacao', 'metas', 'dividas', 'patrimonio', 'relatorio',
                 'xitique', 'credito', 'simuladores', 'insights', 'nexovibe', 'sms-import'],
             legacy: ['*'] // Legacy/admin tier has all features
         };

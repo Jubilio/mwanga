@@ -24,6 +24,7 @@ export default defineConfig([
         ...globals.browser,
         ...globals.node,
         jest: 'readonly',
+        test: 'readonly',
         describe: 'readonly',
         it: 'readonly',
         expect: 'readonly',
@@ -47,6 +48,7 @@ export default defineConfig([
       globals: {
         ...globals.node,
         jest: 'readonly',
+        test: 'readonly',
         describe: 'readonly',
         it: 'readonly',
         expect: 'readonly',

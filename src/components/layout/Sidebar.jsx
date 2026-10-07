@@ -117,6 +117,7 @@ export default function Sidebar({ isOpen, onClose }) {
       section: t('layout.management'),
       items: [
         { icon: '▦', label: t('layout.dashboard'), to: '/', end: true },
+        { icon: '✧', label: t('journey.nav'), to: '/jornada' },
         { icon: '↕', label: t('layout.transactions'), to: '/transacoes' },
         { icon: '◎', label: t('layout.budget'), to: '/orcamento' },
       ],

@@ -85,7 +85,8 @@ export default function Insights() {
 
   // Chat state
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
+  const location = useLocation();
+  const [input, setInput] = useState(() => typeof location.state?.journeyPrompt === 'string' ? location.state.journeyPrompt.slice(0, 4000) : '');
   const [loading, setLoading] = useState(false);
   const [score, setScore] = useState(null);
   const [isListening, setIsListening] = useState(false);
