@@ -1,15 +1,17 @@
+const { resolveLanguage } = require('../services/binthLanguage');
 const { callBinth, buildUserContext } = require('../services/binthService');
 const { db } = require('../config/db');
 const { z } = require('zod');
 
 const chatSchema = z.object({
-  message: z.string().min(1).max(2000).trim(),
+  message: z.string().trim().min(1).max(2000),
   history: z.array(z.object({
-    role: z.enum(['user', 'assistant', 'system']),
-    content: z.string(),
-  })).optional().default([]),
+    role: z.enum(['user', 'assistant']),
+    content: z.string().max(4000),
+  })).max(30).optional().default([]),
   provider: z.enum(['gemini', 'groq', 'openrouter']).optional().default('gemini'),
   apiKey: z.string().optional(),
+  language: z.enum(['pt', 'en']).optional(),
 }).strict();
 
 const insightSchema = z.object({
@@ -23,7 +25,7 @@ const insightSchema = z.object({
 // ─── POST /api/binth/chat ─────────────────────────────────────────────────────
 const chat = async (req, res, next) => {
   try {
-    const { message, history, provider, apiKey } = chatSchema.parse(req.body);
+    const { message, history, provider, apiKey, language } = chatSchema.parse(req.body);
 
     // Build message history in provider format
     const messages = [
@@ -36,7 +38,8 @@ const chat = async (req, res, next) => {
       apiKey,
       provider,
       householdId: req.user.householdId,
-      userId: req.user.id
+      userId: req.user.id,
+      language: resolveLanguage(language || req.get('Accept-Language'))
     });
 
     res.json(response);
@@ -44,9 +47,9 @@ const chat = async (req, res, next) => {
     if (err instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: err.errors });
     console.error('[Binth Chat Error]', err.message);
     res.status(500).json({
-      message: 'Tive um problema a processar o teu pedido. Tenta novamente! 😊',
+      message: resolveLanguage(req.body?.language || req.get('Accept-Language')) === 'en' ? 'I could not process your request. Please try again.' : 'Tive um problema a processar o teu pedido. Tenta novamente!',
       insight_type: 'info',
-      quick_actions: ['Tentar novamente', 'Ver o Dashboard'],
+      quick_actions: [],
       data: null
     });
   }
@@ -235,7 +238,8 @@ const getPageInsight = async (req, res, next) => {
     const response = await callBinth({
       messages: [{ role: 'user', content: prompt }],
       householdId,
-      userId: req.user.id
+      userId: req.user.id,
+      language: resolveLanguage(req.body?.language || req.query?.language || req.get('Accept-Language'))
     });
 
     res.json(response);
@@ -243,7 +247,7 @@ const getPageInsight = async (req, res, next) => {
     if (err instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: err.errors });
     console.error('[Binth Insights Error]', err.message);
     res.status(500).json({
-      message: 'Não consegui gerar um insight agora. Mas continua o bom trabalho! 💪',
+      message: resolveLanguage(req.query?.language || req.get('Accept-Language')) === 'en' ? 'I could not generate an insight. Please try again.' : 'Não consegui gerar uma sugestão. Tenta novamente.',
       insight_type: 'info',
       quick_actions: []
     });

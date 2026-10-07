@@ -103,3 +103,9 @@ Desenvolvido por **Jubílio Maússe** — *Fullstack Developer & Financial Strat
 
 ---
 *Mwanga ✦ 2026 — O seu legado começa aqui.*
+
+## Android e idiomas
+
+Consulte [o guia de APK/AAB e distribuição](docs/ANDROID_RELEASE.md).
+Use `npm run check:i18n` para verificar paridade de chaves e parâmetros PT/EN.
+A Binth recebe o idioma selecionado e as sugestões locais funcionam nos dois idiomas.

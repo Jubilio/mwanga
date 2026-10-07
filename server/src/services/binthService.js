@@ -1,3 +1,4 @@
+const { resolveLanguage, buildLanguageInstruction, englishFallback } = require('./binthLanguage');
 const { db } = require('../config/db');
 const ToolRegistry = require('./toolRegistry');
 const { getNotificationReadValue } = require('./notificationRead.service');
@@ -200,7 +201,7 @@ Baseia as tuas respostas unicamente no contexto real do utilizador:
 {user_context}
 
 Diretrizes:
-- Responde em português de forma concisa (máximo 2 a 3 parágrafos curtos).
+- Responde no idioma de saída indicado de forma concisa (máximo 2 a 3 parágrafos curtos).
 - Se houver pressão financeira (como falta de dinheiro ou saldo crítico), foca inteiramente em dar uma recomendação prática e realista para acalmar e guiar o utilizador nas próximas 24-72 horas.
 - Se o utilizador perguntar por juros, planos ou simulações, encoraja-o a usar as novas abas dedicadas de Dívidas e Simulação do Mwanga que estão totalmente prontas e funcionais!
 `;
@@ -882,13 +883,15 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
 }
 
 // ─── Main Caller with Fallback ─────────────────────────────────────────────────
-async function callBinth({ messages, apiKey, provider = 'gemini', householdId, userId }) {
+async function callBinth({ messages, apiKey, provider = 'gemini', householdId, userId, language = 'pt' }) {
   const userContext = await buildUserContext(householdId, userId);
   const userMessage = messages[messages.length - 1]?.content || '';
 
 
 
-  const system = BINTH_SYSTEM_PROMPT.replace('{user_context}', userContext.text);
+  language = resolveLanguage(language);
+  const languageInstruction = buildLanguageInstruction(language);
+  const system = BINTH_SYSTEM_PROMPT.replace('{user_context}', userContext.text) + languageInstruction;
   
   let order = [provider, ...Object.keys(PROVIDERS).filter(p => p !== provider)];
   const isLocal = process.env.NODE_ENV !== 'production' || process.env.OLLAMA_ENABLED === 'true';
@@ -901,6 +904,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
   for (const p of order) {
     if (!apiKey && p !== 'ollama' && await isProviderTemporarilyDisabled(p)) continue;
 
+    if (apiKey && p !== provider) continue;
     let activeKey = apiKey;
     if (!activeKey && p !== 'ollama') {
       if (p === 'openrouter')      activeKey = process.env.OPENROUTER_API_KEY;
@@ -916,7 +920,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
       const hdrs = config.headers(activeKey);
       const tools = ToolRegistry.getToolsSchema();
       const activeSystem = p === 'ollama'
-        ? OLLAMA_SYSTEM_PROMPT.replace('{user_context}', userContext.textMinimized)
+        ? OLLAMA_SYSTEM_PROMPT.replace('{user_context}', userContext.textMinimized) + languageInstruction
         : system;
       const payload = config.body(messages, activeSystem, tools);
       
@@ -939,7 +943,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
       const toolCall = config.extractToolCall(data);
       if (toolCall) {
         logger.info({ tool: toolCall.name }, 'Binth AI requested tool call');
-        const toolResult = await ToolRegistry.executeTool(toolCall.name, { householdId, ...toolCall.args });
+        const toolResult = await ToolRegistry.executeTool(toolCall.name, { ...toolCall.args, householdId });
         
         const nextMessages = [
           ...messages,
@@ -973,7 +977,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
   }
 
   logger.warn('All Binth providers failed. Using fallback response.');
-  return getFallbackResponse(messages[messages.length - 1]?.content || '', userContext.summary);
+  return language === 'en' ? englishFallback(userMessage, userContext.summary) : getFallbackResponse(userMessage, userContext.summary);
 }
 
 function getSafeUserName(name) {

@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Globe } from 'lucide-react';
 
 export default function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const handleLanguageChange = (e) => {
     i18n.changeLanguage(e.target.value);
@@ -17,7 +17,8 @@ export default function LanguageSwitcher() {
     }}>
       <Globe size={13} color="#8a9ab8" />
       <select
-        value={i18n.language}
+        aria-label={t('binth_local.language')}
+        value={i18n.resolvedLanguage || 'pt'}
         onChange={handleLanguageChange}
         style={{
           background: 'transparent',

@@ -1,43 +1,36 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import api from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight, RefreshCw } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import { generateLocalBinthInsight } from '../utils/binthLogic';
 
 export default function BinthContextual({ page }) {
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage || 'pt';
   const { state } = useFinance();
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchInsight = async () => {
+  const fetchInsight = useCallback(async (signal) => {
     setLoading(true);
-    let apiUrl = import.meta.env.VITE_API_URL || '';
-    if (!apiUrl.endsWith('/api')) {
-      apiUrl = `${apiUrl.replace(/\/$/, '')}/api`;
-    }
-
     try {
-      const response = await fetch(`${apiUrl}/binth/insights/${page}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('mwanga-token')}`
-        }
-      });
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      setInsight(data);
-    } catch (err) {
-      console.log('Using local Binth insights fallback due to API error/offline.');
-      const localInsight = generateLocalBinthInsight(state, page);
-      setInsight(localInsight);
+      const { data } = await api.get(`/binth/insights/${page}`, { signal, params: { language } });
+      if (!signal?.aborted) setInsight(data);
+    } catch {
+      if (!signal?.aborted) setInsight(generateLocalBinthInsight(state, page, language));
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  };
+  }, [page, language, state]);
 
   useEffect(() => {
-    fetchInsight();
-  }, [page]);
+    const controller = new AbortController();
+    fetchInsight(controller.signal);
+    return () => controller.abort();
+  }, [fetchInsight]);
 
   if (!loading && !insight) return null;
 
@@ -49,7 +42,7 @@ export default function BinthContextual({ page }) {
     info:        'rgba(255,255,255,0.12)',
   };
   const borderColor = INSIGHT_BORDER[insight?.insight_type] || INSIGHT_BORDER.info;
-  const isHighUrgency = insight?.insight_type === 'warning' && (insight?.message?.includes('%') || insight?.message?.includes('risco'));
+  const isHighUrgency = insight?.insight_type === 'warning' && (insight?.message?.includes('%') || insight?.message?.includes('risco') || insight?.message?.includes('risk'));
 
   return (
     <div 
@@ -68,8 +61,8 @@ export default function BinthContextual({ page }) {
         
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-center mb-1">
-            <span className="text-[10px] uppercase tracking-widest font-bold text-gold">Binth Inteligência</span>
-            <button onClick={fetchInsight} disabled={loading} className="text-gray-400 hover:text-gold transition-colors">
+            <span className="text-[10px] uppercase tracking-widest font-bold text-gold">{t('binth_local.title')}</span>
+            <button onClick={() => fetchInsight()} aria-label={t('binth_local.refresh')} disabled={loading} className="text-gray-400 hover:text-gold transition-colors">
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             </button>
           </div>
@@ -104,25 +97,25 @@ export default function BinthContextual({ page }) {
                 {isHighUrgency && (
                   <button 
                     className="text-[11px] bg-coral/20 hover:bg-coral/30 text-coral dark:text-coral-light px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all border border-coral/20"
-                    onClick={() => navigate('/orcamentos')}
+                    onClick={() => navigate('/orcamento')}
                   >
-                    Rever Orçamentos
+                    {t('binth_local.review')}
                   </button>
                 )}
                 {insight.quick_actions?.map((action, i) => (
                   <button 
                     key={i} 
                     className="text-[11px] bg-gold/10 hover:bg-gold/20 text-gold-dark dark:text-gold px-2 py-1 rounded transition-colors border border-gold/10"
-                    onClick={() => navigate('/insights')}
+                    onClick={() => navigate(typeof action === 'object' && ['/orcamento', '/transacoes', '/metas'].includes(action.route) ? action.route : '/insights')}
                   >
-                    {action}
+                    {typeof action === 'object' ? action.label : action}
                   </button>
                 ))}
                 <button 
                   onClick={() => navigate('/insights')}
                   className="text-[11px] font-bold text-dark dark:text-white flex items-center gap-1 hover:underline ml-auto"
                 >
-                  Ver mais <ArrowRight size={12} />
+                  {t('binth_local.more')} <ArrowRight size={12} />
                 </button>
               </div>
             </>

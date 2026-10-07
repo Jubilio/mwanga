@@ -53,3 +53,8 @@ Thumbs.db
 
 
 evolution-api/
+
+# Android signing credentials
+*.jks
+*.keystore
+keystore.properties
