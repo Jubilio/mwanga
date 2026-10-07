@@ -1,9 +1,11 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { ShieldCheck, ChevronRight, Sparkles, Bell, Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fmt } from '../../utils/calculations';
 import { MwangaTooltip } from '../ui/MwangaTooltip';
 
 export function HealthCard({ navigate, score, scoreColor, scoreLabel, itemVariants, t }) {
+  useUiLanguage();
   return (
     <motion.div 
       variants={itemVariants}
@@ -12,12 +14,12 @@ export function HealthCard({ navigate, score, scoreColor, scoreLabel, itemVarian
     >
       <div className="flex items-center justify-between">
          <div className="flex items-center gap-3">
-            <MwangaTooltip content="Índice calculado com base nos seus hábitos de poupança, dívidas e cumprimento de orçamentos">
+            <MwangaTooltip content={ui("Índice calculado com base nos seus hábitos de poupança, dívidas e cumprimento de orçamentos")}>
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-ocean/10 text-ocean dark:bg-sky/10 dark:text-sky">
               <ShieldCheck size={18} />
             </div>
             </MwangaTooltip>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Saúde Financeira</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{ui("Saúde Financeira")}</span>
          </div>
          <ChevronRight size={16} className="text-slate-300 transition-transform group-hover:translate-x-1" />
       </div>
@@ -45,6 +47,7 @@ export function HealthCard({ navigate, score, scoreColor, scoreLabel, itemVarian
 }
 
 export function AlertsCard({ navigate, totalAlerts, pendingDebts, pendingHousing, itemVariants }) {
+  useUiLanguage();
   return (
     <motion.div 
       variants={itemVariants}
@@ -56,7 +59,7 @@ export function AlertsCard({ navigate, totalAlerts, pendingDebts, pendingHousing
             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${totalAlerts > 0 ? 'bg-coral/10 text-coral animate-pulse' : 'bg-leaf/10 text-leaf'}`}>
               <Bell size={20} />
             </div>
-            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Alertas & Pendentes</span>
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">{ui("Alertas & Pendentes")}</span>
          </div>
          <ChevronRight size={18} className="text-slate-300 transition-transform group-hover:translate-x-1" />
       </div>
@@ -66,14 +69,14 @@ export function AlertsCard({ navigate, totalAlerts, pendingDebts, pendingHousing
            <div className="space-y-3">
               <span className="text-5xl font-black text-coral">{totalAlerts}</span>
               <div className="flex flex-col gap-1">
-                {pendingDebts > 0 && <span className="text-[10px] font-bold text-coral/80 uppercase tracking-wider">● {pendingDebts} Dívidas Pendentes</span>}
-                {pendingHousing > 0 && <span className="text-[10px] font-bold text-gold/80 uppercase tracking-wider">● {pendingHousing} Despesas de Habitação</span>}
+                {pendingDebts > 0 && <span className="text-[10px] font-bold text-coral/80 uppercase tracking-wider">● {pendingDebts} {ui("Dívidas Pendentes")}</span>}
+                {pendingHousing > 0 && <span className="text-[10px] font-bold text-gold/80 uppercase tracking-wider">● {pendingHousing} {ui("Despesas de Habitação")}</span>}
               </div>
            </div>
          ) : (
            <div className="space-y-3">
               <span className="text-5xl font-black text-leaf-light">0</span>
-              <span className="block text-[10px] font-bold text-leaf/60 uppercase tracking-wider">Tudo sob controlo</span>
+              <span className="block text-[10px] font-bold text-leaf/60 uppercase tracking-wider">{ui("Tudo sob controlo")}</span>
            </div>
          )}
       </div>
@@ -84,6 +87,7 @@ export function AlertsCard({ navigate, totalAlerts, pendingDebts, pendingHousing
 }
 
 export function AccountsCard({ navigate, state, showBalance, currency, maxContaBalance, totalContas, itemVariants }) {
+  useUiLanguage();
   return (
     <motion.div
       variants={itemVariants}
@@ -92,12 +96,12 @@ export function AccountsCard({ navigate, state, showBalance, currency, maxContaB
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <MwangaTooltip content="Saldo total consolidado de todas as suas contas activas">
+          <MwangaTooltip content={ui("Saldo total consolidado de todas as suas contas activas")}>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-ocean/10 text-ocean dark:bg-sky/10 dark:text-sky">
             <Wallet size={18} />
           </div>
           </MwangaTooltip>
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Contas Activas</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{ui("Contas Activas")}</span>
         </div>
         <ChevronRight size={16} className="text-slate-300 transition-transform group-hover:translate-x-1" />
       </div>
@@ -132,16 +136,15 @@ export function AccountsCard({ navigate, state, showBalance, currency, maxContaB
             })}
           {state.contas.length > 4 && (
             <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-              +{state.contas.length - 4} contas...
-            </span>
+              +{state.contas.length - 4} {ui("contas...")} </span>
           )}
         </div>
       ) : (
-        <div className="py-4 text-center text-xs text-slate-400">Sem contas registadas</div>
+        <div className="py-4 text-center text-xs text-slate-400">{ui("Sem contas registadas")}</div>
       )}
 
       <div className="mt-auto flex items-baseline gap-1 border-t border-slate-100 dark:border-white/5 pt-3">
-        <span className="text-xs text-slate-400 uppercase tracking-widest font-bold">Total em Contas</span>
+        <span className="text-xs text-slate-400 uppercase tracking-widest font-bold">{ui("Total em Contas")}</span>
         <span className="ml-auto text-base font-black text-midnight dark:text-white tabular-nums">
           {showBalance ? fmt(totalContas, currency) : '••••'}
         </span>
@@ -151,6 +154,7 @@ export function AccountsCard({ navigate, state, showBalance, currency, maxContaB
 }
 
 export function CashFlowCard({ navigate, totals, showBalance, currency, savingsRate, itemVariants }) {
+  useUiLanguage();
   return (
     <motion.div
       variants={itemVariants}
@@ -162,7 +166,7 @@ export function CashFlowCard({ navigate, totals, showBalance, currency, savingsR
           <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${totals.saldo >= 0 ? 'bg-leaf/10 text-leaf' : 'bg-coral/10 text-coral'}`}>
             {totals.saldo >= 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
           </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Fluxo de Caixa</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{ui("Fluxo de Caixa")}</span>
         </div>
         <ChevronRight size={16} className="text-slate-300 transition-transform group-hover:translate-x-1" />
       </div>
@@ -173,14 +177,14 @@ export function CashFlowCard({ navigate, totals, showBalance, currency, savingsR
           {showBalance ? `${totals.saldo >= 0 ? '+' : ''}${fmt(totals.saldo, currency)}` : '•••••'}
         </span>
         <span className={`text-[9px] font-black uppercase tracking-widest mt-1 ${totals.saldo >= 0 ? 'text-leaf/60' : 'text-coral/60'}`}>
-          {totals.saldo >= 0 ? '✓ Mês positivo' : '⚠ Despesas acima dos rendimentos'}
+          {totals.saldo >= 0 ? ui("✓ Mês positivo") : ui("⚠ Despesas acima dos rendimentos")}
         </span>
       </div>
 
       {/* Income vs Expense mini bars */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
-          <span className="w-16 text-[9px] font-black uppercase tracking-widest text-leaf-light/70 shrink-0">Entradas</span>
+          <span className="w-16 text-[9px] font-black uppercase tracking-widest text-leaf-light/70 shrink-0">{ui("Entradas")}</span>
           <div className="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
@@ -193,7 +197,7 @@ export function CashFlowCard({ navigate, totals, showBalance, currency, savingsR
            </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="w-16 text-[9px] font-black uppercase tracking-widest text-coral-light/70 shrink-0">Saídas</span>
+          <span className="w-16 text-[9px] font-black uppercase tracking-widest text-coral-light/70 shrink-0">{ui("Saídas")}</span>
           <div className="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
@@ -209,7 +213,7 @@ export function CashFlowCard({ navigate, totals, showBalance, currency, savingsR
 
       {/* Savings Rate */}
       <div className="mt-auto flex items-center justify-between border-t border-slate-100 dark:border-white/5 pt-3">
-        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Taxa de Poupança</span>
+        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{ui("Taxa de Poupança")}</span>
         <span className={`text-sm font-black ${savingsRate > 20 ? 'text-leaf-light' : savingsRate > 0 ? 'text-gold' : 'text-coral'}`}>
           {savingsRate.toFixed(1)}%
         </span>
@@ -219,6 +223,7 @@ export function CashFlowCard({ navigate, totals, showBalance, currency, savingsR
 }
 
 export function StewardshipCard({ navigate, stats, badges, itemVariants }) {
+  useUiLanguage();
   const activeBadgesCount = badges.filter(b => b.active).length;
   
   return (
@@ -234,7 +239,7 @@ export function StewardshipCard({ navigate, stats, badges, itemVariants }) {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold/10 text-gold shadow-[0_0_10px_rgba(201,150,58,0.2)]">
             <ShieldCheck size={18} />
           </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Mordomia & Conquistas</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{ui("Mordomia & Conquistas")}</span>
         </div>
         <ChevronRight size={16} className="text-slate-300 transition-transform group-hover:translate-x-1" />
       </div>
@@ -242,14 +247,14 @@ export function StewardshipCard({ navigate, stats, badges, itemVariants }) {
       <div className="flex items-center gap-6">
         <div className="flex flex-col">
           <span className="text-4xl font-black text-white tabular-nums">{stats.totalScore}</span>
-          <span className="text-[9px] font-black uppercase tracking-widest text-gold/60">Índice Global</span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-gold/60">{ui("Índice Global")}</span>
         </div>
         
         <div className="h-10 w-[1px] bg-white/5" />
         
         <div className="flex flex-col">
           <span className="text-4xl font-black text-indigo-400 tabular-nums">{activeBadgesCount}</span>
-          <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400/60">Badges Ativos</span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400/60">{ui("Badges Ativos")}</span>
         </div>
       </div>
 
@@ -258,14 +263,14 @@ export function StewardshipCard({ navigate, stats, badges, itemVariants }) {
           <div 
             key={badge.id} 
             className={`h-2.5 w-2.5 rounded-full shadow-[0_0_5px_rgba(0,0,0,0.5)] ${badge.active ? 'bg-indigo-400' : 'bg-white/5'}`}
-            title={badge.label}
+            title={ui(badge.label)}
           />
         ))}
       </div>
 
       <div className="mt-auto flex items-center justify-between border-t border-slate-100 dark:border-white/5 pt-3">
         <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 italic">
-          "{stats.totalScore > 80 ? 'Servo fiel!' : 'Em crescimento...'}"
+          "{stats.totalScore > 80 ? ui("Servo fiel!") : ui("Em crescimento...")}"
         </span>
       </div>
     </motion.div>

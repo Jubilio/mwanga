@@ -1,7 +1,9 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import React, { useState } from 'react';
 import { Briefcase, CheckCircle, XCircle, TrendingUp, Shield, Users, BookOpen } from 'lucide-react';
 
 export default function SimulatorQuality() {
+  useUiLanguage();
   const [criteria, setCriteria] = useState({
     consistentEarnings: null,
     goodROE: null,
@@ -19,11 +21,11 @@ export default function SimulatorQuality() {
   const isComplete = answered === 5;
 
   const getScoreMessage = () => {
-    if (!isComplete) return 'Responda a todas as perguntas para obter o seu Buffett Score.';
-    if (score === 100) return 'Excelente! Este é um negócio "Fenomenal" segundo Warren Buffett. Vale a pena investir fortemente.';
-    if (score >= 80) return 'Muito Bom. Tem a maioria dos pilares fundamentais. Avalie com cuidado o critério em falta.';
-    if (score >= 60) return 'Razoável. Pode haver oportunidades, mas faltam elementos essenciais de segurança e qualidade.';
-    return 'Arriscado. Segundo a filosofia de Buffett, não cumpres os critérios mínimos de qualidade e segurança.';
+    if (!isComplete) return ui("Responda a todas as perguntas para obter o seu Buffett Score.");
+    if (score === 100) return ui("Excelente! Este é um negócio \"Fenomenal\" segundo Warren Buffett. Vale a pena investir fortemente.");
+    if (score >= 80) return ui("Muito Bom. Tem a maioria dos pilares fundamentais. Avalie com cuidado o critério em falta.");
+    if (score >= 60) return ui("Razoável. Pode haver oportunidades, mas faltam elementos essenciais de segurança e qualidade.");
+    return ui("Arriscado. Segundo a filosofia de Buffett, não cumpres os critérios mínimos de qualidade e segurança.");
   };
 
   const getScoreColor = () => {
@@ -35,32 +37,32 @@ export default function SimulatorQuality() {
   const questions = [
     {
       id: 'consistentEarnings',
-      label: 'Lucros Consistentes',
-      desc: 'O negócio tem demonstrado poder de gerar lucros de forma consistente ao longo dos anos?',
+      label: ui("Lucros Consistentes"),
+      desc: ui("O negócio tem demonstrado poder de gerar lucros de forma consistente ao longo dos anos?"),
       icon: TrendingUp,
     },
     {
       id: 'goodROE',
-      label: 'Alto Retorno (ROE > 20%)',
-      desc: 'O negócio gera um bom retorno sobre o capital próprio investido? (Sem anos negativos)',
+      label: ui("Alto Retorno (ROE > 20%)"),
+      desc: ui("O negócio gera um bom retorno sobre o capital próprio investido? (Sem anos negativos)"),
       icon: Briefcase,
     },
     {
       id: 'healthyBalance',
-      label: 'Balanço Saudável',
-      desc: 'O negócio tem pouca ou nenhuma dívida, possuindo recursos para sobreviver a crises?',
+      label: ui("Balanço Saudável"),
+      desc: ui("O negócio tem pouca ou nenhuma dívida, possuindo recursos para sobreviver a crises?"),
       icon: Shield,
     },
     {
       id: 'greatManagement',
-      label: 'Gestão Honesta e Competente',
-      desc: 'Os líderes já estão no lugar, são competentes e têm "skin in the game" (o próprio dinheiro investido)?',
+      label: ui("Gestão Honesta e Competente"),
+      desc: ui("Os líderes já estão no lugar, são competentes e têm \"skin in the game\" (o próprio dinheiro investido)?"),
       icon: Users,
     },
     {
       id: 'simpleBusiness',
-      label: 'Negócio Simples',
-      desc: 'Consegue compreender exatamente como o negócio ganha dinheiro? Está no seu "Círculo de Competência"?',
+      label: ui("Negócio Simples"),
+      desc: ui("Consegue compreender exatamente como o negócio ganha dinheiro? Está no seu \"Círculo de Competência\"?"),
       icon: BookOpen,
     }
   ];
@@ -70,10 +72,8 @@ export default function SimulatorQuality() {
       <div className="glass-card p-8 bg-linear-to-br from-ocean/20 to-midnight">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex-1">
-            <h2 className="text-xl font-black text-white mb-2">Simulador de Qualidade Buffett</h2>
-            <p className="text-sm text-gray-400">
-              Avalie qualquer negócio, imóvel ou oportunidade de investimento usando os 5 critérios rigorosos de aquisição do Warren Buffett.
-            </p>
+            <h2 className="text-xl font-black text-white mb-2">{ui("Simulador de Qualidade Buffett")}</h2>
+            <p className="text-sm text-gray-400"> {ui("Avalie qualquer negócio, imóvel ou oportunidade de investimento usando os 5 critérios rigorosos de aquisição do Warren Buffett.")} </p>
           </div>
           <div className="w-full md:w-auto p-6 rounded-[24px] bg-black/40 border border-white/5 flex flex-col items-center justify-center min-w-[200px]">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">Buffett Score</span>
@@ -95,8 +95,8 @@ export default function SimulatorQuality() {
                   <Icon size={20} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white mb-1">{q.label}</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">{q.desc}</p>
+                  <h3 className="text-sm font-bold text-white mb-1">{ui(q.label)}</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">{ui(q.desc)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
@@ -106,16 +106,14 @@ export default function SimulatorQuality() {
                     val === true ? 'bg-leaf text-midnight' : 'bg-white/5 text-gray-400 hover:bg-white/10'
                   }`}
                 >
-                  <CheckCircle size={14} /> Sim
-                </button>
+                  <CheckCircle size={14} /> {ui("Sim")} </button>
                 <button
                   onClick={() => handleToggle(q.id, false)}
                   className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
                     val === false ? 'bg-coral text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'
                   }`}
                 >
-                  <XCircle size={14} /> Não
-                </button>
+                  <XCircle size={14} /> {ui("Não")} </button>
               </div>
             </div>
           );
@@ -124,7 +122,7 @@ export default function SimulatorQuality() {
 
       {isComplete && (
         <div className={`p-6 rounded-[24px] border ${score >= 80 ? 'bg-leaf/10 border-leaf/20' : score >= 60 ? 'bg-gold/10 border-gold/20' : 'bg-coral/10 border-coral/20'} animate-scale-in`}>
-          <h4 className={`text-sm font-black uppercase tracking-widest mb-2 ${getScoreColor()}`}>Veredicto</h4>
+          <h4 className={`text-sm font-black uppercase tracking-widest mb-2 ${getScoreColor()}`}>{ui("Veredicto")}</h4>
           <p className="text-sm text-gray-300 leading-relaxed">{getScoreMessage()}</p>
         </div>
       )}

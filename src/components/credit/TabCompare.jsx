@@ -1,3 +1,4 @@
+import { ui } from '../../utils/uiTranslation';
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { G } from "../../theme/tokens";
@@ -83,7 +84,7 @@ export default function TabCompare({ userData }) {
             return (
               <div key={opt.id} style={{ padding: 16, borderRadius: 16, border: `1px solid ${opt.color}40`, background: `${opt.color}08` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                  <div style={{ fontWeight: 700, color: opt.color }}>{opt.name}</div>
+                  <div style={{ fontWeight: 700, color: opt.color }}>{ui(opt.name)}</div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
                     <Badge label={isAnnual ? `${(opt.rate * 100).toFixed(1)}% AA` : `${(opt.rate * 100).toFixed(0)}%/mês`} color={opt.color} />
                     {!isAffordable && <span style={{ fontSize: 9, fontWeight: 900, color: G.red, textTransform: 'uppercase' }}>{t('credit.compare.exceeds')}</span>}

@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertCircle, XCircle, Info, X } from 'lucide-react';
@@ -6,6 +7,7 @@ import { CheckCircle2, AlertCircle, XCircle, Info, X } from 'lucide-react';
  * Premium Toast component with multi-variant support.
  */
 export default function Toast({ message, visible, variant = 'success', onClose }) {
+  useUiLanguage();
   const themes = {
     success: { icon: CheckCircle2, color: '#00D68F', bg: 'rgba(0, 214, 143, 0.1)', border: 'rgba(0, 214, 143, 0.2)' },
     error:   { icon: XCircle,      color: '#FF4C4C', bg: 'rgba(255, 76, 76, 0.1)', border: 'rgba(255, 76, 76, 0.2)' },
@@ -35,7 +37,7 @@ export default function Toast({ message, visible, variant = 'success', onClose }
             
             <div className="flex-1 pr-4">
               <div className="text-[13px] font-bold text-white/90 leading-tight">
-                {message}
+                {ui(message)}
               </div>
             </div>
 
@@ -58,6 +60,7 @@ export default function Toast({ message, visible, variant = 'success', onClose }
  * Custom hook for managing toast state.
  */
 export function useToast() {
+  useUiLanguage();
   const [toast, setToast] = useState({ message: '', visible: false, variant: 'success' });
 
   function showToast(msg, variant = 'success') {

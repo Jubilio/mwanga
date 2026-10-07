@@ -1,9 +1,11 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { useTranslation } from "react-i18next";
 import { G } from "../../theme/tokens";
 import { fmtShort } from "../../utils/calculations";
 import { Card, ScoreRing, Badge, ProgressBar, ProGate, Btn } from "./CreditUI";
 
 export default function TabOverview({ onApply, scoreData, eligData, hist, isPro }) {
+  useUiLanguage();
   const { t } = useTranslation();
 
   return (
@@ -16,7 +18,7 @@ export default function TabOverview({ onApply, scoreData, eligData, hist, isPro 
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
             <ScoreRing score={scoreData.score} color={scoreData.color} size={90} />
           </div>
-          <Badge label={scoreData.label} color={scoreData.color} />
+          <Badge label={ui(scoreData.label)} color={scoreData.color} />
           <div style={{ fontSize: 11, color: G.muted, marginTop: 10 }}>
             {scoreData.eligible ? `${t('credit.overview.eligible')} MT ${fmtShort(scoreData.maxAmount)}` : t('credit.overview.not_eligible')}
           </div>
@@ -63,7 +65,7 @@ export default function TabOverview({ onApply, scoreData, eligData, hist, isPro 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontSize: 16 }}>{f.icon}</span>
-                    <span style={{ fontSize: 13, color: G.text }}>{f.name}</span>
+                    <span style={{ fontSize: 13, color: G.text }}>{ui(f.name)}</span>
                   </div>
                   <span style={{ fontSize: 13, fontWeight: 700, color: f.pts >= f.max * 0.7 ? G.green : f.pts >= f.max * 0.4 ? G.gold : G.red }}>
                     {f.pts}/{f.max}
@@ -99,7 +101,7 @@ export default function TabOverview({ onApply, scoreData, eligData, hist, isPro 
                 <div style={{ width: 42, height: 42, borderRadius: 13, background: `${G.credit}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>💸</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 14, fontWeight: 600, color: G.text }}>{fmtShort(l.valor)} · {l.meses} {t('credit.overview.history_months')}</div>
-                  <div style={{ fontSize: 12, color: G.muted }}>{l.data} · {t('credit.overview.history_rate')} {(l.taxa * 100).toFixed(0)}%/mês · {t('credit.overview.history_installment')} {fmtShort(l.parcela)}</div>
+                  <div style={{ fontSize: 12, color: G.muted }}>{l.data} · {t('credit.overview.history_rate')} {(l.taxa * 100).toFixed(0)}{ui("%/mês ·")} {t('credit.overview.history_installment')} {fmtShort(l.parcela)}</div>
                 </div>
                 <Badge label={l.status === "paid" ? t('credit.overview.history_paid') : t('credit.overview.history_ongoing')} color={l.status === "paid" ? G.green : G.gold} />
               </div>

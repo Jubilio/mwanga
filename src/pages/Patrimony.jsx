@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import React, { useState } from 'react';
 import { useFinance } from '../hooks/useFinance';
 import { useOutletContext, Link } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { fmt } from '../utils/calculations';
 import { usePageAnimation } from '../hooks/useMwangaAnimations';
 
 export default function Patrimony() {
+  useUiLanguage();
   usePageAnimation('.patrimony-gsap-root');
   
   const { t } = useTranslation();
@@ -36,8 +38,8 @@ export default function Patrimony() {
     { id: 'absa',    name: 'Absa',              type: 'banco'    },
     { id: 'fnb',     name: 'FNB Moçambique',    type: 'banco'    },
     { id: 'access',  name: 'Access Bank',       type: 'banco'    },
-    { id: 'cash',    name: 'Dinheiro em Mão',   type: 'dinheiro' },
-    { id: 'other',   name: 'Outro',             type: 'outro'    }
+    { id: 'cash',    name: ui("Dinheiro em Mão"),   type: 'dinheiro' },
+    { id: 'other',   name: ui("Outro"),             type: 'outro'    }
   ];
 
   // Deduplica contas com nomes similares (ex: "BIM" + "Millennium BIM")
@@ -69,12 +71,12 @@ export default function Patrimony() {
 
   const getTypeLabel = (type) => {
     const t = typeof type === 'string' ? type.toLowerCase().trim() : '';
-    if (['bank', 'banco'].includes(t))                            return 'Conta Bancária';
-    if (['mobile', 'carteira_movel', 'movel'].includes(t))        return 'Carteira Móvel';
-    if (['cash', 'dinheiro'].includes(t))                         return 'Dinheiro em Mão';
-    if (['poupanca', 'poupança', 'savings'].includes(t))          return 'Poupança';
-    if (t === 'outro' || t === 'other' || t === '')               return 'Conta';
-    return type || 'Conta';
+    if (['bank', 'banco'].includes(t))                            return ui("Conta Bancária");
+    if (['mobile', 'carteira_movel', 'movel'].includes(t))        return ui("Carteira Móvel");
+    if (['cash', 'dinheiro'].includes(t))                         return ui("Dinheiro em Mão");
+    if (['poupanca', 'poupança', 'savings'].includes(t))          return ui("Poupança");
+    if (t === 'outro' || t === 'other' || t === '')               return ui("Conta");
+    return type || ui("Conta");
   };
 
   const [retireMonthlySavings, setRetireMonthlySavings] = useState(10000);
@@ -150,9 +152,9 @@ export default function Patrimony() {
         type: 'UPDATE_ACCOUNT_BALANCE', 
         payload: { id: editingAccount.id, balance: parseFloat(editBalance) } 
       });
-      showToast('Saldo actualizado com sucesso!');
+      showToast(ui("Saldo actualizado com sucesso!"));
     } catch (err) {
-      showToast('Erro ao actualizar saldo.');
+      showToast(ui("Erro ao actualizar saldo."));
     }
     setEditingAccount(null);
     setEditBalance('');
@@ -208,7 +210,7 @@ export default function Patrimony() {
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{t('patrimony.net_worth')}</span>
             {showBalance && (
                <div className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border" style={{ borderColor: tier.color, color: tier.color }}>
-                 {tier.label}
+                 {ui(tier.label)}
                </div>
             )}
           </div>
@@ -229,7 +231,7 @@ export default function Patrimony() {
              {state.settings.cash_balance !== undefined && Number(state.settings.cash_balance) > 0 && (
                 <div className="glass-card p-5 bg-linear-to-br from-gold to-yellow-700 text-midnight relative overflow-hidden group">
                   <Wallet size={80} className="absolute -right-4 -bottom-4 opacity-10" />
-                  <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Dinheiro em Mão</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest opacity-60">{ui("Dinheiro em Mão")}</span>
                   <div className="text-2xl font-black mt-2">{showBalance ? fmt(state.settings.cash_balance, currency) : '••••'}</div>
                 </div>
              )}
@@ -241,8 +243,8 @@ export default function Patrimony() {
                   <div className="flex justify-between items-start mb-4 relative z-10">
                     <span className="px-2 py-1 rounded-lg bg-black/20 text-[8px] font-black uppercase tracking-widest">{getTypeLabel(account.type)}</span>
                     <div className="flex items-center gap-1">
-                      <button onClick={() => openEditAccount(account)} className="p-1.5 rounded-lg bg-black/10 hover:bg-sky text-white transition-colors" title="Editar saldo"><Pencil size={12} /></button>
-                      <button onClick={() => dispatch({ type: 'DELETE_ACCOUNT', payload: account.id })} className="p-1.5 rounded-lg bg-black/10 hover:bg-coral text-white transition-colors" title="Eliminar conta"><Trash2 size={12} /></button>
+                      <button onClick={() => openEditAccount(account)} className="p-1.5 rounded-lg bg-black/10 hover:bg-sky text-white transition-colors" title={ui("Editar saldo")}><Pencil size={12} /></button>
+                      <button onClick={() => dispatch({ type: 'DELETE_ACCOUNT', payload: account.id })} className="p-1.5 rounded-lg bg-black/10 hover:bg-coral text-white transition-colors" title={ui("Eliminar conta")}><Trash2 size={12} /></button>
                     </div>
                   </div>
                   <span className="text-xs font-bold opacity-80 relative z-10">{account.name}</span>
@@ -295,13 +297,12 @@ export default function Patrimony() {
                   </div>
                   <div>
                     <p className="text-xs font-black text-white">{d.creditor_name}</p>
-                    <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Dívida Ativa</p>
+                    <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{ui("Dívida Ativa")}</p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-0.5">
                   {d.principal_amount > 0 && d.principal_amount !== d.total_amount && (
-                    <span className="text-[9px] font-bold text-gray-500">
-                      Pedido: {showBalance ? fmt(d.principal_amount, currency) : '••••'}
+                    <span className="text-[9px] font-bold text-gray-500"> {ui("Pedido:")} {showBalance ? fmt(d.principal_amount, currency) : '••••'}
                     </span>
                   )}
                   <span className="text-sm font-black text-coral">
@@ -322,51 +323,51 @@ export default function Patrimony() {
       {/* SIMULATORS */}
       <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="glass-card p-6 border-indigo-500/10">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-indigo-400 mb-6 flex items-center gap-2"><Flame size={14} /> FIRE Simulator</h3>
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-indigo-400 mb-6 flex items-center gap-2"><Flame size={14} /> {ui("FIRE Simulator")}</h3>
           <div className="grid grid-cols-2 gap-4 mb-6">
              <div className="space-y-1">
-               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Renda Alvo</label>
+               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{ui("Renda Alvo")}</label>
                <input type="number" className="form-input text-xs" value={retireTargetIncome} onChange={e => setRetireTargetIncome(parseFloat(e.target.value) || 0)} />
              </div>
              <div className="space-y-1">
-               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Retorno %</label>
+               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{ui("Retorno %")}</label>
                <input type="number" className="form-input text-xs" value={retireReturnRate} onChange={e => setRetireReturnRate(parseFloat(e.target.value) || 0)} />
              </div>
           </div>
           <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4">
-               <span>Progresso FIRE</span>
-               <span className="text-white">{yearsToFire} Anos</span>
+               <span>{ui("Progresso FIRE")}</span>
+               <span className="text-white">{yearsToFire} {ui("Anos")}</span>
              </div>
              <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
                <div className="h-full bg-indigo-500" style={{ width: `${Math.min(100, (netWorth / fireNumber) * 100)}%` }} />
              </div>
              <div className="flex justify-between mt-4 text-[10px] font-bold">
-               <span className="text-gray-500">Atual: {showBalance ? fmt(Math.max(0, netWorth), currency) : '••••'}</span>
-               <span className="text-indigo-400">Alvo: {showBalance ? fmt(fireNumber, currency) : '••••'}</span>
+               <span className="text-gray-500">{ui("Atual:")} {showBalance ? fmt(Math.max(0, netWorth), currency) : '••••'}</span>
+               <span className="text-indigo-400">{ui("Alvo:")} {showBalance ? fmt(fireNumber, currency) : '••••'}</span>
              </div>
           </div>
         </div>
 
         <div className="glass-card p-6 border-coral/10">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-coral-light mb-6 flex items-center gap-2"><ShieldAlert size={14} /> Impacto da Inflação</h3>
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-coral-light mb-6 flex items-center gap-2"><ShieldAlert size={14} /> {ui("Impacto da Inflação")}</h3>
           <div className="grid grid-cols-2 gap-4 mb-6">
              <div className="space-y-1">
-               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Anos</label>
+               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{ui("Anos")}</label>
                <input type="number" className="form-input text-xs" value={inflationYears} onChange={e => setInflationYears(parseInt(e.target.value) || 0)} />
              </div>
              <div className="space-y-1">
-               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Inflação %</label>
+               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{ui("Inflação %")}</label>
                <input type="number" className="form-input text-xs" value={inflationRate} onChange={e => setInflationRate(parseFloat(e.target.value) || 0)} />
              </div>
           </div>
           <div className="space-y-3">
              <div className="flex justify-between items-center p-3 rounded-xl bg-white/5">
-               <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Poder de Compra</span>
+               <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{ui("Poder de Compra")}</span>
                <span className="text-sm font-black text-coral">{showBalance ? fmt(purchasingPower, currency) : '••••'}</span>
              </div>
              <div className="flex justify-between items-center p-3 rounded-xl bg-white/5">
-               <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Se Investido</span>
+               <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{ui("Se Investido")}</span>
                <span className="text-sm font-black text-leaf">{showBalance ? fmt(investedPower, currency) : '••••'}</span>
              </div>
           </div>
@@ -377,15 +378,15 @@ export default function Patrimony() {
       {showAccountModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-midnight/80 backdrop-blur-md">
           <div className="glass-card p-8 w-full max-w-md animate-scale-in">
-            <h3 className="text-xl font-black text-white mb-6">Nova Conta</h3>
+            <h3 className="text-xl font-black text-white mb-6">{ui("Nova Conta")}</h3>
             <form onSubmit={handleAddAccount} className="space-y-4">
               <select className="form-input" value={accountForm.institution} onChange={e => setAccountForm({...accountForm, institution: e.target.value, type: MOZ_INSTITUTIONS.find(i=>i.name===e.target.value)?.type || 'other'})} required>
-                {MOZ_INSTITUTIONS.map(inst => <option key={inst.id} value={inst.name} className="text-black">{inst.name}</option>)}
+                {MOZ_INSTITUTIONS.map(inst => <option key={inst.id} value={ui(inst.name)} className="text-black">{ui(inst.name)}</option>)}
               </select>
-              <input type="number" className="form-input" placeholder="Saldo Inicial" required value={accountForm.initial_balance} onChange={e => setAccountForm({...accountForm, initial_balance: e.target.value})} />
+              <input type="number" className="form-input" placeholder={ui("Saldo Inicial")} required value={accountForm.initial_balance} onChange={e => setAccountForm({...accountForm, initial_balance: e.target.value})} />
               <div className="flex gap-4 pt-4">
-                <button type="button" className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-gray-400" onClick={() => setShowAccountModal(false)}>Cancelar</button>
-                <button type="submit" className="flex-1 btn-primary py-3 rounded-xl text-xs font-black uppercase tracking-widest">Adicionar</button>
+                <button type="button" className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-gray-400" onClick={() => setShowAccountModal(false)}>{ui("Cancelar")}</button>
+                <button type="submit" className="flex-1 btn-primary py-3 rounded-xl text-xs font-black uppercase tracking-widest">{ui("Adicionar")}</button>
               </div>
             </form>
           </div>
@@ -396,11 +397,11 @@ export default function Patrimony() {
       {editingAccount && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-midnight/80 backdrop-blur-md" onClick={() => setEditingAccount(null)}>
           <div className="glass-card p-8 w-full max-w-md animate-scale-in" onClick={e => e.stopPropagation()}>
-            <h3 className="text-xl font-black text-white mb-2">Editar Conta</h3>
-            <p className="text-sm text-gray-400 mb-6">Corrigir o saldo de <span className="text-sky font-bold">{editingAccount.name}</span></p>
+            <h3 className="text-xl font-black text-white mb-2">{ui("Editar Conta")}</h3>
+            <p className="text-sm text-gray-400 mb-6">{ui("Corrigir o saldo de")} <span className="text-sky font-bold">{editingAccount.name}</span></p>
             <form onSubmit={handleEditAccount} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Saldo Actual ({currency})</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{ui("Saldo Actual (")}{currency})</label>
                 <input 
                   type="number" 
                   step="0.01"
@@ -413,11 +414,11 @@ export default function Patrimony() {
                 />
               </div>
               <div className="p-3 rounded-xl bg-sky/10 border border-sky/20">
-                <p className="text-[10px] text-sky font-bold">💡 Insira o saldo real que tem agora nesta conta. O sistema irá actualizar automaticamente.</p>
+                <p className="text-[10px] text-sky font-bold">{ui("💡 Insira o saldo real que tem agora nesta conta. O sistema irá actualizar automaticamente.")}</p>
               </div>
               <div className="flex gap-4 pt-4">
-                <button type="button" className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors" onClick={() => setEditingAccount(null)}>Cancelar</button>
-                <button type="submit" className="flex-1 btn-primary py-3 rounded-xl text-xs font-black uppercase tracking-widest">Guardar</button>
+                <button type="button" className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors" onClick={() => setEditingAccount(null)}>{ui("Cancelar")}</button>
+                <button type="submit" className="flex-1 btn-primary py-3 rounded-xl text-xs font-black uppercase tracking-widest">{ui("Guardar")}</button>
               </div>
             </form>
           </div>

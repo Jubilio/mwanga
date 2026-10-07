@@ -1,13 +1,15 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { ArrowDownToLine, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fmt } from '../../utils/calculations';
 
 export default function DashboardTransactions({ latestTransactions, navigate, showBalance, currency, itemVariants, t }) {
+  useUiLanguage();
   return (
     <motion.div variants={itemVariants} className="flex flex-col gap-4">
       <div className="flex items-center justify-between px-2">
-         <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500">Últimos Registos</h3>
-         <button onClick={() => navigate('/transacoes')} className="text-[10px] font-black uppercase tracking-widest text-ocean dark:text-sky hover:opacity-70 transition-opacity">Ver Tudo</button>
+         <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500">{ui("Últimos Registos")}</h3>
+         <button onClick={() => navigate('/transacoes')} className="text-[10px] font-black uppercase tracking-widest text-ocean dark:text-sky hover:opacity-70 transition-opacity">{ui("Ver Tudo")}</button>
       </div>
 
       <div className="glass-card divide-y divide-slate-100 dark:divide-white/5 overflow-hidden">
@@ -34,7 +36,7 @@ export default function DashboardTransactions({ latestTransactions, navigate, sh
         {latestTransactions.length === 0 && (
           <div className="py-12 text-center">
              <span className="text-3xl opacity-20">📝</span>
-             <p className="mt-2 text-xs font-bold text-slate-400">Sem registos recentes</p>
+             <p className="mt-2 text-xs font-bold text-slate-400">{ui("Sem registos recentes")}</p>
           </div>
         )}
       </div>

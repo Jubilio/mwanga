@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { 
@@ -8,6 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 export default function Help() {
+  useUiLanguage();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(null);
@@ -127,7 +129,7 @@ export default function Help() {
                   <div className={`w-12 h-12 rounded-xl bg-${section.color}-500/10 flex items-center justify-center border border-${section.color}-500/20 group-hover:scale-110 transition-transform`}>
                     <section.icon size={24} className={`text-${section.color}-400`} />
                   </div>
-                  <h3 className="text-xl font-black tracking-tight">{section.title}</h3>
+                  <h3 className="text-xl font-black tracking-tight">{ui(section.title)}</h3>
                 </div>
                 <div className={`p-2 rounded-lg bg-white/5 opacity-40 transition-all ${activeTab === section.id ? 'rotate-90 opacity-100 bg-teal-500/20' : ''}`}>
                   <ChevronRight size={20} />

@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useEffect, useState } from 'react';
 import { X, Plus, Wallet, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -8,8 +9,8 @@ import { MAIN_CATEGORIES } from '../utils/categories';
 const CATEGORIES = MAIN_CATEGORIES;
 
 const TYPES = [
-  { value: 'despesa', label: 'Despesa', icon: ArrowDownLeft },
-  { value: 'receita', label: 'Receita', icon: ArrowUpRight },
+  { value: 'despesa', label: ui("Despesa"), icon: ArrowDownLeft },
+  { value: 'receita', label: ui("Receita"), icon: ArrowUpRight },
 ];
 
 function resolveInitialType(actionId) {
@@ -26,6 +27,7 @@ export default function QuickAddNotificationModal({
   onClose,
   showToast,
 }) {
+  useUiLanguage();
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const [isSubmitting, setIsSubmitting] = useState(false);

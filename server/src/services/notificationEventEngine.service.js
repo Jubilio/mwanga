@@ -189,6 +189,7 @@ async function buildNotificationDraft({
       ...actionPayload,
       quickActions: personalized.quickActions,
       aiPersonalized: personalized.aiPersonalized,
+      localizedContent: personalized.localizedContent,
       dedupeKey
     }
   });

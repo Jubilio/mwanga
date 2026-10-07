@@ -1,11 +1,13 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { Settings, LogOut } from 'lucide-react';
 import { useFinance } from '../../hooks/useFinance';
 import { Link } from 'react-router-dom';
 
 export default function UserCard() {
+  useUiLanguage();
   const { state } = useFinance();
-  const userName = state.user?.name || 'Utilizador';
-  const familyName = state.settings.household_name || 'Família Mwanga';
+  const userName = state.user?.name || ui("Utilizador");
+  const familyName = state.settings.household_name || ui("Família Mwanga");
   const userInitial = userName.charAt(0).toUpperCase();
   const profilePic = state.settings?.profile_pic;
 
@@ -48,7 +50,7 @@ export default function UserCard() {
           <button
             onClick={handleLogout}
             className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-400/10 rounded-lg transition-colors"
-            title="Terminar Sessão"
+            title={ui("Terminar Sessão")}
           >
             <LogOut size={16} />
           </button>

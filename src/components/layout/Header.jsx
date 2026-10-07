@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { Menu, Bell, Sun, Moon, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MwangaLogo from '../MwangaLogo';
@@ -11,6 +12,7 @@ export default function Header({
   user, 
   settings 
 }) {
+  useUiLanguage();
   const navigate = useNavigate();
 
   return (
@@ -34,7 +36,7 @@ export default function Header({
         <button
           className="md:hidden rounded-2xl p-2.5 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5 flex items-center gap-1.5"
           onClick={() => onMenuClick(true)}
-          title="Abrir Menu Principal"
+          title={ui("Abrir Menu Principal")}
         >
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5 text-ocean dark:text-aurora">
             <Menu size={18} strokeWidth={2.5} />
@@ -71,7 +73,7 @@ export default function Header({
           {/* Desktop Info */}
           <div className="hidden md:flex flex-col items-end pl-2">
             <span className="text-[12px] font-bold text-midnight dark:text-white leading-tight">
-              {user?.name?.split(' ')[0] || 'Explorador'}
+              {user?.name?.split(' ')[0] || ui("Explorador")}
             </span>
             <span className="text-[9px] font-black uppercase tracking-widest text-slate-500/80">
               {settings?.household_name?.slice(0, 15) || 'Mwanga'}

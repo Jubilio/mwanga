@@ -1,3 +1,4 @@
+import { ui } from '../../utils/uiTranslation';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { Banknote, Wallet } from 'lucide-react';
@@ -102,11 +103,11 @@ export default function SimulatorBudget({ salary: globalSalary, currency, dispat
 
           <div className="grid md:grid-cols-3 gap-4 min-w-0">
             {pieData.map((item) => (
-              <div key={item.name} className="p-5 rounded-[24px] bg-black/5 dark:bg-white/5 border border-white/5 min-w-0 overflow-hidden">
+              <div key={ui(item.name)} className="p-5 rounded-[24px] bg-black/5 dark:bg-white/5 border border-white/5 min-w-0 overflow-hidden">
                 <div className="flex items-start gap-3 min-w-0">
                   <div style={{ width: 12, height: 12, borderRadius: '50%', background: item.color, marginTop: 6, flexShrink: 0 }} />
                   <div className="min-w-0">
-                    <div className="text-[10px] font-black uppercase text-gray-400 mb-1 wrap-anywhere">{item.name}</div>
+                    <div className="text-[10px] font-black uppercase text-gray-400 mb-1 wrap-anywhere">{ui(item.name)}</div>
                     <div className="text-lg md:text-xl font-black dark:text-white wrap-anywhere leading-tight">{fmt(item.value, currency)}</div>
                   </div>
                 </div>

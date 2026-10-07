@@ -1,7 +1,9 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { FileText, X, Sparkles, Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SmartScanModal({ isOpen, setIsOpen, isScanning, setIsScanning, showToast }) {
+  useUiLanguage();
   return (
     <AnimatePresence>
       {isOpen && (
@@ -25,7 +27,7 @@ export default function SmartScanModal({ isOpen, setIsOpen, isScanning, setIsSca
                 </div>
                 <div>
                   <h2 className="text-xl font-black text-white">Binth Smart Scan</h2>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Análise de Extratos via IA</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{ui("Análise de Extratos via IA")}</p>
                 </div>
               </div>
               <button onClick={() => setIsOpen(false)} className="p-3 -mr-3 text-gray-500 hover:text-white transition-all active:scale-90">
@@ -47,14 +49,14 @@ export default function SmartScanModal({ isOpen, setIsOpen, isScanning, setIsSca
                         setTimeout(() => {
                           setIsScanning(false);
                           setIsOpen(false);
-                          showToast("IA: Detectamos 12 transações no extrato! Adicionadas com sucesso.", "success");
+                          showToast(ui("IA: Detectamos 12 transações no extrato! Adicionadas com sucesso."), "success");
                         }, 3500);
                       }
                     }}
                   />
                   <Sparkles size={40} className="mx-auto text-indigo-400 mb-4 group-hover:scale-110 transition-transform" />
-                  <p className="text-sm font-bold text-white mb-2">Arraste o seu extrato PDF ou CSV aqui</p>
-                  <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Ou clica para escolher o ficheiro</p>
+                  <p className="text-sm font-bold text-white mb-2">{ui("Arraste o seu extrato PDF ou CSV aqui")}</p>
+                  <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">{ui("Ou clica para escolher o ficheiro")}</p>
                 </div>
               </div>
             ) : (
@@ -66,7 +68,7 @@ export default function SmartScanModal({ isOpen, setIsOpen, isScanning, setIsSca
                     <Brain size={32} className="text-indigo-400" />
                   </div>
                 </div>
-                <h3 className="text-lg font-black text-white animate-pulse">A Binth está a ler o teu extrato...</h3>
+                <h3 className="text-lg font-black text-white animate-pulse">{ui("A Binth está a ler o teu extrato...")}</h3>
               </div>
             )}
           </motion.div>

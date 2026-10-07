@@ -1,3 +1,4 @@
+import { uiLocale } from '../utils/uiTranslation';
 /**
  * useMwangaAnimations.js
  * ──────────────────────────────────────────────────────────────────────────────
@@ -92,7 +93,7 @@ export function useMwangaAnimations() {
           const rounded = Math.round(obj.val);
           ref.current.textContent = formatter
             ? formatter(rounded)
-            : rounded.toLocaleString('pt-MZ');
+            : rounded.toLocaleString(uiLocale());
         }
       },
     });

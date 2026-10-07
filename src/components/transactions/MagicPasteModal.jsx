@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { Sparkles, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { parseMobileMoneySMS } from '../../utils/smsParser';
@@ -11,6 +12,7 @@ export default function MagicPasteModal({
   setForm, 
   showToast 
 }) {
+  useUiLanguage();
   return (
     <AnimatePresence>
       {isOpen && (
@@ -23,7 +25,7 @@ export default function MagicPasteModal({
               </div>
               <button onClick={() => setIsOpen(false)} className="p-3 -mr-3 text-gray-500 hover:text-white"><X size={24} /></button>
             </div>
-            <textarea autoFocus className="form-input w-full h-32 bg-white/5 border-white/10 rounded-2xl p-4 text-xs text-gray-200 mb-6" placeholder="Cola aqui o SMS do M-Pesa ou e-Mola..." value={magicText} onChange={e => setMagicText(e.target.value)} />
+            <textarea autoFocus className="form-input w-full h-32 bg-white/5 border-white/10 rounded-2xl p-4 text-xs text-gray-200 mb-6" placeholder={ui("Cola aqui o SMS do M-Pesa ou e-Mola...")} value={magicText} onChange={e => setMagicText(e.target.value)} />
             <button onClick={() => {
               const data = parseMobileMoneySMS(magicText);
               if (data) {
@@ -32,9 +34,9 @@ export default function MagicPasteModal({
                 setMagicText('');
                 showToast(`Detectado: ${data.amount}MT!`, 'success');
               } else {
-                showToast('Não conseguimos ler este SMS.', 'warning');
+                showToast(ui("Não conseguimos ler este SMS."), 'warning');
               }
-            }} className="w-full h-12 rounded-2xl bg-gold text-midnight font-black uppercase tracking-widest text-xs">Processar SMS</button>
+            }} className="w-full h-12 rounded-2xl bg-gold text-midnight font-black uppercase tracking-widest text-xs">{ui("Processar SMS")}</button>
           </motion.div>
         </div>
       )}

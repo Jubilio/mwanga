@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState } from "react";
 import { useFinance } from "../hooks/useFinance";
 import VslaModule from "../components/credit/VslaModule";
@@ -16,6 +17,7 @@ import TabStrategy from "../components/credit/TabStrategy";
 import { usePageAnimation } from '../hooks/useMwangaAnimations';
 
 export default function MwangaCredito() {
+  useUiLanguage();
   usePageAnimation('.credito-gsap-root');
   
   const { t } = useTranslation();
@@ -92,7 +94,7 @@ export default function MwangaCredito() {
               <div style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg,${G.credit},${G.credit2})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, boxShadow: `0 4px 16px ${G.credit}40` }}>💸</div>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 900, fontFamily: "Sora,sans-serif", color: G.text, letterSpacing: "-0.01em" }}>
-                  Mwanga <span style={{ color: G.credit }}>Credit</span>
+                  Mwanga <span style={{ color: G.credit }}>{ui("Credit")}</span>
                 </div>
                 <div style={{ fontSize: 12, color: G.muted, display: "flex", alignItems: "center", gap: 8 }}>
                   {t('credit.header.subtitle')}
@@ -117,7 +119,7 @@ export default function MwangaCredito() {
               <div style={{ fontSize: 11, color: G.muted }}>{t('credit.header.score_label')}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ fontSize: 22, fontWeight: 900, color: scoreData.color, fontFamily: "Sora,sans-serif" }}>{scoreData.score}</span>
-                <Badge label={scoreData.label} color={scoreData.color} />
+                <Badge label={ui(scoreData.label)} color={scoreData.color} />
               </div>
               <div style={{ marginTop: 6 }}>
                 {isPro
@@ -137,7 +139,7 @@ export default function MwangaCredito() {
                 fontWeight: 700, fontSize: 12, fontFamily: "inherit", transition: "all 0.18s",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 5, whiteSpace: "nowrap"
               }}>
-                <span>{t.icon}</span> <span>{t.label}</span>
+                <span>{t.icon}</span> <span>{ui(t.label)}</span>
               </button>
             ))}
           </div>

@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { X, Bell, Home, Target, CreditCard, Sparkles, Info } from 'lucide-react';
 
 const notificationTypePriority = {
@@ -14,7 +15,7 @@ function getNotificationPresentation(notification = {}) {
 
   if (notification.type === 'warning') {
     return {
-      label: 'Pressão',
+      label: ui("Pressão"),
       borderClass: 'border-l-4 border-l-amber-500',
       accentClass: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300',
       chipClass: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200',
@@ -58,6 +59,7 @@ export default function NotificationPanel({
   onDeleteOne,
   onClearAllClick
 }) {
+  const language = useUiLanguage();
   const orderedNotifications = [...notifications].sort((a, b) => {
     const unreadDelta = Number(Boolean(a.read)) - Number(Boolean(b.read));
     if (unreadDelta !== 0) {
@@ -82,16 +84,13 @@ export default function NotificationPanel({
       >
         <div className="mb-6 flex items-center justify-between">
           <h3 className="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white">
-            <Bell size={20} className="text-ocean dark:text-aurora" /> Notificações
-          </h3>
+            <Bell size={20} className="text-ocean dark:text-aurora" /> {ui("Notificações")} </h3>
           <div className="flex items-center gap-2">
             {notifications.length > 0 && (
               <button
                 onClick={onClearAllClick}
                 className="mr-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 transition-colors hover:text-coral"
-              >
-                Limpar Tudo
-              </button>
+              > {ui("Limpar Tudo")} </button>
             )}
             <button
               onClick={onClose}
@@ -104,10 +103,15 @@ export default function NotificationPanel({
 
         <div className="custom-scrollbar max-h-[calc(100vh-150px)] space-y-4 overflow-y-auto pr-2">
           {orderedNotifications.length === 0 ? (
-            <p className="py-10 text-center italic text-gray-500">Nenhuma notificação por agora.</p>
+            <p className="py-10 text-center italic text-gray-500">{ui("Nenhuma notificação por agora.")}</p>
           ) : (
             orderedNotifications.map((notification) => {
               const presentation = getNotificationPresentation(notification);
+
+              const localized = notification.action_payload?.localizedContent?.[language];
+              const displayTitle = localized?.title || notification.title || 'Mwanga';
+              const displayMessage = localized?.message || notification.message;
+              const quickActions = localized?.quickActions || presentation.quickActions;
 
               return (
                 <div
@@ -131,28 +135,26 @@ export default function NotificationPanel({
                       <div className="mb-2 flex items-center gap-2">
                         <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${presentation.accentClass}`}>
                           {getNotificationIcon(notification.type)}
-                          {presentation.label}
+                          {ui(presentation.label)}
                         </span>
                         {!notification.read && (
-                          <span className="inline-flex rounded-full bg-coral/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-coral">
-                            Novo
-                          </span>
+                          <span className="inline-flex rounded-full bg-coral/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-coral"> {ui("Novo")} </span>
                         )}
                       </div>
                       <div className="pr-4 text-sm font-bold text-slate-800 dark:text-white">
-                        {notification.title || 'Mwanga'}
+                        {ui(displayTitle)}
                       </div>
                     </div>
                     {!notification.read && <div className="h-2 w-2 shrink-0 rounded-full bg-ocean animate-pulse dark:bg-aurora" />}
                   </div>
 
-                  <p className="pr-4 text-sm leading-6 text-gray-700 dark:text-gray-200">{notification.message}</p>
+                  <p className="pr-4 text-sm leading-6 text-gray-700 dark:text-gray-200">{ui(displayMessage)}</p>
 
-                  {presentation.quickActions.length > 0 && (
+                  {quickActions.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {presentation.quickActions.map((item, idx) => (
+                      {quickActions.map((item, idx) => (
                         <span
-                          key={`${notification.id}-${item?.title || item}-${idx}`}
+                          key={`${notification.id}-${ui(item?.title || item)}-${idx}`}
                           className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${presentation.chipClass}`}
                         >
                           {item?.title || item}

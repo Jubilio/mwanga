@@ -1,3 +1,4 @@
+import { ui, uiLocale, uiCategory } from './uiTranslation';
 import { fmt } from './calculations';
 
 export const generateTransactionsPDF = (transactions, state) => {
@@ -12,7 +13,7 @@ export const generateTransactionsPDF = (transactions, state) => {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Mwanga - Relatório Financeiro</title>
+      <title>Mwanga - ${ui("Relatório Financeiro")}</title>
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; color: #111827; margin: 0; padding: 40px; }
@@ -41,37 +42,37 @@ export const generateTransactionsPDF = (transactions, state) => {
       <div class="header">
         <div>
           <h1>MWANGA ✦</h1>
-          <p>Relatório Financeiro Premium</p>
+          <p>${ui("Relatório Financeiro Premium")}</p>
         </div>
         <div style="text-align: right">
-          <p style="opacity: 1">Gerado em: ${new Date().toLocaleDateString()}</p>
-          <p style="opacity: 1">Utilizador: ${state.user?.name || 'Utilizador'}</p>
+          <p style="opacity: 1">${ui("Gerado em:")} ${new Date().toLocaleDateString(uiLocale())}</p>
+          <p style="opacity: 1">${ui("Utilizador:")} ${state.user?.name || ui("Utilizador")}</p>
         </div>
       </div>
 
       <div class="summary-grid">
         <div class="summary-card income">
-          <span>Total Receitas</span>
+          <span>${ui("Total Receitas")}</span>
           <b>${fmt(totalIncome, currency)}</b>
         </div>
         <div class="summary-card expense">
-          <span>Total Despesas</span>
+          <span>${ui("Total Despesas")}</span>
           <b>${fmt(totalExpense, currency)}</b>
         </div>
         <div class="summary-card">
-          <span>Balanço Líquido</span>
+          <span>${ui("Balanço Líquido")}</span>
           <b>${fmt(balance, currency)}</b>
         </div>
       </div>
 
-      <h2>Detalhes das Transações</h2>
+      <h2>${ui("Detalhes das Transações")}</h2>
       <table>
         <thead>
           <tr>
-            <th>Data</th>
-            <th>Descrição</th>
-            <th>Categoria</th>
-            <th>Valor</th>
+            <th>${ui("Data")}</th>
+            <th>${ui("Descrição")}</th>
+            <th>${ui("Categoria")}</th>
+            <th>${ui("Valor")}</th>
           </tr>
         </thead>
         <tbody>
@@ -79,7 +80,7 @@ export const generateTransactionsPDF = (transactions, state) => {
             <tr>
               <td>${t.data}</td>
               <td>${t.desc}</td>
-              <td>${t.cat || 'Geral'}</td>
+              <td>${uiCategory(t.cat) || ui("Geral")}</td>
               <td class="${t.tipo === 'receita' ? 'val-inc' : 'val-exp'}">
                 ${t.tipo === 'receita' ? '+' : '-'} ${fmt(t.valor, currency)}
               </td>
@@ -89,7 +90,7 @@ export const generateTransactionsPDF = (transactions, state) => {
       </table>
 
       <div class="footer">
-        Mwanga Finance - Gestão Inteligente e Mordomia Digital
+        ${ui("Mwanga Finance - Gestão Inteligente e Mordomia Digital")}
       </div>
 
       <script>

@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect } from 'react';
 import { useOutletContext, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +21,7 @@ import AutoAllocateModal from '../components/transactions/AutoAllocateModal';
 const CATEGORIES = MAIN_CATEGORIES.map(key => ({ id: key, key }));
 
 export default function Transactions() {
+  useUiLanguage();
   usePageAnimation('.transactions-gsap-root');
   
   const { state, dispatch } = useFinance();
@@ -96,7 +98,7 @@ export default function Transactions() {
         payload: { ...form, id: editingId, valor: parseFloat(form.valor), account_id: form.account_id || null },
       });
       setEditingId(null);
-      showToast(t('transactions.toast_updated') || 'Transação actualizada');
+      showToast(t('transactions.toast_updated') || ui("Transação actualizada"));
     } else {
       dispatch({
         type: 'ADD_TRANSACTION',
@@ -119,14 +121,14 @@ export default function Transactions() {
         id: `auto-${Date.now()}`,
         data: new Date().toISOString().split('T')[0],
         tipo: 'poupanca', 
-        desc: 'Alocação Automática (20%)',
+        desc: ui("Alocação Automática (20%)"),
         valor: savingsAmount,
         cat: 'savings',
         nota: 'Gerado pela Inteligência Nexo (Regra 50/30/20)',
         account_id: state.settings.default_expense_account_id || null
       },
     });
-    showToast('Poupança alocada com sucesso! 🚀');
+    showToast(ui("Poupança alocada com sucesso! 🚀"));
     setAllocationPrompt({ isOpen: false, amount: 0 });
   }
 
@@ -227,7 +229,7 @@ export default function Transactions() {
             onChange={e => setFilterType(e.target.value)}
           >
             <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="all">{t('transactions.all_types')}</option>
-            {TYPES.map(t => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={t.value} value={t.value}>{t.label}</option>)}
+            {TYPES.map(t => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={t.value} value={t.value}>{ui(t.label)}</option>)}
           </select>
         </div>
       </div>
@@ -270,11 +272,11 @@ export default function Transactions() {
       <ConfirmModal 
         isOpen={deleteConfirm.isOpen}
         title={t('common.confirm_delete')}
-        message="Esta acção não pode ser revertida."
+        message={ui("Esta acção não pode ser revertida.")}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteConfirm({ isOpen: false, id: null })}
-        confirmText={t('debts.yes') || 'Sim'}
-        cancelText={t('debts.no') || 'Não'}
+        confirmText={t('debts.yes') || ui("Sim")}
+        cancelText={t('debts.no') || ui("Não")}
       />
 
       <AutoAllocateModal 

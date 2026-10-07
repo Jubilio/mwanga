@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { G } from "../../theme/tokens";
@@ -6,12 +7,13 @@ import { fmt, fmtShort } from "../../utils/calculations";
 import { Card, ProgressBar, ProGate, Badge } from "./CreditUI";
 
 export default function TabSimulator({ eligData, userData, isPro }) {
+  useUiLanguage();
   const { t } = useTranslation();
   const BANKS = [
     { id: "bim", name: "Millennium BIM", rate: 0.28, tag: "28.0% AA", color: G.red, isAnnual: true },
     { id: "bci", name: "BCI", rate: 0.281, tag: "28.1% AA", color: G.blue, isAnnual: true },
-    { id: "micro", name: t('credit.simulator.partner_micro', { defaultValue: "Microcrédito Informal" }), rate: 0.10, tag: "10%/mês", color: G.gold, isAnnual: false },
-    { id: "xitique", name: "Xitique", rate: 0.00, tag: "0%/mês", color: G.green, isAnnual: false },
+    { id: "micro", name: t('credit.simulator.partner_micro', { defaultValue: ui("Microcrédito Informal") }), rate: 0.10, tag: ui("10%/mês"), color: G.gold, isAnnual: false },
+    { id: "xitique", name: "Xitique", rate: 0.00, tag: ui("0%/mês"), color: G.green, isAnnual: false },
   ];
 
   const [amount, setAmount] = useState(200000);
@@ -150,7 +152,7 @@ export default function TabSimulator({ eligData, userData, isPro }) {
                     <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${rate === b.rate ? b.color : G.muted2}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {rate === b.rate && <div style={{ width: 8, height: 8, borderRadius: "50%", background: b.color }} />}
                     </div>
-                    <span style={{ fontSize: 13, color: rate === b.rate ? G.text : G.muted }}>{b.name}</span>
+                    <span style={{ fontSize: 13, color: rate === b.rate ? G.text : G.muted }}>{ui(b.name)}</span>
                   </div>
                   <span style={{
                     fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 6,

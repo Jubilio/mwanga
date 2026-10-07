@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import {
@@ -30,6 +31,7 @@ function getAdminHeaders() {
 }
 
 export default function Admin() {
+  useUiLanguage();
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
@@ -60,7 +62,7 @@ export default function Admin() {
       setStats({ ...EMPTY_STATS, ...statsResp.data });
     } catch (fetchError) {
       console.error('Error fetching admin data:', fetchError);
-      setError(fetchError.response?.data?.error || 'Não foi possível carregar o painel de administração.');
+      setError(fetchError.response?.data?.error || ui("Não foi possível carregar o painel de administração."));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -75,7 +77,7 @@ export default function Admin() {
       fetchData();
     } catch (updateError) {
       console.error('Error updating KYC:', updateError);
-      setError(updateError.response?.data?.error || 'Falha ao atualizar o estado KYC.');
+      setError(updateError.response?.data?.error || ui("Falha ao atualizar o estado KYC."));
     }
   };
 
@@ -89,10 +91,10 @@ export default function Admin() {
       const headers = getAdminHeaders();
       await api.post('/admin/notifications/broadcast', broadcast, { headers });
       setBroadcast({ title: '', body: '' });
-      showToast('Mensagem enviada com sucesso para toda a comunidade Mwanga!', 'success');
+      showToast(ui("Mensagem enviada com sucesso para toda a comunidade Mwanga!"), 'success');
     } catch (err) {
       console.error('Broadcast failed:', err);
-      const msg = err.response?.data?.error || 'Falha ao enviar broadcast.';
+      const msg = err.response?.data?.error || ui("Falha ao enviar broadcast.");
       showToast(msg, 'error');
       setError(msg);
     } finally {
@@ -105,22 +107,22 @@ export default function Admin() {
     .filter((item) => item.value > 0);
 
   const riskLevel = stats.kycSummary.rejected > 0
-    ? 'Moderado'
+    ? ui("Moderado")
     : stats.pendingApplications > 10 || stats.kycSummary.pending > 5
-      ? 'Em atenção'
-      : 'Baixo';
+      ? ui("Em atenção")
+      : ui("Baixo");
 
   const riskCopy = stats.kycSummary.rejected > 0
-    ? 'Há rejeições KYC a exigir revisão manual e seguimento.'
+    ? ui("Há rejeições KYC a exigir revisão manual e seguimento.")
     : stats.pendingApplications > 10 || stats.kycSummary.pending > 5
-      ? 'O pipeline operacional está a crescer e pode precisar de triagem.'
-      : 'A operação está estável com baixa pressão de risco neste momento.';
+      ? ui("O pipeline operacional está a crescer e pode precisar de triagem.")
+      : ui("A operação está estável com baixa pressão de risco neste momento.");
 
 
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: G.muted }}>
-        <div className="animate-pulse">Carregando painel de administração...</div>
+        <div className="animate-pulse">{ui("Carregando painel de administração...")}</div>
       </div>
     );
   }
@@ -132,9 +134,9 @@ export default function Admin() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
               <Shield size={24} color={G.gold} />
-              <h1 style={{ fontSize: '24px', fontWeight: 900, fontFamily: 'Sora, sans-serif' }}>Administração Mwanga</h1>
+              <h1 style={{ fontSize: '24px', fontWeight: 900, fontFamily: 'Sora, sans-serif' }}>{ui("Administração Mwanga")}</h1>
             </div>
-            <p style={{ color: G.muted, fontSize: '14px' }}>Monitoramento global da plataforma e gestão operacional com foco em KYC e risco.</p>
+            <p style={{ color: G.muted, fontSize: '14px' }}>{ui("Monitoramento global da plataforma e gestão operacional com foco em KYC e risco.")}</p>
           </div>
           <button
             onClick={() => fetchData()}
@@ -152,7 +154,7 @@ export default function Admin() {
             }}
           >
             <RefreshCw size={16} style={{ opacity: refreshing ? 0.6 : 1 }} />
-            {refreshing ? 'Atualizando...' : 'Atualizar painel'}
+            {refreshing ? ui("Atualizando...") : ui("Atualizar painel")}
           </button>
         </div>
       </header>
@@ -164,33 +166,31 @@ export default function Admin() {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '32px' }}>
-        <StatCard label="Utilizadores Ativos (24h)" value={stats.activeUsers || 0} icon={<Shield />} color={G.gold} />
-        <StatCard label="Total de Utilizadores" value={stats.totalUsers} icon={<Users />} color={G.blue} />
-        <StatCard label="Volume Desembolsado" value={`MT ${stats.loans.totalDisbursed.toLocaleString()}`} icon={<TrendingUp />} color={G.green} />
-        <StatCard label="Pedidos Pendentes" value={stats.pendingApplications} icon={<Clock />} color={G.gold} />
-        <StatCard label="KYC Aprovados" value={stats.kycSummary.approved} icon={<FileCheck />} color={G.green} />
+        <StatCard label={ui("Utilizadores Ativos (24h)")} value={stats.activeUsers || 0} icon={<Shield />} color={G.gold} />
+        <StatCard label={ui("Total de Utilizadores")} value={stats.totalUsers} icon={<Users />} color={G.blue} />
+        <StatCard label={ui("Volume Desembolsado")} value={`MT ${stats.loans.totalDisbursed.toLocaleString()}`} icon={<TrendingUp />} color={G.green} />
+        <StatCard label={ui("Pedidos Pendentes")} value={stats.pendingApplications} icon={<Clock />} color={G.gold} />
+        <StatCard label={ui("KYC Aprovados")} value={stats.kycSummary.approved} icon={<FileCheck />} color={G.green} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', alignItems: 'start' }}>
         <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-              Utilizadores Recentes
-            </h2>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}> {ui("Utilizadores Recentes")} </h2>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', color: G.muted, fontSize: '12px' }}>
-              <span>Pendentes: <strong style={{ color: G.gold }}>{stats.kycSummary.pending}</strong></span>
-              <span>Rejeitados: <strong style={{ color: G.red }}>{stats.kycSummary.rejected}</strong></span>
+              <span>{ui("Pendentes:")} <strong style={{ color: G.gold }}>{stats.kycSummary.pending}</strong></span>
+              <span>{ui("Rejeitados:")} <strong style={{ color: G.red }}>{stats.kycSummary.rejected}</strong></span>
             </div>
           </div>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ color: G.muted, fontSize: '12px', textAlign: 'left', borderBottom: `1px solid ${G.border}` }}>
-                  <th style={{ padding: '12px' }}>NOME</th>
+                  <th style={{ padding: '12px' }}>{ui("NOME")}</th>
                   <th style={{ padding: '12px' }}>KYC</th>
                   <th style={{ padding: '12px' }}>SCORE</th>
                   <th style={{ padding: '12px' }}>DOCS</th>
-                  <th style={{ padding: '12px' }}>ACÇÕES</th>
+                  <th style={{ padding: '12px' }}>{ui("ACÇÕES")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -199,7 +199,7 @@ export default function Admin() {
                     <td style={{ padding: '16px 12px' }}>
                       <div style={{ fontWeight: 600 }}>{user.name}</div>
                       <div style={{ fontSize: '11px', color: G.muted }}>{user.email}</div>
-                      <div style={{ fontSize: '10px', color: G.muted, marginTop: '4px' }}>{user.role === 'admin' ? 'Administrador' : 'Utilizador'}</div>
+                      <div style={{ fontSize: '10px', color: G.muted, marginTop: '4px' }}>{user.role === 'admin' ? ui("Administrador") : ui("Utilizador")}</div>
                     </td>
                     <td style={{ padding: '16px 12px' }}>
                       <KycBadge status={user.kyc_status} />
@@ -225,7 +225,7 @@ export default function Admin() {
                             DOC {doc.document_type.split('_')[0].toUpperCase()}
                           </a>
                         ))}
-                        {(!user.documents || user.documents.length === 0) && <span style={{ color: G.muted, fontSize: '11px' }}>Nenhum</span>}
+                        {(!user.documents || user.documents.length === 0) && <span style={{ color: G.muted, fontSize: '11px' }}>{ui("Nenhum")}</span>}
                       </div>
                     </td>
                     <td style={{ padding: '16px 12px' }}>
@@ -234,7 +234,7 @@ export default function Admin() {
                           disabled={user.kyc_status === 'approved'}
                           onClick={() => handleKycUpdate(user.id, 'approved')}
                           style={{ background: 'none', border: 'none', cursor: user.kyc_status === 'approved' ? 'not-allowed' : 'pointer', color: G.green, opacity: user.kyc_status === 'approved' ? 0.35 : 1 }}
-                          title="Aprovar KYC"
+                          title={ui("Aprovar KYC")}
                         >
                           <CheckCircle size={18} />
                         </button>
@@ -242,7 +242,7 @@ export default function Admin() {
                           disabled={user.kyc_status === 'rejected'}
                           onClick={() => handleKycUpdate(user.id, 'rejected')}
                           style={{ background: 'none', border: 'none', cursor: user.kyc_status === 'rejected' ? 'not-allowed' : 'pointer', color: G.red, opacity: user.kyc_status === 'rejected' ? 0.35 : 1 }}
-                          title="Rejeitar KYC"
+                          title={ui("Rejeitar KYC")}
                         >
                           <XCircle size={18} />
                         </button>
@@ -252,9 +252,7 @@ export default function Admin() {
                 ))}
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan="5" style={{ padding: '24px 12px', color: G.muted, textAlign: 'center' }}>
-                      Nenhum utilizador encontrado.
-                    </td>
+                    <td colSpan="5" style={{ padding: '24px 12px', color: G.muted, textAlign: 'center' }}> {ui("Nenhum utilizador encontrado.")} </td>
                   </tr>
                 )}
               </tbody>
@@ -264,7 +262,7 @@ export default function Admin() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
           <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '24px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>Distribuição KYC</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>{ui("Distribuição KYC")}</h3>
             <div style={{ minHeight: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {kycChartData.length > 0 ? (
                 <PieChart width={220} height={220}>
@@ -289,51 +287,48 @@ export default function Admin() {
                   <Tooltip contentStyle={{ background: G.bg2, border: `1px solid ${G.border}`, borderRadius: '8px' }} />
                 </PieChart>
               ) : (
-                <div style={{ color: G.muted, fontSize: '13px', textAlign: 'center' }}>
-                  Sem dados KYC para visualizar.
-                </div>
+                <div style={{ color: G.muted, fontSize: '13px', textAlign: 'center' }}> {ui("Sem dados KYC para visualizar.")} </div>
               )}
             </div>
             <div style={{ display: 'grid', gap: '8px', marginTop: '12px', fontSize: '12px' }}>
-              <LegendRow label="Aprovado" value={stats.kycSummary.approved} color={G.green} />
-              <LegendRow label="Pendente" value={stats.kycSummary.pending} color={G.gold} />
-              <LegendRow label="Rejeitado" value={stats.kycSummary.rejected} color={G.red} />
+              <LegendRow label={ui("Aprovado")} value={stats.kycSummary.approved} color={G.green} />
+              <LegendRow label={ui("Pendente")} value={stats.kycSummary.pending} color={G.gold} />
+              <LegendRow label={ui("Rejeitado")} value={stats.kycSummary.rejected} color={G.red} />
             </div>
           </div>
 
           <div style={{ background: `linear-gradient(135deg, ${G.gold}20, transparent)`, borderRadius: '20px', border: `1px solid ${G.gold}30`, padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: G.gold, marginBottom: '12px' }}>
               <AlertCircle size={20} />
-              <div style={{ fontWeight: 700 }}>Risco da Plataforma</div>
+              <div style={{ fontWeight: 700 }}>{ui("Risco da Plataforma")}</div>
             </div>
             <div style={{ fontSize: '24px', fontWeight: 900, marginBottom: '4px' }}>{riskLevel}</div>
             <div style={{ fontSize: '12px', color: G.muted }}>{riskCopy}</div>
           </div>
 
           <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '24px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>Ações prioritárias</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>{ui("Ações prioritárias")}</h3>
             <div style={{ display: 'grid', gap: '12px' }}>
-              <PriorityRow icon={<Clock size={16} color={G.gold} />} label="Rever pedidos KYC pendentes" value={stats.kycSummary.pending} />
-              <PriorityRow icon={<MessageSquare size={16} color={G.blue} />} label="Ver novo feedback dos utilizadores" value={stats.feedbackCount || 0} />
-              <PriorityRow icon={<UserX size={16} color={G.red} />} label="Analisar rejeições recentes" value={stats.kycSummary.rejected} />
+              <PriorityRow icon={<Clock size={16} color={G.gold} />} label={ui("Rever pedidos KYC pendentes")} value={stats.kycSummary.pending} />
+              <PriorityRow icon={<MessageSquare size={16} color={G.blue} />} label={ui("Ver novo feedback dos utilizadores")} value={stats.feedbackCount || 0} />
+              <PriorityRow icon={<UserX size={16} color={G.red} />} label={ui("Analisar rejeições recentes")} value={stats.kycSummary.rejected} />
             </div>
           </div>
  
           <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '24px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <MessageSquare size={18} color={G.blue} /> Broadcast Global
-            </h3>
-            <p style={{ fontSize: '12px', color: G.muted, marginBottom: '16px' }}>Envia uma notificação push e in-app para todos os utilizadores registados.</p>
+              <MessageSquare size={18} color={G.blue} /> {ui("Broadcast Global")} </h3>
+            <p style={{ fontSize: '12px', color: G.muted, marginBottom: '16px' }}>{ui("Envia uma notificação push e in-app para todos os utilizadores registados.")}</p>
             <form onSubmit={handleBroadcast} style={{ display: 'grid', gap: '12px' }}>
               <input
                 type="text"
-                placeholder="Título da Mensagem"
-                value={broadcast.title}
+                placeholder={ui("Título da Mensagem")}
+                value={ui(broadcast.title)}
                 onChange={e => setBroadcast({ ...broadcast, title: e.target.value })}
                 style={{ background: G.card, border: `1px solid ${G.border}`, borderRadius: '12px', padding: '10px 14px', color: G.text, fontSize: '13px', outline: 'none' }}
               />
               <textarea
-                placeholder="Conteúdo da mensagem..."
+                placeholder={ui("Conteúdo da mensagem...")}
                 value={broadcast.body}
                 onChange={e => setBroadcast({ ...broadcast, body: e.target.value })}
                 style={{ background: G.card, border: `1px solid ${G.border}`, borderRadius: '12px', padding: '10px 14px', color: G.text, fontSize: '13px', outline: 'none', minHeight: '80px', resize: 'vertical' }}
@@ -358,7 +353,7 @@ export default function Admin() {
                 }}
               >
                 {broadcasting ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />}
-                {broadcasting ? 'A enviar...' : 'Enviar para todos'}
+                {broadcasting ? ui("A enviar...") : ui("Enviar para todos")}
               </button>
             </form>
           </div>
@@ -366,7 +361,7 @@ export default function Admin() {
       </div>
       
       <Toast 
-        message={toast.message} 
+        message={ui(toast.message)}
         visible={toast.visible} 
         variant={toast.variant} 
         onClose={hideToast}
@@ -376,22 +371,24 @@ export default function Admin() {
 }
 
 function StatCard({ label, value, icon, color }) {
+  useUiLanguage();
   return (
     <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '24px', position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', right: '-10px', top: '-10px', opacity: 0.05, color }}>
         {icon}
       </div>
-      <div style={{ color: G.muted, fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '8px', textTransform: 'uppercase' }}>{label}</div>
+      <div style={{ color: G.muted, fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '8px', textTransform: 'uppercase' }}>{ui(label)}</div>
       <div style={{ fontSize: '24px', fontWeight: 900, fontFamily: 'Sora, sans-serif' }}>{value}</div>
     </div>
   );
 }
 
 function KycBadge({ status }) {
+  useUiLanguage();
   const styles = {
-    pending: { bg: `${G.gold}18`, color: G.gold, label: 'Pendente' },
-    approved: { bg: `${G.green}18`, color: G.green, label: 'Aprovado' },
-    rejected: { bg: `${G.red}18`, color: G.red, label: 'Rejeitado' },
+    pending: { bg: `${G.gold}18`, color: G.gold, label: ui("Pendente") },
+    approved: { bg: `${G.green}18`, color: G.green, label: ui("Aprovado") },
+    rejected: { bg: `${G.red}18`, color: G.red, label: ui("Rejeitado") },
   }[status] || { bg: `${G.muted}18`, color: G.muted, label: status };
 
   return (
@@ -401,17 +398,18 @@ function KycBadge({ status }) {
         background: styles.bg, color: styles.color, border: `1px solid ${styles.color}30`
       }}
     >
-      {styles.label}
+      {ui(styles.label)}
     </span>
   );
 }
 
 function LegendRow({ label, value, color }) {
+  useUiLanguage();
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: G.muted }}>
         <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: color, display: 'inline-block' }} />
-        <span>{label}</span>
+        <span>{ui(label)}</span>
       </div>
       <strong style={{ color: G.text }}>{value}</strong>
     </div>
@@ -419,11 +417,12 @@ function LegendRow({ label, value, color }) {
 }
 
 function PriorityRow({ icon, label, value }) {
+  useUiLanguage();
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px 14px', background: G.card, borderRadius: '14px', border: `1px solid ${G.border}` }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
         {icon}
-        <span style={{ fontSize: '13px', color: G.text }}>{label}</span>
+        <span style={{ fontSize: '13px', color: G.text }}>{ui(label)}</span>
       </div>
       <strong style={{ color: G.text }}>{value}</strong>
     </div>

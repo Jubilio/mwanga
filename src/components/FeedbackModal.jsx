@@ -1,8 +1,10 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useRef } from 'react';
 import { X, MessageSquare, Send, Camera, AlertCircle, CheckCircle2, Loader2, Image as ImageIcon } from 'lucide-react';
 import api from '../utils/api';
 
 export default function FeedbackModal({ isOpen, onClose, showToast }) {
+  useUiLanguage();
   const [message, setMessage] = useState('');
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -15,7 +17,7 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       if (selectedFile.size > 5 * 1024 * 1024) {
-        showToast('Imagem demasiado grande (máx 5MB)', 'error');
+        showToast(ui("Imagem demasiado grande (máx 5MB)"), 'error');
         return;
       }
       setFile(selectedFile);
@@ -32,7 +34,7 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!message.trim()) {
-      showToast('Por favor, descreve o teu feedback ou erro.', 'error');
+      showToast(ui("Por favor, descreve o teu feedback ou erro."), 'error');
       return;
     }
 
@@ -47,13 +49,13 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
 
       await api.post('/feedback', formData);
 
-      showToast('Obrigado! O teu feedback foi enviado.', 'success');
+      showToast(ui("Obrigado! O teu feedback foi enviado."), 'success');
       setMessage('');
       removeFile();
       onClose();
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      showToast('Falha ao enviar feedback. Tenta novamente.', 'error');
+      showToast(ui("Falha ao enviar feedback. Tenta novamente."), 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -75,8 +77,8 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
                 <MessageSquare size={22} />
               </div>
               <div className="min-w-0">
-                <h3 className="truncate text-lg font-bold text-gray-800 dark:text-white">Feedback Mwanga</h3>
-                <p className="truncate text-xs text-gray-500 dark:text-gray-400">Sugestões ou reporte de erros</p>
+                <h3 className="truncate text-lg font-bold text-gray-800 dark:text-white">{ui("Feedback Mwanga")}</h3>
+                <p className="truncate text-xs text-gray-500 dark:text-gray-400">{ui("Sugestões ou reporte de erros")}</p>
               </div>
             </div>
             <button 
@@ -90,22 +92,18 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6">
             <div className="mb-4">
-              <label className="mb-2 block text-xs font-black uppercase tracking-widest text-gray-400">
-                O que queres partilhar?
-              </label>
+              <label className="mb-2 block text-xs font-black uppercase tracking-widest text-gray-400"> {ui("O que queres partilhar?")} </label>
               <textarea
-                value={message}
+                value={ui(message)}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Descreve o erro ou a tua sugestão..."
+                placeholder={ui("Descreve o erro ou a tua sugestão...")}
                 className="h-32 w-full resize-none rounded-2xl border border-black/5 bg-gray-50 p-4 text-sm break-words focus:border-ocean/30 focus:outline-hidden dark:border-white/5 dark:bg-white/5 dark:text-white"
                 maxLength={1000}
               />
             </div>
 
             <div className="mb-6">
-              <label className="mb-2 block text-xs font-black uppercase tracking-widest text-gray-400">
-                Screenshot (Opcional)
-              </label>
+              <label className="mb-2 block text-xs font-black uppercase tracking-widest text-gray-400"> {ui("Screenshot (Opcional)")} </label>
               
               {!previewUrl ? (
                 <button
@@ -114,7 +112,7 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
                   className="flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-black/10 py-6 transition-colors hover:border-ocean/30 hover:bg-ocean/5 dark:border-white/10 dark:hover:border-aurora/30 dark:hover:bg-aurora/5"
                 >
                   <Camera size={24} className="mb-2 text-gray-400" />
-                  <span className="text-xs font-bold text-gray-500">Tocar para anexar screenshot</span>
+                  <span className="text-xs font-bold text-gray-500">{ui("Tocar para anexar screenshot")}</span>
                 </button>
               ) : (
                 <div className="group relative overflow-hidden rounded-2xl border border-black/10 dark:border-white/10">
@@ -148,12 +146,12 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
               {isSubmitting ? (
                 <>
                   <Loader2 size={20} className="animate-spin" />
-                  <span>A enviar...</span>
+                  <span>{ui("A enviar...")}</span>
                 </>
               ) : (
                 <>
                   <Send size={20} />
-                  <span>Enviar Feedback</span>
+                  <span>{ui("Enviar Feedback")}</span>
                 </>
               )}
             </button>
@@ -162,9 +160,7 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
           {/* Biblical Touch / Motivational */}
           <div className="bg-ocean/5 p-4 text-center dark:bg-aurora/5">
             <p className="flex items-center justify-center gap-2 text-[10px] font-bold italic break-words text-ocean/60 dark:text-aurora/60">
-              <AlertCircle size={12} className="shrink-0" />
-              "Ouve o conselho e recebe a instrução..." — Provérbios 19:20
-            </p>
+              <AlertCircle size={12} className="shrink-0" /> {ui("\"Ouve o conselho e recebe a instrução...\" — Provérbios 19:20")} </p>
           </div>
         </div>
       </div>

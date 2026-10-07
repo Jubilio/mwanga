@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from './utils/uiTranslation';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { FinanceProvider } from './hooks/useFinanceStore';
@@ -43,23 +44,24 @@ const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 import { useSmsSync } from './hooks/useSmsSync';
 
 const FINANCIAL_QUOTES = [
-  "O melhor investimento que podes fazer é em ti mesmo.",
-  "Riqueza não é o que ganhas, é o que guardas.",
-  "Orçamento não é sobre limitação, é sobre priorização.",
-  "A disciplina financeira é o passaporte para a liberdade.",
-  "Pequenos riachos formam grandes rios; controla as pequenas despesas.",
-  "O tempo é o teu maior aliado nos juros compostos.",
-  "Dinheiro é um excelente escravo, mas um mestre terrível.",
-  "A paciência é a chave para o crescimento patrimonial.",
-  "O rico domina sobre o pobre, e o que toma emprestado é servo do que empresta. (Provérbios 22:7)",
-  "A riqueza obtida com pressa diminuirá, mas quem a ajunta pelo trabalho terá aumento. (Provérbios 13:11)",
-  "Foste fiel no pouco, sobre o muito te colocarei. (Mateus 25:21)",
-  "Honra ao Senhor com os teus bens e com a primícia de toda a tua renda. (Provérbios 3:9)",
-  "Os planos do diligente levam à fartura, mas a pressa excessiva leva à pobreza. (Provérbios 21:5)",
-  "Pois onde estiver o vosso tesouro, ali estará também o vosso coração. (Mateus 6:21)"
+  ui("O melhor investimento que podes fazer é em ti mesmo."),
+  ui("Riqueza não é o que ganhas, é o que guardas."),
+  ui("Orçamento não é sobre limitação, é sobre priorização."),
+  ui("A disciplina financeira é o passaporte para a liberdade."),
+  ui("Pequenos riachos formam grandes rios; controla as pequenas despesas."),
+  ui("O tempo é o teu maior aliado nos juros compostos."),
+  ui("Dinheiro é um excelente escravo, mas um mestre terrível."),
+  ui("A paciência é a chave para o crescimento patrimonial."),
+  ui("O rico domina sobre o pobre, e o que toma emprestado é servo do que empresta. (Provérbios 22:7)"),
+  ui("A riqueza obtida com pressa diminuirá, mas quem a ajunta pelo trabalho terá aumento. (Provérbios 13:11)"),
+  ui("Foste fiel no pouco, sobre o muito te colocarei. (Mateus 25:21)"),
+  ui("Honra ao Senhor com os teus bens e com a primícia de toda a tua renda. (Provérbios 3:9)"),
+  ui("Os planos do diligente levam à fartura, mas a pressa excessiva leva à pobreza. (Provérbios 21:5)"),
+  ui("Pois onde estiver o vosso tesouro, ali estará também o vosso coração. (Mateus 6:21)")
 ];
 
 function PageLoader() {
+  useUiLanguage();
   const [quote] = useState(() => FINANCIAL_QUOTES[Math.floor(Math.random() * FINANCIAL_QUOTES.length)]);
 
   return (
@@ -69,7 +71,7 @@ function PageLoader() {
           <img src="/splash-premium.png" alt="Mwanga Logo" className="loading-image" />
         </div>
         <div className="loading-brand">Mwanga ✦</div>
-        <div className="loading-quote">"{quote}"</div>
+        <div className="loading-quote">"{ui(quote)}"</div>
         <div className="loading-progress-track">
           <div className="loading-progress-fill"></div>
         </div>
@@ -79,11 +81,13 @@ function PageLoader() {
 }
 
 function SmsManager() {
+  useUiLanguage();
   useSmsSync();
   return null;
 }
 
 function RequireAuth({ children }) {
+  useUiLanguage();
   const { state } = useFinance();
   const loc = useLocation();
   const token = localStorage.getItem('mwanga-token');
@@ -100,14 +104,12 @@ function RequireAuth({ children }) {
         </div>
         <div className="loading-brand">Mwanga ✶</div>
         <div className="loading-quote">
-          "{quote}"
+          "{ui(quote)}"
         </div>
         <div className="loading-progress-track">
           <div className="loading-progress-fill"></div>
         </div>
-        <div className="loading-status-text">
-          Sincronizando dados financeiros...
-        </div>
+        <div className="loading-status-text"> {ui("Sincronizando dados financeiros...")} </div>
       </div>
     </div>
   );
@@ -122,6 +124,7 @@ function RequireAuth({ children }) {
 }
 
 export default function App() {
+  useUiLanguage();
   // ── Lenis: Scroll suave global para toda a aplicação ──────────────────────
   useEffect(() => {
     const lenis = new Lenis({
@@ -149,29 +152,29 @@ export default function App() {
     <MwangaTooltipProvider>
     <FinanceProvider>
       <BrowserRouter>
-        <ErrorBoundary context="Aplicação">
+        <ErrorBoundary context={ui("Aplicação")}>
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* ── Main App (financial) ── */}
               <Route element={<RequireAuth><Layout /></RequireAuth>}>
                 <Route index element={<ErrorBoundary context="Dashboard"><Dashboard /></ErrorBoundary>} />
-                <Route path="transacoes" element={<ErrorBoundary context="Transações"><Transactions /></ErrorBoundary>} />
-                <Route path="orcamento" element={<ErrorBoundary context="Orçamento"><Budget /></ErrorBoundary>} />
-                <Route path="habitacao" element={<ErrorBoundary context="Habitação"><Habitacao /></ErrorBoundary>} />
+                <Route path="transacoes" element={<ErrorBoundary context={ui("Transações")}><Transactions /></ErrorBoundary>} />
+                <Route path="orcamento" element={<ErrorBoundary context={ui("Orçamento")}><Budget /></ErrorBoundary>} />
+                <Route path="habitacao" element={<ErrorBoundary context={ui("Habitação")}><Habitacao /></ErrorBoundary>} />
                 <Route path="xitique" element={<ErrorBoundary context="Xitique"><Xitique /></ErrorBoundary>} />
-                <Route path="metas" element={<ErrorBoundary context="Metas"><Goals /></ErrorBoundary>} />
-                <Route path="dividas" element={<ErrorBoundary context="Dívidas"><Dividas /></ErrorBoundary>} />
-                <Route path="credito" element={<ErrorBoundary context="Crédito"><Credito /></ErrorBoundary>} />
-                <Route path="simuladores" element={<ErrorBoundary context="Simuladores"><Simulators /></ErrorBoundary>} />
-                <Route path="relatorio" element={<ErrorBoundary context="Relatórios"><Reports /></ErrorBoundary>} />
-                <Route path="patrimonio" element={<ErrorBoundary context="Património"><Patrimony /></ErrorBoundary>} />
+                <Route path="metas" element={<ErrorBoundary context={ui("Metas")}><Goals /></ErrorBoundary>} />
+                <Route path="dividas" element={<ErrorBoundary context={ui("Dívidas")}><Dividas /></ErrorBoundary>} />
+                <Route path="credito" element={<ErrorBoundary context={ui("Crédito")}><Credito /></ErrorBoundary>} />
+                <Route path="simuladores" element={<ErrorBoundary context={ui("Simuladores")}><Simulators /></ErrorBoundary>} />
+                <Route path="relatorio" element={<ErrorBoundary context={ui("Relatórios")}><Reports /></ErrorBoundary>} />
+                <Route path="patrimonio" element={<ErrorBoundary context={ui("Património")}><Patrimony /></ErrorBoundary>} />
                 <Route path="sms-import" element={<ErrorBoundary context="SMS Import"><SmsImport /></ErrorBoundary>} />
                 <Route path="nexovibe" element={<ErrorBoundary context="NexoVibe"><NexoVibe /></ErrorBoundary>} />
-                <Route path="settings" element={<ErrorBoundary context="Definições"><Settings /></ErrorBoundary>} />
+                <Route path="settings" element={<ErrorBoundary context={ui("Definições")}><Settings /></ErrorBoundary>} />
                 <Route path="pricing" element={<ErrorBoundary context="Pricing"><Pricing /></ErrorBoundary>} />
-                <Route path="insights" element={<ErrorBoundary context="Insights"><Insights /></ErrorBoundary>} />
-                <Route path="mordomia" element={<ErrorBoundary context="Mordomia"><Stewardship /></ErrorBoundary>} />
-                <Route path="time-machine" element={<ErrorBoundary context="Máquina do Tempo"><TimeMachine /></ErrorBoundary>} />
+                <Route path="insights" element={<ErrorBoundary context={ui("Insights")}><Insights /></ErrorBoundary>} />
+                <Route path="mordomia" element={<ErrorBoundary context={ui("Mordomia")}><Stewardship /></ErrorBoundary>} />
+                <Route path="time-machine" element={<ErrorBoundary context={ui("Máquina do Tempo")}><TimeMachine /></ErrorBoundary>} />
                 <Route path="help" element={<ErrorBoundary context="Ajuda"><Help /></ErrorBoundary>} />
                 <Route path="quick-add" element={<Dashboard />} />
               </Route>

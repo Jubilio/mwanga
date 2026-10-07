@@ -1,7 +1,9 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
 
 export function useBinthPriority() {
+  useUiLanguage();
   const [coach, setCoach] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,7 +16,7 @@ export function useBinthPriority() {
       setCoach(response.data);
     } catch (err) {
       console.error('[useBinthPriority] Failed to load priority', err);
-      setError('Não foi possível carregar o plano financeiro agora.');
+      setError(ui("Não foi possível carregar o plano financeiro agora."));
     } finally {
       setLoading(false);
     }

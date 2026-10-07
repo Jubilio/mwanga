@@ -1,3 +1,4 @@
+import { ui, useUiLanguage, uiLocale } from '../../utils/uiTranslation';
 import { useState } from 'react';
 import { useVsla } from '../../hooks/useVsla';
 import { useFinance } from '../../hooks/useFinance';
@@ -15,6 +16,7 @@ const G = {
 };
 
 export default function VslaModule() {
+  useUiLanguage();
   const { state } = useFinance();
   const { groups, loading, createGroup, activeGroup, getGroupDetails } = useVsla();
   const [showCreate, setShowCreate] = useState(false);
@@ -46,9 +48,9 @@ export default function VslaModule() {
     }
   };
 
-  const fmt = (n) => Math.abs(n).toLocaleString("pt-MZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmt = (n) => Math.abs(n).toLocaleString(uiLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  if (loading) return <div style={{ textAlign: 'center', padding: 40, color: G.muted }}>Carregando comunidades...</div>;
+  if (loading) return <div style={{ textAlign: 'center', padding: 40, color: G.muted }}>{ui("Carregando comunidades...")}</div>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -64,11 +66,8 @@ export default function VslaModule() {
           <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
             <div style={{ fontSize: 32 }}>🤝</div>
             <div>
-              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: G.green }}>Crédito Comunitário (Digital VSLA)</h3>
-              <p style={{ margin: '8px 0 0 0', fontSize: 13, color: G.muted, lineHeight: 1.6 }}>
-                O Mwanga Community permite que cries ou participes em grupos de poupança autogeridos. 
-                Poupa em conjunto, recebe empréstimos a taxas justas e recebe os lucros no final do ciclo.
-              </p>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: G.green }}>{ui("Crédito Comunitário (Digital VSLA)")}</h3>
+              <p style={{ margin: '8px 0 0 0', fontSize: 13, color: G.muted, lineHeight: 1.6 }}> {ui("O Mwanga Community permite que cries ou participes em grupos de poupança autogeridos. Poupa em conjunto, recebe empréstimos a taxas justas e recebe os lucros no final do ciclo.")} </p>
             </div>
           </div>
         </div>
@@ -78,7 +77,7 @@ export default function VslaModule() {
       {!activeGroup ? (
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: G.muted, letterSpacing: '0.12em' }}>OS TEUS GRUPOS</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: G.muted, letterSpacing: '0.12em' }}>{ui("OS TEUS GRUPOS")}</div>
             <button 
               onClick={() => setShowCreate(!showCreate)} 
               style={{ 
@@ -87,7 +86,7 @@ export default function VslaModule() {
                 fontSize: 12, cursor: 'pointer', display: 'flex', gap: 6, alignItems: 'center' 
               }}
             >
-              <Plus size={16} /> {showCreate ? 'Cancelar' : 'Criar Grupo'}
+              <Plus size={16} /> {showCreate ? ui("Cancelar") : ui("Criar Grupo")}
             </button>
           </div>
 
@@ -98,10 +97,10 @@ export default function VslaModule() {
             }}>
               <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: 12, color: G.muted, display: 'block', marginBottom: 6 }}>Nome do Grupo</label>
+                  <label style={{ fontSize: 12, color: G.muted, display: 'block', marginBottom: 6 }}>{ui("Nome do Grupo")}</label>
                   <input 
                     type="text" 
-                    placeholder="Ex: Associação de Poupança da Mafalala"
+                    placeholder={ui("Ex: Associação de Poupança da Mafalala")}
                     required
                     value={formData.name}
                     onChange={e => setFormData({...formData, name: e.target.value})}
@@ -109,7 +108,7 @@ export default function VslaModule() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, color: G.muted, display: 'block', marginBottom: 6 }}>Valor da Share ({currency})</label>
+                  <label style={{ fontSize: 12, color: G.muted, display: 'block', marginBottom: 6 }}>{ui("Valor da Share (")}{currency})</label>
                   <input 
                     type="number"
                     required
@@ -119,7 +118,7 @@ export default function VslaModule() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, color: G.muted, display: 'block', marginBottom: 6 }}>Juros Mensais (%)</label>
+                  <label style={{ fontSize: 12, color: G.muted, display: 'block', marginBottom: 6 }}>{ui("Juros Mensais (%)")}</label>
                   <input 
                     type="number"
                     step="0.01"
@@ -130,19 +129,19 @@ export default function VslaModule() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, color: G.muted, display: 'block', marginBottom: 6 }}>Frequência</label>
+                  <label style={{ fontSize: 12, color: G.muted, display: 'block', marginBottom: 6 }}>{ui("Frequência")}</label>
                   <select 
                     value={formData.meetingFrequency}
                     onChange={e => setFormData({...formData, meetingFrequency: e.target.value})}
                     style={{ width: '100%', background: G.muted3, border: `1px solid ${G.border}`, borderRadius: 12, padding: 12, color: G.text, outline: 'none' }}
                   >
-                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="weekly">Semanal</option>
-                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="biweekly">Quinzenal</option>
-                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="monthly">Mensal</option>
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="weekly">{ui("Semanal")}</option>
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="biweekly">{ui("Quinzenal")}</option>
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="monthly">{ui("Mensal")}</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, color: G.muted, display: 'block', marginBottom: 6 }}>Fundo Social ({currency})</label>
+                  <label style={{ fontSize: 12, color: G.muted, display: 'block', marginBottom: 6 }}>{ui("Fundo Social (")}{currency})</label>
                   <input 
                     type="number"
                     required
@@ -152,9 +151,7 @@ export default function VslaModule() {
                   />
                 </div>
                 <div style={{ gridColumn: 'span 2', marginTop: 10 }}>
-                  <button type="submit" style={{ width: '100%', padding: 14, background: G.green, color: '#000', border: 'none', borderRadius: 12, fontWeight: 900, cursor: 'pointer' }}>
-                    Confirmar e Iniciar Grupo
-                  </button>
+                  <button type="submit" style={{ width: '100%', padding: 14, background: G.green, color: '#000', border: 'none', borderRadius: 12, fontWeight: 900, cursor: 'pointer' }}> {ui("Confirmar e Iniciar Grupo")} </button>
                 </div>
               </form>
             </div>
@@ -163,8 +160,8 @@ export default function VslaModule() {
           {groups.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 24px', background: G.card, borderRadius: 20, border: `1px dashed ${G.border}` }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>🌴</div>
-              <h3 style={{ margin: 0, fontWeight: 700, color: G.text }}>Ainda não fazes parte de nenhum grupo</h3>
-              <p style={{ color: G.muted, fontSize: 14, marginTop: 10 }}>Começa uma associação comunitária com os teus amigos ou família hoje mesmo.</p>
+              <h3 style={{ margin: 0, fontWeight: 700, color: G.text }}>{ui("Ainda não fazes parte de nenhum grupo")}</h3>
+              <p style={{ color: G.muted, fontSize: 14, marginTop: 10 }}>{ui("Começa uma associação comunitária com os teus amigos ou família hoje mesmo.")}</p>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
@@ -190,7 +187,7 @@ export default function VslaModule() {
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
                     <div style={{ background: G.muted3, padding: 12, borderRadius: 12 }}>
-                      <div style={{ fontSize: 10, color: G.muted, textTransform: 'uppercase' }}>Valor Share</div>
+                      <div style={{ fontSize: 10, color: G.muted, textTransform: 'uppercase' }}>{ui("Valor Share")}</div>
                       <div style={{ fontSize: 14, fontWeight: 700, color: G.green }}>{fmt(group.share_value)} {group.currency}</div>
                     </div>
                     <div style={{ background: G.muted3, padding: 12, borderRadius: 12 }}>
@@ -202,7 +199,7 @@ export default function VslaModule() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <Users size={14} color={G.muted} />
-                      <span style={{ fontSize: 12, color: G.muted }}>Grupo Comunitário</span>
+                      <span style={{ fontSize: 12, color: G.muted }}>{ui("Grupo Comunitário")}</span>
                     </div>
                     <ArrowRight size={18} color={G.green} />
                   </div>
@@ -214,15 +211,13 @@ export default function VslaModule() {
       ) : (
         /* Render Group Detail View */
         <div style={{ animation: 'fadeIn 0.3s ease' }}>
-          <button onClick={() => getGroupDetails(null)} style={{ background: 'transparent', border: 'none', color: G.muted, cursor: 'pointer', fontSize: 12, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
-             ← Voltar à lista
-          </button>
+          <button onClick={() => getGroupDetails(null)} style={{ background: 'transparent', border: 'none', color: G.muted, cursor: 'pointer', fontSize: 12, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}> {ui("← Voltar à lista")} </button>
           
           <div style={{ background: G.card, borderRadius: 24, padding: 32, border: `1px solid ${G.border}` }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
                 <div>
                    <h2 style={{ margin: 0, fontSize: 24, fontWeight: 900, color: G.text }}>{activeGroup.name}</h2>
-                   <p style={{ margin: '8px 0 0 0', color: G.muted }}>Comunidade de Poupança e Crédito</p>
+                   <p style={{ margin: '8px 0 0 0', color: G.muted }}>{ui("Comunidade de Poupança e Crédito")}</p>
                 </div>
                 <div style={{ padding: '8px 16px', background: `${G.green}15`, borderRadius: 12, border: `1px solid ${G.green}30`, color: G.green, fontWeight: 800, fontSize: 12 }}>
                    {activeGroup.status.toUpperCase()}
@@ -231,12 +226,11 @@ export default function VslaModule() {
 
              <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <div style={{ fontSize: 64, marginBottom: 16 }}>🚧</div>
-                <h3 style={{ color: G.text }}>Painel de Gestão desta Comunidade</h3>
-                <p style={{ color: G.muted }}>Estamos a preparar o módulo de reuniões e empréstimos internos para este grupo.</p>
+                <h3 style={{ color: G.text }}>{ui("Painel de Gestão desta Comunidade")}</h3>
+                <p style={{ color: G.muted }}>{ui("Estamos a preparar o módulo de reuniões e empréstimos internos para este grupo.")}</p>
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24 }}>
                    <div style={{ padding: '12px 24px', background: G.muted3, borderRadius: 12, border: `1px solid ${G.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <Calendar size={18} color={G.gold} /> Proxima Reunião: N/A
-                   </div>
+                      <Calendar size={18} color={G.gold} /> {ui("Proxima Reunião: N/A")} </div>
                 </div>
              </div>
           </div>
@@ -247,9 +241,7 @@ export default function VslaModule() {
       <div style={{ padding: 16, background: "rgba(96,165,250,0.05)", border: `1px solid ${G.blue}20`, borderRadius: 16, display: 'flex', gap: 12 }}>
         <Info size={20} color={G.blue} />
         <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
-          <strong>Segurança Mwanga:</strong> O Mwanga apenas regista as movimentações para garantir transparência total. 
-          O dinheiro físico ou digital deve continuar a ser gerido pelo Tesoureiro eleito do vosso grupo na "Box" ou conta mobile money dedicada.
-        </div>
+          <strong>{ui("Segurança Mwanga:")}</strong> {ui("O Mwanga apenas regista as movimentações para garantir transparência total. O dinheiro físico ou digital deve continuar a ser gerido pelo Tesoureiro eleito do vosso grupo na \"Box\" ou conta mobile money dedicada.")} </div>
       </div>
     </div>
   );

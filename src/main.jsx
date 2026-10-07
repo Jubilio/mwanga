@@ -1,3 +1,4 @@
+import { ui } from './utils/uiTranslation';
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
@@ -45,10 +46,8 @@ createRoot(document.getElementById('root')).render(
           gap: '16px', padding: '24px', textAlign: 'center'
         }}>
           <img src="/splash-premium.png" alt="Mwanga" style={{ width: 64, height: 64, borderRadius: 16 }} />
-          <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>Algo correu mal</h2>
-          <p style={{ color: '#94a3b8', fontSize: '14px', margin: 0 }}>
-            O Mwanga encontrou um erro inesperado. A equipa já foi notificada.
-          </p>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>{ui("Algo correu mal")}</h2>
+          <p style={{ color: '#94a3b8', fontSize: '14px', margin: 0 }}> {ui("O Mwanga encontrou um erro inesperado. A equipa já foi notificada.")} </p>
           <button
             onClick={() => window.location.reload()}
             style={{
@@ -56,9 +55,7 @@ createRoot(document.getElementById('root')).render(
               background: 'linear-gradient(135deg, #0a4d68, #1a8fa8)',
               color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '14px'
             }}
-          >
-            Recarregar
-          </button>
+          > {ui("Recarregar")} </button>
         </div>
       }
     >

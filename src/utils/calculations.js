@@ -1,3 +1,4 @@
+import { ui, uiLocale, uiCategory, uiTransactionType } from './uiTranslation';
 // Financial calculation utilities shared across the app.
 import { normalizeCategory } from './categories';
 
@@ -16,10 +17,10 @@ export function fmt(n, currency = 'MT') {
   const rate = EXCHANGE_RATES[currency] || 1;
   value = value * rate;
 
-  // Manual format to ensure consistency across environments (1.250,50 MT)
+  const english = uiLocale().startsWith('en');
   const parts = value.toFixed(2).split('.');
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return parts.join(',') + ' ' + currency;
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, english ? ',' : '.');
+  return parts.join(english ? '.' : ',') + ' ' + currency;
 }
 
 export function fmtShort(n, currency = 'MT') {
@@ -65,7 +66,7 @@ export function getFinancialMonthKey(dateStr, startDay = 1) {
 }
 
 export function getMonthLabel(key) {
-  const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const months = [ui("Janeiro"), ui("Fevereiro"), ui("Março"), ui("Abril"), ui("Maio"), ui("Junho"), ui("Julho"), ui("Agosto"), ui("Setembro"), ui("Outubro"), ui("Novembro"), ui("Dezembro")];
   const [y, m] = key.split('-');
   return `${months[parseInt(m, 10) - 1]} ${y}`;
 }
@@ -261,9 +262,9 @@ export function calcFinancialScore(transactions, budgets = [], monthKey = getMon
 }
 
 export function calcRiskLevel(score) {
-  if (score >= 70) return { level: 'Baixo', color: 'var(--color-leaf)', emoji: '🟢' };
-  if (score >= 40) return { level: 'Médio', color: 'var(--color-gold)', emoji: '🟡' };
-  return { level: 'Alto', color: 'var(--color-coral)', emoji: '🔴' };
+  if (score >= 70) return { level: ui("Baixo"), color: 'var(--color-leaf)', emoji: '🟢' };
+  if (score >= 40) return { level: ui("Médio"), color: 'var(--color-gold)', emoji: '🟡' };
+  return { level: ui("Alto"), color: 'var(--color-coral)', emoji: '🔴' };
 }
 
 export function calcCompoundInterest(principal, monthlyContribution, annualRate, years) {
@@ -305,8 +306,8 @@ export function calcMonthlySavingsNeeded(targetAmount, currentSaved, deadlineDat
 }
 
 export async function exportToCSV(transactions, filename = 'mwanga_transacoes.csv') {
-  const headers = ['Data', 'Tipo', 'Categoria', 'Descrição', 'Valor (MT)', 'Notas'];
-  const rows = transactions.map(t => [t.data, t.tipo, t.cat, t.desc, t.valor, t.nota || '']);
+  const headers = [ui("Data"), ui("Tipo"), ui("Categoria"), ui("Descrição"), ui("Valor (MT)"), ui("Notas")];
+  const rows = transactions.map(t => [t.data, uiTransactionType(t.tipo), uiCategory(t.cat), t.desc, t.valor, t.nota || '']);
   const csvContent = [headers, ...rows]
     .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
     .join('\n');
@@ -344,7 +345,7 @@ export async function shareSummary(summaryText) {
   if (navigator.share) {
     try {
       await navigator.share({
-        title: 'Mwanga - Resumo Financeiro',
+        title: ui("Mwanga - Resumo Financeiro"),
         text: summaryText,
       });
     } catch (e) {
@@ -352,7 +353,7 @@ export async function shareSummary(summaryText) {
     }
   } else {
     navigator.clipboard.writeText(summaryText);
-    alert('Resumo copiado para a área de transferência!');
+    alert(ui("Resumo copiado para a área de transferência!"));
   }
 }
 

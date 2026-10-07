@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { lazy, Suspense, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
@@ -14,6 +15,7 @@ const SimulatorQuality = lazy(() => import('../components/simulators/SimulatorQu
 const SimulatorEstrutura = lazy(() => import('../components/simulators/SimulatorEstrutura'));
 
 function TabButton({ active, icon, label, onClick }) {
+  useUiLanguage();
   const IconComponent = icon;
   return (
     <button
@@ -37,12 +39,13 @@ function TabButton({ active, icon, label, onClick }) {
       }}
     >
       <IconComponent size={16} />
-      {label}
+      {ui(label)}
     </button>
   );
 }
 
 function TabFallback() {
+  useUiLanguage();
   return (
     <div className="glass-card p-10 rounded-[28px] flex items-center justify-center" style={{ minHeight: 300 }}>
       <div className="w-8 h-8 border-2 border-ocean border-t-transparent rounded-full animate-spin" />
@@ -51,6 +54,7 @@ function TabFallback() {
 }
 
 export default function Simulators() {
+  useUiLanguage();
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const { showToast } = useOutletContext();
@@ -70,9 +74,9 @@ export default function Simulators() {
       {/* Tab navigation */}
       <div className="flex gap-2 mb-8 overflow-x-auto p-1.5 rounded-[20px] bg-white/5 border border-white/5">
         <TabButton active={activeTab === 'budget'}  icon={Banknote}   label={t('simulators.tabs.budget')}  onClick={() => setActiveTab('budget')}  />
-        <TabButton active={activeTab === 'estrutura'} icon={Layers} label="Estrutura do Salário" onClick={() => setActiveTab('estrutura')} />
+        <TabButton active={activeTab === 'estrutura'} icon={Layers} label={ui("Estrutura do Salário")} onClick={() => setActiveTab('estrutura')} />
         <TabButton active={activeTab === 'invest'}  icon={TrendingUp} label={t('simulators.tabs.invest')}  onClick={() => setActiveTab('invest')}  />
-        <TabButton active={activeTab === 'quality'} icon={Briefcase}  label="Qualidade Buffett" onClick={() => setActiveTab('quality')} />
+        <TabButton active={activeTab === 'quality'} icon={Briefcase}  label={ui("Qualidade Buffett")} onClick={() => setActiveTab('quality')} />
         <TabButton active={activeTab === 'fire'}    icon={Flame}      label={t('simulators.tabs.fire')}    onClick={() => setActiveTab('fire')}    />
         <TabButton active={activeTab === 'xitique'} icon={RefreshCcw} label={t('simulators.tabs.xitique')} onClick={() => setActiveTab('xitique')} />
       </div>

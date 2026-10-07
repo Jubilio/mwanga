@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, X, PiggyBank, Target, ArrowRight } from 'lucide-react';
 import { fmtShort } from '../../utils/calculations';
@@ -10,6 +11,7 @@ export default function AutoAllocateModal({
   onAllocate,
   currency = 'MT'
 }) {
+  useUiLanguage();
   // Suggested 50/30/20 breakdown
   const savingsAmount = salaryAmount * 0.20;
   const essentialsAmount = salaryAmount * 0.50;
@@ -38,10 +40,8 @@ export default function AutoAllocateModal({
               <div className="w-16 h-16 rounded-full bg-ocean/10 text-ocean flex items-center justify-center mb-4 shadow-lg shadow-ocean/20">
                 <Sparkles size={32} />
               </div>
-              <h3 className="text-xl font-black text-midnight dark:text-white mb-2">Alocação Inteligente</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Detetámos a entrada de um salário de <strong className="text-ocean">MT {fmtShort(salaryAmount)}</strong>. Deseja distribuir automaticamente com a regra 50/30/20?
-              </p>
+              <h3 className="text-xl font-black text-midnight dark:text-white mb-2">{ui("Alocação Inteligente")}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400"> {ui("Detetámos a entrada de um salário de")} <strong className="text-ocean">MT {fmtShort(salaryAmount)}</strong>{ui(". Deseja distribuir automaticamente com a regra 50/30/20?")} </p>
             </div>
 
             <div className="flex flex-col gap-3 mb-6">
@@ -49,8 +49,8 @@ export default function AutoAllocateModal({
                 <div className="flex items-center gap-3">
                   <PiggyBank size={20} className="text-leaf" />
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-leaf uppercase tracking-wider">Poupança (20%)</span>
-                    <span className="text-[10px] text-gray-500">Registar como transação de poupança</span>
+                    <span className="text-xs font-bold text-leaf uppercase tracking-wider">{ui("Poupança (20%)")}</span>
+                    <span className="text-[10px] text-gray-500">{ui("Registar como transação de poupança")}</span>
                   </div>
                 </div>
                 <span className="font-black text-leaf">MT {fmtShort(savingsAmount)}</span>
@@ -60,8 +60,8 @@ export default function AutoAllocateModal({
                 <div className="flex items-center gap-3">
                   <Target size={20} className="text-ocean" />
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-midnight dark:text-white uppercase tracking-wider">Essencial (50%)</span>
-                    <span className="text-[10px] text-gray-500">Fica disponível para despesas base</span>
+                    <span className="text-xs font-bold text-midnight dark:text-white uppercase tracking-wider">{ui("Essencial (50%)")}</span>
+                    <span className="text-[10px] text-gray-500">{ui("Fica disponível para despesas base")}</span>
                   </div>
                 </div>
                 <span className="font-black text-midnight dark:text-white">MT {fmtShort(essentialsAmount)}</span>
@@ -72,15 +72,12 @@ export default function AutoAllocateModal({
               <button
                 onClick={() => onAllocate(savingsAmount)}
                 className="w-full h-12 bg-gradient-to-r from-ocean to-sky text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-ocean/30 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
-              >
-                Sim, Alocar Poupança <ArrowRight size={16} />
+              > {ui("Sim, Alocar Poupança")} <ArrowRight size={16} />
               </button>
               <button
                 onClick={onClose}
                 className="w-full h-12 bg-white/5 text-gray-500 hover:text-midnight dark:hover:text-white rounded-2xl font-bold text-sm transition-colors"
-              >
-                Não, manter tudo disponível
-              </button>
+              > {ui("Não, manter tudo disponível")} </button>
             </div>
           </motion.div>
         </div>

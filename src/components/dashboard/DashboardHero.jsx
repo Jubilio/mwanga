@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { RefreshCw, Eye, EyeOff, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +17,7 @@ export default function DashboardHero({
   state,
   itemVariants
 }) {
+  useUiLanguage();
   return (
     <motion.div variants={itemVariants} className="relative overflow-hidden rounded-[32px] bg-linear-to-br from-midnight via-[#12232e] to-midnight p-8 shadow-2xl">
       {/* Animated Orbs for Depth */}
@@ -29,7 +31,7 @@ export default function DashboardHero({
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            aria-label="Actualizar dados"
+            aria-label={ui("Actualizar dados")}
             className="group p-1 text-gray-500 hover:text-gold transition-colors disabled:opacity-50"
           >
             <RefreshCw
@@ -75,8 +77,7 @@ export default function DashboardHero({
              <div className="flex items-center gap-2 rounded-2xl bg-white/5 py-2 px-4 backdrop-blur-xl border border-white/5 text-gold-light">
                <Wallet size={14} />
                <span className="text-[11px] font-black uppercase tracking-wider tabular-nums">
-                 {showBalance ? fmt(state.settings.cash_balance, currency) : '••••'} Dinheiro
-               </span>
+                 {showBalance ? fmt(state.settings.cash_balance, currency) : '••••'} {ui("Dinheiro")} </span>
              </div>
            )}
         </div>
@@ -85,7 +86,7 @@ export default function DashboardHero({
         <div className="mt-10 flex w-full items-stretch border-t border-white/5 pt-6">
           {/* Income Tile */}
           <div className="flex flex-1 flex-col items-center gap-2 px-2">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-leaf-light/60">Rendimentos</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-leaf-light/60">{ui("Rendimentos")}</span>
             <span className="text-sm font-black tabular-nums text-leaf-light sm:text-base">
               {showBalance ? fmt(totals.totalIncome, currency) : '••••'}
             </span>
@@ -103,7 +104,7 @@ export default function DashboardHero({
 
           {/* Expense Tile */}
           <div className="flex flex-1 flex-col items-center gap-2 px-2">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-coral-light/60">Despesas</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-coral-light/60">{ui("Despesas")}</span>
             <span className="text-sm font-black tabular-nums text-coral-light sm:text-base">
               {showBalance ? fmt(totals.totalExpenses, currency) : '••••'}
             </span>

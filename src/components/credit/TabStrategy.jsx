@@ -1,14 +1,16 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { useTranslation } from "react-i18next";
 import { G } from "../../theme/tokens";
 import { fmt, fmtShort } from "../../utils/calculations";
 import { Card, Badge } from "./CreditUI";
 
 export default function TabStrategy({ scoreData, debts }) {
+  useUiLanguage();
   const { t } = useTranslation();
   const payoffStrategy = (debts || [])
     .filter(d => (d.restante || d.remaining_amount) > 0)
     .map((d, i) => ({
-      nome: d.name || `Dívida ${i + 1}`,
+      nome: d.name || ui("Dívida {{p0}}", { p0: i + 1 }),
       taxa: d.interestRate || 0,
       restante: d.restante || d.remaining_amount || 0,
       parcela: d.monthly_payment || (d.total / 12) || 0, 
@@ -17,11 +19,11 @@ export default function TabStrategy({ scoreData, debts }) {
     .map((d, i) => ({
       ...d,
       priority: i + 1,
-      reason: i === 0 ? "Taxa mais alta" : "Estratégia Avalanche"
+      reason: i === 0 ? ui("Taxa mais alta") : ui("Estratégia Avalanche")
     }));
 
   if (payoffStrategy.length === 0) {
-    payoffStrategy.push({ nome: t('credit.consolidate.no_debts'), taxa: 0, restante: 0, parcela: 0, priority: 1, reason: "Parabéns!" });
+    payoffStrategy.push({ nome: t('credit.consolidate.no_debts'), taxa: 0, restante: 0, parcela: 0, priority: 1, reason: ui("Parabéns!") });
   }
 
   const totalJuros = payoffStrategy.reduce((a, d) => a + (d.restante * (d.taxa / 100 / 12)), 0);
@@ -53,7 +55,7 @@ export default function TabStrategy({ scoreData, debts }) {
               <div style={{ fontSize: 12, color: G.muted, marginBottom: 6 }}>
                 {t('credit.strategy.remaining')} MT {fmtShort(d.restante)} · {t('credit.strategy.installment')} MT {fmtShort(d.parcela)}{t('credit.strategy.per_month')}
               </div>
-              <div style={{ fontSize: 11, color: G.credit, fontStyle: "italic" }}>✦ {d.reason}</div>
+              <div style={{ fontSize: 11, color: G.credit, fontStyle: "italic" }}>✦ {ui(d.reason)}</div>
             </div>
           </div>
         ))}
@@ -70,7 +72,7 @@ export default function TabStrategy({ scoreData, debts }) {
             <span style={{ fontSize: 20 }}>{z.icon}</span>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: z.active ? z.color : G.muted }}>{z.zona} {z.active ? t('credit.strategy.risk_here') : ""}</div>
-              <div style={{ fontSize: 12, color: G.muted, marginTop: 2 }}>{z.desc}</div>
+              <div style={{ fontSize: 12, color: G.muted, marginTop: 2 }}>{ui(z.desc)}</div>
             </div>
           </div>
         ))}

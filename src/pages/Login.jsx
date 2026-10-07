@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useOutletContext } from 'react-router-dom';
@@ -29,6 +30,7 @@ function getCurrentOrigin() {
 }
 
 export default function Login() {
+  useUiLanguage();
   const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState({ name: '', email: '', password: '', householdName: '' });
@@ -82,7 +84,7 @@ export default function Login() {
       const userInfo = await userInfoResp.json();
 
       if (!userInfo.email) {
-        throw new Error('Não foi possível obter o email do Google.');
+        throw new Error(ui("Não foi possível obter o email do Google."));
       }
 
       const resp = await fetch(`${getApiUrl()}/auth/google-access-token`, {
@@ -113,7 +115,7 @@ export default function Login() {
   }
 
   function handleGoogleError() {
-    const originLabel = currentOrigin || 'origem atual';
+    const originLabel = currentOrigin || ui("origem atual");
     showToast(t('auth.login.toasts.google_unavailable', { origin: originLabel }));
   }
 
@@ -193,7 +195,7 @@ export default function Login() {
             ) : (
               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
             )}
-            <span>{loading ? 'Processando...' : 'Continuar com Google'}</span>
+            <span>{loading ? ui("Processando...") : ui("Continuar com Google")}</span>
           </button>
 
           <p
@@ -243,7 +245,7 @@ export default function Login() {
               required
               maxLength={100}
               className="form-input"
-              placeholder="seu@email.com"
+              placeholder={ui("seu@email.com")}
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />

@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Banknote, Wallet, Layers } from 'lucide-react';
@@ -6,6 +7,7 @@ import { motion } from 'framer-motion';
 import { fmt } from '../../utils/calculations';
 
 export default function SimulatorEstrutura({ salary: globalSalary, currency, dispatch, showToast }) {
+  const uiLanguage = useUiLanguage();
   const { t } = useTranslation();
   const [salary, setSalary] = useState(() => Math.max(0, Number(globalSalary || 25000)));
 
@@ -18,14 +20,14 @@ export default function SimulatorEstrutura({ salary: globalSalary, currency, dis
   }, [globalSalary]);
 
   const structure = [
-    { name: 'Dízimo', percent: 10, color: '#a855f7' },
-    { name: 'Pagar-se primeiro', percent: 5, color: '#f59e0b' },
-    { name: 'Despesas', percent: 50, color: 'var(--color-ocean)' },
-    { name: 'Poupança', percent: 10, color: 'var(--color-leaf)' },
-    { name: 'Investimento', percent: 10, color: 'var(--color-gold)' },
-    { name: 'Conhecimento', percent: 5, color: '#3b82f6' },
-    { name: 'Ação social', percent: 5, color: 'var(--color-coral)' },
-    { name: 'Abundar', percent: 5, color: '#ec4899' }
+    { name: ui("Dízimo"), percent: 10, color: '#a855f7' },
+    { name: ui("Pagar-se primeiro"), percent: 5, color: '#f59e0b' },
+    { name: ui("Despesas"), percent: 50, color: 'var(--color-ocean)' },
+    { name: ui("Poupança"), percent: 10, color: 'var(--color-leaf)' },
+    { name: ui("Investimento"), percent: 10, color: 'var(--color-gold)' },
+    { name: ui("Conhecimento"), percent: 5, color: '#3b82f6' },
+    { name: ui("Ação social"), percent: 5, color: 'var(--color-coral)' },
+    { name: ui("Abundar"), percent: 5, color: '#ec4899' }
   ];
 
   const pieData = useMemo(() => {
@@ -36,11 +38,11 @@ export default function SimulatorEstrutura({ salary: globalSalary, currency, dis
       color: item.color,
       percent: item.percent
     }));
-  }, [salary]);
+  }, [salary, uiLanguage]);
 
   function applySalary() {
     dispatch({ type: 'UPDATE_SETTING', payload: { key: 'user_salary', value: Math.max(0, Number(salary || 0)) } });
-    showToast('Salário e estrutura atualizados!');
+    showToast(ui("Salário e estrutura atualizados!"));
   }
 
   return (
@@ -54,13 +56,13 @@ export default function SimulatorEstrutura({ salary: globalSalary, currency, dis
           <div className="flex items-start gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-ocean/10 flex items-center justify-center text-ocean"><Layers size={20} /></div>
             <div className="min-w-0">
-              <h2 className="text-xl font-black text-midnight dark:text-white">Estrutura Financeira</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Modelo financeiro de 8 categorias baseado em Arcélio Tivane</p>
+              <h2 className="text-xl font-black text-midnight dark:text-white">{ui("Estrutura Financeira")}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{ui("Modelo financeiro de 8 categorias baseado em Arcélio Tivane")}</p>
             </div>
           </div>
 
           <div>
-            <label className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-2 block">Salário Base (MZN)</label>
+            <label className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-2 block">{ui("Salário Base (MZN)")}</label>
             <div className="relative">
               <input type="number" value={salary} onChange={(e) => setSalary(Number(e.target.value))} className="w-full bg-black/5 dark:bg-white/5 border-none rounded-2xl p-4 pr-4 pl-14 text-lg font-black dark:text-white outline-none focus:ring-2 ring-ocean/50" />
               <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
@@ -69,19 +71,17 @@ export default function SimulatorEstrutura({ salary: globalSalary, currency, dis
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
             {pieData.map((item) => (
-              <div key={item.name} className="p-4 rounded-[20px] bg-black/5 dark:bg-white/5 border border-white/5 flex items-start gap-3 min-w-0 overflow-hidden">
+              <div key={ui(item.name)} className="p-4 rounded-[20px] bg-black/5 dark:bg-white/5 border border-white/5 flex items-start gap-3 min-w-0 overflow-hidden">
                 <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color, marginTop: 4, flexShrink: 0 }} />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[10px] font-black uppercase text-gray-400 mb-1 wrap-anywhere leading-tight">{item.name} ({item.percent}%)</div>
+                  <div className="text-[10px] font-black uppercase text-gray-400 mb-1 wrap-anywhere leading-tight">{ui(item.name)} {ui("(")}{item.percent}%)</div>
                   <div className="text-sm md:text-base font-black dark:text-white wrap-anywhere leading-tight">{fmt(item.value, currency)}</div>
                 </div>
               </div>
             ))}
           </div>
 
-          <button onClick={applySalary} className="btn btn-primary px-5 py-3 text-sm font-black w-full">
-            Aplicar Configuração
-          </button>
+          <button onClick={applySalary} className="btn btn-primary px-5 py-3 text-sm font-black w-full"> {ui("Aplicar Configuração")} </button>
         </div>
 
         <div className="rounded-[28px] bg-black/5 dark:bg-white/5 border border-white/5 p-6 h-full flex flex-col items-center justify-center min-w-0">
@@ -97,7 +97,7 @@ export default function SimulatorEstrutura({ salary: globalSalary, currency, dis
           </div>
           <div className="mt-6 text-center">
             <p className="text-xl md:text-2xl font-black text-midnight dark:text-white">{fmt(salary, currency)}</p>
-            <p className="text-xs text-gray-500 uppercase tracking-widest font-black mt-1">Total Distribuído</p>
+            <p className="text-xs text-gray-500 uppercase tracking-widest font-black mt-1">{ui("Total Distribuído")}</p>
           </div>
         </div>
       </div>

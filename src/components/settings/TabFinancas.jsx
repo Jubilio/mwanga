@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { Wallet, TrendingUp, Home as HomeIcon, Zap, Sparkles, RefreshCcw, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSmsSync } from '../../hooks/useSmsSync';
@@ -5,6 +6,7 @@ import { useOutletContext } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 
 export default function TabFinancas({ form, setFormDirty, state }) {
+  useUiLanguage();
   const { t } = useTranslation();
   const { showToast } = useOutletContext() || {};
   const { syncSms } = useSmsSync(showToast);
@@ -109,8 +111,7 @@ export default function TabFinancas({ form, setFormDirty, state }) {
               </div>
               {!isNative && (
                  <div className="flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-[9px] font-black uppercase tracking-tighter">
-                    <Info size={10} /> App Nativa (Android) Apenas
-                 </div>
+                    <Info size={10} /> {ui("App Nativa (Android) Apenas")} </div>
               )}
             </div>
           </div>
@@ -132,13 +133,13 @@ export default function TabFinancas({ form, setFormDirty, state }) {
             </div>
 
             <div className="group">
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Conta Padrão (Entradas)</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{ui("Conta Padrão (Entradas)")}</label>
               <select
                 value={form.default_income_account_id}
                 onChange={(e) => setFormDirty(f => ({ ...f, default_income_account_id: e.target.value }))}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-indigo-500/40 transition-all appearance-none cursor-pointer font-medium"
               >
-                <option value="">Nenhuma</option>
+                <option value="">{ui("Nenhuma")}</option>
                 {state.contas?.map(acc => (
                   <option key={acc.id} value={acc.id}>{acc.name}</option>
                 ))}
@@ -146,13 +147,13 @@ export default function TabFinancas({ form, setFormDirty, state }) {
             </div>
 
             <div className="group">
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Conta Padrão (Despesas)</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{ui("Conta Padrão (Despesas)")}</label>
               <select
                 value={form.default_expense_account_id}
                 onChange={(e) => setFormDirty(f => ({ ...f, default_expense_account_id: e.target.value }))}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-indigo-500/40 transition-all appearance-none cursor-pointer font-medium"
               >
-                <option value="">Nenhuma</option>
+                <option value="">{ui("Nenhuma")}</option>
                 {state.contas?.map(acc => (
                   <option key={acc.id} value={acc.id}>{acc.name}</option>
                 ))}
@@ -162,7 +163,7 @@ export default function TabFinancas({ form, setFormDirty, state }) {
             <div
               onClick={() => {
                 if (!isNative) {
-                  showToast?.(t('settings.financas.native_only_toast') || 'Sincronização SMS só funciona na App Nativa (Android).', 'info');
+                  showToast?.(t('settings.financas.native_only_toast') || ui("Sincronização SMS só funciona na App Nativa (Android)."), 'info');
                   return;
                 }
                 setFormDirty(f => ({ ...f, sms_automation_enabled: !f.sms_automation_enabled }));
@@ -189,8 +190,7 @@ export default function TabFinancas({ form, setFormDirty, state }) {
                 onClick={(e) => { e.preventDefault(); syncSms(true); }}
                 className="w-full flex justify-center items-center gap-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-sm"
               >
-                <RefreshCcw size={14} /> Sincronizar SMS Agora
-              </button>
+                <RefreshCcw size={14} /> {ui("Sincronizar SMS Agora")} </button>
             )}
           </div>
         </div>

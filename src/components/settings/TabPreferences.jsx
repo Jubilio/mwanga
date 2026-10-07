@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { Palette, Globe, Zap, Sun, Moon, Bell, AlertTriangle, Calendar, Banknote, ShieldAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,6 +10,7 @@ export default function TabPreferences({
   pushProps, 
   showToast 
 }) {
+  useUiLanguage();
   const { t } = useTranslation();
   const { 
     enablePush, 
@@ -48,10 +50,10 @@ export default function TabPreferences({
                 onChange={(e) => setFormDirty(f => ({ ...f, currency: e.target.value }))}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 outline-none focus:border-teal-500/40 transition-all appearance-none cursor-pointer font-medium"
               >
-                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="MT">MT — Metical Moçambicano</option>
-                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="USD">USD — Dólar Americano</option>
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="MT">{ui("MT — Metical Moçambicano")}</option>
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="USD">{ui("USD — Dólar Americano")}</option>
                 <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="EUR">EUR — Euro</option>
-                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="ZAR">ZAR — Rand Sul-Africano</option>
+                <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="ZAR">{ui("ZAR — Rand Sul-Africano")}</option>
               </select>
             </div>
           </div>

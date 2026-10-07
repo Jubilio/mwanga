@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, RefreshCw, Sparkles, Target } from 'lucide-react';
@@ -16,6 +17,7 @@ const PAGE_MAP = {
 };
 
 export default function FinancialCoachCard({ coach, loading, error, onRefresh }) {
+  useUiLanguage();
   const navigate = useNavigate();
 
   const handleAction = () => {
@@ -44,7 +46,7 @@ export default function FinancialCoachCard({ coach, loading, error, onRefresh })
           onClick={onRefresh}
           className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 border border-white/10 text-slate-400 transition-all hover:bg-white/10 hover:text-white"
           disabled={loading}
-          title="Atualizar análise"
+          title={ui("Atualizar análise")}
         >
           <RefreshCw size={14} className={loading ? 'animate-spin text-indigo-400' : ''} />
         </button>
@@ -64,19 +66,15 @@ export default function FinancialCoachCard({ coach, loading, error, onRefresh })
             onClick={onRefresh}
             className="inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-2 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-white/20"
           >
-            <RefreshCw size={12} /> Tentar novamente
-          </button>
+            <RefreshCw size={12} /> {ui("Tentar novamente")} </button>
         </div>
       ) : (
         <div className="relative">
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white mb-2 leading-tight">
-            A tua análise financeira <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-              está pronta.
-            </span>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white mb-2 leading-tight"> {ui("A tua análise financeira")} <br className="hidden sm:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400"> {ui("está pronta.")} </span>
           </h2>
           <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-2xl">
-            {coach.priority?.reason || 'Os teus dados mostram um padrão interessante. Preparei um plano prático para otimizar os teus resultados esta semana.'}
+            {coach.priority?.reason || ui("Os teus dados mostram um padrão interessante. Preparei um plano prático para otimizar os teus resultados esta semana.")}
           </p>
 
           <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-5 backdrop-blur-md transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.15] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] relative overflow-hidden">
@@ -84,13 +82,13 @@ export default function FinancialCoachCard({ coach, loading, error, onRefresh })
             
             <div className="flex items-center gap-2 mb-3 relative z-10">
               <Target size={14} className="text-amber-400" />
-              <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">Prioridade Estratégica</span>
+              <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">{ui("Prioridade Estratégica")}</span>
             </div>
             <p className="text-lg font-bold text-white mb-1.5 relative z-10">
-              {coach.priority?.priority || 'Manter a disciplina financeira'}
+              {coach.priority?.priority || ui("Manter a disciplina financeira")}
             </p>
             <p className="text-sm text-slate-400 relative z-10">
-              {coach.priority?.nextAction || 'Garantir que todas as pequenas transações do dia estão registadas.'}
+              {coach.priority?.nextAction || ui("Garantir que todas as pequenas transações do dia estão registadas.")}
             </p>
           </div>
 
@@ -100,16 +98,14 @@ export default function FinancialCoachCard({ coach, loading, error, onRefresh })
               onClick={handleAction}
               className="group relative flex items-center gap-2 overflow-hidden rounded-full bg-indigo-500 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all hover:bg-indigo-400 hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] hover:-translate-y-0.5"
             >
-              <span>Ver plano detalhado</span>
+              <span>{ui("Ver plano detalhado")}</span>
               <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
             </button>
             <button
               type="button"
               onClick={() => navigate('/insights')}
               className="flex items-center gap-2 rounded-full border border-white/10 bg-transparent px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-300 transition-all hover:bg-white/10 hover:text-white"
-            >
-              Explorar Insights
-            </button>
+            > {ui("Explorar Insights")} </button>
           </div>
         </div>
       )}

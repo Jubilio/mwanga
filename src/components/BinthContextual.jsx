@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../utils/api';
@@ -7,6 +8,7 @@ import { useFinance } from '../hooks/useFinance';
 import { generateLocalBinthInsight } from '../utils/binthLogic';
 
 export default function BinthContextual({ page }) {
+  useUiLanguage();
   const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage || 'pt';
   const { state } = useFinance();
@@ -75,7 +77,7 @@ export default function BinthContextual({ page }) {
           ) : (
             <>
               <p className="text-sm dark:text-gray-200 leading-relaxed italic">
-                "{insight.message}"
+                "{ui(insight.message)}"
               </p>
 
               {/* ─ Biblical Insight ─ */}

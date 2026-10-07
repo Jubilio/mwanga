@@ -1,22 +1,24 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { Wallet, Cpu, Database, Map, Globe, Code, ArrowRight, Github, Linkedin, Mail } from 'lucide-react';
 
 export default function NexoVibe() {
+  useUiLanguage();
   const expertise = [
     {
-      title: 'Desenvolvimento de Software',
-      desc: 'Criação de sistemas robustos, escaláveis e com design premium. Especialista em ecossistemas modernos como React e Node.js.',
+      title: ui("Desenvolvimento de Software"),
+      desc: ui("Criação de sistemas robustos, escaláveis e com design premium. Especialista em ecossistemas modernos como React e Node.js."),
       icon: Code,
       color: 'var(--color-ocean)'
     },
     {
-      title: 'Prompt Engineering & IA',
-      desc: 'Otimização de fluxos de trabalho através de Inteligência Artificial Generativa, transformando prompts em produtividade.',
+      title: ui("Prompt Engineering & IA"),
+      desc: ui("Otimização de fluxos de trabalho através de Inteligência Artificial Generativa, transformando prompts em produtividade."),
       icon: Cpu,
       color: 'var(--color-gold)'
     },
     {
       title: 'Data & GIS Analysis',
-      desc: 'Análise inteligente de dados geográficos e estatísticos para suporte à decisão estratégica e planeamento.',
+      desc: ui("Análise inteligente de dados geográficos e estatísticos para suporte à decisão estratégica e planeamento."),
       icon: Map,
       color: 'var(--color-sky)'
     }
@@ -53,8 +55,7 @@ export default function NexoVibe() {
           marginBottom: '1.5rem',
           border: '1px solid rgba(255,255,255,0.1)'
         }}>
-          <Globe size={14} /> Inovação Digital de Moçambique
-        </div>
+          <Globe size={14} /> {ui("Inovação Digital de Moçambique")} </div>
 
         <h1 style={{ 
           fontFamily: 'var(--font-display)', 
@@ -74,22 +75,17 @@ export default function NexoVibe() {
           maxWidth: '600px', 
           margin: '0 auto 2.5rem',
           lineHeight: 1.6
-        }}>
-          Smarter Connections, Better Vibes. Interligando Dados, Inteligência Artificial e Equipas de Alta Performance.
-        </p>
+        }}> {ui("Smarter Connections, Better Vibes. Interligando Dados, Inteligência Artificial e Equipas de Alta Performance.")} </p>
 
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <a href="https://nexovibe.netlify.app/" target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ padding: '0.8rem 2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Explorar Serviços <ArrowRight size={18} />
+          <a href="https://nexovibe.netlify.app/" target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ padding: '0.8rem 2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}> {ui("Explorar Serviços")} <ArrowRight size={18} />
           </a>
-          <a href="#contact" className="btn btn-ghost" style={{ color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}>
-            Falar com Jubílio
-          </a>
+          <a href="#contact" className="btn btn-ghost" style={{ color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}> {ui("Falar com Jubílio")} </a>
         </div>
       </section>
 
       {/* ─── EXPERTISE CARDS ─── */}
-      <h2 className="section-title" style={{ justifyContent: 'center', marginBottom: '2rem' }}>A Nossa Especialidade</h2>
+      <h2 className="section-title" style={{ justifyContent: 'center', marginBottom: '2rem' }}>{ui("A Nossa Especialidade")}</h2>
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
@@ -116,8 +112,8 @@ export default function NexoVibe() {
             }}>
               <item.icon size={26} />
             </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.75rem' }}>{item.title}</h3>
-            <p style={{ color: 'var(--color-muted)', fontSize: '0.92rem', lineHeight: 1.6 }}>{item.desc}</p>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.75rem' }}>{ui(item.title)}</h3>
+            <p style={{ color: 'var(--color-muted)', fontSize: '0.92rem', lineHeight: 1.6 }}>{ui(item.desc)}</p>
           </div>
         ))}
       </div>
@@ -177,9 +173,7 @@ export default function NexoVibe() {
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--color-ocean)' }}>
             Jubílio Maússe
           </h2>
-          <p style={{ color: 'var(--color-muted)', marginBottom: '1.5rem' }}>
-            Fundador da **NEXO VIBE**. Apaixonado por transformar desafios complexos em soluções digitais elegantes. Com experiência sólida em Moçambique no setor de infraestrutura e análise de dados (ACTED e IMPACT), trago uma visão global para problemas locais.
-          </p>
+          <p style={{ color: 'var(--color-muted)', marginBottom: '1.5rem' }}> {ui("Fundador da **NEXO VIBE**. Apaixonado por transformar desafios complexos em soluções digitais elegantes. Com experiência sólida em Moçambique no setor de infraestrutura e análise de dados (ACTED e IMPACT), trago uma visão global para problemas locais.")} </p>
           <div style={{ display: 'grid', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--color-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-gold)' }}>
@@ -187,7 +181,7 @@ export default function NexoVibe() {
               </div>
               <div>
                 <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>Mwanga Lead Developer</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>SaaS de Gestão Financeira Familiar</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>{ui("SaaS de Gestão Financeira Familiar")}</div>
               </div>
             </div>
           </div>
@@ -195,9 +189,7 @@ export default function NexoVibe() {
       </div>
 
       {/* ─── FOOTER ─── */}
-      <footer style={{ marginTop: '4rem', textAlign: 'center', opacity: 0.6, fontSize: '0.8rem' }}>
-        &copy; 2026 NEXO VIBE. Todos os direitos reservados.
-      </footer>
+      <footer style={{ marginTop: '4rem', textAlign: 'center', opacity: 0.6, fontSize: '0.8rem' }}> {ui("© 2026 NEXO VIBE. Todos os direitos reservados.")} </footer>
     </div>
   );
 }

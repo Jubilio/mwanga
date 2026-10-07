@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useMemo, useEffect, useState } from 'react';
 import { useFinance } from './useFinance';
 import { Heart, Shield, Zap, Star } from 'lucide-react';
@@ -7,6 +8,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import confetti from 'canvas-confetti';
 
 export function useStewardship() {
+  useUiLanguage();
   const { state } = useFinance();
   
   // Fetch Binth messages count for Diligence score
@@ -62,11 +64,11 @@ export function useStewardship() {
   }, [state, binthUsageCount]);
 
   const badges = useMemo(() => [
-    { id: 'generous', icon: Heart, label: 'Doador Generoso', active: stats.generosityScore > 80, color: 'text-rose-400', desc: 'Dás com alegria e propósito.' },
-    { id: 'prudent', icon: Shield, label: 'Poupador Prudente', active: stats.prudenceScore > 70, color: 'text-emerald-400', desc: 'Preparas o futuro com sabedoria.' },
-    { id: 'diligent', icon: Zap, label: 'Gestor Diligente', active: stats.diligenceScore > 90, color: 'text-amber-400', desc: 'Cuidas bem dos teus registos e consultas a Binth.' },
-    { id: 'integrity', icon: Star, label: 'Homem de Palavra', active: stats.integrityScore > 95, color: 'text-blue-400', desc: 'Honras os teus compromissos.' },
-    { id: 'savings_master', icon: Zap, label: 'Mestre da Poupança', active: stats.savingsRate > 30, color: 'text-sky-400', desc: 'A tua taxa de poupança é de elite.' },
+    { id: 'generous', icon: Heart, label: ui("Doador Generoso"), active: stats.generosityScore > 80, color: 'text-rose-400', desc: ui("Dás com alegria e propósito.") },
+    { id: 'prudent', icon: Shield, label: ui("Poupador Prudente"), active: stats.prudenceScore > 70, color: 'text-emerald-400', desc: ui("Preparas o futuro com sabedoria.") },
+    { id: 'diligent', icon: Zap, label: ui("Gestor Diligente"), active: stats.diligenceScore > 90, color: 'text-amber-400', desc: ui("Cuidas bem dos teus registos e consultas a Binth.") },
+    { id: 'integrity', icon: Star, label: ui("Homem de Palavra"), active: stats.integrityScore > 95, color: 'text-blue-400', desc: ui("Honras os teus compromissos.") },
+    { id: 'savings_master', icon: Zap, label: ui("Mestre da Poupança"), active: stats.savingsRate > 30, color: 'text-sky-400', desc: ui("A tua taxa de poupança é de elite.") },
   ], [stats]);
 
   // Achievement Detection Logic
@@ -98,7 +100,7 @@ export function useStewardship() {
           const badge = badges.find(b => b.id === badgeId);
           await api.post('/notifications', {
             title: `🏆 Conquista Desbloqueada: ${badge.label}`,
-            message: `Parabéns, Explorador! Ganhaste o badge "${badge.label}". ${badge.desc}`,
+            message: ui("Parabéns, Explorador! Ganhaste o badge \"{{p0}}\". {{p1}}", { p0: badge.label, p1: badge.desc }),
             type: 'success',
             action_payload: { route: '/mordomia' }
           }).catch(err => console.error('Error notifying achievement:', err));

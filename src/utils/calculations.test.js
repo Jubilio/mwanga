@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import i18n from '../i18n';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { 
   fmt, 
   fmtShort, 
@@ -12,6 +13,7 @@ import {
 } from './calculations';
 
 describe('Calculations Utility', () => {
+  beforeEach(() => i18n.changeLanguage('pt'));
   
   describe('Formatting Functions', () => {
     it('fmt should format currency correctly', () => {

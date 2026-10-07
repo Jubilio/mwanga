@@ -1,3 +1,4 @@
+const { localizeScore } = require('../services/scoreLanguage');
 const { resolveLanguage } = require('../services/binthLanguage');
 const { callBinth, buildUserContext } = require('../services/binthService');
 const { db } = require('../config/db');
@@ -182,11 +183,11 @@ const getScore = async (req, res) => {
       finalScore >= 40 ? 'Precisa Atenção ⚠️' :
                          'Momento de Reflexão 🙏';
 
-    res.json({ score: finalScore, label, biblical_label, factors });
+    res.json(localizeScore({ score: finalScore, label, biblical_label, factors }, resolveLanguage(req.query?.language || req.get('Accept-Language'))));
 
   } catch (err) {
     console.error('[Binth Score Error]', err.message);
-    res.status(500).json({ error: 'Erro ao calcular o score', message: err.message });
+    res.status(500).json({ error: resolveLanguage(req.get('Accept-Language')) === 'en' ? 'Could not calculate the score' : 'Erro ao calcular o score', message: err.message });
   }
 };
 

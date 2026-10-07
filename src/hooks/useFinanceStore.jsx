@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useReducer, useEffect, useCallback } from 'react';
 import { FinanceContext } from './FinanceContext';
 import { generateDemoData } from '../utils/calculations';
@@ -168,6 +169,7 @@ function reducer(state, action) {
 }
 
 export function FinanceProvider({ children }) {
+  useUiLanguage();
   const storedDarkMode = localStorage.getItem('mwanga-dark');
   const [state, dispatch] = useReducer(reducer, createInitialState(storedDarkMode === null ? true : storedDarkMode === 'true'));
 
@@ -365,7 +367,7 @@ export function FinanceProvider({ children }) {
           const a = await apiCall('accounts');
           dispatch({ type: 'SET_DATA', payload: { contas: a.map(mapAccount) } });
         } catch (err) {
-          if (err.message.includes('400')) throw new Error('Não podes eliminar esta conta com transações dependentes.');
+          if (err.message.includes('400')) throw new Error(ui("Não podes eliminar esta conta com transações dependentes."));
           throw err;
         }
         return;

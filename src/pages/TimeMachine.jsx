@@ -1,3 +1,4 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
@@ -6,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Clock, TrendingUp, TrendingDown, Target, Brain, AlertTriangle, Sparkles } from 'lucide-react';
 
 export default function TimeMachine() {
+  const uiLanguage = useUiLanguage();
   const { t } = useTranslation();
   const { state } = useFinance();
   const [years, setYears] = useState(5);
@@ -42,7 +44,7 @@ export default function TimeMachine() {
       }
     }
     return { data, monthlySaving };
-  }, [state, currentNetWorth, years, returnRate, incomeMonths]);
+  }, [state, currentNetWorth, years, returnRate, incomeMonths, uiLanguage]);
 
   const finalBalance = projectionData.data[projectionData.data.length - 1].balance;
   const isPositive = finalBalance > currentNetWorth;
@@ -70,8 +72,8 @@ export default function TimeMachine() {
             <Clock size={28} />
           </div>
           <div>
-            <h1 className="text-3xl sm:text-4xl font-black dark:text-white tracking-tighter">Máquina do Tempo</h1>
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Simulação de Futuro Financeiro</p>
+            <h1 className="text-3xl sm:text-4xl font-black dark:text-white tracking-tighter">{ui("Máquina do Tempo")}</h1>
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{ui("Simulação de Futuro Financeiro")}</p>
           </div>
         </div>
       </div>
@@ -83,30 +85,28 @@ export default function TimeMachine() {
           <div className="glass-card p-6 space-y-8">
             <div>
               <div className="flex justify-between mb-4">
-                <span className="text-xs font-black uppercase tracking-widest text-gray-400">Horizonte Temporal</span>
-                <span className="text-lg font-black text-indigo-500">{years} Anos</span>
+                <span className="text-xs font-black uppercase tracking-widest text-gray-400">{ui("Horizonte Temporal")}</span>
+                <span className="text-lg font-black text-indigo-500">{years} {ui("Anos")}</span>
               </div>
               <input type="range" min="1" max="40" value={years} onChange={(e) => setYears(parseInt(e.target.value))} className="time-slider w-full h-2 bg-white/5 rounded-lg appearance-none cursor-pointer" />
             </div>
 
             <div>
               <div className="flex justify-between mb-4">
-                <span className="text-xs font-black uppercase tracking-widest text-gray-400">Retorno Anual (ROI)</span>
+                <span className="text-xs font-black uppercase tracking-widest text-gray-400">{ui("Retorno Anual (ROI)")}</span>
                 <span className="text-lg font-black text-emerald-500">{returnRate}%</span>
               </div>
               <input type="range" min="0" max="25" value={returnRate} onChange={(e) => setReturnRate(parseInt(e.target.value))} className="time-slider w-full h-2 bg-white/5 rounded-lg appearance-none cursor-pointer" />
-              <p className="mt-2 text-[10px] text-gray-500 leading-relaxed italic">
-                *Assume que investes a tua poupança mensal
-              </p>
+              <p className="mt-2 text-[10px] text-gray-500 leading-relaxed italic"> {ui("*Assume que investes a tua poupança mensal")} </p>
             </div>
 
             <div className="pt-4 border-t border-white/5">
               <div className="flex justify-between mb-4">
                 <div className="flex flex-col">
-                  <span className="text-xs font-black uppercase tracking-widest text-white">Duração do Contrato</span>
-                  <span className="text-[10px] text-gray-400 font-bold">Meses com Salário Fixo</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-white">{ui("Duração do Contrato")}</span>
+                  <span className="text-[10px] text-gray-400 font-bold">{ui("Meses com Salário Fixo")}</span>
                 </div>
-                <span className="text-lg font-black text-amber-500">{incomeMonths >= 120 ? 'Vitalício' : `${incomeMonths} Meses`}</span>
+                <span className="text-lg font-black text-amber-500">{incomeMonths >= 120 ? ui("Vitalício") : ui("{{p0}} Meses", { p0: incomeMonths })}</span>
               </div>
               <input type="range" min="6" max="120" step="6" value={incomeMonths} onChange={(e) => setIncomeMonths(parseInt(e.target.value))} className="time-slider w-full h-2 bg-white/5 rounded-lg appearance-none cursor-pointer" />
             </div>
@@ -115,18 +115,18 @@ export default function TimeMachine() {
           <div className="glass-card p-6 border-indigo-500/20">
             <div className="flex items-center gap-3 mb-4">
               <Brain size={20} className="text-indigo-400" />
-              <span className="text-xs font-black uppercase tracking-widest text-white">Veredicto da Binth</span>
+              <span className="text-xs font-black uppercase tracking-widest text-white">{ui("Veredicto da Binth")}</span>
             </div>
             <div className="space-y-4">
               {finalBalance < 0 ? (
                 <div className="p-4 rounded-2xl bg-coral/10 border border-coral/20">
-                  <div className="flex items-center gap-2 text-coral mb-2"><AlertTriangle size={16} /><span className="text-xs font-black uppercase">Alerta Vermelho</span></div>
-                  <p className="text-xs text-coral-light leading-relaxed">A este ritmo, em {years} anos estarás numa situação de dívida acumulada.</p>
+                  <div className="flex items-center gap-2 text-coral mb-2"><AlertTriangle size={16} /><span className="text-xs font-black uppercase">{ui("Alerta Vermelho")}</span></div>
+                  <p className="text-xs text-coral-light leading-relaxed">{ui("A este ritmo, em")} {years} {ui("anos estarás numa situação de dívida acumulada.")}</p>
                 </div>
               ) : (
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="flex items-center gap-2 text-indigo-400 mb-2"><Target size={16} /><span className="text-xs font-black uppercase">Crescimento</span></div>
-                  <p className="text-xs text-gray-300 leading-relaxed">Estás num caminho {isPositive ? 'seguro' : 'que precisa de atenção'}. Ajusta as tuas poupanças para acelerar.</p>
+                  <div className="flex items-center gap-2 text-indigo-400 mb-2"><Target size={16} /><span className="text-xs font-black uppercase">{ui("Crescimento")}</span></div>
+                  <p className="text-xs text-gray-300 leading-relaxed">{ui("Estás num caminho")} {isPositive ? 'seguro' : ui("que precisa de atenção")}{ui(". Ajusta as tuas poupanças para acelerar.")}</p>
                 </div>
               )}
             </div>
@@ -139,7 +139,7 @@ export default function TimeMachine() {
             <div className="absolute inset-0 opacity-10 pointer-events-none rounded-3xl" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
 
             <div className="flex flex-col items-center mb-12">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">Património Estimado em {new Date().getFullYear() + years}</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">{ui("Património Estimado em")} {new Date().getFullYear() + years}</span>
               <motion.span key={finalBalance} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`text-3xl sm:text-5xl font-black tabular-nums tracking-tighter ${isPositive ? 'text-white' : 'text-coral'}`}>
                 {showBalance ? fmt(finalBalance, currency) : '••••'}
               </motion.span>
@@ -172,11 +172,11 @@ export default function TimeMachine() {
 
             <div className="mt-12 flex justify-between border-t border-white/5 pt-6">
                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Património Hoje</span>
+                  <span className="text-[10px] font-black uppercase text-gray-500 tracking-widest">{ui("Património Hoje")}</span>
                   <span className="text-lg font-black text-white">{showBalance ? fmt(currentNetWorth, currency) : '••••'}</span>
                </div>
                <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Ganho Estimado</span>
+                  <span className="text-[10px] font-black uppercase text-gray-500 tracking-widest">{ui("Ganho Estimado")}</span>
                   <span className="text-lg font-black text-emerald-400">
                     {showBalance ? `${finalBalance > currentNetWorth ? '+' : ''}${fmt(finalBalance - currentNetWorth, currency)}` : '••••'}
                   </span>

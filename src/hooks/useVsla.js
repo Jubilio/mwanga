@@ -1,8 +1,10 @@
+import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
 import { useToast } from '../components/Toast';
 
 export function useVsla() {
+  useUiLanguage();
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeGroup, setActiveGroup] = useState(null);
@@ -28,7 +30,7 @@ export function useVsla() {
       await fetchGroups();
       return response.data.data;
     } catch {
-      showToast('Erro ao criar grupo', 'error');
+      showToast(ui("Erro ao criar grupo"), 'error');
       throw new Error('Failed to create VSLA group');
     } finally {
       setLoading(false);
@@ -42,7 +44,7 @@ export function useVsla() {
       setActiveGroup(response.data.data);
       return response.data.data;
     } catch {
-      showToast('Erro ao carregar detalhes do grupo', 'error');
+      showToast(ui("Erro ao carregar detalhes do grupo"), 'error');
     } finally {
       setLoading(false);
     }
