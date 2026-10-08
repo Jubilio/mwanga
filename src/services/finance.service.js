@@ -38,6 +38,7 @@ export function normalizeSettings(rawSettings = {}) {
     ...DEFAULT_SETTINGS,
     ...rawSettings,
     financial_month_start_day: Number(rawSettings.financial_month_start_day || DEFAULT_SETTINGS.financial_month_start_day),
+    sms_automation_enabled: parseBooleanSetting(rawSettings.sms_automation_enabled, false),
     daily_entry_reminder_enabled: parseBooleanSetting(
       rawSettings.daily_entry_reminder_enabled,
       DEFAULT_SETTINGS.daily_entry_reminder_enabled

@@ -2,6 +2,7 @@ const { db } = require('../config/db');
 const { logAction } = require('../utils/audit');
 const { z } = require('zod');
 const { invalidateDashboardCache } = require('./dashboard.controller');
+const { validateSetting } = require('../schemas/settings.schema');
 const { parseJourneySetting } = require('../schemas/journey.schema');
 
 const upsertSettingSchema = z.object({
@@ -11,7 +12,7 @@ const upsertSettingSchema = z.object({
 
 const updateHouseholdSchema = z.object({
   name: z.string().max(100).trim().optional(),
-  cash_balance: z.coerce.number().optional(),
+  cash_balance: z.coerce.number().finite().min(0).max(1e12).optional(),
 });
 
 const getSettings = async (req, res, next) => {
@@ -58,7 +59,12 @@ const upsertSetting = async (req, res, next) => {
       }
       safeValue = JSON.stringify(journey);
     } else {
-      safeValue = value === null || value === undefined ? '' : value.toString();
+      const validated = validateSetting(key, value);
+      if (['default_income_account_id', 'default_expense_account_id'].includes(key) && validated !== '') {
+        const account = await db.execute({ sql: 'SELECT id FROM accounts WHERE id = ? AND household_id = ?', args: [Number(validated), householdId] });
+        if (!account.rows.length) return res.status(400).json({ error: 'Invalid default account' });
+      }
+      safeValue = validated === null || validated === undefined ? '' : validated.toString();
     }
 
     await db.execute({
@@ -70,7 +76,7 @@ const upsertSetting = async (req, res, next) => {
     
     res.json({ success: true, key, value: safeValue });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     next(error);
   }
 };
@@ -102,7 +108,7 @@ const updateHousehold = async (req, res, next) => {
     
     res.json({ success: true, name, cash_balance });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     next(error);
   }
 };

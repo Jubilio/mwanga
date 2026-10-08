@@ -8,7 +8,7 @@ export default function TabPerfil({ form, setFormDirty, state }) {
 
   return (
     <div className="space-y-8">
-      {/* Subscription Tier Badge */}
+      {/* {t('settings.reliable.subscription')} Badge */}
       <div className="glass-card bg-gradient-to-r from-gold/10 to-amber-500/10 border-l-4 border-gold p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -16,13 +16,13 @@ export default function TabPerfil({ form, setFormDirty, state }) {
               <Sparkles size={20} />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Subscription Tier</p>
-              <p className="text-lg font-black text-gold capitalize">{state.settings?.subscription_tier || 'free'}</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{t('settings.reliable.subscription')}</p>
+              <p className="text-lg font-black text-gold capitalize">{t(`settings.reliable.tiers.${state.settings?.subscription_tier || 'free'}`, { defaultValue: t('settings.reliable.tiers.free') })}</p>
             </div>
           </div>
           <div className="text-right">
             {(state.settings?.subscription_tier === 'pro' || state.settings?.subscription_tier === 'legacy') && (
-              <span className="px-3 py-1 bg-gold/20 text-gold text-xs font-bold rounded-full">✓ ALL FEATURES</span>
+              <span className="px-3 py-1 bg-gold/20 text-gold text-xs font-bold rounded-full">{t('settings.reliable.all_features')}</span>
             )}
           </div>
         </div>
@@ -38,7 +38,7 @@ export default function TabPerfil({ form, setFormDirty, state }) {
             <User size={24} />
           </div>
           <div>
-            <h2 className="text-2xl font-black font-serif text-slate-800">{t('settings.perfil.title')}</h2>
+            <h2 className="text-2xl font-black font-serif text-slate-800 dark:text-slate-100">{t('settings.perfil.title')}</h2>
             <p className="text-sm text-slate-500">{t('settings.perfil.subtitle')}</p>
           </div>
         </div>
@@ -49,13 +49,13 @@ export default function TabPerfil({ form, setFormDirty, state }) {
               <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400">
                 <User size={18} />
               </div>
-              <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest">{t('settings.perfil.personal_info')}</h3>
+              <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">{t('settings.perfil.personal_info')}</h3>
             </div>
 
             <div className="group transition-all">
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">{t('settings.perfil.user_name_label')}</label>
+              <label htmlFor="settings-user_name" className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">{t('settings.perfil.user_name_label')}</label>
               <div className="relative">
-                <input
+                <input id="settings-user_name"
                   type="text"
                   value={form.user_name}
                   onChange={(e) => setFormDirty(f => ({ ...f, user_name: e.target.value }))}
@@ -68,14 +68,14 @@ export default function TabPerfil({ form, setFormDirty, state }) {
               </div>
             </div>
             <div className="group transition-all mt-6">
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">{ui("Número de WhatsApp")}</label>
+              <label htmlFor="settings-whatsapp_number" className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">{ui("Número de WhatsApp")}</label>
               <div className="relative">
                 <input
-                  type="text"
+                  id="settings-whatsapp_number" type="tel" autoComplete="tel"
                   value={form.whatsapp_number || ''}
                   onChange={(e) => setFormDirty(f => ({ ...f, whatsapp_number: e.target.value }))}
                   className="premium-input"
-                  placeholder="Ex: 258841234567"
+                  placeholder={t('settings.reliable.whatsapp_example')}
                 />
                 <div className="absolute right-5 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:opacity-100 transition-opacity">
                   <MessageSquare size={18} className="text-teal-400" />
@@ -84,25 +84,7 @@ export default function TabPerfil({ form, setFormDirty, state }) {
               <p className="mt-2 text-[10px] text-slate-500 italic"> {ui("Usado para falar com a Binth via WhatsApp e receber alertas críticos.")} </p>
             </div>
 
-            <div className="group transition-all mt-6">
-               <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400">
-                    <Lock size={18} />
-                  </div>
-                  <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest">{ui("Segurança")}</h3>
-                </div>
-                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">{ui("Definir/Alterar Senha")}</label>
-                <div className="relative">
-                  <input
-                    type="password"
-                    value={form.password || ''}
-                    onChange={(e) => setFormDirty(f => ({ ...f, password: e.target.value }))}
-                    className="premium-input"
-                    placeholder={ui("Nova senha (min. 8 caracteres)")}
-                  />
-                  <p className="mt-2 text-[10px] text-slate-500 italic"> {ui("Utilize isto se entrou com Google e deseja criar um acesso via email/senha.")} </p>
-                </div>
-            </div>
+
           </div>
 
           <div className="space-y-6">
@@ -110,13 +92,13 @@ export default function TabPerfil({ form, setFormDirty, state }) {
               <div className="p-2 rounded-xl bg-sky-500/10 text-sky-400">
                 <HomeIcon size={18} />
               </div>
-              <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest">{t('settings.perfil.family_info')}</h3>
+              <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">{t('settings.perfil.family_info')}</h3>
             </div>
 
             <div className="group transition-all">
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">{t('settings.perfil.household_name_label')}</label>
+              <label htmlFor="settings-household_name" className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">{t('settings.perfil.household_name_label')}</label>
               <div className="relative">
-                <input
+                <input id="settings-household_name"
                   type="text"
                   value={form.household_name}
                   onChange={(e) => setFormDirty(f => ({ ...f, household_name: e.target.value }))}

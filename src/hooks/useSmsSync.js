@@ -12,7 +12,7 @@ export function useSmsSync(showToast) {
   const { settings, contas, transacoes } = state;
 
   const syncSms = useCallback(async (manual = false) => {
-    if (!Capacitor.isNativePlatform()) {
+    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'android') {
       if (manual) showToast?.(ui("Sincronização SMS só funciona na App Nativa (Android)."), 'error');
       return;
     }

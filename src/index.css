@@ -1307,3 +1307,7 @@ h3 {
   50% { transform: scale(1.05); box-shadow: 0 15px 40px rgba(26, 143, 168, 0.4); }
   100% { transform: scale(1); box-shadow: 0 10px 30px rgba(26, 143, 168, 0.2); }
 }
+
+/* Settings inputs follow the selected theme; light mode needs no extra class. */
+.settings-surface .premium-input { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
+.dark .settings-surface .premium-input { background: #0f172a; border-color: #334155; color: #f1f5f9; }
