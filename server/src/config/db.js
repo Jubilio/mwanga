@@ -120,6 +120,23 @@ const db = {
       client.release();
     }
   },
+  withTransaction: async (work) => {
+    const client = await pool.connect();
+    const transaction = { execute: async ({ sql, args = [] }) => {
+      let index = 1;
+      const result = await client.query(sql.replace(/\?/g, () => `$${index++}`), args);
+      return { rows: result.rows, rowCount: result.rowCount };
+    } };
+    try {
+      await client.query('BEGIN');
+      const result = await work(transaction);
+      await client.query('COMMIT');
+      return result;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally { client.release(); }
+  },
   query: (sql, params) => pool.query(sql, params)
 };
 
