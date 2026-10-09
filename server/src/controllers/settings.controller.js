@@ -21,7 +21,7 @@ const getSettings = async (req, res, next) => {
       sql: 'SELECT * FROM settings WHERE household_id = ?',
       args: [req.user.householdId]
     });
-    const settings = result.rows.reduce((acc, curr) => {
+    const settings = result.rows.filter(row => !row.key.startsWith('ai_')).reduce((acc, curr) => {
       acc[curr.key] = curr.value;
       return acc;
     }, {});
@@ -47,6 +47,7 @@ const upsertSetting = async (req, res, next) => {
   try {
     const { key, value } = upsertSettingSchema.parse(req.body);
     const householdId = req.user.householdId;
+    if (key.startsWith('ai_')) return res.status(400).json({ error: 'Reserved setting' });
     let safeValue;
     if (key === 'financial_journey_v1') {
       const journey = parseJourneySetting(value);

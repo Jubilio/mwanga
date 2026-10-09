@@ -999,7 +999,8 @@
         "perfil": "Conta e segurança",
         "financas": "Agregado e finanças",
         "pref": "Idioma e aparência",
-        "notifications": "Notificações"
+        "notifications": "Notificações",
+        "ai": "IA / Binth"
       },
       "status": {
         "pending": "Alterações por guardar",
@@ -2366,5 +2367,24 @@
       "binth": "Binth"
     },
     "ask_prompt": "Ajuda-me a rever os registos de {{start}} a {{end}}: receitas {{income}}, despesas {{expenses}}. Prioridade identificada: {{title}}. Evidência: {{body}}. Explica uma próxima ação com base nestes dados; não pressuponhas rendimentos ou retornos que não foram registados."
+  },
+  "ai_settings": {
+    "title": "IA / Binth",
+    "scope": "Esta configuração pertence apenas à tua conta. A chave pessoal será usada no chat e nos insights da Binth.",
+    "configured": "Chave pessoal configurada: {{provider}}.",
+    "default": "A Binth usa a configuração padrão do Mwanga.",
+    "unavailable": "O armazenamento seguro ainda não foi configurado no servidor. Contacta o administrador.",
+    "provider": "Fornecedor",
+    "key": "Nova chave da API",
+    "privacy": "A chave é guardada cifrada no servidor e nunca é devolvida à interface. Ao usar a IA, o teu contexto financeiro será enviado ao fornecedor escolhido, que pode cobrar pelo uso.",
+    "test_note": "O teste verifica a autenticação sem enviar dados financeiros. Não confirma créditos, disponibilidade de modelos ou geração de respostas.",
+    "test": "Testar chave",
+    "save": "Guardar chave",
+    "remove": "Remover chave pessoal",
+    "tested": "Autenticação aceite pelo fornecedor. A chave ainda não foi guardada.",
+    "saved": "Chave guardada. A Binth passa a usar esta configuração.",
+    "removed": "Chave removida. A Binth volta à configuração padrão.",
+    "rejected": "O fornecedor rejeitou a chave. Verifica a chave e as suas permissões.",
+    "error": "Não foi possível confirmar a operação. Tenta novamente."
   }
 }

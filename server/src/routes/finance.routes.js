@@ -1,3 +1,4 @@
+const aiSettings = require('../controllers/aiSettings.controller');
 const express = require('express');
 const { getTransactions, createTransaction, deleteTransaction, updateTransaction } = require('../controllers/transaction.controller');
 const { getBudgets, upsertBudget, deleteBudget } = require('../controllers/budget.controller');
@@ -66,6 +67,10 @@ router.delete('/xitiques/:id', deleteXitique);
 router.get('/insights', getInsights);
 
 // Settings & Household
+router.get('/settings/ai', aiSettings.get);
+router.put('/settings/ai', aiSettings.save);
+router.post('/settings/ai/test', aiSettings.test);
+router.delete('/settings/ai', aiSettings.remove);
 router.get('/settings', getSettings);
 router.post('/settings', upsertSetting);
 router.put('/households', updateHousehold);

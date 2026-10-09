@@ -225,7 +225,7 @@ const getDashboardSummary = async (req, res) => {
 
     // ── Fase 3: Normalizar settings ──────────────────────────────────────────────
     const householdRow = householdResult.rows[0] || {};
-    const settingsRows = settingsResult.rows || [];
+    const settingsRows = (settingsResult.rows || []).filter(row => !row.key.startsWith('ai_'));
     const settingsMap = settingsRows.reduce((acc, row) => {
       acc[row.key] = row.value;
       return acc;

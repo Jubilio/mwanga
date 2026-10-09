@@ -999,7 +999,8 @@
         "perfil": "Account and security",
         "financas": "Household and finances",
         "pref": "Language and appearance",
-        "notifications": "Notifications"
+        "notifications": "Notifications",
+        "ai": "AI / Binth"
       },
       "status": {
         "pending": "Unsaved changes",
@@ -2366,5 +2367,24 @@
       "binth": "Binth"
     },
     "ask_prompt": "Help me review the records from {{start}} to {{end}}: income {{income}}, expenses {{expenses}}. Identified priority: {{title}}. Evidence: {{body}}. Explain one next action grounded in these records; do not assume unrecorded earnings or returns."
+  },
+  "ai_settings": {
+    "title": "AI / Binth",
+    "scope": "This configuration belongs only to your account. Your personal key will be used in Binth chat and insights.",
+    "configured": "Personal key configured: {{provider}}.",
+    "default": "Binth uses the default Mwanga configuration.",
+    "unavailable": "Secure storage has not been configured on the server. Contact the administrator.",
+    "provider": "Provider",
+    "key": "New API key",
+    "privacy": "The key is stored encrypted on the server and is never returned to the interface. When using AI, your financial context is sent to the selected provider, which may charge for usage.",
+    "test_note": "The test checks authentication without sending financial data. It does not confirm credits, model availability or response generation.",
+    "test": "Test key",
+    "save": "Save key",
+    "remove": "Remove personal key",
+    "tested": "Provider accepted authentication. The key has not been saved yet.",
+    "saved": "Key saved. Binth now uses this configuration.",
+    "removed": "Key removed. Binth returns to the default configuration.",
+    "rejected": "The provider rejected the key. Check the key and its permissions.",
+    "error": "Unable to confirm the operation. Please retry."
   }
 }
