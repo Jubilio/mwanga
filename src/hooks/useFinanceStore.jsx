@@ -197,6 +197,13 @@ export function FinanceProvider({ children }) {
     }
 
     switch (type) {
+      case 'REFRESH_REALITY': {
+        const [accounts, settings] = await Promise.all([apiCall('accounts'), apiCall('settings')]);
+        const confirmed = normalizeSettings(settings);
+        dispatch({ type: 'SET_DATA', payload: { contas: accounts.map(mapAccount), settings: confirmed } });
+        try { await db.settings.update('current', confirmed); } catch { /* Confirmed server data remains available. */ }
+        return;
+      }
       case 'SAVE_JOURNEY': {
         // Unlike generic optimistic settings, a failed save must leave the saved
         // journey unchanged so the UI can report the error and retain the draft.

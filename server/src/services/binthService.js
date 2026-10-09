@@ -1,4 +1,5 @@
 const aiSettings = require('./aiSettings.service');
+const { getFreshness } = require('./realityReview.service');
 const { resolveLanguage, buildLanguageInstruction, englishFallback } = require('./binthLanguage');
 const { db } = require('../config/db');
 const ToolRegistry = require('./toolRegistry');
@@ -392,8 +393,10 @@ async function buildUserContext(householdId, userId) {
       assetsTotal
     });
 
+    const freshness = await getFreshness(householdId, userId);
+    const freshnessInstruction = `\nDATA FRESHNESS: ${JSON.stringify(freshness)}. Historical records are not proof of today's balances or commitments. If needsReview is true, clearly say that relevant data still needs confirmation and invite a financial reality review before recommending actions based on those values. Never invent missing movements or treat balance reconciliation as income or expense. A confirmation is self-reported, not bank verification.\n`;
     return {
-      text: formatUserContextText({
+      text: freshnessInstruction + formatUserContextText({
         userName,
         monthlyIncome,
         monthlyExpenses,
@@ -410,7 +413,7 @@ async function buildUserContext(householdId, userId) {
         goals,
         format
       }),
-      textMinimized: formatUserContextTextMinimized({
+      textMinimized: freshnessInstruction + formatUserContextTextMinimized({
         userName,
         monthlyIncome,
         monthlyExpenses,
@@ -422,6 +425,7 @@ async function buildUserContext(householdId, userId) {
         format
       }),
       summary: {
+        freshness,
         userName,
         monthlyIncome,
         monthlyExpenses,
@@ -963,11 +967,11 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
 
         if (res2.ok) {
           const data2 = await res2.json();
-          return parseBinthResponse(config.extract(data2) || '', userContext.summary);
+          return withFreshness(parseBinthResponse(config.extract(data2) || '', userContext.summary), userContext.summary, language);
         }
       }
       
-      return parseBinthResponse(raw, userContext.summary);
+      return withFreshness(parseBinthResponse(raw, userContext.summary), userContext.summary, language);
 
     } catch (err) {
       if (!apiKey && isAuthFailure(err.message)) {
@@ -980,7 +984,17 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
   }
 
   logger.warn('All Binth providers failed. Using fallback response.');
-  return language === 'en' ? englishFallback(userMessage, userContext.summary) : getFallbackResponse(userMessage, userContext.summary);
+  const fallback = language === 'en' ? englishFallback(userMessage, userContext.summary) : getFallbackResponse(userMessage, userContext.summary);
+  return withFreshness(fallback, userContext.summary, language);
+}
+
+function withFreshness(response, summary, language) {
+  if (summary.freshness?.needsReview) {
+    const notice = language === 'en' ? 'Some financial data still needs confirmation in your reality review. Historical records may differ from your situation today.' : 'Alguns dados financeiros ainda precisam de confirmação na revisão da tua realidade. Os registos históricos podem diferir da tua situação de hoje.';
+    response.message = `${notice} ${response.message}`;
+  }
+  response.data = { ...response.data, freshness: summary.freshness || null };
+  return response;
 }
 
 function getSafeUserName(name) {
@@ -1035,4 +1049,4 @@ function parseBinthResponse(raw, contextSummary = {}) {
   }, contextSummary);
 }
 
-module.exports = { callBinth, buildUserContext, getFallbackResponse };
+module.exports = { callBinth, buildUserContext, getFallbackResponse, withFreshness };

@@ -15,9 +15,15 @@ const { getDashboardSummary } = require('../controllers/dashboard.controller');
 const auth = require('../middleware/auth.middleware');
 const vslaRoutes = require('./vsla.routes');
 
+const realityReview = require('../controllers/realityReview.controller');
 const router = express.Router();
 
 router.use((req, res, next) => auth.authenticate(req, res, next));
+
+router.get('/reality-review', realityReview.get);
+router.post('/reality-review/visit', realityReview.visit);
+router.patch('/reality-review', realityReview.change);
+router.post('/reality-review/adjustments', realityReview.reconcile);
 
 // Dashboard Agregado — 1 chamada substitui 13 chamadas paralelas do frontend
 // Cache de 30s no Redis. Invalida automaticamente após mutações.

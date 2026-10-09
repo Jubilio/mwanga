@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
+import RealityReviewBanner from './RealityReviewBanner';
 import Toast, { useToast } from './Toast';
 import Sidebar from './layout/Sidebar';
 import NotificationPanel from './layout/NotificationPanel';
@@ -413,6 +414,7 @@ export default function Layout() {
 
           <main className="flex w-full max-w-full flex-1 flex-col overflow-hidden bg-cream pb-[calc(6rem+var(--sab))] dark:bg-midnight md:pb-8">
             <div className="flex w-full flex-1 flex-col p-4 pt-6 md:p-8">
+              <RealityReviewBanner />
               <Outlet context={{ showToast }} />
             </div>
           </main>
