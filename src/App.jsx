@@ -17,6 +17,7 @@ import Login from './pages/Login';
 const Transactions = lazy(() => import('./pages/Transactions'));
 const Budget = lazy(() => import('./pages/Budget'));
 const Habitacao = lazy(() => import('./pages/Habitacao'));
+const RealityReview = lazy(() => import('./pages/RealityReview'));
 const FinancialJourney = lazy(() => import('./pages/FinancialJourney'));
 const Goals = lazy(() => import('./pages/Goals'));
 const Simulators = lazy(() => import('./pages/Simulators'));
@@ -167,6 +168,7 @@ export default function App() {
                 <Route path="dividas" element={<ErrorBoundary context={ui("Dívidas")}><Dividas /></ErrorBoundary>} />
                 <Route path="credito" element={<ErrorBoundary context={ui("Crédito")}><Credito /></ErrorBoundary>} />
                 <Route path="simuladores" element={<ErrorBoundary context={ui("Simuladores")}><Simulators /></ErrorBoundary>} />
+                <Route path="rever-realidade" element={<RealityReview />} />
                 <Route path="jornada" element={<FinancialJourney />} />
                 <Route path="relatorio" element={<ErrorBoundary context={ui("Relatórios")}><Reports /></ErrorBoundary>} />
                 <Route path="patrimonio" element={<ErrorBoundary context={ui("Património")}><Patrimony /></ErrorBoundary>} />
