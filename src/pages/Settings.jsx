@@ -1,9 +1,10 @@
+import AiSettings from '../components/settings/AiSettings';
 import { useEffect, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
 import { usePushNotifications } from '../hooks/usePushNotifications';
-import { User, Wallet, Palette, Bell } from 'lucide-react';
+import { User, Wallet, Palette, Bell, Bot } from 'lucide-react';
 import SettingsHero from '../components/settings/SettingsHero';
 import TabPerfil from '../components/settings/TabPerfil';
 import TabFinancas from '../components/settings/TabFinancas';
@@ -73,7 +74,7 @@ export default function Settings() {
     reader.onload = () => setFormDirty(previous => ({ ...previous, profile_pic: reader.result }));
     reader.readAsDataURL(file);
   }
-  const tabs = [{ id: 'perfil', icon: User }, { id: 'financas', icon: Wallet }, { id: 'pref', icon: Palette }, { id: 'notifications', icon: Bell }];
+  const tabs = [{ id: 'perfil', icon: User }, { id: 'financas', icon: Wallet }, { id: 'pref', icon: Palette }, { id: 'notifications', icon: Bell }, { id: 'ai', icon: Bot }];
   const status = busy ? 'saving' : saveStatus === 'error' ? 'error' : pending ? 'pending' : 'saved';
   return <div className="settings-surface section-fade max-w-6xl mx-auto pb-28">
     <SettingsHero form={form} state={state} isSaving={busy} saveStatus={status} showAvatarGallery={showAvatarGallery} setShowAvatarGallery={setShowAvatarGallery} AVATARS={AVATARS} setFormDirty={setFormDirty} fileInputRef={fileInputRef} handleImageUpload={handleImageUpload} />
@@ -82,7 +83,8 @@ export default function Settings() {
     </nav>
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <div className="lg:col-span-8">
-        <p className="text-xs text-slate-500 mb-4">{t(activeTab === 'perfil' ? 'settings.reliable.account_scope' : activeTab === 'notifications' ? 'settings.reliable.device_scope' : 'settings.reliable.household_scope')}</p>
+        <p className="text-xs text-slate-500 mb-4">{t(['perfil', 'ai'].includes(activeTab) ? 'settings.reliable.account_scope' : activeTab === 'notifications' ? 'settings.reliable.device_scope' : 'settings.reliable.household_scope')}</p>
+        {activeTab === 'ai' ? <AiSettings /> : null}
         <fieldset disabled={busy} className="min-w-0 disabled:opacity-60">
           {activeTab === 'perfil' ? <TabPerfil form={form} setFormDirty={setFormDirty} state={state} /> : null}
           {activeTab === 'financas' ? <TabFinancas form={form} setFormDirty={setFormDirty} state={state} /> : null}

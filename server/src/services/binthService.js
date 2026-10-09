@@ -1,3 +1,4 @@
+const aiSettings = require('./aiSettings.service');
 const { getFreshness } = require('./realityReview.service');
 const { resolveLanguage, buildLanguageInstruction, englishFallback } = require('./binthLanguage');
 const { db } = require('../config/db');
@@ -477,8 +478,8 @@ async function buildUserContext(householdId, userId) {
 // ─── Multi-Provider Configuration ─────────────────────────────────────────────
 const PROVIDERS = {
   gemini: {
-    url: (key) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
-    headers: () => ({ 'Content-Type': 'application/json' }),
+    url: () => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+    headers: key => ({ 'Content-Type': 'application/json', 'x-goog-api-key': key }),
     body: (messages, system, tools = []) => ({
       system_instruction: { parts: [{ text: system }] },
       contents: messages.map(m => ({
@@ -888,6 +889,8 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
 
 // ─── Main Caller with Fallback ─────────────────────────────────────────────────
 async function callBinth({ messages, apiKey, provider = 'gemini', householdId, userId, language = 'pt' }) {
+  const personal = await aiSettings.credentials(householdId, userId);
+  if (personal) { apiKey = personal.apiKey; provider = personal.provider; }
   const userContext = await buildUserContext(householdId, userId);
   const userMessage = messages[messages.length - 1]?.content || '';
 
@@ -976,7 +979,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
         logger.warn({ provider: p }, 'Binth provider temporarily disabled after auth failure');
         continue;
       }
-      logger.warn({ provider: p, error: err.message }, 'Binth provider call failed');
+      logger.warn({ provider: p }, 'Binth provider call failed');
     }
   }
 
