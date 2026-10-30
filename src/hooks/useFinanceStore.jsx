@@ -1,7 +1,6 @@
 import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useReducer, useEffect, useCallback } from 'react';
 import { FinanceContext } from './FinanceContext';
-import { generateDemoData } from '../utils/calculations';
 import { db } from '../db/db';
 import { normalizeCategory } from '../utils/categories';
 import { JOURNEY_SETTING_KEY } from '../utils/financialJourney';
@@ -20,6 +19,7 @@ import {
   apiCall
 } from '../services/finance.service';
 import { getToken } from '../utils/authToken';
+import { hideSplash } from '../utils/splash';
 
 const defaultState = {
   transacoes: [],
@@ -37,6 +37,7 @@ const defaultState = {
   user: null,
   darkMode: true,
   loading: true,
+  loadError: null,
 };
 
 function createInitialState(darkMode) {
@@ -44,6 +45,25 @@ function createInitialState(darkMode) {
 }
 
 let fetchPromise = null;
+
+// Last copy saved on this device, shown when the server cannot be reached.
+async function loadCachedData() {
+  try {
+    const [transacoes, budgets, metas, rendas, settings, profile] = await Promise.all([
+      db.transacoes.toArray(), db.budgets.toArray(), db.metas.toArray(), db.rendas.toArray(),
+      db.settings.get('current'), db.settings.get('user_profile')
+    ]);
+    const { id: _settingsId, ...cachedSettings } = settings || {};
+    const { id: _profileId, ...cachedUser } = profile || {};
+    return {
+      transacoes, budgets, metas, rendas,
+      ...(settings ? { settings: normalizeSettings(cachedSettings) } : {}),
+      user: profile ? cachedUser : null
+    };
+  } catch {
+    return {};
+  }
+}
 
 async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
   if (fetchPromise) return fetchPromise;
@@ -95,7 +115,8 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
           loanApplications: Array.isArray(loanApplications) ? loanApplications : [],
           loans: Array.isArray(loans) ? loans : [],
           settings: mergedSettings,
-          user: resolvedUser
+          user: resolvedUser,
+          loadError: null
         }
       });
 
@@ -111,11 +132,16 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
       fetchPromise = null;
       return resolvedUser;
     } catch (err) {
-      console.error('Session load failed, using demo data.', err);
-      const demo = generateDemoData();
-      dispatch({ type: 'SET_DATA', payload: { ...demo, user: preferredUser || null } });
+      // Never show demo or empty figures as if they were the household's data.
+      console.error('Session load failed, showing the cached copy.', err);
+      const cached = await loadCachedData();
+      const user = preferredUser || cached.user || null;
+      dispatch({
+        type: 'SET_DATA',
+        payload: { ...cached, user, loadError: { status: err?.status ?? 0, message: err?.message || String(err) } }
+      });
       fetchPromise = null;
-      return preferredUser || null;
+      return user;
     }
   })();
 
@@ -182,6 +208,11 @@ export function FinanceProvider({ children }) {
   useEffect(() => {
     fetchSessionData(dispatch);
   }, []);
+
+  // Keep the native splash up while the first load waits for the server.
+  useEffect(() => {
+    if (!state.loading) hideSplash();
+  }, [state.loading]);
 
   useEffect(() => {
     localStorage.setItem('mwanga-dark', state.darkMode);

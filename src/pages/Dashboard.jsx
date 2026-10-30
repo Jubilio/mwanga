@@ -18,6 +18,7 @@ import {
 // Sub-components
 import JourneySummary from '../components/journey/JourneySummary';
 import FirstStepsCard from '../components/dashboard/FirstStepsCard';
+import DataLoadErrorBanner from '../components/dashboard/DataLoadErrorBanner';
 import TrialBanner from '../components/dashboard/TrialBanner';
 import DashboardHero from '../components/dashboard/DashboardHero';
 import DashboardQuickActions from '../components/dashboard/DashboardQuickActions';
@@ -189,9 +190,11 @@ export default function Dashboard() {
         itemVariants={itemVariants}
       />
 
+      <DataLoadErrorBanner />
+
       <TrialBanner />
 
-      <FirstStepsCard />
+      {!state.loadError && <FirstStepsCard />}
 
       <JourneySummary />
 
