@@ -99,6 +99,7 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/webauthn/verify-authentication', authLimiter);
 
 // 5. Body Parsing & Sanitization
 // 1MB é mais que suficiente para uma API financeira e reduz o risco de DoS por payload.

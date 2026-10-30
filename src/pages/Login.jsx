@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
-import { Wallet, LogIn, UserPlus, Lock, Mail, User } from 'lucide-react';
+import { Wallet, LogIn, UserPlus, Lock, Mail, User, Users, Fingerprint } from 'lucide-react';
+import { passkeysAvailable, loginWithPasskey } from '../utils/passkeys';
 import { useFinance } from '../hooks/useFinance';
 import MwangaLogo from '../components/MwangaLogo';
+import { setToken } from '../utils/authToken';
 
 function getApiUrl() {
   let apiUrl = import.meta.env.VITE_API_URL || '';
@@ -25,8 +27,9 @@ export default function Login() {
   useUiLanguage();
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const [isLogin, setIsLogin] = useState(searchParams.get('modo') !== 'registo');
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const inviteFromLink = searchParams.get('convite') || '';
+  const [isLogin, setIsLogin] = useState(searchParams.get('modo') !== 'registo' && !inviteFromLink);
+  const [form, setForm] = useState({ name: '', email: '', password: '', inviteCode: inviteFromLink });
   const [loading, setLoading] = useState(false);
   const { reloadData } = useFinance();
   const navigate = useNavigate();
@@ -39,7 +42,7 @@ export default function Login() {
     const endpoint = isLogin ? '/auth/login' : '/auth/register';
     const body = isLogin
       ? { email: form.email, password: form.password }
-      : form;
+      : { name: form.name, email: form.email, password: form.password, ...(form.inviteCode.trim() ? { inviteCode: form.inviteCode.trim().toUpperCase() } : {}) };
 
     try {
       const resp = await fetch(`${getApiUrl()}${endpoint}`, {
@@ -53,13 +56,29 @@ export default function Login() {
         throw new Error(getApiErrorMessage(data, t('auth.forgot.error_fallback')));
       }
 
-      localStorage.setItem('mwanga-token', data.token);
+      setToken(data.token);
       await reloadData({ preferredUser: data.user });
 
       showToast(isLogin ? t('auth.login.toasts.success') : t('auth.register.toasts.success'));
       navigate('/');
     } catch (err) {
       showToast(`Erro: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handlePasskeyLogin() {
+    if (!form.email) { showToast(t('auth.login.passkey_email_needed')); return; }
+    setLoading(true);
+    try {
+      const data = await loginWithPasskey(form.email);
+      setToken(data.token);
+      await reloadData({ preferredUser: data.user });
+      showToast(t('auth.login.toasts.success'));
+      navigate('/');
+    } catch (err) {
+      showToast(`Erro: ${err.response?.data?.error || t('auth.login.passkey_failed')}`);
     } finally {
       setLoading(false);
     }
@@ -94,7 +113,7 @@ export default function Login() {
         throw new Error(getApiErrorMessage(data, t('auth.login.toasts.google_failed')));
       }
 
-      localStorage.setItem('mwanga-token', data.token);
+      setToken(data.token);
       await reloadData({ preferredUser: data.user });
 
       showToast(data.created ? t('auth.register.toasts.google_success') : t('auth.login.toasts.welcome_google'));
@@ -222,6 +241,26 @@ export default function Login() {
             </div>
           )}
 
+          {!isLogin && (
+            <div>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Users size={14} /> {t('auth.register.invite_label')}
+              </label>
+              <input
+                type="text"
+                maxLength={16}
+                autoCapitalize="characters"
+                className="form-input"
+                placeholder={t('auth.register.invite_placeholder')}
+                value={form.inviteCode}
+                onChange={(e) => setForm({ ...form, inviteCode: e.target.value })}
+              />
+              <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--color-muted)' }}>
+                {t('auth.register.invite_tip')}
+              </p>
+            </div>
+          )}
+
           <div>
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Mail size={14} /> {t('auth.login.email_label')}
@@ -293,6 +332,18 @@ export default function Login() {
           >
             {loading ? t('auth.login.btn_processing') : isLogin ? <><LogIn size={18} /> {t('auth.login.btn_login')}</> : <><UserPlus size={18} /> {t('auth.register.btn_register')}</>}
           </button>
+
+          {isLogin && passkeysAvailable() && (
+            <button
+              type="button"
+              disabled={loading}
+              onClick={handlePasskeyLogin}
+              className="btn btn-ghost"
+              style={{ width: '100%', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            >
+              <Fingerprint size={18} /> {t('auth.login.passkey_btn')}
+            </button>
+          )}
         </form>
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--color-muted)' }}>

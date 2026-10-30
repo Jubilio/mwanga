@@ -4,13 +4,16 @@ import { useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
 import { usePushNotifications } from '../hooks/usePushNotifications';
-import { User, Wallet, Palette, Bell, Bot } from 'lucide-react';
+import { User, Users, Wallet, Palette, Bell, Bot } from 'lucide-react';
 import SettingsHero from '../components/settings/SettingsHero';
 import TabPerfil from '../components/settings/TabPerfil';
 import TabFinancas from '../components/settings/TabFinancas';
 import TabPreferences from '../components/settings/TabPreferences';
 import SettingsSidebar from '../components/settings/SettingsSidebar';
 import PasswordSettings from '../components/settings/PasswordSettings';
+import PasskeySettings from '../components/settings/PasskeySettings';
+import IdentitySettings from '../components/settings/IdentitySettings';
+import HouseholdSettings from '../components/settings/HouseholdSettings';
 import { DEFAULT_AVATAR, settingsForm, changedSettings, validateSettings, settingsActions } from '../utils/settingsForm';
 
 const AVATARS = [DEFAULT_AVATAR, 'https://ui-avatars.com/api/?name=Fam&background=20c997&color=fff&size=128', 'https://ui-avatars.com/api/?name=Mwanga&background=0a4d68&color=fff&size=128', 'https://ui-avatars.com/api/?name=Admin&background=6c757d&color=fff&size=128'];
@@ -74,7 +77,7 @@ export default function Settings() {
     reader.onload = () => setFormDirty(previous => ({ ...previous, profile_pic: reader.result }));
     reader.readAsDataURL(file);
   }
-  const tabs = [{ id: 'perfil', icon: User }, { id: 'financas', icon: Wallet }, { id: 'pref', icon: Palette }, { id: 'notifications', icon: Bell }, { id: 'ai', icon: Bot }];
+  const tabs = [{ id: 'perfil', icon: User }, { id: 'financas', icon: Wallet }, { id: 'familia', icon: Users }, { id: 'pref', icon: Palette }, { id: 'notifications', icon: Bell }, { id: 'ai', icon: Bot }];
   const status = busy ? 'saving' : saveStatus === 'error' ? 'error' : pending ? 'pending' : 'saved';
   return <div className="settings-surface section-fade max-w-6xl mx-auto pb-28">
     <SettingsHero form={form} state={state} isSaving={busy} saveStatus={status} showAvatarGallery={showAvatarGallery} setShowAvatarGallery={setShowAvatarGallery} AVATARS={AVATARS} setFormDirty={setFormDirty} fileInputRef={fileInputRef} handleImageUpload={handleImageUpload} />
@@ -85,12 +88,13 @@ export default function Settings() {
       <div className="lg:col-span-8">
         <p className="text-xs text-slate-500 mb-4">{t(['perfil', 'ai'].includes(activeTab) ? 'settings.reliable.account_scope' : activeTab === 'notifications' ? 'settings.reliable.device_scope' : 'settings.reliable.household_scope')}</p>
         {activeTab === 'ai' ? <AiSettings /> : null}
+        {activeTab === 'familia' ? <HouseholdSettings showToast={showToast} /> : null}
         <fieldset disabled={busy} className="min-w-0 disabled:opacity-60">
           {activeTab === 'perfil' ? <TabPerfil form={form} setFormDirty={setFormDirty} state={state} /> : null}
           {activeTab === 'financas' ? <TabFinancas form={form} setFormDirty={setFormDirty} state={state} /> : null}
           {['pref', 'notifications'].includes(activeTab) ? <TabPreferences section={activeTab} form={form} setFormDirty={setFormDirty} state={state} dispatch={dispatch} pushProps={pushProps} showToast={showToast} /> : null}
         </fieldset>
-        {activeTab === 'perfil' ? <PasswordSettings dispatch={dispatch} /> : null}
+        {activeTab === 'perfil' ? <><PasswordSettings dispatch={dispatch} /><PasskeySettings showToast={showToast} /><IdentitySettings showToast={showToast} /></> : null}
         <section className="glass-card p-5 mt-6" aria-live="polite">
           <p className="text-sm font-bold">{t(`settings.reliable.status.${status}`)}</p>
           {error ? <p role="alert" className="text-sm text-red-600 dark:text-red-400 mt-2">{t(`settings.reliable.${error}`)}</p> : null}

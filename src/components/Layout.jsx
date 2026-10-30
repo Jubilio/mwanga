@@ -49,6 +49,7 @@ import MwangaLogo from './MwangaLogo';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useSmsSync } from '../hooks/useSmsSync';
 import { SMS_INBOX_ENABLED } from '../config/features';
+import { getToken } from '../utils/authToken';
 
   // Dynamic items will be generated inside the component using t()
 
@@ -135,7 +136,7 @@ export default function Layout() {
     let timeoutId = null;
 
     const fetchNotifications = async () => {
-      const token = localStorage.getItem('mwanga-token');
+      const token = getToken();
       if (!token) {
         setNotifications([]);
         scheduleNext();

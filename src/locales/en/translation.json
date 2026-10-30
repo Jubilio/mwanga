@@ -30,7 +30,7 @@
   "sidebar": {
     "pro_locked": {
       "title": "PRO Feature",
-      "desc_sms": "Import bank SMS automatically and let AI extract transactions for you.",
+      "desc_sms": "Paste bank SMS and let AI extract the transactions for you.",
       "desc_generic": "This feature is only available in the PRO plan.",
       "exclusive": "Exclusive plan feature",
       "upgrade_btn": "✦ Upgrade to PRO",
@@ -1002,7 +1002,9 @@
         "blocked_desc": "The browser blocked alerts. To enable, click the settings (or lock) icon in the address bar above and change 'Notifications' to 'Allow'.",
         "blocked_btn": "See How to Unblock",
         "debt_reminder": "Debt reminders",
-        "debt_reminder_tip": "Receive reminders about upcoming debt payments."
+        "debt_reminder_tip": "Receive reminders about upcoming debt payments.",
+        "test_btn": "Send test notification",
+        "test_sent": "Test notification sent."
       }
     },
     "sidebar": {
@@ -1036,7 +1038,8 @@
         "financas": "Household and finances",
         "pref": "Language and appearance",
         "notifications": "Notifications",
-        "ai": "AI / Binth"
+        "ai": "AI / Binth",
+        "familia": "Family"
       },
       "status": {
         "pending": "Unsaved changes",
@@ -1092,6 +1095,54 @@
       "push_unsupported": "Push notifications are unavailable in this environment.",
       "journey_title": "Your plan in Mwanga",
       "journey_note": "Set priorities and track goals, habits and learning in your Financial journey."
+    },
+    "household": {
+      "title": "Family members",
+      "description": "Invite other people to share the household's finances.",
+      "members": "Already in the household",
+      "invite": "Create invite code",
+      "code_label": "Invite code",
+      "code_note": "Valid for 48 hours. The person enters this code when creating their Mwanga account.",
+      "share": "Share",
+      "copy": "Copy code",
+      "copied": "Copied.",
+      "error": "Could not create the invite.",
+      "share_text": "Join our family on Mwanga. Create your account and use the invite code {{code}}."
+    },
+    "identity": {
+      "title": "Identity verification",
+      "description": "Send your documents to apply for credit through Mwanga.",
+      "type_label": "Document type",
+      "upload": "Upload document",
+      "uploading": "Uploading...",
+      "uploaded": "Document sent. We will review it soon.",
+      "error": "Could not upload the document.",
+      "too_large": "The file must be under 5 MB.",
+      "sent": "Sent",
+      "missing": "Missing",
+      "privacy": "Documents are only seen by the Mwanga team to verify your identity.",
+      "status": {
+        "pending": "Status: not sent yet",
+        "in_review": "Status: under review",
+        "approved": "Status: identity verified",
+        "rejected": "Status: rejected, please send new documents"
+      },
+      "types": {
+        "bi_frente": "ID card (front)",
+        "bi_verso": "ID card (back)",
+        "selfie": "Selfie with ID card",
+        "comprovativo_residencia": "Proof of address",
+        "comprovativo_rendimento": "Proof of income"
+      }
+    },
+    "passkeys": {
+      "title": "Biometric sign-in",
+      "description": "Use this device's fingerprint, face or PIN to sign in without a password.",
+      "add": "Turn on for this device",
+      "remove": "Remove",
+      "device": "Device added on {{date}}",
+      "enabled": "Biometric sign-in is on.",
+      "error": "Could not complete the action."
     }
   },
   "pricing": {
@@ -1343,7 +1394,10 @@
         "google_failed": "Google authentication failed",
         "google_unavailable": "Google login unavailable. Confirm the configuration of this origin: {{origin}}.",
         "welcome_google": "Welcome via Google!"
-      }
+      },
+      "passkey_btn": "Sign in with biometrics",
+      "passkey_email_needed": "Enter your email first.",
+      "passkey_failed": "Could not sign in with biometrics."
     },
     "register": {
       "title": "Create account",
@@ -1359,7 +1413,10 @@
       "toasts": {
         "success": "Account created successfully!",
         "google_success": "Account created with Google and session started!"
-      }
+      },
+      "invite_label": "Invite code (optional)",
+      "invite_placeholder": "E.g. AB12CD34",
+      "invite_tip": "If someone in your family invited you, enter the code to join the same household."
     },
     "forgot": {
       "title": "Recover password",

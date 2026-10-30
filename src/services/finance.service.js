@@ -1,4 +1,5 @@
 import { normalizeCategory } from '../utils/categories';
+import { getToken, clearToken } from '../utils/authToken';
 
 // API Base URL
 let FINANCE_API_URL = import.meta.env.VITE_API_URL || '';
@@ -155,7 +156,7 @@ export async function fetchAllData(headers, dispatch) {
     const res = await fetch(`${FINANCE_API_URL}/dashboard-summary`, { headers });
     
     if (res.status === 401) {
-      localStorage.removeItem('mwanga-token');
+      clearToken();
       if (dispatch) dispatch({ type: 'RESET_SESSION' });
       return null;
     }
@@ -192,7 +193,7 @@ export async function fetchAllData(headers, dispatch) {
     const results = await batchFetch(
       endpoints.map(url => () => fetch(url, { headers }).then(r => {
         if (r.status === 401) {
-          localStorage.removeItem('mwanga-token');
+          clearToken();
           if (dispatch) dispatch({ type: 'RESET_SESSION' });
           return [];
         }
@@ -215,7 +216,7 @@ export async function fetchAllData(headers, dispatch) {
 // --- Generic API call helper ---
 
 export async function apiCall(endpoint, method = 'GET', body = null, headers = {}) {
-  const token = localStorage.getItem('mwanga-token');
+  const token = getToken();
   const fullHeaders = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
@@ -229,7 +230,7 @@ export async function apiCall(endpoint, method = 'GET', body = null, headers = {
   });
 
   if (response.status === 401) {
-    localStorage.removeItem('mwanga-token');
+    clearToken();
     window.location.reload();
     throw new Error('Unauthorized');
   }

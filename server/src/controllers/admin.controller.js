@@ -138,6 +138,28 @@ const getPlatformStats = async (req, res) => {
   }
 };
 
+const getCreditApplications = async (req, res) => {
+  try {
+    const result = await db.execute({
+      sql: `
+        SELECT a.id, a.amount, a.months, a.partner, a.purpose, a.status, a.created_at,
+               a.household_id, u.name AS user_name, u.email AS user_email
+        FROM public.credit_applications a
+        LEFT JOIN LATERAL (
+          SELECT name, email FROM public.users WHERE household_id = a.household_id ORDER BY id LIMIT 1
+        ) u ON true
+        WHERE a.status IN ('pending', 'approved')
+        ORDER BY a.created_at DESC
+      `,
+      args: []
+    });
+    res.json(result.rows);
+  } catch (error) {
+    logger.error('Error fetching credit applications for admin:', error);
+    res.status(500).json({ error: 'Falha ao buscar pedidos de crédito' });
+  }
+};
+
 const updateKycStatus = async (req, res) => {
   try {
     const { userId, status } = req.body;
@@ -196,6 +218,7 @@ const broadcastNotification = async (req, res) => {
 
 module.exports = {
   getUsers,
+  getCreditApplications,
   getPlatformStats,
   updateKycStatus,
   broadcastNotification
