@@ -1,5 +1,6 @@
 import axios from 'axios';
 import i18n from '../i18n';
+import { getToken } from './authToken';
 
 const envApiUrl = (import.meta.env.VITE_API_URL || '').trim();
 const isDev = import.meta.env.DEV;
@@ -25,7 +26,7 @@ const api = axios.create({
 // Interceptor for Auth
 api.interceptors.request.use((config) => {
   config.headers['Accept-Language'] = i18n.resolvedLanguage || 'pt';
-  const token = localStorage.getItem('mwanga-token');
+  const token = getToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

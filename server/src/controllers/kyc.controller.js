@@ -80,10 +80,11 @@ const getMyDocuments = async (req, res) => {
   try {
     const userId = req.user.id;
     const result = await db.execute({
-      sql: 'SELECT * FROM kyc_documents WHERE user_id = ? ORDER BY uploaded_at DESC',
+      sql: 'SELECT id, document_type, verified, uploaded_at FROM kyc_documents WHERE user_id = ? ORDER BY uploaded_at DESC',
       args: [userId]
     });
-    res.json(result.rows);
+    const userResult = await db.execute({ sql: 'SELECT kyc_status FROM users WHERE id = ?', args: [userId] });
+    res.json({ status: userResult.rows[0]?.kyc_status || 'pending', documents: result.rows });
   } catch (error) {
     logger.error('Error fetching KYC documents:', error);
     res.status(500).json({ error: 'Falha ao buscar documentos' });

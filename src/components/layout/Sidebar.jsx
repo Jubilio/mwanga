@@ -7,9 +7,10 @@ import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
 import MwangaLogo from '../MwangaLogo';
 import { getEffectiveTier, hasFeatureAccess } from '../../config/features';
+import { clearToken } from '../../utils/authToken';
 
 // ─── PRO Badge ───────────────────────────────────────────────────────────────
-function ProBadge() {
+function ProBadge({ label = 'PRO' }) {
   useUiLanguage();
   return (
     <span style={{
@@ -17,7 +18,7 @@ function ProBadge() {
       background: 'linear-gradient(135deg, #F59E0B, #F97316)',
       color: '#000', borderRadius: 4, padding: '2px 6px',
       flexShrink: 0,
-    }}>PRO</span>
+    }}>{label}</span>
   );
 }
 
@@ -110,7 +111,7 @@ export default function Sidebar({ isOpen, onClose }) {
   const isFree = tier === 'free';
 
   const handleLogout = () => {
-    localStorage.removeItem('mwanga-token');
+    clearToken();
     window.location.reload();
   };
 
@@ -143,13 +144,13 @@ export default function Sidebar({ isOpen, onClose }) {
     {
       section: t('layout.pro_intelligence'),
       items: [
-        { icon: '◈', label: t('layout.insights'), to: '/insights', pro: true },
-        { icon: '⇩', label: t('layout.sms_import'), to: '/sms-import', pro: true, highlight: true },
-        { icon: '◧', label: t('layout.patrimony'), to: '/patrimonio', pro: true },
-        { icon: '⧉', label: t('layout.simulators'), to: '/simuladores', pro: true },
-        { icon: '⏳', label: ui("Máquina do Tempo"), to: '/time-machine', pro: true },
-        { icon: '👑', label: ui("Mordomia"), to: '/mordomia', pro: true },
-        { icon: '↗', label: t('layout.report'), to: '/relatorio', pro: true },
+        { icon: '◈', label: t('layout.insights'), to: '/insights' },
+        { icon: '⇩', label: t('layout.sms_import'), to: '/sms-import', highlight: true },
+        { icon: '◧', label: t('layout.patrimony'), to: '/patrimonio' },
+        { icon: '⧉', label: t('layout.simulators'), to: '/simuladores' },
+        { icon: '⏳', label: ui("Máquina do Tempo"), to: '/time-machine' },
+        { icon: '👑', label: ui("Mordomia"), to: '/mordomia' },
+        { icon: '↗', label: t('layout.report'), to: '/relatorio' },
       ],
     },
   ];
@@ -244,7 +245,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 {group.section}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {group.items.map(item =>
+                {group.items.map(item => ({ ...item, pro: item.to !== '/' && !hasFeatureAccess('free', item.to.slice(1)) })).map(item =>
                   item.pro ? (
                     <NavLink
                       key={item.to}
@@ -271,7 +272,9 @@ export default function Sidebar({ isOpen, onClose }) {
                             color: isActive ? '#F59E0B' : item.highlight ? '#e0a840' : '#4a5568',
                             fontWeight: isActive ? 600 : item.highlight ? 500 : 400,
                           }}>{ui(item.label)}</span>
-                          {!hasFeatureAccess(tier, item.to.slice(1)) && <ProBadge />}
+                          {!hasFeatureAccess(tier, item.to.slice(1)) && (
+                            <ProBadge label={hasFeatureAccess('growth', item.to.slice(1)) ? t('pricing.plans.growth.name').toUpperCase() : 'PRO'} />
+                          )}
                         </>
                       )}
                     </NavLink>

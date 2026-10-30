@@ -10,9 +10,7 @@ router.use((req, res, next) => auth.authenticate(req, res, next));
 
 router.get('/', notificationController.list);
 router.post('/', notificationController.create);
-router.post('/subscribe', notificationController.subscribe);
-router.post('/unsubscribe', notificationController.unsubscribe);
-router.post('/push-subscriptions', notificationController.subscribe); // Alias for frontend compatibility
+router.post('/push-subscriptions', notificationController.subscribe);
 router.delete('/push-subscriptions', notificationController.unsubscribe); // RESTful unsubscription
 
 // Reserved literal paths should be defined BEFORE parameterized routes to ensure they match first.
