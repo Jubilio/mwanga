@@ -22,6 +22,18 @@ on:
         required: true
         default: '1.0.0'
         type: string
+      play_track:
+        description: Send the AAB to Google Play (bundle mode only; needs PLAY_SERVICE_ACCOUNT_JSON)
+        required: true
+        default: none
+        type: choice
+        options: [none, internal, alpha, beta, production]
+      play_status:
+        description: Play release status (use draft until the app is published once)
+        required: true
+        default: draft
+        type: choice
+        options: [draft, completed]
 permissions:
   contents: read
 jobs:
@@ -72,6 +84,24 @@ jobs:
             android/app/build/outputs/apk/**/*.apk
             android/app/build/outputs/bundle/**/*.aab
           if-no-files-found: error
+      - name: Check Google Play upload
+        if: inputs.play_track != 'none'
+        env:
+          BUILD_MODE: ${{ inputs.mode }}
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          test "$BUILD_MODE" = bundle || { echo "Google Play requires mode=bundle"; exit 1; }
+          test -n "$PLAY_JSON" || { echo "Missing secret PLAY_SERVICE_ACCOUNT_JSON"; exit 1; }
+      - name: Upload to Google Play
+        if: inputs.play_track != 'none'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.mwanga.app
+          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+          track: ${{ inputs.play_track }}
+          status: ${{ inputs.play_status }}
+          releaseName: ${{ inputs.version_name }} (${{ inputs.version_code }})
       - name: Remove signing file
         if: always()
         run: rm -f "$RUNNER_TEMP/mwanga.jks"

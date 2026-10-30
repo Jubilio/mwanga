@@ -53,7 +53,7 @@ Para release/bundle, configure os seguintes Repository Secrets:
 - `ANDROID_KEY_ALIAS`
 - `ANDROID_KEY_PASSWORD`
 
-O workflow não publica releases nem envia a aplicação à Play Store.
+Com `mode=bundle` e `play_track` diferente de `none`, o workflow envia o AAB ao Google Play. Veja [GOOGLE_PLAY.md](GOOGLE_PLAY.md).
 As notificações nativas ainda dependem da configuração Firebase `google-services.json`.
 As permissões SMS existentes precisam de revisão para o canal de distribuição escolhido e teste num dispositivo.
 
