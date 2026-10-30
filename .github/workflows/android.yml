@@ -73,6 +73,15 @@ jobs:
           echo "MWANGA_KEYSTORE_PASSWORD=$STORE_PASSWORD" >> "$GITHUB_ENV"
           echo "MWANGA_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
           echo "MWANGA_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
+      - name: Add Firebase config (native push)
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          else
+            echo "::warning::GOOGLE_SERVICES_JSON secret not set; the app will build without native push."
+          fi
       - run: chmod +x android/gradlew
       - name: Build Android
         env:

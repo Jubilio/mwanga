@@ -1,5 +1,6 @@
 const webpush = require('web-push');
-const admin = require('firebase-admin');
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getMessaging } = require('firebase-admin/messaging');
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
 const { getNotificationSchema } = require('./notificationSchema.service');
@@ -12,8 +13,8 @@ try {
     : null;
 
   if (serviceAccount) {
-    firebaseApp = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
+    firebaseApp = initializeApp({
+      credential: cert(serviceAccount)
     });
     logger.info('Firebase Admin initialized successfully.');
   } else {
@@ -178,7 +179,7 @@ async function sendRawPush(payload, subscription, options = {}) {
         throw new Error('Firebase not initialized');
       }
 
-      await admin.messaging().send({
+      await getMessaging(firebaseApp).send({
         token: subscription.endpoint,
         notification: {
           title: payload.title,

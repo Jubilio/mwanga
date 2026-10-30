@@ -54,7 +54,21 @@ Para release/bundle, configure os seguintes Repository Secrets:
 - `ANDROID_KEY_PASSWORD`
 
 Com `mode=bundle` e `play_track` diferente de `none`, o workflow envia o AAB ao Google Play. Veja [GOOGLE_PLAY.md](GOOGLE_PLAY.md).
-As notificações nativas ainda dependem da configuração Firebase `google-services.json`.
+As notificações nativas precisam do Firebase configurado (ver abaixo).
+
+## Notificações nativas (Firebase)
+
+O Android só entrega push nativo através do Firebase Cloud Messaging (FCM), que é gratuito.
+
+1. Em [console.firebase.google.com](https://console.firebase.google.com), crie um projeto (o Google Analytics pode ficar desligado).
+2. Adicione uma app **Android** com o package `com.mwanga.app` e descarregue o `google-services.json`.
+3. Para builds locais, coloque o ficheiro em `android/app/google-services.json` (está no `.gitignore`).
+4. Para o workflow, crie o secret `GOOGLE_SERVICES_JSON` no GitHub com o conteúdo desse ficheiro.
+5. No Firebase, vá a **Definições do projeto → Contas de serviço → Gerar nova chave privada**. Isto descarrega um JSON.
+6. No Render, crie a variável `FIREBASE_SERVICE_ACCOUNT` com esse JSON numa só linha. Ao arrancar, o log deve mostrar `Firebase Admin initialized successfully.`
+7. Gere um novo APK/AAB e, na app, ative as notificações em Definições.
+
+O JSON da conta de serviço é secreto: nunca o coloque no repositório.
 As permissões SMS existentes precisam de revisão para o canal de distribuição escolhido e teste num dispositivo.
 
 ## Validação antes de distribuir
