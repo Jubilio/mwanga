@@ -2496,7 +2496,19 @@
     "history_note": "Shows the household’s latest 50 adjustments. Each stores the author, recording date, reference date, balances and reason. Adjustments are excluded from income and expenses.",
     "finish": "Finish review",
     "back": "Back to dashboard",
-    "recorded_by": "Recorded by user {{user}} on {{date}}"
+    "recorded_by": "Recorded by user {{user}} on {{date}}",
+    "restart_title": "Reset and restart balances",
+    "restart_hint": "Haven't used Mwanga for a while? Set every account to zero and enter what you have today, all at once.",
+    "restart_open": "Reset accounts and restart",
+    "restart_note": "Every account starts at zero. Enter each account's real balance today and leave empty ones at zero. Old transactions and history are kept; each difference is recorded as a reconciliation adjustment, not as income or expense.",
+    "restart_default_reason": "Restart after a period without using the app",
+    "restart_review": "Review changes",
+    "restart_confirm_question": "Replace the balances of all accounts with these values?",
+    "restart_confirm_note": "The previous balances stay in the reconciliation history. To fix something later, make a new adjustment.",
+    "restart_apply": "Yes, replace balances",
+    "restart_back": "Go back and edit",
+    "restarted": "Balances replaced. The previous history was kept.",
+    "invalid_restart": "Enter a valid balance for each account (cash cannot be negative) and a reason of at least 3 characters."
   },
   "landing": {
     "login": "Sign in",

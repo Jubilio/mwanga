@@ -38,6 +38,6 @@ export default function RealityReviewBanner() {
   return <section className="glass-card p-5 mb-6 border border-amber-500/30" aria-label={t('reality.banner_title')}>
     <h2 className="font-black text-lg">{t('reality.banner_title')}</h2>
     <p className="text-sm text-slate-500 mt-2">{t('reality.banner_body')}</p>
-    <div className="flex flex-wrap gap-3 mt-4"><Link to="/rever-realidade" className="btn btn-primary">{t('reality.review_now')}</Link><button disabled={busy} onClick={() => defer().catch(() => {})} className="btn btn-ghost">{t('reality.later')}</button></div>
+    <div className="flex flex-wrap gap-3 mt-4"><Link to="/rever-realidade" className="btn btn-primary">{t('reality.review_now')}</Link><Link to="/rever-realidade?recomecar=1" className="btn btn-ghost">{t('reality.restart_open')}</Link><button disabled={busy} onClick={() => defer().catch(() => {})} className="btn btn-ghost">{t('reality.later')}</button></div>
   </section>;
 }

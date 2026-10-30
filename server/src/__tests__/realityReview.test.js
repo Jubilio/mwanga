@@ -1,7 +1,7 @@
 jest.mock('../config/db', () => ({ db: { withTransaction: jest.fn() } }));
 const { db } = require('../config/db');
 const service = require('../services/realityReview.service');
-const { adjustmentSchema } = require('../controllers/realityReview.controller');
+const { adjustmentSchema, resetSchema } = require('../controllers/realityReview.controller');
 const id = '35b7a533-a635-4110-9a0a-a3c0522c21f8';
 const now = new Date('2026-10-08T06:42:00Z');
 const payload = { requestId: id, accountId: 7, expectedBalance: 10000, balance: 6500, asOf: '2026-10-08', reason: 'Confirmed bank balance' };
@@ -84,4 +84,48 @@ test('refuses to finish an incomplete review', async () => {
 });
 test.each([{ balance: Infinity }, { balance: 1.234 }, { accountId: null, balance: -1 }, { reason: '' }, { asOf: '2026-02-30' }, { userId: 999 }])('validates adjustment data %j', patch => {
   expect(() => adjustmentSchema.parse({ ...payload, ...patch })).toThrow();
+});
+const resetId = '6f1c2a0e-3b7d-4c11-9e2a-0d5b8c4f7a21';
+const resetPayload = { requestId: resetId, asOf: '2026-10-08', reason: 'Recomeço após pausa', balances: [{ accountId: null, expectedBalance: 100, balance: 0 }, { accountId: 7, expectedBalance: 10000, balance: 2500 }] };
+test('restarts every balance in one transaction with one audit record per change', async () => {
+  const execute = transaction();
+  const result = await service.resetBalances(42, 3, resetPayload, now);
+  expect(result.adjustments.map(item => [item.accountId, item.previousBalance, item.newBalance, item.batchId])).toEqual([[null, 100, 0, resetId], [7, 10000, 2500, resetId]]);
+  const queries = execute.mock.calls.map(call => call[0]);
+  expect(queries.some(query => query.sql.includes('transactions'))).toBe(false);
+  expect(queries).toContainEqual({ sql: 'UPDATE households SET cash_balance = ? WHERE id = ?', args: [0, 42] });
+  expect(queries.find(query => query.sql.startsWith('UPDATE accounts')).args).toEqual([2500, 7, 42]);
+  const keys = queries.filter(query => query.sql.startsWith('INSERT INTO settings')).map(query => query.args[0]);
+  expect(keys.filter(key => key.startsWith('rr_adjust_'))).toHaveLength(2);
+  expect(keys).toContain(`rr_reset_${resetId}`);
+  expect(db.withTransaction).toHaveBeenCalledTimes(1);
+});
+test('skips unchanged balances during a restart', async () => {
+  transaction();
+  const result = await service.resetBalances(42, 3, { ...resetPayload, balances: [{ accountId: null, expectedBalance: 100, balance: 100 }, { accountId: 7, expectedBalance: 10000, balance: 0 }] }, now);
+  expect(result.adjustments.map(item => item.accountId)).toEqual([7]);
+});
+test.each([
+  ['an account is missing', [{ accountId: null, expectedBalance: 100, balance: 0 }], 'DATA_CHANGED'],
+  ['an unknown account is sent', [{ accountId: null, expectedBalance: 100, balance: 0 }, { accountId: 7, expectedBalance: 10000, balance: 0 }, { accountId: 8, expectedBalance: 0, balance: 0 }], 'DATA_CHANGED'],
+  ['a balance changed meanwhile', [{ accountId: null, expectedBalance: 100, balance: 0 }, { accountId: 7, expectedBalance: 9000, balance: 0 }], 'BALANCE_CHANGED'],
+])('rejects a restart when %s, before any write', async (_label, balances, code) => {
+  const execute = transaction();
+  await expect(service.resetBalances(42, 3, { ...resetPayload, balances }, now)).rejects.toThrow(code);
+  expect(execute.mock.calls.some(([query]) => /^(UPDATE|INSERT)/.test(query.sql))).toBe(false);
+});
+test('a repeated restart returns the original record and never applies twice', async () => {
+  const stored = { requestId: resetId, signature: '7:2500|null:0', asOf: resetPayload.asOf, reason: resetPayload.reason, userId: 3 };
+  const execute = jest.fn(async ({ sql, args }) => {
+    if (sql.includes('FROM households')) return { rows: [{ id: 42, cash_balance: 0 }] };
+    if (sql.includes('FROM settings') && args[1] === `rr_reset_${resetId}`) return { rows: [{ value: JSON.stringify(stored) }] };
+    return { rows: [] };
+  });
+  db.withTransaction.mockImplementation(work => work({ execute }));
+  expect(await service.resetBalances(42, 3, resetPayload, now)).toMatchObject({ repeated: true });
+  expect(execute.mock.calls.some(([query]) => /^(UPDATE|INSERT)/.test(query.sql))).toBe(false);
+  await expect(service.resetBalances(42, 3, { ...resetPayload, balances: [{ accountId: null, expectedBalance: 100, balance: 5 }, resetPayload.balances[1]] }, now)).rejects.toThrow('REQUEST_REUSED');
+});
+test.each([{ balances: [] }, { balances: [{ accountId: null, expectedBalance: 0, balance: -1 }] }, { reason: 'ab' }, { asOf: '2026-13-01' }])('validates restart data %j', patch => {
+  expect(() => resetSchema.parse({ ...resetPayload, ...patch })).toThrow();
 });

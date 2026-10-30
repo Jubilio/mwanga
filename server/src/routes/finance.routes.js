@@ -24,6 +24,7 @@ router.get('/reality-review', realityReview.get);
 router.post('/reality-review/visit', realityReview.visit);
 router.patch('/reality-review', realityReview.change);
 router.post('/reality-review/adjustments', realityReview.reconcile);
+router.post('/reality-review/reset', realityReview.reset);
 
 // Dashboard Agregado — 1 chamada substitui 13 chamadas paralelas do frontend
 // Cache de 30s no Redis. Invalida automaticamente após mutações.
