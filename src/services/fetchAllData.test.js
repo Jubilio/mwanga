@@ -1,15 +1,18 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 vi.mock('../utils/authToken', () => ({ getToken: vi.fn(), clearToken: vi.fn() }));
+vi.mock('../utils/api', () => ({ default: { get: vi.fn(), request: vi.fn() } }));
 import { fetchAllData, DataLoadError } from './finance.service';
 import { clearToken } from '../utils/authToken';
+import api from '../utils/api';
 
-const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+const json = (data, status = 200) => ({ status, data });
 const noDelay = { retryDelays: [0, 0, 0] };
-beforeEach(() => { globalThis.fetch = vi.fn(); vi.spyOn(console, 'warn').mockImplementation(() => {}); });
-afterEach(() => vi.restoreAllMocks());
+const fetch = api.get;
+beforeEach(() => { vi.spyOn(console, 'warn').mockImplementation(() => {}); });
+afterEach(() => { vi.restoreAllMocks(); api.get.mockReset(); });
 
 it('retries a cold-starting server instead of returning empty data', async () => {
-  fetch.mockResolvedValueOnce(json({}, 503)).mockRejectedValueOnce(new TypeError('Failed to fetch'))
+  fetch.mockResolvedValueOnce(json({}, 503)).mockRejectedValueOnce(new Error('Network Error'))
     .mockResolvedValueOnce(json({ transactions: [{ id: 1 }], budgets: [{ id: 2 }] }));
   const data = await fetchAllData({}, vi.fn(), noDelay);
   expect(fetch).toHaveBeenCalledTimes(3);

@@ -1,5 +1,6 @@
 import { normalizeCategory } from '../utils/categories';
 import { getToken, clearToken } from '../utils/authToken';
+import api from '../utils/api';
 
 // API Base URL
 let FINANCE_API_URL = import.meta.env.VITE_API_URL || '';
@@ -165,11 +166,18 @@ export class DataLoadError extends Error {
   }
 }
 
+// Data requests go through axios (XMLHttpRequest). In the Android app the patched
+// window.fetch never delivered GET requests to the server, while XHR requests did.
+async function getJson(url, headers) {
+  const res = await api.get(url, { headers, validateStatus: () => true });
+  return { status: res.status, ok: res.status >= 200 && res.status < 300, data: res.data };
+}
+
 async function fetchWithRetry(url, headers, delays = RETRY_DELAYS_MS) {
   for (let attempt = 0; ; attempt++) {
     let res;
     try {
-      res = await fetch(url, { headers, cache: 'no-store' });
+      res = await getJson(url, headers);
     } catch (err) {
       if (attempt >= delays.length) throw new DataLoadError(err?.message || 'Network error', 0);
       await wait(delays[attempt]);
@@ -189,8 +197,8 @@ export async function fetchAllData(headers, dispatch, { retryDelays = RETRY_DELA
     return null;
   }
 
-  if (res.ok) {
-    const data = await res.json();
+  if (res.ok && res.data && typeof res.data === 'object') {
+    const data = res.data;
     return {
       ts: data.transactions,
       rendas: data.rentals,
@@ -227,9 +235,9 @@ export async function fetchAllData(headers, dispatch, { retryDelays = RETRY_DELA
   const results = await batchFetch(
     endpoints.map((url, i) => async () => {
       try {
-        const r = await fetch(url, { headers, cache: 'no-store' });
+        const r = await getJson(url, headers);
         if (r.status === 401) unauthorized = true;
-        if (r.ok) return r.json();
+        if (r.ok) return r.data;
         if (REQUIRED.has(i)) failedStatus = failedStatus || r.status;
       } catch {
         if (REQUIRED.has(i)) failedStatus = failedStatus || -1;
@@ -259,16 +267,16 @@ export async function fetchAllData(headers, dispatch, { retryDelays = RETRY_DELA
 
 export async function apiCall(endpoint, method = 'GET', body = null, headers = {}) {
   const token = getToken();
-  const fullHeaders = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-    ...headers
-  };
-
-  const response = await fetch(`${FINANCE_API_URL}/${endpoint}`, {
+  const response = await api.request({
+    url: `${FINANCE_API_URL}/${endpoint}`,
     method,
-    headers: fullHeaders,
-    body: body ? JSON.stringify(body) : null
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...headers
+    },
+    data: body ?? undefined,
+    validateStatus: () => true
   });
 
   if (response.status === 401) {
@@ -277,14 +285,10 @@ export async function apiCall(endpoint, method = 'GET', body = null, headers = {
     throw new Error('Unauthorized');
   }
 
-  if (!response.ok) {
-    let errorMsg = `API Error: ${response.status}`;
-    try {
-      const errorData = await response.json();
-      errorMsg = errorData.message || errorData.error || errorMsg;
-    } catch { /* ignore */ }
-    throw new Error(errorMsg);
+  if (response.status < 200 || response.status >= 300) {
+    const errorData = response.data && typeof response.data === 'object' ? response.data : {};
+    throw new Error(errorData.message || errorData.error || `API Error: ${response.status}`);
   }
 
-  return response.status === 204 ? null : response.json();
+  return response.status === 204 ? null : response.data;
 }
