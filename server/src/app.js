@@ -57,7 +57,10 @@ app.use(cors({
     'https://mwangafin.netlify.app',
     'http://localhost:5173',
     'http://localhost:3000',
-    'http://localhost:8081'
+    'http://localhost:8081',
+    // Capacitor WebView origins for the native apps (Android / iOS)
+    'https://localhost',
+    'capacitor://localhost'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
