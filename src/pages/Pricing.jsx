@@ -6,6 +6,7 @@ import { Check, Star, Zap, Crown, Globe, Shield, Rocket, ArrowRight, MessageCirc
 import { useFinance } from '../hooks/useFinance';
 import { PLAN_PRICES } from '../config/features';
 import { getSupportWhatsAppUrl } from '../utils/support';
+import { startCheckout } from '../services/payments.service';
 
 const DAYS_PER_MONTH = 30;
 
@@ -15,6 +16,7 @@ export default function Pricing() {
   const { state } = useFinance();
   const { showToast } = useOutletContext?.() || { showToast: console.log };
   const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' or 'annual'
+  const [checkoutPlan, setCheckoutPlan] = useState(null);
   const currentTier = state.settings?.subscription_tier || 'free';
   const supportUrl = getSupportWhatsAppUrl();
 
@@ -57,18 +59,15 @@ export default function Pricing() {
     }
   ];
 
-  const handleChoosePlan = (plan) => {
-    if (!plan.premium || plan.id === currentTier) return;
-    const url = getSupportWhatsAppUrl(t('pricing.payment.message', {
-      plan: plan.name,
-      cycle: t(`pricing.billing.${billingCycle}`),
-      email: state.user?.email || ''
-    }));
-    if (!url) {
+  const handleChoosePlan = async (plan) => {
+    if (!plan.premium || plan.id === currentTier || checkoutPlan) return;
+    setCheckoutPlan(plan.id);
+    try {
+      await startCheckout(plan.id, billingCycle);
+    } catch {
       showToast(t('pricing.payment.unavailable'));
-      return;
+      setCheckoutPlan(null);
     }
-    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -253,7 +252,7 @@ export default function Pricing() {
             <button
               type="button"
               onClick={() => handleChoosePlan(plan)}
-              disabled={isCurrent || !plan.premium}
+              disabled={isCurrent || !plan.premium || Boolean(checkoutPlan)}
               className={plan.premium && !isCurrent ? 'btn btn-primary' : 'btn btn-ghost'}
               style={{ 
               width: '100%', 

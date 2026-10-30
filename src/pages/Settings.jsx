@@ -1,8 +1,9 @@
 import AiSettings from '../components/settings/AiSettings';
 import { useEffect, useRef, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
+import { getPaymentStatus } from '../services/payments.service';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { User, Wallet, Palette, Bell, Bot } from 'lucide-react';
 import SettingsHero from '../components/settings/SettingsHero';
@@ -29,6 +30,28 @@ export default function Settings() {
   const lock = useRef(false);
   const fileInputRef = useRef(null);
   const { user, settings } = state;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const paymentRef = searchParams.get('payment') === 'return' ? searchParams.get('ref') : null;
+  // Regresso do checkout da PaySuite: confirma o pagamento no servidor e recarrega o plano.
+  useEffect(() => {
+    if (!paymentRef) return;
+    let cancelled = false;
+    (async () => {
+      for (let attempt = 0; attempt < 6 && !cancelled; attempt++) {
+        try {
+          const { status } = await getPaymentStatus(paymentRef);
+          if (status === 'paid') { window.location.replace('/settings'); return; }
+          if (status === 'failed') break;
+        } catch { break; }
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+      if (!cancelled) {
+        showToast(t('pricing.payment.pending'));
+        setSearchParams({}, { replace: true });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [paymentRef]); // eslint-disable-line react-hooks/exhaustive-deps
   const base = settingsForm({ user, settings });
   const pending = changedSettings(form, base).length;
   useEffect(() => {

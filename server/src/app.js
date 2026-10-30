@@ -17,10 +17,13 @@ const inviteRoutes = require('./routes/invite.routes');
 const webauthnRoutes = require('./routes/webauthn.routes');
 const feedbackRoutes = require('./routes/feedback.routes');
 const whatsappRoutes = require('./routes/whatsapp.routes');
+const paymentsRoutes = require('./routes/payments.routes');
+const paymentController = require('./controllers/payment.controller');
 const { getNotificationReadValue } = require('./services/notificationRead.service');
 const { initFeedbackTable } = require('./services/feedback.service');
 const { initHouseholdExtras } = require('./services/household.service');
 const { initWhatsAppSchema } = require('./services/whatsappMigration.service');
+const { initPaymentsTable } = require('./services/payment.service');
 const logger = require('./utils/logger');
 const path = require('path');
 
@@ -30,6 +33,7 @@ const app = express();
 initFeedbackTable();
 initHouseholdExtras();
 initWhatsAppSchema();
+initPaymentsTable();
 
 app.set('trust proxy', 1);
 
@@ -97,6 +101,9 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
+// Webhook da PaySuite: precisa do corpo cru para validar a assinatura, por isso vem antes do express.json.
+app.post('/api/payments/webhook', express.raw({ type: '*/*', limit: '100kb' }), paymentController.webhook);
+
 // 5. Body Parsing & Sanitization
 // 1MB é mais que suficiente para uma API financeira e reduz o risco de DoS por payload.
 app.use(express.json({ limit: '1mb' }));
@@ -157,6 +164,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/households', inviteRoutes);
 app.use('/api/behavior', require('./routes/behavior.routes'));
 app.use('/api/whatsapp', whatsappRoutes);
+app.use('/api/payments', paymentsRoutes);
 
 app.use('/api', financeRoutes);
 

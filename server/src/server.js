@@ -6,6 +6,7 @@ const { checkRedis } = require('./config/redis');
 const logger = require('./utils/logger');
 const { startNotificationEventEngine } = require('./services/notificationEventEngine.service');
 const { startNotificationScheduler } = require('./services/notificationScheduler.service');
+const { startSubscriptionExpiryJob } = require('./services/payment.service');
 
 const PORT = process.env.PORT || 3001;
 
@@ -25,6 +26,7 @@ async function startServer() {
 
     startNotificationEventEngine();
     startNotificationScheduler();
+    startSubscriptionExpiryJob();
 
     const server = app.listen(PORT, () => {
       logger.info(`Mwanga server running in ${process.env.NODE_ENV || 'development'} mode on http://localhost:${PORT}`);
