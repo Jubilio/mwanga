@@ -2,6 +2,7 @@ import { ui, useUiLanguage } from './utils/uiTranslation';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { FinanceProvider } from './hooks/useFinanceStore';
+import AppSplash from './components/AppSplash';
 import Layout from './components/Layout';
 import { useFinance } from './hooks/useFinance';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -157,6 +158,7 @@ export default function App() {
   return (
     <MwangaTooltipProvider>
     <FinanceProvider>
+      <AppSplash />
       <BrowserRouter>
         <ErrorBoundary context={ui("Aplicação")}>
           <Suspense fallback={<PageLoader />}>

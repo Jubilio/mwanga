@@ -26,8 +26,8 @@ const config: CapacitorConfig = {
       presentationOptions: ["badge", "sound", "alert"]
     },
     SplashScreen: {
-      // Hidden from JS once the data has loaded (src/utils/splash.js), so the
-      // splash covers the wait for the server instead of a blank loading screen.
+      // Hidden from JS when the animated splash (src/components/AppSplash.jsx)
+      // takes over with the same background colour.
       launchAutoHide: false,
       backgroundColor: "#0a4d68",
       androidSplashResourceName: "splash",

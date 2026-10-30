@@ -1,9 +1,9 @@
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 
-// Render's free instance can take close to a minute to wake up; past this the
-// in-app loading screen takes over so the splash never gets stuck.
-const MAX_SPLASH_MS = 45000;
+// AppSplash hides the native splash on its first render; this only covers a
+// render that never happens (e.g. a crash before React mounts).
+const MAX_SPLASH_MS = 10000;
 let hidden = false;
 
 /** Hides the native splash once; safe to call from anywhere and on the web. */
