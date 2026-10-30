@@ -5,10 +5,14 @@ import { AlertCircle, CheckCircle2, Clipboard, MessageSquare, RefreshCw, ShieldC
 import api from '../utils/api';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../components/Toast';
+import { Capacitor } from '@capacitor/core';
+import { useSmsSync } from '../hooks/useSmsSync';
+import { SMS_INBOX_ENABLED } from '../config/features';
 
 const SAMPLE_SMS = [
   'A conta 406659018 foi debitada no valor de 20.00 MZN as 23:17 do dia 24/02/26. Millennium bim',
   'mKesh: Transferiste 1,500.00MT para Fatima Macie (845123456). Taxa: 15.00MT. Saldo: 8,230.50MT. Ref: TXN20260224001',
+  'Caro Cliente, registamos uma compra de 1.585,00 MZN a 30/10/2026 19:29 na(o) CAPUCCINO com cartao ***5710. Se nao reconhece, ligue gratis 800224224/(+258)21224224.',
   'BCI: A sua conta 00123456-7 foi creditada com 45,000.00MZN em 24/02/2026 as 09:30. Referencia: SAL-2026-002',
   'Vodacom M-Pesa: Levantaste 2,000MT no agente A12345 (Maputo Centro). Taxa: 20MT. Saldo disponivel: 5,430.00MT',
   'Ola! A tua encomenda chegou. Levanta na loja mais proxima com o codigo 8821.',
@@ -101,6 +105,18 @@ export default function SmsImport() {
   const [pasteLoading, setPasteLoading] = useState(false);
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const { syncSms } = useSmsSync(showToast);
+  const [syncing, setSyncing] = useState(false);
+  const canReadInbox = SMS_INBOX_ENABLED && Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
+
+  async function handleInboxSync() {
+    setSyncing(true);
+    try {
+      await syncSms(true);
+    } finally {
+      setSyncing(false);
+    }
+  }
   const textareaRef = useRef(null);
 
   const typeInfo = useMemo(() => {
@@ -255,6 +271,18 @@ export default function SmsImport() {
                   {t('sms_import.mobile_tip.desc')}
                 </p>
               </div>
+
+              {canReadInbox && (
+                <button
+                  type="button"
+                  onClick={handleInboxSync}
+                  disabled={syncing}
+                  className="w-full py-3 border border-sky/30 bg-sky/10 hover:bg-sky/20 text-sky font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
+                  {ui("Sincronizar SMS Agora")}
+                </button>
+              )}
 
               <textarea
                 ref={textareaRef}

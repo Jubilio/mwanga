@@ -5,7 +5,8 @@ const bankSignatures = [
   { bank: 'mKesh', regex: /\bmKesh\b/i },
   { bank: 'Vodacom M-Pesa', regex: /\bM-Pesa\b|\bVodacom\b/i },
   { bank: 'Millennium BIM', regex: /millennium\s*bim|\bbim\b/i },
-  { bank: 'BCI', regex: /\bBCI\b/i },
+  // BCI card alerts don't name the bank, only its free line 800 224 224 / 21 224 224.
+  { bank: 'BCI', regex: /\bBCI\b|\b800\s?224\s?224\b|\b21\s?224\s?224\b/i },
 ];
 
 function normalizeText(text) {
@@ -54,6 +55,7 @@ function extractDateTime(text) {
 
   const timeBeforeDate = text.match(/(?:as|às)\s*(\d{1,2}:\d{2}).*?(?:dia\s*)?(\d{1,2}\/\d{1,2}\/\d{2,4})/i);
   const dateBeforeTime = text.match(/(?:dia\s*)?(\d{1,2}\/\d{1,2}\/\d{2,4}).*?(?:as|às)\s*(\d{1,2}:\d{2})/i);
+  const dateThenTime = text.match(/(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(\d{1,2}:\d{2})/);
   const dateOnly = text.match(/(?:dia\s*)?(\d{1,2}\/\d{1,2}\/\d{2,4})/i);
 
   if (timeBeforeDate) {
@@ -62,6 +64,9 @@ function extractDateTime(text) {
   } else if (dateBeforeTime) {
     datePart = dateBeforeTime[1];
     timePart = dateBeforeTime[2];
+  } else if (dateThenTime) {
+    datePart = dateThenTime[1];
+    timePart = dateThenTime[2];
   } else if (dateOnly) {
     datePart = dateOnly[1];
   }
@@ -131,7 +136,7 @@ const parseWithRegex = (inputText) => {
     }
   }
 
-  const financialHints = /\b(conta|saldo|taxa|referencia|referência|transfer|creditad|debitad|levant|pagamento|pagaste|recebeste|deposit)\b/i.test(text);
+  const financialHints = /\b(conta|saldo|taxa|referencia|referência|transfer|creditad|debitad|levant|pagamento|pagaste|recebeste|deposit|compra|cart[aã]o)\b/i.test(text);
   if (!result.bank_name && !financialHints) {
     return result;
   }
@@ -140,7 +145,7 @@ const parseWithRegex = (inputText) => {
   result.transaction_type = detectTransactionType(lowerText);
 
   result.amount = extractMoney(text, [
-    /(?:valor\s+de|creditad[oa]\s+com|debitad[oa](?:\s+no\s+valor\s+de)?|transferiste|transferiu|recebeste|levantaste|depositaste|pagaste)\s*([\d.,\s]+)\s*(?:MT|MZN|USD|EUR|ZAR)\b/i,
+    /(?:compra\s+de|valor\s+de|creditad[oa]\s+com|debitad[oa](?:\s+no\s+valor\s+de)?|transferiste|transferiu|recebeste|levantaste|depositaste|pagaste)\s*([\d.,\s]+)\s*(?:MT|MZN|USD|EUR|ZAR)\b/i,
     /(?:foi\s+debitad[oa]\s+no\s+valor\s+de)\s*([\d.,\s]+)\s*(?:MT|MZN|USD|EUR|ZAR)\b/i,
     /([\d.,\s]+)\s*(?:MT|MZN|USD|EUR|ZAR)\b/i,
   ]);
@@ -158,8 +163,15 @@ const parseWithRegex = (inputText) => {
   const accountMatch = text.match(/conta\s+([0-9][0-9-]*)/i);
   if (accountMatch) result.account_number = accountMatch[1];
 
+  // Card purchase, e.g. BCI: "registamos uma compra de 1.585,00 MZN a 30/10/2026 19:29 na(o) CAPUCCINO com cartao ***5710"
+  const cardMatch = text.match(/cart[aã]o\s+(\*+\d{3,4})/i);
+  if (cardMatch) result.account_number = cardMatch[1];
+
+  const merchantMatch = text.match(/\bna\(?o?\)?\s+(.+?)\s+com\s+cart[aã]o\b/i);
+  if (merchantMatch) result.recipient_name = merchantMatch[1].trim();
+
   const recipientMatch = text.match(/para\s+(.+?)\s+\(([\d+]{7,15})\)/i);
-  if (recipientMatch) {
+  if (!result.recipient_name && recipientMatch) {
     result.recipient_name = recipientMatch[1].trim();
     result.recipient_account = recipientMatch[2].trim();
   }

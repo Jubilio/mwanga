@@ -20,10 +20,10 @@ export const SUBSCRIPTION_TIERS = {
 };
 
 /**
- * Reading the SMS inbox needs READ_SMS, which Google Play only allows after a
- * permissions declaration. Off until that is approved; pasting SMS still works.
+ * Reading the SMS inbox needs READ_SMS, which Google Play only allows after the
+ * "SMS-based money management" permissions declaration (see docs/GOOGLE_PLAY.md).
  */
-export const SMS_INBOX_ENABLED = false;
+export const SMS_INBOX_ENABLED = true;
 
 const FREE_FEATURES = ['jornada', 'transacoes', 'orcamento', 'habitacao', 'metas', 'xitique'];
 const GROWTH_FEATURES = [...FREE_FEATURES, 'dividas', 'patrimonio', 'relatorio'];

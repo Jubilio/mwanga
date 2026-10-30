@@ -74,13 +74,16 @@ Cada envio à Play precisa de um `MWANGA_VERSION_CODE` maior do que o anterior.
 
 ### Permissões de SMS
 
-A primeira versão vai sem leitura da caixa de SMS: o `AndroidManifest.xml` remove `READ_SMS` e `RECEIVE_SMS`
-(incluindo as que viessem de plugins) e `SMS_INBOX_ENABLED` em `src/config/features.js` está `false`,
-o que esconde a sincronização automática. A importação por colagem de SMS continua a funcionar.
+A app lê a caixa de SMS para importar movimentos do M-Pesa, e-Mola, mKesh, Millennium bim e BCI:
+`SMS_INBOX_ENABLED` em `src/config/features.js` está `true` e o `AndroidManifest.xml` declara `READ_SMS`.
+`RECEIVE_SMS` continua removida (incluindo a que viesse de plugins), porque a app só lê mensagens já recebidas.
 
-Para reativar mais tarde: ponha `SMS_INBOX_ENABLED = true`, volte a declarar as duas permissões sem `tools:node="remove"`,
-e preencha em Conteúdo da app → Permissões confidenciais a declaração de "gestão de dinheiro baseada em SMS",
-com um vídeo curto da importação de SMS do M-Pesa/e-Mola. Envie essa versão primeiro para teste interno.
+Antes de enviar uma versão com `READ_SMS`, preencha em Conteúdo da app → Permissões confidenciais a declaração
+de "gestão de dinheiro baseada em SMS", com um vídeo curto da importação de SMS (por exemplo uma compra com cartão BCI).
+Sem essa declaração aprovada, o Google Play rejeita a versão. Envie-a primeiro para teste interno.
+
+Para voltar a desligar: ponha `SMS_INBOX_ENABLED = false` e marque `READ_SMS` com `tools:node="remove"`.
+A importação por colagem de SMS funciona em qualquer caso.
 
 ## 4. Automatizar envios pelo GitHub (opcional)
 
