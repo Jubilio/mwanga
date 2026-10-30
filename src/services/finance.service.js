@@ -55,7 +55,7 @@ export function normalizeSettings(rawSettings = {}) {
       rawSettings.debt_due_reminder_enabled,
       DEFAULT_SETTINGS.debt_due_reminder_enabled
     ),
-    subscription_tier: rawSettings.subscription_tier || 'pro'
+    subscription_tier: rawSettings.subscription_tier || DEFAULT_SETTINGS.subscription_tier
   };
 }
 

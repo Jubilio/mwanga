@@ -37,9 +37,9 @@
       "later_btn": "Maybe later"
     },
     "premium_cta": {
-      "title": "NEXO VIBE PREMIUM",
-      "desc": "Unlock Advanced Intelligence, Detailed Reports, and Exclusive Simulators.",
-      "btn": "✦ Upgrade Now"
+      "title": "GROWTH PLAN",
+      "desc": "Debts, wealth and monthly reports. About 13 MT a day.",
+      "btn": "See plans"
     },
     "user": {
       "settings_tooltip": "Settings",
@@ -380,6 +380,42 @@
     },
     "charts": {
       "trend_empty": "No data yet to show your balance trend."
+    },
+    "first_steps": {
+      "title": "First steps",
+      "progress": "{{current}} of {{total}} steps done",
+      "dismiss": "Hide",
+      "steps": {
+        "account": {
+          "label": "Account created",
+          "cta": ""
+        },
+        "transaction": {
+          "label": "Record your first expense",
+          "cta": "Record"
+        },
+        "budget": {
+          "label": "Set a budget by category",
+          "cta": "Create budget"
+        },
+        "goal": {
+          "label": "Create a savings goal",
+          "cta": "Create goal"
+        }
+      }
+    },
+    "trial": {
+      "offer_title": "Try the Growth plan for 14 days",
+      "offer_body": "You have been using Mwanga for over a month. Try debts, wealth and reports at no cost. At the end you go back to the free plan automatically, with no charge.",
+      "offer_cta": "Start free trial",
+      "offer_dismiss": "Not now",
+      "active_one": "Growth plan trial: {{count}} day left.",
+      "active_other": "Growth plan trial: {{count}} days left.",
+      "ending_one": "Your trial ends in {{count}} day. After that you go back to the free plan, with no charge, and your data stays saved.",
+      "ending_other": "Your trial ends in {{count}} days. After that you go back to the free plan, with no charge, and your data stays saved.",
+      "see_plans": "See plans",
+      "started": "Trial started. You have 14 days of the Growth plan.",
+      "error": "Could not start the trial."
     }
   },
   "transactions": {
@@ -1043,9 +1079,9 @@
       "subscription": "Current plan",
       "all_features": "All features",
       "tiers": {
-        "free": "Mwanga — Free",
+        "free": "Mwanga — Starter (free)",
         "growth": "Mwanga — Growth",
-        "pro": "Mwanga — Pro",
+        "pro": "Mwanga — Wealth",
         "legacy": "Mwanga — Full access"
       },
       "whatsapp_example": "258841234567",
@@ -1059,69 +1095,73 @@
     }
   },
   "pricing": {
-    "tag": "Mwanga Plans ✦",
-    "title": "Choose your level of <span>Prosperity</span>",
-    "description": "Mwanga is more than expense control. It's your journey to wealth growth in Mozambique.",
+    "tag": "Mwanga plans",
+    "title": "Start free. Pay only when you need <span>more</span>.",
+    "description": "Every plan works on your phone and computer. Change or cancel whenever you want.",
     "billing": {
       "monthly": "Monthly",
       "annual": "Annual",
       "discount": "(-20%)",
-      "annual_total": "Billed annually ({{total}} MZN)"
+      "annual_total": "Billed annually ({{total}} MT)",
+      "per_month": "/month",
+      "per_day": "about {{amount}} MT a day"
     },
     "plans": {
       "starter": {
         "name": "Starter",
-        "desc": "For those starting to organize their home.",
-        "btn": "Current Plan",
+        "desc": "To organise the household accounts.",
+        "btn": "Start free",
         "features": [
-          "1 Household",
-          "Up to 2 users",
-          "Essential Dashboard",
-          "Unlimited Transactions",
-          "1 Active Xitique",
-          "Simple Reports (PDF)",
-          "12-month history"
+          "Unlimited transactions",
+          "Budget by category",
+          "Savings goals",
+          "Housing and rent",
+          "Xitique",
+          "Financial journey"
         ]
       },
       "growth": {
         "name": "Growth",
-        "desc": "The power of financial intelligence in your hand.",
-        "btn": "Upgrade to Growth",
-        "popular_badge": "Most Popular",
+        "desc": "For families who want to plan, not just record.",
+        "btn": "Choose Growth",
+        "badge": "Recommended for families",
         "features": [
-          "Unlimited Users",
-          "Unlimited Xitiques",
-          "Advanced Financial Score",
-          "Intelligent Simulators",
-          "Wealth Management",
-          "Excel/CSV Export",
-          "Proactive Alerts",
-          "Unlimited History"
+          "Everything in Starter",
+          "Debts and payment calendar",
+          "Wealth: assets and liabilities",
+          "Monthly reports"
         ]
       },
-      "legacy": {
+      "pro": {
         "name": "Wealth",
-        "desc": "Master your legacy and secure the future.",
-        "btn": "Master Wealth",
+        "desc": "For people managing credit, investments and retirement.",
+        "btn": "Choose Wealth",
         "features": [
           "Everything in Growth",
-          "Financial Projections (BI)",
-          "Compound Interest Simulator",
-          "Retirement Planning",
-          "24/7 Priority Support",
-          "FAM Audit Reports",
-          "Early Access to New Features"
+          "Simulators: budget, salary, investment and retirement",
+          "Credit",
+          "Binth insights",
+          "SMS import",
+          "Time Machine and Stewardship"
         ]
       }
     },
+    "current": "Your current plan",
     "includes": "What's included:",
+    "payment": {
+      "title": "Pay with M-Pesa or e-Mola",
+      "desc": "Choose a plan and send us a WhatsApp message. We confirm the payment and activate the plan on your account.",
+      "whatsapp": "Questions before paying? Talk to us on WhatsApp",
+      "message": "Hello! I want to activate the {{plan}} plan ({{cycle}}) on Mwanga. My account is {{email}}.",
+      "unavailable": "Payment is not available in this version yet. Please try again later."
+    },
     "trust": {
-      "security_title": "Banking Security",
-      "security_desc": "End-to-end encrypted data.",
-      "moza_pride_title": "Mozambican Pride",
-      "moza_pride_desc": "Local technology for the world.",
-      "cancel_title": "Easy Cancellation",
-      "cancel_desc": "No contracts, cancel anytime."
+      "security_title": "Protected data",
+      "security_desc": "Encrypted connection (HTTPS), and identity documents stored with AES-256 encryption.",
+      "local_title": "Made in Mozambique",
+      "local_desc": "Metical, xitique and family expenses.",
+      "cancel_title": "Cancel anytime",
+      "cancel_desc": "No contracts. Your data stays available on the free plan."
     }
   },
   "help": {
@@ -1307,7 +1347,7 @@
     },
     "register": {
       "title": "Create account",
-      "subtitle": "Create your account to start organizing your family's financial life.",
+      "subtitle": "Create your free account. You can add your family later.",
       "name_label": "Full name",
       "name_placeholder": "E.g. John Doe",
       "password_tip": "Use at least 8 characters.",
@@ -2457,5 +2497,47 @@
     "finish": "Finish review",
     "back": "Back to dashboard",
     "recorded_by": "Recorded by user {{user}} on {{date}}"
+  },
+  "landing": {
+    "login": "Sign in",
+    "title": "Know where your money goes, in meticais.",
+    "subtitle": "Record expenses, manage the household budget and track your xitique, all in one place. Free to start.",
+    "cta": "Start free",
+    "cta_note": "No card. Sign in with Google or email in under a minute.",
+    "login_link": "I already have an account",
+    "trust": {
+      "local": "Made in Mozambique by NexoVibe",
+      "security": "Encrypted connection",
+      "whatsapp": "Talk to us on WhatsApp"
+    },
+    "features_title": "What you can do on the free plan",
+    "features": [
+      {
+        "title": "Expenses and budget",
+        "desc": "See on one screen how much came in, how much went out and which category went over the limit."
+      },
+      {
+        "title": "Savings goals",
+        "desc": "Set a goal and track how much is left, month by month."
+      },
+      {
+        "title": "Xitique",
+        "desc": "Record contributions and know when it is your turn to receive."
+      },
+      {
+        "title": "Housing and rent",
+        "desc": "Keep track of rent and the household's fixed commitments."
+      }
+    ],
+    "steps_title": "Get started in three steps",
+    "steps": [
+      "Create your free account",
+      "Record your first expense",
+      "Set a budget and a goal"
+    ],
+    "honest_title": "We are still growing",
+    "honest_body": "The Android app is still in development. Today Mwanga works in your phone or computer browser, and you can install it on your home screen.",
+    "final_title": "Start organising next month today.",
+    "footer": "Mwanga · a NexoVibe product"
   }
 }

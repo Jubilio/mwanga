@@ -15,6 +15,14 @@ const updateHouseholdSchema = z.object({
   cash_balance: z.coerce.number().finite().min(0).max(1e12).optional(),
 });
 
+// Plan and trial state are only changed by the server (startTrial) or an admin, never by the client.
+const BILLING_KEYS = ['subscription_tier', 'subscription_expires_at', 'trial_ends_at'];
+const isReservedSettingKey = (key) => key.startsWith('ai_') || key.startsWith('rr_') || BILLING_KEYS.includes(key);
+
+const TRIAL_DAYS = 14;
+const TRIAL_MIN_ACCOUNT_AGE_DAYS = 30;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 const getSettings = async (req, res, next) => {
   try {
     const result = await db.execute({
@@ -47,7 +55,7 @@ const upsertSetting = async (req, res, next) => {
   try {
     const { key, value } = upsertSettingSchema.parse(req.body);
     const householdId = req.user.householdId;
-    if (key.startsWith('ai_') || key.startsWith('rr_')) return res.status(400).json({ error: 'Reserved setting' });
+    if (isReservedSettingKey(key)) return res.status(400).json({ error: 'Reserved setting' });
     let safeValue;
     if (key === 'financial_journey_v1') {
       const journey = parseJourneySetting(value);
@@ -114,4 +122,37 @@ const updateHousehold = async (req, res, next) => {
   }
 };
 
-module.exports = { getSettings, upsertSetting, updateHousehold };
+const startTrial = async (req, res, next) => {
+  try {
+    const householdId = req.user.householdId;
+    const current = await db.execute({
+      sql: `SELECT key, value FROM settings WHERE household_id = ? AND key IN ('subscription_tier', 'trial_ends_at')`,
+      args: [householdId]
+    });
+    const settings = Object.fromEntries(current.rows.map(row => [row.key, row.value]));
+    if (settings.subscription_tier && settings.subscription_tier !== 'free') {
+      return res.status(409).json({ error: 'Household already has a paid plan' });
+    }
+    if (settings.trial_ends_at) return res.status(409).json({ error: 'Trial already used' });
+
+    const user = await db.execute({ sql: 'SELECT created_at FROM users WHERE id = ?', args: [req.user.id] });
+    const createdAt = new Date(user.rows[0]?.created_at);
+    if (Number.isNaN(createdAt.getTime()) || Date.now() - createdAt.getTime() < TRIAL_MIN_ACCOUNT_AGE_DAYS * DAY_MS) {
+      return res.status(403).json({ error: 'Trial not available yet' });
+    }
+
+    const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * DAY_MS).toISOString();
+    await db.execute({
+      sql: 'INSERT INTO settings (key, value, household_id) VALUES (?, ?, ?) ON CONFLICT(key, household_id) DO NOTHING',
+      args: ['trial_ends_at', trialEndsAt, householdId]
+    });
+    await logAction(req.user.id, 'START_TRIAL', 'HOUSEHOLD', householdId);
+    await invalidateDashboardCache(householdId);
+
+    res.json({ success: true, trial_ends_at: trialEndsAt });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getSettings, upsertSetting, updateHousehold, startTrial };
