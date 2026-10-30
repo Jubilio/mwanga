@@ -18,4 +18,4 @@ function run(command, args, cwd) {
 }
 run('npm', ['run', 'build']);
 run('npx', ['cap', 'sync', 'android']);
-run(process.platform === 'win32' ? 'gradlew.bat' : './gradlew', [mode === 'bundle' ? 'bundleRelease' : mode === 'release' ? 'assembleRelease' : 'assembleDebug'], 'android');
+run(process.platform === 'win32' ? '.\\gradlew.bat' : './gradlew', [mode === 'bundle' ? 'bundleRelease' : mode === 'release' ? 'assembleRelease' : 'assembleDebug'], 'android');
