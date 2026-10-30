@@ -41,6 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VITE_API_URL: ${{ inputs.api_url }}
+      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
       MWANGA_VERSION_CODE: ${{ inputs.version_code }}
       MWANGA_VERSION_NAME: ${{ inputs.version_name }}
     steps:
