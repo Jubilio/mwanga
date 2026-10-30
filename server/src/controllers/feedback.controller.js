@@ -1,30 +1,10 @@
 const feedbackService = require('../services/feedback.service');
 const logger = require('../utils/logger');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const { createUploader, handleUploadErrors, IMAGE_TYPES } = require('../utils/uploads');
 
-const uploadDir = path.join(__dirname, '../../uploads/feedback');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+const upload = createUploader('feedback', IMAGE_TYPES, 'feedback-');
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `feedback-${req.user.id}-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-});
-
-const uploadMiddleware = upload.single('screenshot');
+const uploadMiddleware = handleUploadErrors(upload.single('screenshot'));
 
 const submitFeedback = async (req, res) => {
   try {

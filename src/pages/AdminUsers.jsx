@@ -1,6 +1,7 @@
 import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import { openProtectedFile, protectedFilePath } from '../utils/protectedFiles';
 import {
   Users, CheckCircle, XCircle, Clock,
   Search, RefreshCw, FileCheck
@@ -150,19 +151,18 @@ export default function AdminUsers() {
                   <td style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                       {user.documents?.map((doc) => (
-                        <a
+                        <button
                           key={doc.id}
-                          href={`${api.defaults.baseURL.replace('/api', '')}/uploads/kyc/${doc.document_url}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          type="button"
+                          onClick={() => openProtectedFile(protectedFilePath('kyc', doc.document_url)).catch(() => {})}
                           style={{
                             fontSize: '10px', padding: '3px 8px', borderRadius: '6px',
                             background: G.card, border: `1px solid ${G.border}`,
-                            color: G.muted, textDecoration: 'none',
+                            color: G.muted, textDecoration: 'none', cursor: 'pointer',
                           }}
                         >
                           {doc.document_type?.split('_')[0]?.toUpperCase() || 'DOC'}
-                        </a>
+                        </button>
                       ))}
                       {(!user.documents || user.documents.length === 0) && (
                         <span style={{ color: G.muted, fontSize: '11px' }}>—</span>

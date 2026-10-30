@@ -1,8 +1,6 @@
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const { createUploader, handleUploadErrors, DOCUMENT_TYPES } = require('../utils/uploads');
 const { z } = require('zod');
 const { logAction } = require('../utils/audit');
 
@@ -10,28 +8,9 @@ const uploadDocumentSchema = z.object({
   documentType: z.enum(['bi_frente', 'bi_verso', 'selfie', 'comprovativo_residencia', 'comprovativo_rendimento', 'other']),
 }).strict();
 
-// Configure Multer for KYC Uploads
-const uploadDir = path.join(__dirname, '../../uploads/kyc');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+const upload = createUploader('kyc', DOCUMENT_TYPES);
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, req.user.id + '-' + file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit per file
-});
-
-const uploadMiddleware = upload.single('document');
+const uploadMiddleware = handleUploadErrors(upload.single('document'));
 
 const uploadDocument = async (req, res, next) => {
   try {

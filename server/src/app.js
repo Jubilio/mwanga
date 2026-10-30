@@ -22,7 +22,6 @@ const { initFeedbackTable } = require('./services/feedback.service');
 const { initHouseholdExtras } = require('./services/household.service');
 const { initWhatsAppSchema } = require('./services/whatsappMigration.service');
 const logger = require('./utils/logger');
-const path = require('path');
 
 const app = express();
 
@@ -101,10 +100,30 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/webauthn/verify-authentication', authLimiter);
 
+// Recuperação de password: cada pedido envia um email, por isso o limite é baixo.
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  handler: (req, res) => {
+    res.status(429).json({
+      status: 'error',
+      message: 'Demasiados pedidos de recuperação de password. Tente novamente em uma hora.'
+    });
+  }
+});
+app.use('/api/auth/forgot-password', passwordResetLimiter);
+app.use('/api/auth/reset-password', passwordResetLimiter);
+
 // 5. Body Parsing & Sanitization
 // 1MB é mais que suficiente para uma API financeira e reduz o risco de DoS por payload.
 app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ limit: '1mb', extended: true }));
+// O corpo original fica guardado para validar a assinatura dos webhooks (Twilio),
+// porque a sanitização abaixo altera os valores.
+app.use(express.urlencoded({
+  limit: '1mb',
+  extended: true,
+  verify: (req, res, buf) => { req.rawBody = buf.toString('utf8'); }
+}));
 app.use(hpp());
 
 // Sanitização recursiva com a biblioteca xss (já instalada).
@@ -125,8 +144,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// 6. Static Files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// 6. Ficheiros enviados (KYC, crédito, feedback) só passam pela rota autenticada /api/files.
 
 // 7. Request Logging
 app.use((req, res, next) => {
@@ -145,7 +163,8 @@ app.get('/api/health', async (req, res) => {
       timestamp: new Date()
     });
   } catch (error) {
-    res.status(503).json({ status: 'unhealthy', error: error.message });
+    logger.error(`Health check failed: ${error.message}`);
+    res.status(503).json({ status: 'unhealthy' });
   }
 });
 
@@ -154,6 +173,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/auth/webauthn', webauthnRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/sms', smsRoutes);
+app.use('/api/files', require('./routes/files.routes'));
 app.use('/api/credit', creditRoutes);
 app.use('/api/kyc', kycRoutes);
 app.use('/api/admin', adminRoutes);

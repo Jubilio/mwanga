@@ -61,13 +61,23 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-const isAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
-    next();
-  } else {
-    logger.warn(`Tentativa de acesso administrativo não autorizada pelo utilizador: ${req.user?.id}`);
-    res.status(403).json({ error: 'Acesso negado: Requer privilégios de administrador.' });
+// O papel é lido da base de dados em cada pedido: o valor dentro do token
+// dura 7 dias e continuaria válido depois de um admin ser despromovido.
+const isAdmin = async (req, res, next) => {
+  try {
+    const result = req.user?.id
+      ? await db.execute({ sql: 'SELECT role FROM users WHERE id = ?', args: [req.user.id] })
+      : { rows: [] };
+    if (result.rows[0]?.role === 'admin') {
+      req.user.role = 'admin';
+      return next();
+    }
+  } catch (error) {
+    logger.error(`Falha ao verificar papel de admin para user ${req.user?.id}: ${error.message}`);
+    return res.status(500).json({ error: 'Não foi possível verificar permissões.' });
   }
+  logger.warn(`Tentativa de acesso administrativo não autorizada pelo utilizador: ${req.user?.id}`);
+  return res.status(403).json({ error: 'Acesso negado: Requer privilégios de administrador.' });
 };
 
 module.exports = { authenticate, isAdmin, JWT_SECRET };

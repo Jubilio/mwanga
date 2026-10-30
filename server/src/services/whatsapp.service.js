@@ -18,7 +18,10 @@ class WhatsAppService {
    */
   async handleIncomingMessage(payload) {
     try {
-      const { from, text, pushName } = this._parsePayload(payload);
+      const { from, text, pushName, fromMe } = this._parsePayload(payload);
+
+      // Ignora as nossas próprias mensagens e eventos sem texto (estado, QR, etc.)
+      if (fromMe || !from || !text) return null;
       
       logger.info({ from, pushName }, '[WhatsApp] Message received');
 
@@ -72,7 +75,8 @@ class WhatsAppService {
       return {
         from: msg.key?.remoteJid?.split('@')[0] || msg.sender?.split('@')[0],
         text: msg.message?.conversation || msg.message?.extendedTextMessage?.text || '',
-        pushName: msg.pushName || 'Explorador'
+        pushName: msg.pushName || 'Explorador',
+        fromMe: msg.key?.fromMe === true
       };
     }
     // Default/Twilio-like
@@ -89,8 +93,8 @@ class WhatsAppService {
     const cleanPhone = phone.replace(/\D/g, '');
     
     const result = await db.execute({
-      sql: 'SELECT id, household_id, name FROM public.users WHERE whatsapp_number = ? OR national_id = ? LIMIT 1',
-      args: [cleanPhone, cleanPhone]
+      sql: 'SELECT id, household_id, name FROM public.users WHERE whatsapp_number = ? LIMIT 1',
+      args: [cleanPhone]
     });
 
     return result.rows[0];
