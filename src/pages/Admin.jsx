@@ -39,6 +39,8 @@ export default function Admin() {
   const [error, setError] = useState('');
   const [broadcast, setBroadcast] = useState({ title: '', body: '' });
   const [broadcasting, setBroadcasting] = useState(false);
+  const [applications, setApplications] = useState([]);
+  const [disbursingId, setDisbursingId] = useState(null);
   const { toast, showToast, hideToast } = useToast();
 
   useEffect(() => {
@@ -54,11 +56,13 @@ export default function Admin() {
 
     try {
       const headers = getAdminHeaders();
-      const [usersResp, statsResp] = await Promise.all([
+      const [usersResp, statsResp, appsResp] = await Promise.all([
         api.get('/admin/users', { headers }),
-        api.get('/admin/stats', { headers })
+        api.get('/admin/stats', { headers }),
+        api.get('/admin/credit-applications', { headers }).catch(() => ({ data: [] }))
       ]);
       setUsers(Array.isArray(usersResp.data) ? usersResp.data : []);
+      setApplications(Array.isArray(appsResp.data) ? appsResp.data : []);
       setStats({ ...EMPTY_STATS, ...statsResp.data });
     } catch (fetchError) {
       console.error('Error fetching admin data:', fetchError);
@@ -78,6 +82,21 @@ export default function Admin() {
     } catch (updateError) {
       console.error('Error updating KYC:', updateError);
       setError(updateError.response?.data?.error || ui("Falha ao atualizar o estado KYC."));
+    }
+  };
+
+  const handleDisburse = async (application) => {
+    const label = `${application.user_name || application.user_email || `#${application.household_id}`} · MT ${Number(application.amount).toLocaleString()}`;
+    if (!window.confirm(`${ui("Desembolsar este crédito?")}\n${label}`)) return;
+    setDisbursingId(application.id);
+    try {
+      await api.post(`/credit/disburse/${application.id}`, {}, { headers: getAdminHeaders() });
+      showToast(ui("Crédito desembolsado com sucesso"), 'success');
+      fetchData();
+    } catch (err) {
+      showToast(err.response?.data?.error || ui("Falha ao desembolsar o crédito."), 'error');
+    } finally {
+      setDisbursingId(null);
     }
   };
 
@@ -171,6 +190,50 @@ export default function Admin() {
         <StatCard label={ui("Volume Desembolsado")} value={`MT ${stats.loans.totalDisbursed.toLocaleString()}`} icon={<TrendingUp />} color={G.green} />
         <StatCard label={ui("Pedidos Pendentes")} value={stats.pendingApplications} icon={<Clock />} color={G.gold} />
         <StatCard label={ui("KYC Aprovados")} value={stats.kycSummary.approved} icon={<FileCheck />} color={G.green} />
+      </div>
+
+      <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '24px', marginBottom: '24px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px' }}>{ui("Pedidos de Crédito")}</h2>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ color: G.muted, fontSize: '12px', textAlign: 'left', borderBottom: `1px solid ${G.border}` }}>
+                <th style={{ padding: '12px' }}>{ui("NOME")}</th>
+                <th style={{ padding: '12px' }}>{ui("VALOR")}</th>
+                <th style={{ padding: '12px' }}>{ui("PRAZO")}</th>
+                <th style={{ padding: '12px' }}>{ui("PARCEIRO")}</th>
+                <th style={{ padding: '12px' }}>{ui("ACÇÕES")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {applications.map((application) => (
+                <tr key={application.id} style={{ borderBottom: `1px solid ${G.border}`, fontSize: '14px' }}>
+                  <td style={{ padding: '14px 12px' }}>
+                    <div style={{ fontWeight: 600 }}>{application.user_name || `#${application.household_id}`}</div>
+                    <div style={{ fontSize: '11px', color: G.muted }}>{application.purpose || application.user_email}</div>
+                  </td>
+                  <td style={{ padding: '14px 12px', fontWeight: 700 }}>MT {Number(application.amount).toLocaleString()}</td>
+                  <td style={{ padding: '14px 12px' }}>{application.months} {ui("meses")}</td>
+                  <td style={{ padding: '14px 12px', color: G.muted }}>{application.partner || '—'}</td>
+                  <td style={{ padding: '14px 12px' }}>
+                    <button
+                      onClick={() => handleDisburse(application)}
+                      disabled={disbursingId === application.id}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '10px', padding: '8px 12px', border: 'none', background: G.green, color: '#000', fontWeight: 700, fontSize: '12px', cursor: disbursingId === application.id ? 'wait' : 'pointer' }}
+                    >
+                      <Send size={14} /> {ui("Desembolsar")}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {applications.length === 0 && (
+                <tr>
+                  <td colSpan="5" style={{ padding: '24px 12px', color: G.muted, textAlign: 'center' }}>{ui("Sem pedidos de crédito por processar.")}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', alignItems: 'start' }}>

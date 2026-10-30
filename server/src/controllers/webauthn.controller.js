@@ -20,7 +20,10 @@ const createSessionToken = (user) =>
 
 // The Relying Party ID is usually the domain name of the origin
 const rpID = process.env.RP_ID || 'localhost';
-const expectedOrigin = process.env.EXPECTED_ORIGIN || `http://${rpID}:5173`;
+// Comma-separated when the web app is served from more than one origin.
+const expectedOrigin = (process.env.EXPECTED_ORIGIN || `http://${rpID}:5173`).split(',').map(origin => origin.trim());
+
+const toTransports = (value) => (value ? value.split(',').filter(Boolean) : undefined);
 
 // Generate Registration Options
 const generateRegistration = async (req, res, next) => {
@@ -39,10 +42,7 @@ const generateRegistration = async (req, res, next) => {
       userID: Buffer.from(userId.toString()),
       userName: user.email || `user_${userId}`,
       attestationType: 'none',
-      excludeCredentials: userPasskeysResult.rows.map(passkey => ({
-        id: Buffer.from(passkey.credential_id, 'base64url'),
-        type: 'public-key',
-      })),
+      excludeCredentials: userPasskeysResult.rows.map(passkey => ({ id: passkey.credential_id })),
       authenticatorSelection: {
         residentKey: 'preferred',
         userVerification: 'preferred',
@@ -85,7 +85,7 @@ const verifyRegistration = async (req, res, next) => {
     }
 
     if (verification.verified && verification.registrationInfo) {
-      const { credentialID, credentialPublicKey, counter, credentialDeviceType } = verification.registrationInfo;
+      const { credential } = verification.registrationInfo;
 
       // Save passkey in DB
       await db.execute({
@@ -93,10 +93,10 @@ const verifyRegistration = async (req, res, next) => {
               VALUES ($1, $2, $3, $4, $5)`,
         args: [
           userId,
-          Buffer.from(credentialID).toString('base64url'),
-          Buffer.from(credentialPublicKey).toString('base64url'),
-          counter,
-          credentialDeviceType
+          credential.id,
+          Buffer.from(credential.publicKey).toString('base64url'),
+          credential.counter,
+          (credential.transports || []).join(',')
         ]
       });
 
@@ -132,13 +132,15 @@ const generateAuthentication = async (req, res, next) => {
       sql: 'SELECT credential_id, transports FROM passkeys WHERE user_id = $1',
       args: [userId]
     });
+    if (passkeysResult.rows.length === 0) {
+      return res.status(400).json({ error: 'Biometria ainda nao ativada nesta conta.' });
+    }
 
     const options = await generateAuthenticationOptions({
       rpID,
       allowCredentials: passkeysResult.rows.map(passkey => ({
-        id: Buffer.from(passkey.credential_id, 'base64url'),
-        type: 'public-key',
-        transports: passkey.transports ? [passkey.transports] : [],
+        id: passkey.credential_id,
+        transports: toTransports(passkey.transports),
       })),
       userVerification: 'preferred',
     });
@@ -156,6 +158,7 @@ const generateAuthentication = async (req, res, next) => {
 const verifyAuthentication = async (req, res, next) => {
   try {
     const { email, response } = req.body;
+    if (!email || !response?.id) return res.status(400).json({ error: 'Pedido incompleto' });
 
     const result = await db.execute({ sql: 'SELECT * FROM users WHERE email = $1', args: [email] });
     const user = result.rows[0];
@@ -184,10 +187,11 @@ const verifyAuthentication = async (req, res, next) => {
         expectedChallenge,
         expectedOrigin,
         expectedRPID: rpID,
-        authenticator: {
-          credentialID: Buffer.from(authenticator.credential_id, 'base64url'),
-          credentialPublicKey: Buffer.from(authenticator.public_key_hash, 'base64url'),
+        credential: {
+          id: authenticator.credential_id,
+          publicKey: new Uint8Array(Buffer.from(authenticator.public_key_hash, 'base64url')),
           counter: Number(authenticator.counter),
+          transports: toTransports(authenticator.transports),
         },
       });
     } catch (error) {
@@ -224,7 +228,34 @@ const verifyAuthentication = async (req, res, next) => {
   }
 };
 
+const listPasskeys = async (req, res, next) => {
+  try {
+    const result = await db.execute({
+      sql: 'SELECT id, created_at, last_used_at FROM passkeys WHERE user_id = $1 ORDER BY created_at DESC',
+      args: [req.user.id]
+    });
+    res.json(result.rows);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deletePasskey = async (req, res, next) => {
+  try {
+    await db.execute({
+      sql: 'DELETE FROM passkeys WHERE id = $1 AND user_id = $2',
+      args: [Number(req.params.id), req.user.id]
+    });
+    await logAction(req.user.id, 'REMOVE_PASSKEY', 'SECURITY', req.params.id);
+    res.json({ removed: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
+  listPasskeys,
+  deletePasskey,
   generateRegistration,
   verifyRegistration,
   generateAuthentication,

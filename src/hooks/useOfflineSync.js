@@ -1,10 +1,11 @@
 import { useEffect, useCallback } from 'react';
 import { db } from '../db/db';
+import { getToken } from '../utils/authToken';
 
 export function useOfflineSync(FINANCE_API_URL, dispatch, reloadData) {
   
   const processPendingActions = useCallback(async () => {
-    const token = localStorage.getItem('mwanga-token');
+    const token = getToken();
     if (!token) return;
 
     const pending = await db.pendingActions.toArray();

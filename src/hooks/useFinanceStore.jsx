@@ -19,6 +19,7 @@ import {
   fetchAllData,
   apiCall
 } from '../services/finance.service';
+import { getToken } from '../utils/authToken';
 
 const defaultState = {
   transacoes: [],
@@ -48,7 +49,7 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
   if (fetchPromise) return fetchPromise;
 
   fetchPromise = (async () => {
-    const token = localStorage.getItem('mwanga-token');
+    const token = getToken();
     if (!token) {
       dispatch({ type: 'RESET_SESSION' });
       fetchPromise = null;

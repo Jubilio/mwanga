@@ -46,6 +46,7 @@ const AdminSettings = lazy(() => import('./pages/AdminSettings'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
 import { useSmsSync } from './hooks/useSmsSync';
+import { getToken } from './utils/authToken';
 
 const FINANCIAL_QUOTES = [
   ui("O melhor investimento que podes fazer é em ti mesmo."),
@@ -94,7 +95,7 @@ function RequireAuth({ children }) {
   useUiLanguage();
   const { state } = useFinance();
   const loc = useLocation();
-  const token = localStorage.getItem('mwanga-token');
+  const token = getToken();
   // Fast synchronous check — written by Onboarding on completion.
   // This prevents a flash-redirect while the API is still loading.
   const hasOnboarded = localStorage.getItem('mwanga-onboarded') === 'true';

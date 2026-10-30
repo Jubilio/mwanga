@@ -4,6 +4,7 @@ import { ArrowRight, Wallet, Target, Users, Home, ShieldCheck, MapPin, MessageCi
 import { useUiLanguage } from '../utils/uiTranslation';
 import { getSupportWhatsAppUrl } from '../utils/support';
 import MwangaLogo from '../components/MwangaLogo';
+import { getToken } from '../utils/authToken';
 
 const FEATURE_ICONS = [Wallet, Target, Users, Home];
 const REGISTER_PATH = '/login?modo=registo';
@@ -19,7 +20,7 @@ export default function Landing() {
   const features = t('landing.features', { returnObjects: true });
   const steps = t('landing.steps', { returnObjects: true });
 
-  if (localStorage.getItem('mwanga-token')) return <Navigate to="/" replace />;
+  if (getToken()) return <Navigate to="/" replace />;
 
   return (
     <div className="min-h-screen w-full" style={{ background: 'var(--color-cream)', color: 'var(--color-text)', padding: '1.5rem 1rem' }}>

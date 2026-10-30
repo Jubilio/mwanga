@@ -30,7 +30,7 @@
   "sidebar": {
     "pro_locked": {
       "title": "Funcionalidade PRO",
-      "desc_sms": "Importa SMS bancários automaticamente e deixa a IA extrair as transações por ti.",
+      "desc_sms": "Cola SMS bancários e deixa a IA extrair as transações por ti.",
       "desc_generic": "Esta funcionalidade está disponível apenas no plano PRO.",
       "exclusive": "Funcionalidade exclusiva do plano",
       "upgrade_btn": "✦ Fazer Upgrade para PRO",
@@ -1002,7 +1002,9 @@
         "ai_sync": "Sincronizado com o motor Binth AI",
         "blocked_title": "Notificações Bloqueadas",
         "blocked_desc": "O navegador bloqueou os alertas. Para ativar, clica no ícone de ajustes (ou cadeado) na barra de endereços acima e altera 'Notificações' para 'Permitir'.",
-        "blocked_btn": "Ver Como Desbloquear"
+        "blocked_btn": "Ver Como Desbloquear",
+        "test_btn": "Enviar notificação de teste",
+        "test_sent": "Notificação de teste enviada."
       }
     },
     "sidebar": {
@@ -1036,7 +1038,8 @@
         "financas": "Agregado e finanças",
         "pref": "Idioma e aparência",
         "notifications": "Notificações",
-        "ai": "IA / Binth"
+        "ai": "IA / Binth",
+        "familia": "Família"
       },
       "status": {
         "pending": "Alterações por guardar",
@@ -1092,6 +1095,54 @@
       "push_unsupported": "As notificações push não estão disponíveis neste ambiente.",
       "journey_title": "O teu plano no Mwanga",
       "journey_note": "Define prioridades e acompanha metas, hábitos e aprendizagem na Jornada financeira."
+    },
+    "household": {
+      "title": "Membros da família",
+      "description": "Convida outras pessoas para partilharem as mesmas finanças do agregado.",
+      "members": "Quem já faz parte",
+      "invite": "Gerar código de convite",
+      "code_label": "Código de convite",
+      "code_note": "Válido durante 48 horas. A pessoa escreve este código ao criar a conta no Mwanga.",
+      "share": "Partilhar",
+      "copy": "Copiar código",
+      "copied": "Copiado.",
+      "error": "Não foi possível gerar o convite.",
+      "share_text": "Junta-te à nossa família no Mwanga. Cria a tua conta e usa o código de convite {{code}}."
+    },
+    "identity": {
+      "title": "Verificação de identidade",
+      "description": "Envia os teus documentos para pedires crédito pelo Mwanga.",
+      "type_label": "Tipo de documento",
+      "upload": "Enviar documento",
+      "uploading": "A enviar...",
+      "uploaded": "Documento enviado. Vamos analisá-lo em breve.",
+      "error": "Não foi possível enviar o documento.",
+      "too_large": "O ficheiro tem de ter menos de 5 MB.",
+      "sent": "Enviado",
+      "missing": "Em falta",
+      "privacy": "Os documentos só são vistos pela equipa Mwanga para verificar a tua identidade.",
+      "status": {
+        "pending": "Estado: por enviar",
+        "in_review": "Estado: em análise",
+        "approved": "Estado: identidade verificada",
+        "rejected": "Estado: rejeitado, envia novos documentos"
+      },
+      "types": {
+        "bi_frente": "BI (frente)",
+        "bi_verso": "BI (verso)",
+        "selfie": "Selfie com o BI",
+        "comprovativo_residencia": "Comprovativo de residência",
+        "comprovativo_rendimento": "Comprovativo de rendimento"
+      }
+    },
+    "passkeys": {
+      "title": "Entrar com biometria",
+      "description": "Usa a impressão digital, o rosto ou o PIN deste dispositivo para entrar sem palavra-passe.",
+      "add": "Ativar neste dispositivo",
+      "remove": "Remover",
+      "device": "Dispositivo ativado em {{date}}",
+      "enabled": "Biometria ativada.",
+      "error": "Não foi possível concluir a operação."
     }
   },
   "pricing": {
@@ -1343,7 +1394,10 @@
         "google_failed": "Autenticação com Google falhou",
         "google_unavailable": "Login com Google indisponível. Confirme a configuração dessa origem: {{origin}}.",
         "welcome_google": "Bem-vindo via Google!"
-      }
+      },
+      "passkey_btn": "Entrar com biometria",
+      "passkey_email_needed": "Escreve o teu email primeiro.",
+      "passkey_failed": "Não foi possível entrar com biometria."
     },
     "register": {
       "title": "Criar conta",
@@ -1359,7 +1413,10 @@
       "toasts": {
         "success": "Conta criada com sucesso!",
         "google_success": "Conta criada com Google e sessão iniciada!"
-      }
+      },
+      "invite_label": "Código de convite (opcional)",
+      "invite_placeholder": "Ex.: AB12CD34",
+      "invite_tip": "Se alguém da tua família te convidou, escreve o código para entrares no mesmo agregado."
     },
     "forgot": {
       "title": "Recuperar senha",
