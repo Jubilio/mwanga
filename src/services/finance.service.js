@@ -151,66 +151,108 @@ async function batchFetch(tasks, concurrency = 5) {
   return results;
 }
 
-export async function fetchAllData(headers, dispatch) {
-  try {
-    const res = await fetch(`${FINANCE_API_URL}/dashboard-summary`, { headers });
-    
-    if (res.status === 401) {
-      clearToken();
-      if (dispatch) dispatch({ type: 'RESET_SESSION' });
-      return null;
-    }
+// Render's free instance takes up to a minute to wake up, so a cold start answers
+// with 502/503 or drops the connection. Retry those instead of showing empty data.
+const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
+const RETRY_DELAYS_MS = [2000, 5000, 10000];
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        ts: data.transactions,
-        rendas: data.rentals,
-        metas: data.goals,
-        budgets: data.budgets,
-        assets: data.assets,
-        liabs: data.liabilities,
-        xitiques: data.xitiques,
-        settingsResp: data.settings,
-        user: data.user,
-        debts: data.debts,
-        accounts: data.accounts,
-        loanApplications: data.loanApplications,
-        loans: data.loans,
-      };
-    }
-
-    const endpoints = [
-      `${FINANCE_API_URL}/transactions`, `${FINANCE_API_URL}/rentals`,
-      `${FINANCE_API_URL}/goals`, `${FINANCE_API_URL}/budgets`,
-      `${FINANCE_API_URL}/assets`, `${FINANCE_API_URL}/liabilities`,
-      `${FINANCE_API_URL}/xitiques`, `${FINANCE_API_URL}/settings`,
-      `${FINANCE_API_URL}/auth/me`, `${FINANCE_API_URL}/debts`,
-      `${FINANCE_API_URL}/accounts`, `${FINANCE_API_URL}/credit/applications`,
-      `${FINANCE_API_URL}/credit/loans`
-    ];
-
-    const results = await batchFetch(
-      endpoints.map(url => () => fetch(url, { headers }).then(r => {
-        if (r.status === 401) {
-          clearToken();
-          if (dispatch) dispatch({ type: 'RESET_SESSION' });
-          return [];
-        }
-        return r.ok ? r.json() : [];
-      }))
-    );
-
-    return {
-      ts: results[0], rendas: results[1], metas: results[2], budgets: results[3],
-      assets: results[4], liabs: results[5], xitiques: results[6], settingsResp: results[7],
-      user: results[8], debts: results[9], accounts: results[10],
-      loanApplications: results[11], loans: results[12]
-    };
-  } catch (err) {
-    console.error('Fetch all data failed:', err);
-    throw err;
+export class DataLoadError extends Error {
+  constructor(message, status = 0) {
+    super(message);
+    this.name = 'DataLoadError';
+    this.status = status;
   }
+}
+
+async function fetchWithRetry(url, headers, delays = RETRY_DELAYS_MS) {
+  for (let attempt = 0; ; attempt++) {
+    let res;
+    try {
+      res = await fetch(url, { headers, cache: 'no-store' });
+    } catch (err) {
+      if (attempt >= delays.length) throw new DataLoadError(err?.message || 'Network error', 0);
+      await wait(delays[attempt]);
+      continue;
+    }
+    if (!RETRYABLE_STATUS.has(res.status) || attempt >= delays.length) return res;
+    await wait(delays[attempt]);
+  }
+}
+
+export async function fetchAllData(headers, dispatch, { retryDelays = RETRY_DELAYS_MS } = {}) {
+  const res = await fetchWithRetry(`${FINANCE_API_URL}/dashboard-summary`, headers, retryDelays);
+
+  if (res.status === 401) {
+    clearToken();
+    if (dispatch) dispatch({ type: 'RESET_SESSION' });
+    return null;
+  }
+
+  if (res.ok) {
+    const data = await res.json();
+    return {
+      ts: data.transactions,
+      rendas: data.rentals,
+      metas: data.goals,
+      budgets: data.budgets,
+      assets: data.assets,
+      liabs: data.liabilities,
+      xitiques: data.xitiques,
+      settingsResp: data.settings,
+      user: data.user,
+      debts: data.debts,
+      accounts: data.accounts,
+      loanApplications: data.loanApplications,
+      loans: data.loans,
+    };
+  }
+
+  console.warn(`dashboard-summary failed with HTTP ${res.status}, falling back to individual endpoints`);
+
+  const endpoints = [
+    `${FINANCE_API_URL}/transactions`, `${FINANCE_API_URL}/rentals`,
+    `${FINANCE_API_URL}/goals`, `${FINANCE_API_URL}/budgets`,
+    `${FINANCE_API_URL}/assets`, `${FINANCE_API_URL}/liabilities`,
+    `${FINANCE_API_URL}/xitiques`, `${FINANCE_API_URL}/settings`,
+    `${FINANCE_API_URL}/auth/me`, `${FINANCE_API_URL}/debts`,
+    `${FINANCE_API_URL}/accounts`, `${FINANCE_API_URL}/credit/applications`,
+    `${FINANCE_API_URL}/credit/loans`
+  ];
+  // Without these the dashboard would show zeros as if the household had no data.
+  const REQUIRED = new Set([0, 3, 7, 8, 10]);
+  let unauthorized = false;
+  let failedStatus = 0;
+
+  const results = await batchFetch(
+    endpoints.map((url, i) => async () => {
+      try {
+        const r = await fetch(url, { headers, cache: 'no-store' });
+        if (r.status === 401) unauthorized = true;
+        if (r.ok) return r.json();
+        if (REQUIRED.has(i)) failedStatus = failedStatus || r.status;
+      } catch {
+        if (REQUIRED.has(i)) failedStatus = failedStatus || -1;
+      }
+      return [];
+    })
+  );
+
+  if (unauthorized) {
+    clearToken();
+    if (dispatch) dispatch({ type: 'RESET_SESSION' });
+    return null;
+  }
+  if (failedStatus) {
+    throw new DataLoadError(`HTTP ${res.status}`, res.status);
+  }
+
+  return {
+    ts: results[0], rendas: results[1], metas: results[2], budgets: results[3],
+    assets: results[4], liabs: results[5], xitiques: results[6], settingsResp: results[7],
+    user: results[8], debts: results[9], accounts: results[10],
+    loanApplications: results[11], loans: results[12]
+  };
 }
 
 // --- Generic API call helper ---

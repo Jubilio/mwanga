@@ -416,6 +416,13 @@
       "see_plans": "See plans",
       "started": "Trial started. You have 14 days of the Growth plan.",
       "error": "Could not start the trial."
+    },
+    "load_error": {
+      "title": "Your data could not be loaded",
+      "body": "The server did not respond. The figures below are the last copy saved on this device and may be out of date.",
+      "network": "No connection to the server",
+      "retry": "Try again",
+      "retrying": "Retrying…"
     }
   },
   "transactions": {

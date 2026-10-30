@@ -416,6 +416,13 @@
       "see_plans": "Ver planos",
       "started": "Teste iniciado. Tem 14 dias de plano Crescimento.",
       "error": "Não foi possível iniciar o teste."
+    },
+    "load_error": {
+      "title": "Não foi possível carregar os seus dados",
+      "body": "O servidor não respondeu. Os valores abaixo são a última cópia guardada neste telemóvel e podem estar desatualizados.",
+      "network": "Sem ligação ao servidor",
+      "retry": "Tentar novamente",
+      "retrying": "A tentar…"
     }
   },
   "transactions": {
