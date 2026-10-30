@@ -141,7 +141,7 @@ O estado global é gerido por um `useReducer` com **persistência dupla**:
 
 | Hook | Função |
 |------|--------|
-| `usePushNotifications.js` | VAPID (PWA) + FCM (Android nativo via Capacitor) |
+| `usePushNotifications.js` | VAPID (PWA); sem push nativo no Android |
 | `useSmsSync.js` | Leitura de SMS bancários no Android e importação automática de transacções |
 | `useOfflineSync.js` | Processamento da fila `pendingActions` do Dexie quando a rede regressa |
 | `useStewardship.js` | Lógica do módulo de Mordomia financeira |
@@ -213,7 +213,7 @@ Carrega todos os dados do utilizador numa só chamada HTTP:
 | `notification.service.js` | Orquestração central de notificações | 14.5 KB |
 | `notificationEventEngine.service.js` | Eventos que disparam notificações | 14.8 KB |
 | `notificationEngine.service.js` | Motor de entrega e scoring de relevância | 8.5 KB |
-| `push.service.js` | Envio via VAPID (web-push) e FCM (firebase-admin) | 10 KB |
+| `push.service.js` | Envio via VAPID (web-push) | 10 KB |
 | `notificationAi.service.js` | Geração de conteúdo de notificação via IA | 5.5 KB |
 | `smsParserService.js` | Parser SMS bancários (Regex + LLM fallback) | 9.8 KB |
 | `transaction.service.js` | CRUD de transacções + actualização de saldos | 7.9 KB |
@@ -276,7 +276,6 @@ SMS recebido (texto)
 | Canal | Utilização | Serviço |
 |-------|-----------|---------|
 | VAPID Web Push | PWA / Desktop / Browser | `web-push` + `push.service.js` |
-| FCM (Firebase) | Android nativo (Capacitor) | `firebase-admin` + `push.service.js` |
 | In-App | Notificações dentro da aplicação | Tabela `notifications` |
 | Email | Lembretes e alertas críticos | `nodemailer` + `email.service.js` |
 
@@ -389,7 +388,6 @@ JWT_SECRET=...                         # Chave de assinatura JWT
 ANTHROPIC_API_KEY=...                  # Claude (SMS Parser LLM fallback)
 GOOGLE_CLIENT_ID=...                   # Google OAuth2
 REDIS_URL=https://...upstash.io        # Cache Upstash
-FIREBASE_SERVICE_ACCOUNT_JSON=...      # FCM (push nativo Android)
 VAPID_PUBLIC_KEY=...                   # Web Push
 VAPID_PRIVATE_KEY=...
 EMAIL_USER=...                         # Nodemailer

@@ -22,9 +22,6 @@ const config: CapacitorConfig = {
       },
       logLevel: 1
     },
-    PushNotifications: {
-      presentationOptions: ["badge", "sound", "alert"]
-    },
     SplashScreen: {
       // Hidden from JS when the animated splash (src/components/AppSplash.jsx)
       // takes over with the same background colour.

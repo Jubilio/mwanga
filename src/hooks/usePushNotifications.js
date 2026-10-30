@@ -1,9 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { PushNotifications } from '@capacitor/push-notifications';
 import api from '../utils/api';
 import { useFinance } from './useFinance';
-import { registerNativePush, disableNativePush } from '../services/nativePush';
 const changedEvent = 'mwanga-push-changed';
 function urlBase64ToUint8Array(value) {
   const base64 = (value + '='.repeat((4 - value.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/');
@@ -12,6 +10,9 @@ function urlBase64ToUint8Array(value) {
 export function usePushNotifications() {
   const { state } = useFinance();
   const storageKey = `mwanga-native-push-v1-${state.user?.id || 'guest'}`;
+  // Native (Android/iOS) push relied on Firebase and was removed. The Capacitor
+  // WebView has no Web Push, so push is unsupported inside the native app;
+  // in-app notifications still work there.
   const [permission, setPermission] = useState('default');
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -21,11 +22,8 @@ export function usePushNotifications() {
   const refreshStatus = useCallback(async () => {
     try {
       if (isNative) {
-        setIsSupported(true);
-        const perm = await PushNotifications.checkPermissions();
-        setPermission(perm.receive);
-        const stored = JSON.parse(localStorage.getItem(storageKey) || 'null');
-        setIsSubscribed(perm.receive === 'granted' && stored?.enabled === true);
+        setIsSupported(false);
+        setIsSubscribed(false);
       } else {
         const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
         setIsSupported(supported);
@@ -48,17 +46,7 @@ export function usePushNotifications() {
     if (lock.current) throw new Error('PUSH_BUSY');
     lock.current = true; setIsLoading(true);
     try {
-      if (isNative) {
-        let perm = await PushNotifications.checkPermissions();
-        if (['prompt', 'prompt-with-rationale'].includes(perm.receive)) perm = await PushNotifications.requestPermissions();
-        setPermission(perm.receive);
-        if (perm.receive !== 'granted') throw new Error('PERMISSION_DENIED');
-        const endpoint = await registerNativePush(PushNotifications);
-        localStorage.setItem(storageKey, JSON.stringify({ endpoint, enabled: false }));
-        await api.post('/notifications/push-subscriptions', { subscription: { endpoint, isNative: true }, deviceType: 'native', platform: Capacitor.getPlatform() });
-        localStorage.setItem(storageKey, JSON.stringify({ endpoint, enabled: true }));
-        setIsSubscribed(true); announce(); return endpoint;
-      }
+      if (isNative) throw new Error('PUSH_NOT_SUPPORTED');
       const permissionResult = await Notification.requestPermission();
       setPermission(permissionResult);
       if (permissionResult !== 'granted') throw new Error('PERMISSION_DENIED');
@@ -78,9 +66,10 @@ export function usePushNotifications() {
     lock.current = true; setIsLoading(true);
     try {
       if (isNative) {
+        // Drop the server copy of a token saved before native push was removed.
         let stored;
         try { stored = JSON.parse(localStorage.getItem(storageKey) || 'null'); } catch { stored = null; }
-        await disableNativePush(PushNotifications, api, stored?.endpoint);
+        if (stored?.endpoint) await api.delete('/notifications/push-subscriptions', { data: { endpoint: stored.endpoint } });
         localStorage.removeItem(storageKey);
       } else {
         const registration = await navigator.serviceWorker.getRegistration();

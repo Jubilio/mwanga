@@ -1,27 +1,7 @@
 const webpush = require('web-push');
-const admin = require('firebase-admin');
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
 const { getNotificationSchema } = require('./notificationSchema.service');
-
-// Initialize Firebase Admin if credentials are provided
-let firebaseApp = null;
-try {
-  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
-    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
-    : null;
-
-  if (serviceAccount) {
-    firebaseApp = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-    logger.info('Firebase Admin initialized successfully.');
-  } else {
-    logger.warn('FIREBASE_SERVICE_ACCOUNT not found in .env. Native push will be disabled.');
-  }
-} catch (error) {
-  logger.error('Failed to initialize Firebase Admin:', error.message);
-}
 
 function getVapidKeys() {
   return {
@@ -163,57 +143,42 @@ async function markPushDeliverySuccess(subscriptionId) {
   });
 }
 
+function isNativeSubscription(subscription) {
+  return subscription.device_type === 'native' ||
+         subscription.platform === 'android' ||
+         subscription.platform === 'ios';
+}
+
 /**
- * Low-level push delivery to a specific subscription.
- * Handles both Web (VAPID) and Native (FCM).
+ * Low-level push delivery to a specific subscription (Web Push / VAPID).
+ * Native app subscriptions (old FCM tokens) are no longer supported: they are
+ * reported as gone (410) so callers deactivate them.
  */
 async function sendRawPush(payload, subscription, options = {}) {
-  const isNative = subscription.device_type === 'native' || 
-                   subscription.platform === 'android' || 
-                   subscription.platform === 'ios';
+  if (isNativeSubscription(subscription)) {
+    return { success: false, statusCode: 410, message: 'native_push_unsupported' };
+  }
 
   try {
-    if (isNative) {
-      if (!firebaseApp) {
-        throw new Error('Firebase not initialized');
-      }
-
-      await admin.messaging().send({
-        token: subscription.endpoint,
-        notification: {
-          title: payload.title,
-          body: payload.body,
-        },
-        data: payload.data,
-        android: {
-          priority: options.urgency === 'high' ? 'high' : 'normal',
-          notification: {
-            sound: 'default',
-            clickAction: 'MWANGA_NOTIFICATION_ACTION'
-          }
-        }
-      });
-    } else {
-      if (!hasPushCredentials()) {
-        throw new Error('Push credentials not configured');
-      }
-
-      configureVapid();
-
-      const pushSubscription = {
-        endpoint: subscription.endpoint,
-        expirationTime: subscription.expiration_time || subscription.expirationTime,
-        keys: {
-          p256dh: subscription.p256dh_key || subscription.keys?.p256dh,
-          auth: subscription.auth_key || subscription.keys?.auth,
-        },
-      };
-
-      await webpush.sendNotification(pushSubscription, JSON.stringify(payload), {
-        TTL: options.ttl || 3600,
-        urgency: options.urgency || 'normal',
-      });
+    if (!hasPushCredentials()) {
+      throw new Error('Push credentials not configured');
     }
+
+    configureVapid();
+
+    const pushSubscription = {
+      endpoint: subscription.endpoint,
+      expirationTime: subscription.expiration_time || subscription.expirationTime,
+      keys: {
+        p256dh: subscription.p256dh_key || subscription.keys?.p256dh,
+        auth: subscription.auth_key || subscription.keys?.auth,
+      },
+    };
+
+    await webpush.sendNotification(pushSubscription, JSON.stringify(payload), {
+      TTL: options.ttl || 3600,
+      urgency: options.urgency || 'normal',
+    });
     return { success: true };
   } catch (error) {
     const statusCode = error.statusCode || error.status_code;
@@ -263,13 +228,10 @@ async function sendPushNotification(notification) {
   const ttl    = notification.type === 'warning' ? 120 : 3600;
 
   for (const sub of subscriptions) {
-    const isNative = sub.device_type === 'native' || sub.platform === 'android' || sub.platform === 'ios';
+    const isNative = isNativeSubscription(sub);
 
-    // Guard: skip native if Firebase not ready, skip web if VAPID not configured.
-    if (isNative && !firebaseApp) {
-      logger.warn(`Skipping native push for sub ${sub.id}: Firebase not initialized.`);
-      continue;
-    }
+    // Guard: skip web if VAPID not configured. Native subs fall through to
+    // sendRawPush, which reports them as gone so they get deactivated.
     if (!isNative && !hasPushCredentials()) {
       logger.warn(`Skipping web push for sub ${sub.id}: VAPID not configured.`);
       continue;
@@ -293,10 +255,7 @@ async function sendPushNotification(notification) {
     } else {
       const { statusCode, message } = result;
 
-      // FCM token expired / revoked uses non-HTTP error strings
-      const isExpired = statusCode === 404 || statusCode === 410 ||
-                        (message || '').includes('not-registered') ||
-                        (message || '').includes('invalid-registration-token');
+      const isExpired = statusCode === 404 || statusCode === 410;
 
       if (isExpired) {
         await deactivateSubscription(sub.id, message);

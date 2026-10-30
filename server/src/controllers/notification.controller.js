@@ -60,6 +60,11 @@ const subscribe = async (req, res) => {
       return res.status(400).json({ status: 'error', message: 'Invalid subscription object.' });
     }
 
+    // Native app push (FCM) was removed; only Web Push subscriptions are accepted.
+    if (deviceType === 'native' || subscription.isNative) {
+      return res.status(400).json({ status: 'error', message: 'Native push is not supported.' });
+    }
+
     const result = await notificationService.upsertPushSubscription({
       householdId,
       userId,
