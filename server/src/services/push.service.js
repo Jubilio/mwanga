@@ -5,23 +5,48 @@ const { db } = require('../config/db');
 const logger = require('../utils/logger');
 const { getNotificationSchema } = require('./notificationSchema.service');
 
+// Accepts the service account JSON as pasted in a dashboard: raw JSON (one or
+// several lines) or base64. Repairs a private_key whose newlines were
+// double-escaped. Throws messages that never echo the secret itself.
+function parseServiceAccount(raw) {
+  let text = raw.trim();
+  if (!text.startsWith('{')) {
+    text = Buffer.from(text, 'base64').toString('utf8').trim();
+  }
+
+  let account;
+  try {
+    account = JSON.parse(text);
+  } catch {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT is not valid JSON (paste the whole downloaded key file, or its base64)');
+  }
+
+  if (typeof account.private_key === 'string') {
+    account.private_key = account.private_key.replace(/\\n/g, '\n');
+  }
+  const missing = ['project_id', 'client_email', 'private_key'].filter((key) => !account[key]);
+  if (missing.length > 0) {
+    throw new Error(`FIREBASE_SERVICE_ACCOUNT is missing: ${missing.join(', ')}`);
+  }
+  return account;
+}
+
 // Initialize Firebase Admin if credentials are provided
 let firebaseApp = null;
 try {
-  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
-    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
-    : null;
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
 
-  if (serviceAccount) {
+  if (raw && raw.trim()) {
     firebaseApp = initializeApp({
-      credential: cert(serviceAccount)
+      credential: cert(parseServiceAccount(raw))
     });
     logger.info('Firebase Admin initialized successfully.');
   } else {
     logger.warn('FIREBASE_SERVICE_ACCOUNT not found in .env. Native push will be disabled.');
   }
 } catch (error) {
-  logger.error('Failed to initialize Firebase Admin:', error.message);
+  // pino ignores extra arguments, so the reason must be in the message itself.
+  logger.error(`Failed to initialize Firebase Admin: ${error.message}`);
 }
 
 function getVapidKeys() {
@@ -313,6 +338,7 @@ async function sendPushNotification(notification) {
 }
 
 module.exports = {
+  parseServiceAccount,
   buildPushPayload,
   hasPushCredentials,
   sendPushNotification,
