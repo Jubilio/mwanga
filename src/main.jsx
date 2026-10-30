@@ -76,7 +76,7 @@ function renderApp() {
     </StrictMode>,
   )
 
-  // The native splash stays up until the session data has loaded (FinanceProvider hides it).
+  // AppSplash replaces the static native splash with the animated one on first render.
   scheduleSplashFallback()
 }
 
