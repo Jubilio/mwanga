@@ -7,6 +7,8 @@ import { registerSW } from 'virtual:pwa-register'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import './i18n'
 import * as Sentry from '@sentry/react'
+import { Capacitor } from '@capacitor/core'
+import { SplashScreen } from '@capacitor/splash-screen'
 
 // ── Sentry: Monitorização de erros em tempo real ───────────────────────────
 // Activo apenas em produção para evitar ruído em desenvolvimento.
@@ -30,8 +32,14 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
   });
 }
 
-// Register PWA service worker
-registerSW({ immediate: true })
+// Register PWA service worker (web only: the Android app ships its files in the APK,
+// and a service worker there would keep serving the previous version after an update)
+if (!Capacitor.isNativePlatform()) {
+  registerSW({ immediate: true })
+} else {
+  // Remove a worker left by earlier builds that still registered one.
+  navigator.serviceWorker?.getRegistrations().then(regs => regs.forEach(r => r.unregister())).catch(() => {})
+}
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -65,3 +73,8 @@ createRoot(document.getElementById('root')).render(
     </Sentry.ErrorBoundary>
   </StrictMode>,
 )
+
+// Native splash stays up until the first render (capacitor.config.ts also auto-hides it as a fallback).
+if (Capacitor.isNativePlatform()) {
+  requestAnimationFrame(() => SplashScreen.hide().catch(() => {}))
+}
