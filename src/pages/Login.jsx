@@ -2,7 +2,7 @@ import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
-import { useGoogleLogin } from '@react-oauth/google';
+import { Capacitor } from '@capacitor/core';
 import { Wallet, LogIn, UserPlus, Lock, Mail, User } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import MwangaLogo from '../components/MwangaLogo';
@@ -21,14 +21,6 @@ function getApiErrorMessage(data, fallback) {
   return data?.error || data?.message || fallback;
 }
 
-function getCurrentOrigin() {
-  if (typeof window === 'undefined') {
-    return '';
-  }
-
-  return window.location.origin;
-}
-
 export default function Login() {
   useUiLanguage();
   const { t } = useTranslation();
@@ -39,7 +31,6 @@ export default function Login() {
   const { reloadData } = useFinance();
   const navigate = useNavigate();
   const { showToast } = useOutletContext?.() || { showToast: console.log };
-  const currentOrigin = getCurrentOrigin();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -115,11 +106,6 @@ export default function Login() {
     }
   }
 
-  function handleGoogleError() {
-    const originLabel = currentOrigin || ui("origem atual");
-    showToast(t('auth.login.toasts.google_unavailable', { origin: originLabel }));
-  }
-
   const isNative = typeof window !== 'undefined' && (window.location.protocol === 'http:' || window.location.protocol === 'https:') && !window.location.hostname.includes('.'); 
   // Simplified native check: if it's localhost or a custom scheme
 
@@ -134,11 +120,8 @@ export default function Login() {
     window.location.href = googleUrl;
   };
 
-  const { login: googleLoginAction } = useGoogleLogin({
-    onSuccess: handleGoogleSuccess,
-    onError: handleGoogleError,
-    flow: 'implicit'
-  });
+  // Google blocks OAuth inside app WebViews, and builds without a client ID cannot use it.
+  const showGoogleLogin = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID) && !Capacitor.isNativePlatform();
 
   // Effect to catch the token from URL after redirect (for manual flow)
   useEffect(() => {
@@ -184,6 +167,7 @@ export default function Login() {
           </p>
         </div>
 
+        {showGoogleLogin && (
         <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
           <button
             type="button"
@@ -217,6 +201,7 @@ export default function Login() {
             <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
           </div>
         </div>
+        )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
           {!isLogin && (
