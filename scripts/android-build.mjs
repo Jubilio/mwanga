@@ -6,6 +6,9 @@ const api = new URL(process.env.VITE_API_URL || 'https://invalid.local');
 if (!process.env.VITE_API_URL || api.protocol !== 'https:' || ['localhost', '127.0.0.1', 'invalid.local'].includes(api.hostname)) {
   throw new Error('Set VITE_API_URL to your public HTTPS backend URL before building Android.');
 }
+if (!process.env.VITE_GOOGLE_CLIENT_ID?.endsWith('.apps.googleusercontent.com')) {
+  console.warn('Warning: VITE_GOOGLE_CLIENT_ID (the Web OAuth client ID) is not set; "Continue with Google" will not work in this build.');
+}
 if (mode !== 'debug') {
   for (const key of ['MWANGA_KEYSTORE_PATH', 'MWANGA_KEYSTORE_PASSWORD', 'MWANGA_KEY_ALIAS', 'MWANGA_KEY_PASSWORD']) {
     if (!process.env[key]) throw new Error(`Missing signing configuration: ${key}`);

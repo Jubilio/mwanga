@@ -12,6 +12,16 @@ const config: CapacitorConfig = {
     CapacitorHttp: {
       enabled: true,
     },
+    SocialLogin: {
+      // Native Google sign-in only; other providers are not bundled.
+      providers: {
+        google: true,
+        facebook: false,
+        apple: false,
+        twitter: false
+      },
+      logLevel: 1
+    },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"]
     },

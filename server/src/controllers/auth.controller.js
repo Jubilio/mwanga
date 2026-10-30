@@ -144,12 +144,25 @@ const googleLogin = async (req, res) => {
 
 const googleAccessTokenLogin = async (req, res) => {
   try {
-    const { email, name, accessToken } = req.body;
-    if (!email || !accessToken) return res.status(400).json({ error: 'Email e Access Token sao obrigatorios' });
+    const { name, accessToken } = req.body;
+    if (!accessToken) return res.status(400).json({ error: 'Access Token e obrigatorio' });
 
-    // In a production environment, you should verify the accessToken with Google
-    // fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${accessToken}`)
-    
+    // Trust only what Google says about the token: it must be issued to our client
+    // and the email comes from Google, never from the request body.
+    let tokenInfo;
+    try {
+      tokenInfo = await googleClient.getTokenInfo(accessToken);
+    } catch {
+      return res.status(401).json({ error: 'Falha na autenticacao com o Google' });
+    }
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    if (!clientId || (tokenInfo.aud !== clientId && tokenInfo.azp !== clientId)) {
+      return res.status(401).json({ error: 'Falha na autenticacao com o Google' });
+    }
+    if (!tokenInfo.email) return res.status(400).json({ error: 'Google nao devolveu um email valido' });
+    if (tokenInfo.email_verified === false) return res.status(401).json({ error: 'O email do Google precisa de estar verificado' });
+
+    const email = tokenInfo.email;
     const normalizedEmail = String(email).trim().toLowerCase();
     const displayName = String(name || normalizedEmail.split('@')[0] || 'Explorador Mwanga').trim();
 

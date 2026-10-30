@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
+import { SocialLogin } from '@capgo/capacitor-social-login';
 import { Wallet, LogIn, UserPlus, Lock, Mail, User, Users, Fingerprint } from 'lucide-react';
 import { passkeysAvailable, loginWithPasskey } from '../utils/passkeys';
 import { useFinance } from '../hooks/useFinance';
@@ -31,13 +32,26 @@ export default function Login() {
   const [isLogin, setIsLogin] = useState(searchParams.get('modo') !== 'registo' && !inviteFromLink);
   const [form, setForm] = useState({ name: '', email: '', password: '', inviteCode: inviteFromLink });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { reloadData } = useFinance();
   const navigate = useNavigate();
-  const { showToast } = useOutletContext?.() || { showToast: console.log };
+  const outlet = useOutletContext?.();
+
+  // /login is not rendered inside a layout outlet, so there is usually no toast host:
+  // errors are also kept in local state and shown inline on the form.
+  function showToast(message) {
+    if (outlet?.showToast) outlet.showToast(message);
+  }
+
+  function showError(message) {
+    setError(message);
+    showToast(message);
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     const endpoint = isLogin ? '/auth/login' : '/auth/register';
     const body = isLogin
@@ -62,15 +76,62 @@ export default function Login() {
       showToast(isLogin ? t('auth.login.toasts.success') : t('auth.register.toasts.success'));
       navigate('/');
     } catch (err) {
-      showToast(`Erro: ${err.message}`);
+      showError(`Erro: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function finishGoogleLogin(resp) {
+    const data = await resp.json();
+    if (!resp.ok) {
+      throw new Error(getApiErrorMessage(data, t('auth.login.toasts.google_failed')));
+    }
+
+    setToken(data.token);
+    await reloadData({ preferredUser: data.user });
+
+    showToast(data.created ? t('auth.register.toasts.google_success') : t('auth.login.toasts.welcome_google'));
+    navigate('/');
+  }
+
+  // Android/iOS: Google blocks OAuth inside WebViews, so use the native account picker
+  // (Credential Manager) and let the backend verify the returned ID token.
+  async function handleNativeGoogleLogin() {
+    setLoading(true);
+    setError('');
+
+    try {
+      await SocialLogin.initialize({
+        google: { webClientId: import.meta.env.VITE_GOOGLE_CLIENT_ID }
+      });
+      // No custom scopes: the ID token already carries email and profile.
+      const res = await SocialLogin.login({ provider: 'google', options: {} });
+      const idToken = res?.result?.idToken;
+      if (!idToken) {
+        throw new Error(ui("Não foi possível obter o email do Google."));
+      }
+
+      const resp = await fetch(`${getApiUrl()}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: idToken })
+      });
+      await finishGoogleLogin(resp);
+    } catch (err) {
+      // Closing the account picker is not an error worth showing.
+      if (!/cancel/i.test(String(err?.message || err))) {
+        showError(`Erro Google: ${err?.message || err}`);
+      }
     } finally {
       setLoading(false);
     }
   }
 
   async function handlePasskeyLogin() {
-    if (!form.email) { showToast(t('auth.login.passkey_email_needed')); return; }
+    if (!form.email) { showError(t('auth.login.passkey_email_needed')); return; }
     setLoading(true);
+    setError('');
     try {
       const data = await loginWithPasskey(form.email);
       setToken(data.token);
@@ -78,7 +139,7 @@ export default function Login() {
       showToast(t('auth.login.toasts.success'));
       navigate('/');
     } catch (err) {
-      showToast(`Erro: ${err.response?.data?.error || t('auth.login.passkey_failed')}`);
+      showError(`Erro: ${err.response?.data?.error || t('auth.login.passkey_failed')}`);
     } finally {
       setLoading(false);
     }
@@ -86,6 +147,7 @@ export default function Login() {
 
   async function handleGoogleSuccess(tokenResponse) {
     setLoading(true);
+    setError('');
 
     try {
       // Fetch user info from Google using the access token
@@ -104,22 +166,12 @@ export default function Login() {
         body: JSON.stringify({ 
           email: userInfo.email, 
           name: userInfo.name,
-          accessToken: tokenResponse.access_token 
+          accessToken: tokenResponse.access_token
         })
       });
-
-      const data = await resp.json();
-      if (!resp.ok) {
-        throw new Error(getApiErrorMessage(data, t('auth.login.toasts.google_failed')));
-      }
-
-      setToken(data.token);
-      await reloadData({ preferredUser: data.user });
-
-      showToast(data.created ? t('auth.register.toasts.google_success') : t('auth.login.toasts.welcome_google'));
-      navigate('/');
+      await finishGoogleLogin(resp);
     } catch (err) {
-      showToast(`Erro Google: ${err.message}`);
+      showError(`Erro Google: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -139,8 +191,9 @@ export default function Login() {
     window.location.href = googleUrl;
   };
 
-  // Google blocks OAuth inside app WebViews, and builds without a client ID cannot use it.
-  const showGoogleLogin = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID) && !Capacitor.isNativePlatform();
+  // Builds without a client ID cannot use Google. Native apps use the native account
+  // picker (handleNativeGoogleLogin), since Google blocks OAuth inside WebViews.
+  const showGoogleLogin = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
   // Effect to catch the token from URL after redirect (for manual flow)
   useEffect(() => {
@@ -190,7 +243,7 @@ export default function Login() {
         <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
           <button
             type="button"
-            onClick={handleManualGoogleLogin}
+            onClick={Capacitor.isNativePlatform() ? handleNativeGoogleLogin : handleManualGoogleLogin}
             disabled={loading}
             className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-2xl border border-slate-200 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
           >
@@ -220,6 +273,24 @@ export default function Login() {
             <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
           </div>
         </div>
+        )}
+
+        {error && (
+          <div
+            role="alert"
+            style={{
+              marginBottom: '1.2rem',
+              padding: '0.75rem 1rem',
+              borderRadius: '12px',
+              border: '1px solid rgba(248, 113, 113, 0.4)',
+              background: 'rgba(248, 113, 113, 0.1)',
+              color: '#fca5a5',
+              fontSize: '0.88rem',
+              lineHeight: 1.5
+            }}
+          >
+            {error}
+          </div>
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
