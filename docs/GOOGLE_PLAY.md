@@ -52,11 +52,13 @@ Cada envio à Play precisa de um `MWANGA_VERSION_CODE` maior do que o anterior.
 
 ### Permissões de SMS
 
-O `AndroidManifest.xml` pede `READ_SMS` e `RECEIVE_SMS`. A Google só aceita estas permissões
-com a declaração de permissões aprovada; "gestão de dinheiro baseada em SMS" é um dos usos aceites,
-mas a revisão é rigorosa e pode atrasar ou rejeitar a publicação.
-Se mantiver as permissões, preencha a declaração em Conteúdo da app → Permissões confidenciais
-e grave um vídeo curto que mostre a importação de SMS do M-Pesa/e-Mola.
+A primeira versão vai sem leitura da caixa de SMS: o `AndroidManifest.xml` remove `READ_SMS` e `RECEIVE_SMS`
+(incluindo as que viessem de plugins) e `SMS_INBOX_ENABLED` em `src/config/features.js` está `false`,
+o que esconde a sincronização automática. A importação por colagem de SMS continua a funcionar.
+
+Para reativar mais tarde: ponha `SMS_INBOX_ENABLED = true`, volte a declarar as duas permissões sem `tools:node="remove"`,
+e preencha em Conteúdo da app → Permissões confidenciais a declaração de "gestão de dinheiro baseada em SMS",
+com um vídeo curto da importação de SMS do M-Pesa/e-Mola. Envie essa versão primeiro para teste interno.
 
 ## 4. Automatizar envios pelo GitHub (opcional)
 
