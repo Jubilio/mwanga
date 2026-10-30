@@ -38,9 +38,12 @@ const config: CapacitorConfig = {
       splashImmersive: false,
     },
     SystemBars: {
-      // Capacitor injects --safe-area-inset-* for WebViews where env() reports 0.
-      insetsHandling: "css",
-      style: "DEFAULT"
+      // index.html has no viewport-fit=cover, so Capacitor pads the WebView
+      // natively below the status bar and above the gesture bar on every
+      // Android/WebView version. CSS injection would double that padding.
+      insetsHandling: "disable",
+      // Light status bar icons over the teal window background.
+      style: "DARK"
     }
   }
 };
