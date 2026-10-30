@@ -8,8 +8,8 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import './i18n'
 import * as Sentry from '@sentry/react'
 import { Capacitor } from '@capacitor/core'
-import { SplashScreen } from '@capacitor/splash-screen'
 import { loadToken } from './utils/authToken'
+import { scheduleSplashFallback } from './utils/splash'
 
 // ── Sentry: Monitorização de erros em tempo real ───────────────────────────
 // Activo apenas em produção para evitar ruído em desenvolvimento.
@@ -76,10 +76,8 @@ function renderApp() {
     </StrictMode>,
   )
 
-  // Native splash stays up until the first render (capacitor.config.ts also auto-hides it as a fallback).
-  if (Capacitor.isNativePlatform()) {
-    requestAnimationFrame(() => SplashScreen.hide().catch(() => {}))
-  }
+  // The native splash stays up until the session data has loaded (FinanceProvider hides it).
+  scheduleSplashFallback()
 }
 
 // The Android app reads the session from secure storage before the first render.

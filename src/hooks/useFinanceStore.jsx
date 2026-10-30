@@ -19,6 +19,7 @@ import {
   apiCall
 } from '../services/finance.service';
 import { getToken } from '../utils/authToken';
+import { hideSplash } from '../utils/splash';
 
 const defaultState = {
   transacoes: [],
@@ -207,6 +208,11 @@ export function FinanceProvider({ children }) {
   useEffect(() => {
     fetchSessionData(dispatch);
   }, []);
+
+  // Keep the native splash up while the first load waits for the server.
+  useEffect(() => {
+    if (!state.loading) hideSplash();
+  }, [state.loading]);
 
   useEffect(() => {
     localStorage.setItem('mwanga-dark', state.darkMode);
