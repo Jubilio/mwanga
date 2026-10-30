@@ -1,6 +1,7 @@
 import { ui, useUiLanguage, uiLocale } from '../utils/uiTranslation';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import { protectedFilePath, useProtectedFileUrl } from '../utils/protectedFiles';
 import { 
   MessageSquare, Clock, Search, RefreshCw, 
   ExternalLink, User, Calendar, Image as ImageIcon,
@@ -162,23 +163,7 @@ export default function AdminFeedback() {
             </div>
 
             {item.screenshot_url && (
-              <div 
-                style={{ 
-                  width: 'fit-content',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  border: `1px solid ${G.border}`
-                }}
-                onClick={() => setSelectedImage(`${api.defaults.baseURL.replace('/api', '')}${item.screenshot_url}`)}
-              >
-                <img 
-                  src={`${api.defaults.baseURL.replace('/api', '')}${item.screenshot_url}`} 
-                  alt={ui("Anexo")}
-                  crossOrigin="anonymous"
-                  style={{ maxHeight: '120px', maxWidth: '100%', objectFit: 'cover' }}
-                />
-              </div>
+              <FeedbackScreenshot path={item.screenshot_url} onOpen={setSelectedImage} />
             )}
           </div>
         ))}
@@ -210,11 +195,33 @@ export default function AdminFeedback() {
           <img 
             src={selectedImage} 
             alt={ui("Feedback Full Size")}
-            crossOrigin="anonymous"
             style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }}
           />
         </div>
       )}
+    </div>
+  );
+}
+
+function FeedbackScreenshot({ path, onOpen }) {
+  const url = useProtectedFileUrl(protectedFilePath(path));
+  if (!url) return null;
+  return (
+    <div
+      style={{
+        width: 'fit-content',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        cursor: 'pointer',
+        border: `1px solid ${G.border}`
+      }}
+      onClick={() => onOpen(url)}
+    >
+      <img
+        src={url}
+        alt={ui("Anexo")}
+        style={{ maxHeight: '120px', maxWidth: '100%', objectFit: 'cover' }}
+      />
     </div>
   );
 }

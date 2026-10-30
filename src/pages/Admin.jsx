@@ -1,6 +1,7 @@
 import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import { openProtectedFile, protectedFilePath } from '../utils/protectedFiles';
 import {
   Users, Shield, BarChart2, XCircle, Clock,
   TrendingUp, AlertCircle, RefreshCw, FileCheck, UserX, MessageSquare, Send, CheckCircle
@@ -273,20 +274,19 @@ export default function Admin() {
                     <td style={{ padding: '16px 12px' }}>
                       <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {user.documents?.map((doc) => (
-                          <a
+                          <button
                             key={doc.id}
-                            href={`${api.defaults.baseURL.replace('/api', '')}/uploads/kyc/${doc.document_url}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            type="button"
+                            onClick={() => openProtectedFile(protectedFilePath('kyc', doc.document_url)).catch(() => {})}
                             style={{
                               fontSize: '10px', padding: '2px 6px', borderRadius: '4px',
                               background: G.card, border: `1px solid ${G.border}`, color: G.muted,
-                              textDecoration: 'none'
+                              textDecoration: 'none', cursor: 'pointer'
                             }}
                             title={doc.document_type}
                           >
                             DOC {doc.document_type.split('_')[0].toUpperCase()}
-                          </a>
+                          </button>
                         ))}
                         {(!user.documents || user.documents.length === 0) && <span style={{ color: G.muted, fontSize: '11px' }}>{ui("Nenhum")}</span>}
                       </div>
