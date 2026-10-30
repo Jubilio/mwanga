@@ -51,7 +51,8 @@ export function useSmsSync(showToast) {
       
       const filteredList = smsList.filter(sms => 
         allowedSenders.some(sender => sms.address?.toLowerCase().includes(sender.toLowerCase())) ||
-        sms.body?.toLowerCase().includes('m-pesa')
+        sms.body?.toLowerCase().includes('m-pesa') ||
+        /800\s?224\s?224/.test(sms.body || '') // BCI card alerts only carry BCI's free line
       );
 
       // Sort oldest first to maintain chronological order
