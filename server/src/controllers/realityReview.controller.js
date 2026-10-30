@@ -8,6 +8,7 @@ const commandSchema = z.discriminatedUnion('action', [
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value => Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value);
 const amount = z.number().finite().min(-1e12).max(1e12).refine(value => Math.abs(value * 100 - Math.round(value * 100)) < 0.01);
 const adjustmentSchema = z.object({ requestId: z.string().uuid(), accountId: z.number().int().positive().nullable(), expectedBalance: amount, balance: amount, asOf: day, reason: z.string().trim().min(3).max(200) }).strict().refine(value => value.accountId !== null || value.balance >= 0);
+const resetSchema = z.object({ requestId: z.string().uuid(), asOf: day, reason: z.string().trim().min(3).max(200), balances: z.array(z.object({ accountId: z.number().int().positive().nullable(), expectedBalance: amount, balance: amount }).strict().refine(value => value.accountId !== null || value.balance >= 0)).min(1).max(200) }).strict();
 const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Maputo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 const handler = task => async (req, res, next) => {
   try { res.set('Cache-Control', 'no-store'); res.json(await task(req)); }
@@ -27,4 +28,11 @@ const reconcile = handler(async req => {
   await invalidateDashboardCache(req.user.householdId);
   return result;
 });
-module.exports = { get, visit, change, reconcile, adjustmentSchema, commandSchema };
+const reset = handler(async req => {
+  const data = resetSchema.parse(req.body);
+  if (data.asOf > today()) throw Object.assign(new Error('FUTURE_DATE'), { status: 400 });
+  const result = await service.resetBalances(req.user.householdId, req.user.id, data);
+  await invalidateDashboardCache(req.user.householdId);
+  return result;
+});
+module.exports = { get, visit, change, reconcile, reset, adjustmentSchema, commandSchema, resetSchema };

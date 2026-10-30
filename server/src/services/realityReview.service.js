@@ -122,6 +122,39 @@ async function reconcile(householdId, userId, data, now = new Date()) {
     return { adjustment: record, repeated: false };
   });
 }
+// Restarting balances after a pause replaces every balance in one commit. Each
+// change gets its own audit record, linked by the batch, so history is preserved.
+async function resetBalances(householdId, userId, data, now = new Date()) {
+  return db.withTransaction(async tx => {
+    const household = await lockHousehold(tx, householdId);
+    const key = `rr_reset_${data.requestId}`;
+    const existing = await tx.execute({ sql: 'SELECT value FROM settings WHERE household_id = ? AND key = ?', args: [householdId, key] });
+    const wanted = data.balances.map(item => `${item.accountId}:${money(item.balance)}`).sort().join('|');
+    if (existing.rows[0]) {
+      const record = parse(existing.rows[0].value);
+      if (record?.userId !== userId || record?.asOf !== data.asOf || record?.reason !== data.reason || record?.signature !== wanted) throw problem('REQUEST_REUSED');
+      return { reset: record, repeated: true };
+    }
+    const accounts = await tx.execute({ sql: 'SELECT id, name, current_balance FROM accounts WHERE household_id = ? ORDER BY id FOR UPDATE', args: [householdId] });
+    const current = [{ id: null, name: null, balance: money(household.cash_balance) }, ...accounts.rows.map(row => ({ id: Number(row.id), name: row.name, balance: money(row.current_balance) }))];
+    const requested = new Map(data.balances.map(item => [item.accountId, item]));
+    if (requested.size !== data.balances.length || requested.size !== current.length || current.some(account => !requested.has(account.id))) throw problem('DATA_CHANGED');
+    if (current.some(account => money(requested.get(account.id).expectedBalance) !== account.balance)) throw problem('BALANCE_CHANGED');
+    const adjustments = [];
+    for (const account of current) {
+      const newBalance = money(requested.get(account.id).balance);
+      if (newBalance === account.balance) continue;
+      const record = { version: 1, requestId: randomUUID(), batchId: data.requestId, accountId: account.id, accountName: account.name, previousBalance: account.balance, newBalance, difference: money(newBalance - account.balance), asOf: data.asOf, reason: data.reason, userId, recordedAt: now.toISOString() };
+      if (account.id === null) await tx.execute({ sql: 'UPDATE households SET cash_balance = ? WHERE id = ?', args: [newBalance, householdId] });
+      else await tx.execute({ sql: 'UPDATE accounts SET current_balance = ? WHERE id = ? AND household_id = ?', args: [newBalance, account.id, householdId] });
+      await saveSetting(tx, householdId, `rr_adjust_${record.requestId}`, record);
+      adjustments.push(record);
+    }
+    const reset = { version: 1, requestId: data.requestId, signature: wanted, asOf: data.asOf, reason: data.reason, userId, recordedAt: now.toISOString(), changed: adjustments.length };
+    await saveSetting(tx, householdId, key, reset);
+    return { reset, adjustments, repeated: false };
+  });
+}
 async function getFreshness(householdId, userId) {
   try {
     return await db.withTransaction(async tx => {
@@ -131,4 +164,4 @@ async function getFreshness(householdId, userId) {
     });
   } catch { return { available: false, needsReview: false, completedAt: null, sections: {} }; }
 }
-module.exports = { getFreshness, GROUPS, ABSENCE_DAYS, readMeta, recordVisit, reviewStatus, getReview, visit, changeReview, reconcile };
+module.exports = { getFreshness, GROUPS, ABSENCE_DAYS, readMeta, recordVisit, reviewStatus, getReview, visit, changeReview, reconcile, resetBalances };

@@ -2496,7 +2496,19 @@
     "history_note": "Mostra os últimos 50 ajustes do agregado. Cada ajuste guarda o autor, a data de registo, a data de referência, os saldos e o motivo. Os ajustes não entram nas receitas ou despesas.",
     "finish": "Concluir revisão",
     "back": "Voltar ao dashboard",
-    "recorded_by": "Registado pelo utilizador {{user}} em {{date}}"
+    "recorded_by": "Registado pelo utilizador {{user}} em {{date}}",
+    "restart_title": "Zerar e recomeçar saldos",
+    "restart_hint": "Ficaste algum tempo sem usar o Mwanga? Põe todas as contas a zero e introduz os valores que tens hoje, de uma só vez.",
+    "restart_open": "Zerar contas e recomeçar",
+    "restart_note": "Todas as contas começam a zero. Introduz o saldo real de cada uma hoje e deixa a zero as que estão vazias. As transações e o histórico antigos são preservados; cada diferença fica registada como ajuste de reconciliação, não como receita ou despesa.",
+    "restart_default_reason": "Recomeço após um período sem usar o app",
+    "restart_review": "Rever alterações",
+    "restart_confirm_question": "Substituir os saldos de todas as contas por estes valores?",
+    "restart_confirm_note": "Os saldos anteriores ficam no histórico de reconciliação. Para corrigir depois, podes fazer um novo ajuste.",
+    "restart_apply": "Sim, substituir os saldos",
+    "restart_back": "Voltar e editar",
+    "restarted": "Saldos substituídos. O histórico anterior foi preservado.",
+    "invalid_restart": "Introduz um saldo válido em cada conta (o dinheiro físico não pode ser negativo) e um motivo com pelo menos 3 caracteres."
   },
   "landing": {
     "login": "Entrar",

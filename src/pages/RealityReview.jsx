@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
@@ -18,6 +18,9 @@ export default function RealityReview() {
   const lock = useRef(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [restart, setRestart] = useState(null);
+  const [params] = useSearchParams();
+  const wantsRestart = params.get('recomecar') === '1';
   const refresh = useCallback(async () => { const response = await api.get('/reality-review'); setData(response.data); return response.data; }, []);
   useEffect(() => {
     let cancelled = false;
@@ -52,6 +55,31 @@ export default function RealityReview() {
     setEditor({ accountId: account.id, name: account.name, expectedBalance: account.balance, balance: String(account.balance), asOf: today(), reason: '', requestId: crypto.randomUUID() });
     setError(''); setNotice('');
   }
+  function openRestart(current) {
+    const list = [{ id: null, name: t('reality.cash'), balance: current.snapshot.balances.cash }, ...current.snapshot.balances.accounts];
+    setRestart({ step: 'edit', accounts: list, values: Object.fromEntries(list.map(account => [account.id ?? 'cash', '0'])), asOf: today(), reason: t('reality.restart_default_reason'), requestId: crypto.randomUUID() });
+    setEditor(null); setSection('balances'); setError(''); setNotice('');
+  }
+  useEffect(() => { if (wantsRestart && data && !restart) openRestart(data); }, [wantsRestart, data]); // eslint-disable-line react-hooks/exhaustive-deps
+  function restartValue(account) { return restart.values[account.id ?? 'cash']; }
+  function reviewRestart(event) {
+    event.preventDefault();
+    const invalid = restart.accounts.some(account => { const raw = restartValue(account), value = Number(raw); return raw.trim() === '' || !Number.isFinite(value) || Math.abs(value) > 1e12 || (account.id === null && value < 0); });
+    if (invalid || restart.reason.trim().length < 3) { setError('invalid_restart'); return; }
+    setError(''); setRestart(previous => ({ ...previous, step: 'confirm' }));
+  }
+  async function applyRestart() {
+    if (lock.current || !restart) return;
+    lock.current = true; setBusy(true); setError(''); setNotice('');
+    let saved = false;
+    try {
+      await api.post('/reality-review/reset', { requestId: restart.requestId, asOf: restart.asOf, reason: restart.reason.trim(), balances: restart.accounts.map(account => ({ accountId: account.id, expectedBalance: account.balance, balance: Number(restartValue(account)) })) });
+      saved = true; setRestart(null); setNotice('restarted');
+      await refresh();
+      await dispatch({ type: 'REFRESH_REALITY' });
+    } catch (failure) { if (saved) setError('refresh_error'); else { reportError(failure); setRestart(previous => previous && ({ ...previous, step: 'edit' })); } }
+    finally { lock.current = false; setBusy(false); }
+  }
   async function reconcile(event) {
     event.preventDefault();
     if (lock.current || !editor) return;
@@ -75,14 +103,15 @@ export default function RealityReview() {
   const accounts = [{ id: null, name: t('reality.cash'), balance: snapshot.balances.cash }, ...snapshot.balances.accounts];
   return <div className="space-y-6 pb-28">
     <header><h1 className="text-3xl font-black">{t('reality.title')}</h1><p className="text-slate-500 mt-3">{t('reality.intro')}</p><p className="text-xs text-slate-500 mt-3">{t('reality.scope')}</p></header>
-    <section className="glass-card p-5"><p className="font-bold">{t('reality.progress', { count: confirmedCount })}</p><progress max={3} value={confirmedCount} className="w-full accent-emerald-500 mt-3" aria-label={t('reality.progress', { count: confirmedCount })} /><div className="flex flex-wrap gap-2 mt-4">{GROUPS.map((group, index) => <button key={group} disabled={busy} aria-pressed={section === group} onClick={() => { setSection(group); setEditor(null); }} className={`btn ${section === group ? 'btn-primary' : 'btn-ghost'}`}>{index + 1}. {t(`reality.sections.${group}`)}{status.sections[group].confirmed ? ' ✓' : ''}</button>)}</div></section>
+    <section className="glass-card p-5"><p className="font-bold">{t('reality.progress', { count: confirmedCount })}</p><progress max={3} value={confirmedCount} className="w-full accent-emerald-500 mt-3" aria-label={t('reality.progress', { count: confirmedCount })} /><div className="flex flex-wrap gap-2 mt-4">{GROUPS.map((group, index) => <button key={group} disabled={busy} aria-pressed={section === group} onClick={() => { setSection(group); setEditor(null); setRestart(null); }} className={`btn ${section === group ? 'btn-primary' : 'btn-ghost'}`}>{index + 1}. {t(`reality.sections.${group}`)}{status.sections[group].confirmed ? ' ✓' : ''}</button>)}</div></section>
     {notice ? <p role="status" className="text-emerald-600 dark:text-emerald-400">{t(`reality.${notice}`)}</p> : null}
-    {error ? <div role="alert"><p className="text-red-600 dark:text-red-400">{t(`reality.${error}`)}</p><button disabled={busy} className="btn btn-ghost mt-2" onClick={() => refresh().then(async () => { if (notice === 'adjusted') await dispatch({ type: 'REFRESH_REALITY' }); setEditor(null); setError(''); }).catch(() => setError('load_error'))}>{t('reality.refresh')}</button></div> : null}
+    {error ? <div role="alert"><p className="text-red-600 dark:text-red-400">{t(`reality.${error}`)}</p><button disabled={busy} className="btn btn-ghost mt-2" onClick={() => refresh().then(async () => { if (['adjusted', 'restarted'].includes(notice)) await dispatch({ type: 'REFRESH_REALITY' }); setEditor(null); setRestart(null); setError(''); }).catch(() => setError('load_error'))}>{t('reality.refresh')}</button></div> : null}
     <section className="glass-card p-5 sm:p-7 space-y-4">
       <h2 className="text-xl font-black">{t(`reality.sections.${section}`)}</h2>
       <p className="text-sm text-slate-500">{t(`reality.explain.${section}`)}</p>
       <p className="text-xs text-slate-500">{selected.confirmedAt ? t('reality.last_confirmed', { date: selected.confirmedAt.slice(0, 10) }) : t('reality.unconfirmed')}{selected.changed ? ` ${t('reality.changed')}` : ''}</p>
-      {section === 'balances' ? <div className="space-y-3">{accounts.map(account => <div key={account.id ?? 'cash'} className="rounded-2xl p-4 bg-black/5 dark:bg-white/5 flex flex-wrap justify-between items-center gap-3"><div><h3 className="font-bold">{account.name}</h3><p className="mt-1">{money(account.balance)}</p></div><button disabled={busy} onClick={() => edit(account)} className="btn btn-ghost">{t('reality.adjust')}</button></div>)}</div> : null}
+      {section === 'balances' ? <div className="space-y-3">{accounts.map(account => <div key={account.id ?? 'cash'} className="rounded-2xl p-4 bg-black/5 dark:bg-white/5 flex flex-wrap justify-between items-center gap-3"><div><h3 className="font-bold">{account.name}</h3><p className="mt-1">{money(account.balance)}</p></div><button disabled={busy} onClick={() => { setRestart(null); edit(account); }} className="btn btn-ghost">{t('reality.adjust')}</button></div>)}
+        <div className="rounded-2xl p-4 border border-amber-500/30"><h3 className="font-bold">{t('reality.restart_title')}</h3><p className="text-sm text-slate-500 mt-1">{t('reality.restart_hint')}</p><button disabled={busy || Boolean(restart)} onClick={() => openRestart(data)} className="btn btn-ghost mt-3">{t('reality.restart_open')}</button></div></div> : null}
       {section === 'commitments' ? <>
         <div className="grid sm:grid-cols-2 gap-4"><p>{t('reality.salary')}<strong className="block mt-2">{money(snapshot.commitments.salary)}</strong></p><p>{t('reality.rent')}<strong className="block mt-2">{money(snapshot.commitments.rent)}</strong><span className="text-xs">{snapshot.commitments.landlord}</span></p></div>
         <h3 className="font-black">{t('reality.debts')}</h3>
@@ -95,7 +124,7 @@ export default function RealityReview() {
         <h3 className="font-black">{t('reality.budgets')}</h3>{snapshot.plan.budgets.map(budget => <p key={budget.category} className="text-sm">{uiCategory(budget.category)}: {money(budget.limit_amount)}</p>)}
         <div className="flex flex-wrap gap-3"><Link to="/metas" className="btn btn-ghost">{t('reality.edit_goals')}</Link><Link to="/orcamento" className="btn btn-ghost">{t('reality.edit_budget')}</Link><Link to="/jornada" className="btn btn-ghost">{t('journey.nav')}</Link></div>
       </> : null}
-      <div className="flex flex-wrap gap-3 pt-4"><button disabled={busy || selected.confirmed || Boolean(editor)} onClick={() => command('confirm', { section, fingerprint: selected.fingerprint })} className="btn btn-primary disabled:opacity-50">{t(selected.confirmed ? 'reality.section_confirmed' : 'reality.confirm_section')}</button><button disabled={busy} onClick={() => command('defer')} className="btn btn-ghost">{t('reality.later')}</button></div>
+      <div className="flex flex-wrap gap-3 pt-4"><button disabled={busy || selected.confirmed || Boolean(editor) || Boolean(restart)} onClick={() => command('confirm', { section, fingerprint: selected.fingerprint })} className="btn btn-primary disabled:opacity-50">{t(selected.confirmed ? 'reality.section_confirmed' : 'reality.confirm_section')}</button><button disabled={busy} onClick={() => command('defer')} className="btn btn-ghost">{t('reality.later')}</button></div>
       <p className="text-xs text-slate-500">{t('reality.confirm_note')}</p>
     </section>
     {editor ? <section className="glass-card p-5 sm:p-7"><h2 className="text-xl font-black">{t('reality.adjust_title', { name: editor.name })}</h2><p className="text-sm text-slate-500 mt-3">{t('reality.adjust_note')}</p>
@@ -107,6 +136,19 @@ export default function RealityReview() {
         <label htmlFor="reality-reason" className="block font-bold text-sm">{t('reality.reason')}<input id="reality-reason" required minLength={3} maxLength={200} value={editor.reason} onChange={event => setEditor(previous => ({ ...previous, reason: event.target.value }))} className="form-input block w-full mt-2" /></label>
         <div className="flex flex-wrap gap-3"><button type="submit" className="btn btn-primary">{t('reality.save_adjustment')}</button><button type="button" onClick={() => setEditor(null)} className="btn btn-ghost">{t('reality.cancel')}</button></div>
       </fieldset></form></section> : null}
+    {restart ? <section className="glass-card p-5 sm:p-7 border border-amber-500/30" aria-label={t('reality.restart_title')}><h2 className="text-xl font-black">{t('reality.restart_title')}</h2><p className="text-sm text-slate-500 mt-3">{t('reality.restart_note')}</p>
+      {restart.step === 'edit' ? <form onSubmit={reviewRestart}><fieldset disabled={busy} className="space-y-4 mt-5">
+        {restart.accounts.map(account => { const key = account.id ?? 'cash'; return <label key={key} htmlFor={`restart-${key}`} className="block font-bold text-sm">{account.name} <span className="font-normal text-slate-500">({t('reality.previous')}: {money(account.balance)})</span><input id={`restart-${key}`} type="number" required min={account.id === null ? 0 : -1e12} max={1e12} step="0.01" value={restart.values[key]} onChange={event => setRestart(previous => ({ ...previous, values: { ...previous.values, [key]: event.target.value } }))} className="form-input block w-full mt-2" /></label>; })}
+        <label htmlFor="restart-date" className="block font-bold text-sm">{t('reality.as_of')}<input id="restart-date" type="date" required max={today()} value={restart.asOf} onChange={event => setRestart(previous => ({ ...previous, asOf: event.target.value }))} className="form-input block w-full mt-2" /></label>
+        <label htmlFor="restart-reason" className="block font-bold text-sm">{t('reality.reason')}<input id="restart-reason" required minLength={3} maxLength={200} value={restart.reason} onChange={event => setRestart(previous => ({ ...previous, reason: event.target.value }))} className="form-input block w-full mt-2" /></label>
+        <div className="flex flex-wrap gap-3"><button type="submit" className="btn btn-primary">{t('reality.restart_review')}</button><button type="button" onClick={() => setRestart(null)} className="btn btn-ghost">{t('reality.cancel')}</button></div>
+      </fieldset></form> : <div className="space-y-3 mt-5">
+        <p className="font-bold">{t('reality.restart_confirm_question')}</p>
+        <ul className="space-y-2 text-sm">{restart.accounts.map(account => <li key={account.id ?? 'cash'}><strong>{account.name}</strong>: {money(account.balance)} → {money(Number(restartValue(account)))}</li>)}</ul>
+        <p className="text-xs text-slate-500">{t('reality.restart_confirm_note')}</p>
+        <div className="flex flex-wrap gap-3"><button disabled={busy} onClick={applyRestart} className="btn btn-primary">{t('reality.restart_apply')}</button><button disabled={busy} onClick={() => setRestart(previous => ({ ...previous, step: 'edit' }))} className="btn btn-ghost">{t('reality.restart_back')}</button></div>
+      </div>}
+    </section> : null}
     <section className="glass-card p-5"><h2 className="font-black">{t('reality.history')}</h2><p className="text-xs text-slate-500 mt-2">{t('reality.history_note')}</p>{adjustments.map(adjustment => <div key={adjustment.requestId} className="border-t border-black/10 dark:border-white/10 mt-4 pt-4 text-sm"><p className="font-bold">{adjustment.accountName || t('reality.cash')}: {money(adjustment.difference)}</p><p className="mt-1">{money(adjustment.previousBalance)} → {money(adjustment.newBalance)} · {adjustment.asOf}</p><p className="mt-1 break-words">{adjustment.reason}</p><p className="mt-1 text-xs text-slate-500">{t('reality.recorded_by', { user: adjustment.userId, date: new Date(adjustment.recordedAt).toLocaleString() })}</p></div>)}</section>
     <div className="flex flex-wrap gap-3"><button disabled={busy || confirmedCount !== 3 || !status.needsReview} onClick={() => command('finish')} className="btn btn-primary disabled:opacity-50">{t('reality.finish')}</button><Link to="/" className="btn btn-ghost">{t('reality.back')}</Link></div>
   </div>;

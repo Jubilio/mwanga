@@ -63,3 +63,27 @@ it('does not resend an adjustment when it was saved but refreshing failed', asyn
   expect(host.textContent).toContain('The change was saved');
   expect(api.post).toHaveBeenCalledTimes(1);
 });
+it('resets every account to zero, asks for confirmation and sends the new balances together', async () => {
+  await click('Reset accounts and restart');
+  expect(host.querySelector('#restart-cash').value).toBe('0');
+  expect(host.querySelector('#restart-7').value).toBe('0');
+  await change('restart-7', '2500');
+  await act(async () => host.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+  expect(api.post).not.toHaveBeenCalled();
+  expect(host.textContent).toContain('Replace the balances of all accounts with these values?');
+  await click('Yes, replace balances');
+  expect(api.post).toHaveBeenCalledWith('/reality-review/reset', expect.objectContaining({ asOf: expect.any(String), reason: 'Restart after a period without using the app', balances: [{ accountId: null, expectedBalance: 100, balance: 0 }, { accountId: 7, expectedBalance: 10000, balance: 2500 }] }));
+  expect(host.textContent).toContain('Balances replaced.');
+  expect(dispatch).toHaveBeenCalledWith({ type: 'REFRESH_REALITY' });
+});
+it('keeps the restart draft and its request ID when the server rejects it', async () => {
+  await click('Reset accounts and restart');
+  await act(async () => host.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+  api.post.mockRejectedValueOnce({ response: { data: { error: 'BALANCE_CHANGED' } } });
+  await click('Yes, replace balances');
+  expect(host.textContent).toContain('The data changed since you saw it.');
+  expect(host.querySelector('#restart-7')).not.toBeNull();
+  await act(async () => host.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+  await click('Yes, replace balances');
+  expect(api.post.mock.calls[1][1].requestId).toBe(api.post.mock.calls[0][1].requestId);
+});
