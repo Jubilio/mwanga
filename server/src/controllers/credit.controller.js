@@ -1,36 +1,17 @@
 const logger = require('../utils/logger');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const { createUploader, handleUploadErrors, DOCUMENT_TYPES } = require('../utils/uploads');
 const { z } = require('zod');
 const creditService = require('../services/credit.service');
 const { submitApplicationSchema, disburseLoanSchema } = require('../schemas/credit.schema');
 
-// Configure Multer for File Uploads
-const uploadDir = path.join(__dirname, '../../uploads/credit');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+const upload = createUploader('credit', DOCUMENT_TYPES);
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, req.user.id + '-' + file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-});
-
-const uploadMiddleware = upload.fields([
+const uploadMiddleware = handleUploadErrors(upload.fields([
   { name: 'biDocument', maxCount: 1 },
   { name: 'residenciaDocument', maxCount: 1 },
   { name: 'rendaDocument', maxCount: 1 },
   { name: 'selfieDocument', maxCount: 1 }
-]);
+]));
 
 const submitApplication = async (req, res, next) => {
   try {

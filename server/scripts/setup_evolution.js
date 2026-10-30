@@ -2,11 +2,17 @@ require('dotenv').config();
 const axios = require('axios');
 
 const EVOLUTION_URL = process.env.EVOLUTION_URL || 'http://localhost:8080';
-const API_KEY = process.env.EVOLUTION_API_KEY || 'mwanga_secret_key_2024';
+const API_KEY = process.env.EVOLUTION_API_KEY;
+const WEBHOOK_SECRET = process.env.WHATSAPP_WEBHOOK_SECRET;
 const INSTANCE_NAME = process.env.EVOLUTION_INSTANCE || 'MwangaMain';
-const WEBHOOK_URL = 'http://host.docker.internal:3001/api/whatsapp/webhook';
+const WEBHOOK_BASE = process.env.WHATSAPP_WEBHOOK_URL || 'http://host.docker.internal:3001/api/whatsapp/webhook';
+const WEBHOOK_URL = `${WEBHOOK_BASE}?token=${encodeURIComponent(WEBHOOK_SECRET || '')}`;
 
 async function setup() {
+  if (!API_KEY || !WEBHOOK_SECRET) {
+    console.error('❌ Defina EVOLUTION_API_KEY e WHATSAPP_WEBHOOK_SECRET no .env antes de configurar.');
+    process.exit(1);
+  }
   console.log(`🚀 Iniciando configuração da Evolution API em ${EVOLUTION_URL}...`);
 
   try {
@@ -31,7 +37,7 @@ async function setup() {
     }
 
     // 2. Configurar Webhook
-    console.log(`🔗 Configurando webhook para: ${WEBHOOK_URL}...`);
+    console.log(`🔗 Configurando webhook para: ${WEBHOOK_BASE}...`);
     const webhookRes = await axios.post(`${EVOLUTION_URL}/webhook/set/${INSTANCE_NAME}`, {
       webhook: {
         enabled: true,
