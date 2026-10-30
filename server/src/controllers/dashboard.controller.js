@@ -113,7 +113,7 @@ const getDashboardSummary = async (req, res) => {
       }).catch((err) => { logger.warn({ err, householdId }, 'dashboard: settings query failed'); return { rows: [] }; }),
 
       db.execute({
-        sql: `SELECT id, name, email, role
+        sql: `SELECT id, name, email, role, created_at
               FROM users WHERE id = ?`,
         args: [userId],
       }).catch((err) => { logger.warn({ err, userId }, 'dashboard: user query failed'); return { rows: [] }; }),
@@ -251,6 +251,7 @@ const getDashboardSummary = async (req, res) => {
       default_expense_account_id: settingsMap.default_expense_account_id || '',
       // subscription_tier vem da tabela real — nunca do default
       subscription_tier: settingsMap.subscription_tier || 'free',
+      trial_ends_at: settingsMap.trial_ends_at || '',
       onboarding_completed: settingsMap.onboarding_completed ?? false,
     };
 

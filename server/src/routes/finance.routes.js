@@ -6,7 +6,7 @@ const { getGoals, createGoal, updateGoalProgress, deleteGoal } = require('../con
 const { getRentals, createRental, deleteRental } = require('../controllers/rental.controller');
 const { getAssets, createAsset, deleteAsset, getLiabilities, createLiability, deleteLiability } = require('../controllers/patrimony.controller');
 const { getXitiques, createXitique, deleteXitique, payContribution, receiveFunds } = require('../controllers/xitique.controller');
-const { getSettings, upsertSetting, updateHousehold } = require('../controllers/settings.controller');
+const { getSettings, upsertSetting, updateHousehold, startTrial } = require('../controllers/settings.controller');
 const { getOverview: getInsights } = require('../controllers/insights.controller');
 const { getDebts, addDebt, deleteDebt, addPayment, updateDebt } = require('../controllers/debt.controller');
 const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require('../controllers/account.controller');
@@ -79,6 +79,7 @@ router.post('/settings/ai/test', aiSettings.test);
 router.delete('/settings/ai', aiSettings.remove);
 router.get('/settings', getSettings);
 router.post('/settings', upsertSetting);
+router.post('/settings/trial', startTrial);
 router.put('/households', updateHousehold);
 
 // Debts

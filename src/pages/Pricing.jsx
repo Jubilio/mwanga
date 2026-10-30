@@ -1,17 +1,26 @@
-import { ui, useUiLanguage } from '../utils/uiTranslation';
+import { useUiLanguage } from '../utils/uiTranslation';
 import React, { useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
-import { Check, Star, Zap, Crown, Globe, Shield, Rocket, ArrowRight } from 'lucide-react';
+import { Check, Star, Zap, Crown, Globe, Shield, Rocket, ArrowRight, MessageCircle, Smartphone } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
+import { PLAN_PRICES } from '../config/features';
+import { getSupportWhatsAppUrl } from '../utils/support';
+
+const DAYS_PER_MONTH = 30;
 
 export default function Pricing() {
   useUiLanguage();
   const { t } = useTranslation();
-  const { } = useFinance();
+  const { state } = useFinance();
+  const { showToast } = useOutletContext?.() || { showToast: console.log };
   const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' or 'annual'
+  const currentTier = state.settings?.subscription_tier || 'free';
+  const supportUrl = getSupportWhatsAppUrl();
 
   const plans = [
     {
+      id: 'free',
       name: t('pricing.plans.starter.name'),
       price: 0,
       desc: t('pricing.plans.starter.desc'),
@@ -22,28 +31,45 @@ export default function Pricing() {
       premium: false
     },
     {
+      id: 'growth',
       name: t('pricing.plans.growth.name'),
-      price: billingCycle === 'monthly' ? 399 : 320,
+      price: PLAN_PRICES.growth[billingCycle],
       desc: t('pricing.plans.growth.desc'),
       icon: Zap,
       color: 'var(--color-gold)',
       popular: true,
-      popularBadge: t('pricing.plans.growth.popular_badge'),
+      popularBadge: t('pricing.plans.growth.badge'),
       features: t('pricing.plans.growth.features', { returnObjects: true }),
       buttonText: t('pricing.plans.growth.btn'),
       premium: true
     },
     {
-      name: t('pricing.plans.legacy.name'),
-      price: billingCycle === 'monthly' ? 999 : 800,
-      desc: t('pricing.plans.legacy.desc'),
+      id: 'pro',
+      name: t('pricing.plans.pro.name'),
+      price: PLAN_PRICES.pro[billingCycle],
+      desc: t('pricing.plans.pro.desc'),
       icon: Crown,
       color: 'var(--color-midnight)',
-      features: t('pricing.plans.legacy.features', { returnObjects: true }),
-      buttonText: t('pricing.plans.legacy.btn'),
+      dark: true,
+      features: t('pricing.plans.pro.features', { returnObjects: true }),
+      buttonText: t('pricing.plans.pro.btn'),
       premium: true
     }
   ];
+
+  const handleChoosePlan = (plan) => {
+    if (!plan.premium || plan.id === currentTier) return;
+    const url = getSupportWhatsAppUrl(t('pricing.payment.message', {
+      plan: plan.name,
+      cycle: t(`pricing.billing.${billingCycle}`),
+      email: state.user?.email || ''
+    }));
+    if (!url) {
+      showToast(t('pricing.payment.unavailable'));
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <div className="animate-fade-in" style={{ paddingBottom: '4rem' }}>
@@ -69,7 +95,7 @@ export default function Pricing() {
           fontFamily: 'var(--font-display)', 
           fontSize: '2.5rem', 
           fontWeight: 900, 
-          color: 'var(--color-dark)',
+          color: 'var(--color-text)',
           marginBottom: '1rem'
         }}>
           <Trans i18nKey="pricing.title" components={{ span: <span style={{ color: 'var(--color-gold)' }} /> }} />
@@ -131,23 +157,24 @@ export default function Pricing() {
         gap: '2rem',
         alignItems: 'stretch'
       }}>
-        {plans.map((plan, idx) => (
-          <div key={idx} className="glass-card animate-fade-in-up" style={{ 
+        {plans.map((plan, idx) => {
+          const isCurrent = plan.id === currentTier;
+          return (
+          <div key={plan.id} className="glass-card animate-fade-in-up" style={{ 
             padding: '2.5rem 2rem', 
             position: 'relative',
             display: 'flex',
             flexDirection: 'column',
             animationDelay: `${idx * 0.1}s`,
             border: plan.popular ? '2px solid var(--color-gold)' : '1px solid var(--color-glass-border)',
-            background: plan.name === t('pricing.plans.legacy.name') ? 'linear-gradient(180deg, var(--color-midnight), #1c3545)' : 'var(--color-glass-bg)',
-            color: plan.name === t('pricing.plans.legacy.name') ? 'white' : 'var(--color-text)'
+            background: plan.dark ? 'linear-gradient(180deg, var(--color-midnight), #1c3545)' : 'var(--color-glass-bg)',
+            color: plan.dark ? 'white' : 'var(--color-text)'
           }}>
             {plan.popular && (
               <div style={{ 
-                position: 'absolute', 
-                top: '-14px', 
-                left: '50%', 
-                transform: 'translateX(-50%)',
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
                 background: 'var(--color-gold)',
                 color: 'white',
                 padding: '0.25rem 1rem',
@@ -155,6 +182,7 @@ export default function Pricing() {
                 fontSize: '0.7rem',
                 fontWeight: 800,
                 textTransform: 'uppercase',
+                whiteSpace: 'nowrap',
                 boxShadow: '0 4px 12px rgba(201,150,58,0.3)'
               }}>
                 {plan.popularBadge}
@@ -166,23 +194,28 @@ export default function Pricing() {
                 width: '48px', 
                 height: '48px', 
                 borderRadius: '14px', 
-                background: plan.name === t('pricing.plans.legacy.name') ? 'rgba(255,255,255,0.1)' : `${plan.color}15`,
+                background: plan.dark ? 'rgba(255,255,255,0.1)' : `${plan.color}15`,
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                color: plan.name === t('pricing.plans.legacy.name') ? 'var(--color-gold)' : plan.color,
+                color: plan.dark ? 'var(--color-gold)' : plan.color,
                 marginBottom: '1.5rem'
               }}>
                 <plan.icon size={26} />
               </div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>{ui(plan.name)}</h3>
-              <p style={{ fontSize: '0.9rem', opacity: 0.7, marginBottom: '1.5rem' }}>{ui(plan.desc)}</p>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>{plan.name}</h3>
+              <p style={{ fontSize: '0.9rem', opacity: 0.7, marginBottom: '1.5rem' }}>{plan.desc}</p>
               
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
                 <span style={{ fontSize: '2rem', fontWeight: 900 }}>{plan.price}</span>
-                <span style={{ fontSize: '0.9rem', fontWeight: 600, opacity: 0.7 }}>MZN</span>
-                <span style={{ fontSize: '0.85rem', opacity: 0.5 }}>{ui("/mês")}</span>
+                <span style={{ fontSize: '0.9rem', fontWeight: 600, opacity: 0.7 }}>MT</span>
+                <span style={{ fontSize: '0.85rem', opacity: 0.5 }}>{t('pricing.billing.per_month')}</span>
               </div>
+              {plan.price > 0 && (
+                <div style={{ fontSize: '0.8rem', fontWeight: 600, opacity: 0.75, marginTop: '0.2rem' }}>
+                  {t('pricing.billing.per_day', { amount: Math.round(plan.price / DAYS_PER_MONTH) })}
+                </div>
+              )}
               {billingCycle === 'annual' && plan.price > 0 && (
                 <div style={{ fontSize: '0.7rem', color: 'var(--color-leaf)', fontWeight: 600, marginTop: '0.2rem' }}>
                   {t('pricing.billing.annual_total', { total: plan.price * 12 })}
@@ -201,7 +234,7 @@ export default function Pricing() {
                       width: '18px', 
                       height: '18px', 
                       borderRadius: '50%', 
-                      background: plan.name === t('pricing.plans.legacy.name') ? 'var(--color-leaf)' : 'var(--color-leaf)20',
+                      background: plan.dark ? 'var(--color-leaf)' : 'var(--color-leaf)20',
                       color: 'var(--color-leaf)',
                       display: 'flex',
                       alignItems: 'center',
@@ -217,17 +250,40 @@ export default function Pricing() {
               </ul>
             </div>
 
-            <button className={plan.premium ? 'btn btn-primary' : 'btn btn-ghost'} style={{ 
+            <button
+              type="button"
+              onClick={() => handleChoosePlan(plan)}
+              disabled={isCurrent || !plan.premium}
+              className={plan.premium && !isCurrent ? 'btn btn-primary' : 'btn btn-ghost'}
+              style={{ 
               width: '100%', 
               padding: '1rem', 
               fontSize: '0.95rem',
-              background: plan.premium ? (plan.name === t('pricing.plans.legacy.name') ? 'var(--color-gold)' : undefined) : 'rgba(0,0,0,0.05)',
-              color: plan.name === t('pricing.plans.legacy.name') ? 'var(--color-dark)' : undefined
+              background: plan.premium && !isCurrent ? (plan.dark ? 'var(--color-gold)' : undefined) : 'rgba(0,0,0,0.05)',
+              cursor: isCurrent || !plan.premium ? 'default' : 'pointer',
+              color: plan.dark ? 'var(--color-dark)' : undefined
             }}>
-              {plan.buttonText} {plan.premium && <ArrowRight size={18} />}
+              {isCurrent ? t('pricing.current') : plan.buttonText} {plan.premium && !isCurrent && <ArrowRight size={18} />}
             </button>
           </div>
-        ))}
+          );
+        })}
+      </div>
+
+      {/* Local payment + human contact */}
+      <div className="glass-card" style={{ marginTop: '3rem', padding: '1.5rem 2rem', display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flex: '1 1 320px' }}>
+          <Smartphone size={32} color="var(--color-leaf)" style={{ flexShrink: 0 }} />
+          <div>
+            <h4 style={{ fontSize: '1rem', fontWeight: 800 }}>{t('pricing.payment.title')}</h4>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-muted)' }}>{t('pricing.payment.desc')}</p>
+          </div>
+        </div>
+        {supportUrl && (
+          <a href={supportUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            <MessageCircle size={18} /> {t('pricing.payment.whatsapp')}
+          </a>
+        )}
       </div>
 
       {/* Footer / FAQ / Trust */}
@@ -242,8 +298,8 @@ export default function Pricing() {
         <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <Globe size={32} color="var(--color-gold)" />
           <div>
-            <h4 style={{ fontSize: '0.9rem', fontWeight: 700 }}>{t('pricing.trust.moza_pride_title')}</h4>
-            <p style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>{t('pricing.trust.moza_pride_desc')}</p>
+            <h4 style={{ fontSize: '0.9rem', fontWeight: 700 }}>{t('pricing.trust.local_title')}</h4>
+            <p style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>{t('pricing.trust.local_desc')}</p>
           </div>
         </div>
         <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>

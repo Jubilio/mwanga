@@ -1,33 +1,18 @@
 import { useFinance } from './useFinance';
+import { getEffectiveTier, hasFeatureAccess } from '../config/features';
 
 /**
- * Hook para verificar se o utilizador tem acesso a features Pro
- * Por padrão em desenvolvimento, todos têm acesso
+ * Hook para verificar o acesso a features pagas, contando com o período de teste.
  */
 export function useProFeatures() {
     const { state } = useFinance();
 
-    const isPro = state.settings?.subscription_tier === 'pro' || state.settings?.subscription_tier === 'legacy';
-
-    const hasFeature = (featureName) => {
-        // Mapeamento de features por tier
-        const features = {
-            free: ['jornada', 'transacoes', 'orcamento', 'habitacao', 'metas'],
-            growth: ['jornada', 'transacoes', 'orcamento', 'habitacao', 'metas', 'dividas', 'patrimonio', 'relatorio'],
-            pro: ['jornada', 'transacoes', 'orcamento', 'habitacao', 'metas', 'dividas', 'patrimonio', 'relatorio',
-                'xitique', 'credito', 'simuladores', 'insights', 'nexovibe', 'sms-import'],
-            legacy: ['*'] // Legacy/admin tier has all features
-        };
-
-        const tier = state.settings?.subscription_tier || 'free';
-        const allowedFeatures = features[tier] || features.free;
-
-        return allowedFeatures.includes('*') || allowedFeatures.includes(featureName);
-    };
+    const tier = getEffectiveTier(state.settings);
+    const hasFeature = (featureName) => hasFeatureAccess(tier, featureName);
 
     return {
-        isPro,
-        subscription_tier: state.settings?.subscription_tier || 'free',
+        isPro: tier === 'pro' || tier === 'legacy',
+        subscription_tier: tier,
         hasFeature,
         // Specific feature checks
         canUseXitique: hasFeature('xitique'),

@@ -1,7 +1,7 @@
 import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { Wallet, LogIn, UserPlus, Lock, Mail, User } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
@@ -32,8 +32,9 @@ function getCurrentOrigin() {
 export default function Login() {
   useUiLanguage();
   const { t } = useTranslation();
-  const [isLogin, setIsLogin] = useState(true);
-  const [form, setForm] = useState({ name: '', email: '', password: '', householdName: '' });
+  const [searchParams] = useSearchParams();
+  const [isLogin, setIsLogin] = useState(searchParams.get('modo') !== 'registo');
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const { reloadData } = useFinance();
   const navigate = useNavigate();
@@ -289,20 +290,6 @@ export default function Login() {
               </div>
             )}
           </div>
-
-          {!isLogin && (
-            <div>
-              <label className="form-label">{t('auth.register.family_label')}</label>
-              <input
-                type="text"
-                maxLength={100}
-                className="form-input"
-                placeholder={t('auth.register.family_placeholder')}
-                value={form.householdName}
-                onChange={(e) => setForm({ ...form, householdName: e.target.value })}
-              />
-            </div>
-          )}
 
           <button
             type="submit"

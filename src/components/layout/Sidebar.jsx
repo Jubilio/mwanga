@@ -6,6 +6,7 @@ import { useFinance } from '../../hooks/useFinance';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
 import MwangaLogo from '../MwangaLogo';
+import { getEffectiveTier, hasFeatureAccess } from '../../config/features';
 
 // ─── PRO Badge ───────────────────────────────────────────────────────────────
 function ProBadge() {
@@ -105,7 +106,8 @@ export default function Sidebar({ isOpen, onClose }) {
   const userName = state.user?.name || t('sidebar.user.default_name');
   const familyName = state.settings?.household_name || t('sidebar.user.default_household');
   const userInitial = userName.charAt(0).toUpperCase();
-  const isPro = state.settings?.subscription_tier === 'pro' || state.settings?.subscription_tier === 'legacy';
+  const tier = getEffectiveTier(state.settings);
+  const isFree = tier === 'free';
 
   const handleLogout = () => {
     localStorage.removeItem('mwanga-token');
@@ -269,7 +271,7 @@ export default function Sidebar({ isOpen, onClose }) {
                             color: isActive ? '#F59E0B' : item.highlight ? '#e0a840' : '#4a5568',
                             fontWeight: isActive ? 600 : item.highlight ? 500 : 400,
                           }}>{ui(item.label)}</span>
-                          {!isPro && <ProBadge />}
+                          {!hasFeatureAccess(tier, item.to.slice(1)) && <ProBadge />}
                         </>
                       )}
                     </NavLink>
@@ -338,7 +340,7 @@ export default function Sidebar({ isOpen, onClose }) {
           ))}
         </nav>
 
-        {!isPro && (
+        {isFree && (
           <div style={{ padding: '0 16px 20px' }}>
             <div style={{
               background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(249,115,22,0.08))',
