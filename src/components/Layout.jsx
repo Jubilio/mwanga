@@ -48,6 +48,7 @@ import { useTranslation } from 'react-i18next';
 import MwangaLogo from './MwangaLogo';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useSmsSync } from '../hooks/useSmsSync';
+import { SMS_INBOX_ENABLED } from '../config/features';
 
   // Dynamic items will be generated inside the component using t()
 
@@ -112,7 +113,7 @@ export default function Layout() {
 
   // Auto SMS Sync
   useEffect(() => {
-    if (state.settings?.sms_automation_enabled && !state.loading) {
+    if (SMS_INBOX_ENABLED && state.settings?.sms_automation_enabled && !state.loading) {
       // Delay initial sync to avoid crashing during transition
       const timer = setTimeout(() => {
         syncSms().catch(err => console.warn('Auto SMS sync failed:', err));

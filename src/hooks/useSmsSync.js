@@ -5,6 +5,7 @@ import { Capacitor } from '@capacitor/core';
 import { useFinance } from './useFinance';
 import { parseMobileMoneySMS } from '../utils/smsParser';
 import api from '../utils/api';
+import { SMS_INBOX_ENABLED } from '../config/features';
 
 export function useSmsSync(showToast) {
   useUiLanguage();
@@ -12,6 +13,7 @@ export function useSmsSync(showToast) {
   const { settings, contas, transacoes } = state;
 
   const syncSms = useCallback(async (manual = false) => {
+    if (!SMS_INBOX_ENABLED) return;
     if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'android') {
       if (manual) showToast?.(ui("Sincronização SMS só funciona na App Nativa (Android)."), 'error');
       return;

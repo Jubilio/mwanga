@@ -2,6 +2,7 @@ import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { Wallet, TrendingUp, Home as HomeIcon, Zap, Sparkles, RefreshCcw, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSmsSync } from '../../hooks/useSmsSync';
+import { SMS_INBOX_ENABLED } from '../../config/features';
 import { useOutletContext } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 
@@ -161,6 +162,7 @@ export default function TabFinancas({ form, setFormDirty, state }) {
               </select>
             </div>
 
+            {SMS_INBOX_ENABLED && (<>
             <button type="button" role="switch" aria-checked={form.sms_automation_enabled} aria-label={t('settings.financas.sms_sync_label')}
               onClick={() => {
                 if (!isNative) {
@@ -193,6 +195,7 @@ export default function TabFinancas({ form, setFormDirty, state }) {
               >
                 <RefreshCcw size={14} /> {ui("Sincronizar SMS Agora")} </button>
             )}
+            </>)}
           </div>
         </div>
       </div>
