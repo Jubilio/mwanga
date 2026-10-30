@@ -1150,10 +1150,11 @@
     "includes": "O que inclui:",
     "payment": {
       "title": "Pague com M-Pesa ou e-Mola",
-      "desc": "Escolha o plano e envie-nos uma mensagem no WhatsApp. Confirmamos o pagamento e activamos o plano na sua conta.",
+      "desc": "Escolha o plano e pague com M-Pesa, e-Mola ou cartão através da PaySuite. O plano fica activo assim que o pagamento é confirmado.",
       "whatsapp": "Dúvidas antes de pagar? Fale connosco no WhatsApp",
       "message": "Olá! Quero activar o plano {{plan}} ({{cycle}}) no Mwanga. A minha conta é {{email}}.",
-      "unavailable": "O pagamento ainda não está disponível nesta versão. Tente mais tarde."
+      "unavailable": "O pagamento ainda não está disponível nesta versão. Tente mais tarde.",
+      "pending": "Ainda não recebemos a confirmação do pagamento. Se pagou, o plano será activado em breve."
     },
     "trust": {
       "security_title": "Dados protegidos",
