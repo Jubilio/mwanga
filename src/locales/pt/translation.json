@@ -37,9 +37,9 @@
       "later_btn": "Talvez mais tarde"
     },
     "premium_cta": {
-      "title": "NEXO VIBE PREMIUM",
-      "desc": "Desbloqueie Inteligência Avançada, Relatórios Detalhados e Simuladores Exclusivos.",
-      "btn": "✦ Fazer Upgrade"
+      "title": "PLANO CRESCIMENTO",
+      "desc": "Dívidas, património e relatórios do mês. Cerca de 13 MT por dia.",
+      "btn": "Ver planos"
     },
     "user": {
       "settings_tooltip": "Definições",
@@ -380,6 +380,42 @@
     },
     "charts": {
       "trend_empty": "Ainda não há dados para mostrar a evolução do saldo."
+    },
+    "first_steps": {
+      "title": "Primeiros passos",
+      "progress": "{{current}} de {{total}} passos concluídos",
+      "dismiss": "Esconder",
+      "steps": {
+        "account": {
+          "label": "Conta criada",
+          "cta": ""
+        },
+        "transaction": {
+          "label": "Registe a primeira despesa",
+          "cta": "Registar"
+        },
+        "budget": {
+          "label": "Defina um orçamento por categoria",
+          "cta": "Criar orçamento"
+        },
+        "goal": {
+          "label": "Crie uma meta de poupança",
+          "cta": "Criar meta"
+        }
+      }
+    },
+    "trial": {
+      "offer_title": "Experimente o plano Crescimento durante 14 dias",
+      "offer_body": "Já usa o Mwanga há mais de um mês. Experimente dívidas, património e relatórios sem pagar nada. No fim volta sozinho ao plano grátis, sem cobranças.",
+      "offer_cta": "Começar teste grátis",
+      "offer_dismiss": "Agora não",
+      "active_one": "Teste do plano Crescimento: falta {{count}} dia.",
+      "active_other": "Teste do plano Crescimento: faltam {{count}} dias.",
+      "ending_one": "O seu teste termina em {{count}} dia. Depois volta ao plano grátis, sem cobranças, e os seus dados ficam guardados.",
+      "ending_other": "O seu teste termina em {{count}} dias. Depois volta ao plano grátis, sem cobranças, e os seus dados ficam guardados.",
+      "see_plans": "Ver planos",
+      "started": "Teste iniciado. Tem 14 dias de plano Crescimento.",
+      "error": "Não foi possível iniciar o teste."
     }
   },
   "transactions": {
@@ -1043,9 +1079,9 @@
       "subscription": "Plano atual",
       "all_features": "Todas as funcionalidades",
       "tiers": {
-        "free": "Mwanga — Gratuito",
+        "free": "Mwanga — Starter (grátis)",
         "growth": "Mwanga — Crescimento",
-        "pro": "Mwanga — Pro",
+        "pro": "Mwanga — Património",
         "legacy": "Mwanga — Acesso completo"
       },
       "whatsapp_example": "258841234567",
@@ -1059,69 +1095,73 @@
     }
   },
   "pricing": {
-    "tag": "Planos Mwanga ✦",
-    "title": "Escolha o seu nível de <span>Prosperidade</span>",
-    "description": "Mwanga é mais que controle de gastos. É a sua jornada para o crescimento patrimonial em Moçambique.",
+    "tag": "Planos Mwanga",
+    "title": "Comece grátis. Pague só quando precisar de <span>mais</span>.",
+    "description": "Todos os planos funcionam no telemóvel e no computador. Pode mudar ou cancelar quando quiser.",
     "billing": {
       "monthly": "Mensal",
       "annual": "Anual",
       "discount": "(-20%)",
-      "annual_total": "Cobrado anualmente ({{total}} MZN)"
+      "annual_total": "Cobrado anualmente ({{total}} MT)",
+      "per_month": "/mês",
+      "per_day": "cerca de {{amount}} MT por dia"
     },
     "plans": {
       "starter": {
         "name": "Starter",
-        "desc": "Para quem está a começar a organizar a casa.",
-        "btn": "Plano Actual",
+        "desc": "Para organizar as contas da casa.",
+        "btn": "Começar grátis",
         "features": [
-          "1 Agregado Familiar",
-          "Até 2 utilizadores",
-          "Dashboard Essencial",
-          "Transações Ilimitadas",
-          "1 Xitique Ativo",
-          "Relatórios Simples (PDF)",
-          "Histórico de 12 meses"
+          "Transações ilimitadas",
+          "Orçamento por categoria",
+          "Metas de poupança",
+          "Habitação e rendas",
+          "Xitique",
+          "Jornada financeira"
         ]
       },
       "growth": {
         "name": "Crescimento",
-        "desc": "O poder da inteligência financeira na sua mão.",
-        "btn": "Evoluir para Crescimento",
-        "popular_badge": "Mais Popular",
+        "desc": "Para famílias que querem planear, não só registar.",
+        "btn": "Escolher Crescimento",
+        "badge": "Recomendado para famílias",
         "features": [
-          "Utilizadores Ilimitados",
-          "Xitiques Ilimitados",
-          "Score Financeiro Avançado",
-          "Simuladores Inteligentes",
-          "Gestão de Património",
-          "Exportação Excel/CSV",
-          "Alertas Proactivos",
-          "Histórico Ilimitado"
+          "Tudo do Starter",
+          "Dívidas e calendário de pagamentos",
+          "Património: activos e passivos",
+          "Relatórios do mês"
         ]
       },
-      "legacy": {
+      "pro": {
         "name": "Património",
-        "desc": "Domine o seu legado e garanta o futuro.",
-        "btn": "Dominar Património",
+        "desc": "Para quem gere crédito, investimentos e reforma.",
+        "btn": "Escolher Património",
         "features": [
-          "Tudo do plano Crescimento",
-          "Projeções Financeiras (BI)",
-          "Simulador de Juros Compostos",
-          "Planeamento de Reforma",
-          "Suporte Prioritário 24/7",
-          "Relatórios de Auditoria FAM",
-          "Acesso Antecipado a Novas Funcionalidades"
+          "Tudo do Crescimento",
+          "Simuladores: orçamento, salário, investimento e reforma",
+          "Crédito",
+          "Insights da Binth",
+          "Importação de SMS",
+          "Máquina do Tempo e Mordomia"
         ]
       }
     },
+    "current": "O seu plano actual",
     "includes": "O que inclui:",
+    "payment": {
+      "title": "Pague com M-Pesa ou e-Mola",
+      "desc": "Escolha o plano e envie-nos uma mensagem no WhatsApp. Confirmamos o pagamento e activamos o plano na sua conta.",
+      "whatsapp": "Dúvidas antes de pagar? Fale connosco no WhatsApp",
+      "message": "Olá! Quero activar o plano {{plan}} ({{cycle}}) no Mwanga. A minha conta é {{email}}.",
+      "unavailable": "O pagamento ainda não está disponível nesta versão. Tente mais tarde."
+    },
     "trust": {
-      "security_title": "Segurança Bancária",
-      "security_desc": "Dados encriptados de ponta a ponta.",
-      "moza_pride_title": "Orgulho Moçambicano",
-      "moza_pride_desc": "Tecnologia local para o mundo.",
-      "cancel_title": "Cancelamento Fácil",
-      "cancel_desc": "Sem contratos, cancele quando quiser."
+      "security_title": "Dados protegidos",
+      "security_desc": "Ligação encriptada (HTTPS) e documentos de identificação guardados com encriptação AES-256.",
+      "local_title": "Feito em Moçambique",
+      "local_desc": "Metical, xitique e as despesas da família.",
+      "cancel_title": "Cancele quando quiser",
+      "cancel_desc": "Sem contratos. Os seus dados continuam acessíveis no plano grátis."
     }
   },
   "help": {
@@ -1307,7 +1347,7 @@
     },
     "register": {
       "title": "Criar conta",
-      "subtitle": "Crie a sua conta para começar a organizar a vida financeira da família.",
+      "subtitle": "Crie a conta grátis. Pode acrescentar a família depois.",
       "name_label": "Nome completo",
       "name_placeholder": "Ex: João Silva",
       "password_tip": "Use pelo menos 8 caracteres.",
@@ -2457,5 +2497,47 @@
     "finish": "Concluir revisão",
     "back": "Voltar ao dashboard",
     "recorded_by": "Registado pelo utilizador {{user}} em {{date}}"
+  },
+  "landing": {
+    "login": "Entrar",
+    "title": "Saiba para onde vai o seu dinheiro, em meticais.",
+    "subtitle": "Registe despesas, controle o orçamento da casa e acompanhe o seu xitique, tudo num só lugar. Grátis para começar.",
+    "cta": "Começar grátis",
+    "cta_note": "Sem cartão. Entre com Google ou email em menos de um minuto.",
+    "login_link": "Já tenho conta",
+    "trust": {
+      "local": "Feito em Moçambique pela NexoVibe",
+      "security": "Ligação encriptada",
+      "whatsapp": "Fale connosco no WhatsApp"
+    },
+    "features_title": "O que pode fazer no plano grátis",
+    "features": [
+      {
+        "title": "Despesas e orçamento",
+        "desc": "Veja num só ecrã quanto entrou, quanto saiu e que categoria passou do limite."
+      },
+      {
+        "title": "Metas de poupança",
+        "desc": "Defina um objectivo e acompanhe quanto falta, mês a mês."
+      },
+      {
+        "title": "Xitique",
+        "desc": "Registe contribuições e saiba quando é a sua vez de receber."
+      },
+      {
+        "title": "Habitação e rendas",
+        "desc": "Acompanhe a renda e os compromissos fixos da casa."
+      }
+    ],
+    "steps_title": "Comece em três passos",
+    "steps": [
+      "Crie a conta grátis",
+      "Registe a primeira despesa",
+      "Defina um orçamento e uma meta"
+    ],
+    "honest_title": "Ainda estamos a crescer",
+    "honest_body": "A app Android ainda está em desenvolvimento. Hoje o Mwanga funciona no navegador do telemóvel e do computador, e pode instalá-lo no ecrã inicial.",
+    "final_title": "Comece hoje a organizar o próximo mês.",
+    "footer": "Mwanga · um produto NexoVibe"
   }
 }

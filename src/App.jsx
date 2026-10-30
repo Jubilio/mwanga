@@ -7,6 +7,7 @@ import { useFinance } from './hooks/useFinance';
 import ErrorBoundary from './components/ErrorBoundary';
 import Lenis from 'lenis';
 import { MwangaTooltipProvider } from './components/ui/MwangaTooltip';
+import { Capacitor } from '@capacitor/core';
 
 // Critical path — loaded immediately
 import Dashboard from './pages/Dashboard';
@@ -34,6 +35,7 @@ const Insights = lazy(() => import('./pages/Insights'));
 const Stewardship = lazy(() => import('./pages/Stewardship'));
 const Help = lazy(() => import('./pages/Help'));
 const TimeMachine = lazy(() => import('./pages/TimeMachine'));
+const Landing = lazy(() => import('./pages/Landing'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const AdminLayout = lazy(() => import('./components/AdminLayout'));
@@ -115,7 +117,8 @@ function RequireAuth({ children }) {
       </div>
     </div>
   );
-  if (!token) return <Navigate to="/login" replace />;
+  // Web visitors without a session see the public page first; the native app goes straight to login.
+  if (!token) return <Navigate to={Capacitor.isNativePlatform() ? '/login' : '/bem-vindo'} replace />;
 
   return (
     <>
@@ -193,6 +196,7 @@ export default function App() {
               </Route>
 
               {/* ── Public auth pages ── */}
+              <Route path="bem-vindo" element={<Landing />} />
               <Route path="login" element={<Login />} />
               <Route path="forgot-password" element={<ForgotPassword />} />
               <Route path="reset-password" element={<ResetPassword />} />
