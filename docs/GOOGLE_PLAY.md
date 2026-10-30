@@ -4,6 +4,28 @@ O Visual Studio App Center foi descontinuado em março de 2025, por isso este gu
 um AAB assinado, a Play Console e (opcional) o workflow "Android installer" do GitHub para enviar novas versões.
 Os comandos Windows assumem o projeto em `C:\Users\USER\Documents\Project\mwanga` e o PowerShell.
 
+## 0. Preparar o computador (uma vez)
+
+No PowerShell:
+
+```powershell
+winget install OpenJS.NodeJS.LTS
+winget install Google.AndroidStudio
+```
+
+Abra o Android Studio uma vez e conclua o assistente ("Standard"). Depois, em More Actions → SDK Manager,
+instale "Android 16 (API 36)" e, no separador SDK Tools, "Android SDK Build-Tools 36".
+
+O Android Studio traz o Java (JBR). Aponte para ele e para o SDK e **feche e volte a abrir o PowerShell**:
+
+```powershell
+setx JAVA_HOME "C:\Program Files\Android\Android Studio\jbr"
+setx ANDROID_HOME "$env:LOCALAPPDATA\Android\Sdk"
+setx PATH "$env:PATH;C:\Program Files\Android\Android Studio\jbr\bin"
+```
+
+Confirme numa janela nova: `node -v` (22 ou mais), `npm -v`, `java -version` (21) e `keytool -help`.
+
 ## 1. Criar a chave de upload (uma vez)
 
 Guarde a chave fora do repositório. Se a perder, terá de pedir ao Google a troca da chave de upload.
@@ -14,7 +36,7 @@ keytool -genkeypair -v -keystore C:\Users\USER\Documents\mwanga-keys\mwanga-uplo
   -alias mwanga-upload -keyalg RSA -keysize 2048 -validity 10000
 ```
 
-`keytool` vem com o JDK 21. Anote as passwords num gestor de passwords e faça uma cópia de segurança do `.jks`.
+`keytool` vem com o Java do passo 0. Anote as passwords num gestor de passwords e faça uma cópia de segurança do `.jks`.
 Com a assinatura de apps do Google Play (ativa por defeito), esta chave é só a chave de upload;
 o Google guarda a chave final que assina a app instalada.
 
