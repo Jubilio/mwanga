@@ -79,7 +79,7 @@ export default function NotificationPanel({
     <div className={`fixed inset-0 z-100 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
       <div className="absolute inset-0 backdrop-blur-xs opacity-20 bg-linear-to-b from-transparent to-black/20" onClick={onClose} />
       <div
-        className={`absolute right-0 top-0 h-full w-80 border-l border-white/10 bg-white p-6 shadow-2xl transition-transform duration-300 dark:bg-[#1a1a1a] ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`absolute right-0 top-0 h-full w-80 border-l border-white/10 bg-white p-6 pt-[calc(1.5rem+var(--sat))] shadow-2xl transition-transform duration-300 dark:bg-[#1a1a1a] ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
         style={{ willChange: 'transform' }}
       >
         <div className="mb-6 flex items-center justify-between">

@@ -32,8 +32,15 @@ const config: CapacitorConfig = {
       androidSplashResourceName: "splash",
       androidScaleType: "CENTER_CROP",
       showSpinner: false,
-      splashFullScreen: true,
-      splashImmersive: true,
+      // Fullscreen/immersive splash hides the system bars and the plugin never
+      // shows them again, so the app header ended up under the status bar.
+      splashFullScreen: false,
+      splashImmersive: false,
+    },
+    SystemBars: {
+      // Capacitor injects --safe-area-inset-* for WebViews where env() reports 0.
+      insetsHandling: "css",
+      style: "DEFAULT"
     }
   }
 };
