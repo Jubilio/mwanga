@@ -40,3 +40,17 @@ it('ends the session on 401', async () => {
   expect(clearToken).toHaveBeenCalled();
   expect(dispatch).toHaveBeenCalledWith({ type: 'RESET_SESSION' });
 });
+
+it('parses a JSON body that arrives as text from the native HTTP bridge', async () => {
+  fetch.mockResolvedValueOnce(json(JSON.stringify({ transactions: [{ id: 3 }], accounts: [{ id: 4 }] })));
+  const data = await fetchAllData({}, vi.fn(), noDelay);
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(data.ts).toEqual([{ id: 3 }]);
+  expect(data.accounts).toEqual([{ id: 4 }]);
+});
+
+it('treats a non-JSON 200 as a failed load instead of an empty household', async () => {
+  fetch.mockImplementation(async () => json('<html>Service waking up</html>'));
+  const err = await fetchAllData({}, vi.fn(), noDelay).catch(e => e);
+  expect(err).toBeInstanceOf(DataLoadError);
+});

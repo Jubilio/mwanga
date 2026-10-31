@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Capacitor } from '@capacitor/core';
 import { useFinance } from '../hooks/useFinance';
 import { hideSplash } from '../utils/splash';
+import { ui, useUiLanguage } from '../utils/uiTranslation';
+import { FINANCIAL_QUOTE_TEXTS } from '../utils/financialQuotes';
 
 const MotionDiv = motion.div;
 const MotionSvg = motion.svg;
@@ -11,17 +13,29 @@ const MotionSpan = motion.span;
 
 // Long enough for the intro animation to finish even when the data is cached.
 const MIN_VISIBLE_MS = 1600;
-// Past this the regular loading screen behind the splash takes over.
-const MAX_VISIBLE_MS = 45000;
+// Past this the regular loading screen behind the splash takes over. A Render cold
+// start plus the client retries can take well over a minute.
+const MAX_VISIBLE_MS = 120000;
+const QUOTE_ROTATE_MS = 6000;
+// Status line while the app waits for the server, by elapsed time.
+const STATUS_STEPS = [
+  [0, 'Sincronizando dados financeiros...'],
+  [8000, 'O servidor está a acordar, pode levar até um minuto...'],
+  [40000, 'Quase pronto, a terminar de carregar os teus dados...'],
+];
+const randomQuoteIndex = () => Math.floor(Math.random() * FINANCIAL_QUOTE_TEXTS.length);
 
 /**
  * Animated launch screen for the Android app. It takes over from the static native
  * splash (same background colour) and stays until the first data load finishes.
  */
 export default function AppSplash() {
+  useUiLanguage();
   const { state } = useFinance();
   const [minElapsed, setMinElapsed] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const [quoteIndex, setQuoteIndex] = useState(randomQuoteIndex);
   const native = Capacitor.isNativePlatform();
 
   useEffect(() => {
@@ -34,6 +48,16 @@ export default function AppSplash() {
   }, [native]);
 
   const visible = native && !timedOut && (state.loading || !minElapsed);
+
+  // Messages change only while the splash is up, so nothing keeps ticking afterwards.
+  useEffect(() => {
+    if (!visible) return undefined;
+    const started = Date.now();
+    const tick = setInterval(() => setElapsed(Date.now() - started), 1000);
+    const rotate = setInterval(() => setQuoteIndex(i => (i + 1) % FINANCIAL_QUOTE_TEXTS.length), QUOTE_ROTATE_MS);
+    return () => { clearInterval(tick); clearInterval(rotate); };
+  }, [visible]);
+  const status = STATUS_STEPS.filter(([after]) => elapsed >= after).pop()[1];
 
   return (
     <AnimatePresence>
@@ -85,7 +109,27 @@ export default function AppSplash() {
             <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.28em', color: '#7dd3fc' }}>FINANCIAL LIGHT</span>
           </MotionDiv>
 
-          <div style={{ display: 'flex', gap: 8, marginTop: 16 }} aria-hidden="true">
+          <MotionDiv
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.1, duration: 0.5 }}
+            style={{ minHeight: 72, maxWidth: 320, padding: '0 24px', textAlign: 'center' }}
+          >
+            <AnimatePresence mode="wait">
+              <MotionDiv
+                key={quoteIndex}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.4 }}
+                style={{ fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(241, 245, 249, 0.85)' }}
+              >
+                "{ui(FINANCIAL_QUOTE_TEXTS[quoteIndex])}"
+              </MotionDiv>
+            </AnimatePresence>
+          </MotionDiv>
+
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }} aria-hidden="true">
             {[0, 1, 2].map(i => (
               <MotionSpan
                 key={i}
@@ -96,6 +140,10 @@ export default function AppSplash() {
               />
             ))}
           </div>
+
+          <span aria-live="polite" style={{ fontSize: 12, fontWeight: 500, color: 'rgba(125, 211, 252, 0.9)', textAlign: 'center', padding: '0 24px' }}>
+            {ui(status)}
+          </span>
         </MotionDiv>
       )}
     </AnimatePresence>
