@@ -155,7 +155,7 @@ export default function AdminEmails() {
       {status && !status.configured && (
         <div style={{ marginBottom: '16px', background: `${G.gold}14`, border: `1px solid ${G.gold}40`, borderRadius: '14px', padding: '14px 16px', fontSize: '13px', display: 'flex', gap: '10px' }}>
           <AlertCircle size={18} color={G.gold} style={{ flexShrink: 0 }} />
-          <span>{ui('O envio de email ainda não está configurado no servidor. Defina EMAIL_HOST, EMAIL_PORT, EMAIL_SECURE, EMAIL_USER e EMAIL_PASS no Render e reinicie o serviço.')}</span>
+          <span>{ui('O envio de email ainda não está configurado no servidor. Defina GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN e EMAIL_FROM no Render (o plano gratuito do Render bloqueia SMTP).')}</span>
         </div>
       )}
 
