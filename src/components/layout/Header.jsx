@@ -2,6 +2,7 @@ import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { Menu, Bell, Sun, Moon, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MwangaLogo from '../MwangaLogo';
+import UserAvatar from '../UserAvatar';
 
 export default function Header({ 
   onMenuClick, 
@@ -82,17 +83,12 @@ export default function Header({
 
           {/* Avatar */}
           <div className="relative">
-            {settings?.profile_pic ? (
-              <img 
-                src={settings.profile_pic} 
-                alt="Profile" 
-                className="h-10 w-10 rounded-xl object-cover shadow-lg border border-white/20 transition-transform group-hover:scale-105"
-              />
-            ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-ocean to-sky text-sm font-black text-white shadow-xl shadow-ocean/30 transition-transform group-hover:scale-105 border border-white/20">
-                {user?.name?.charAt(0) || 'M'}
-              </div>
-            )}
+            <UserAvatar
+              name={user?.name}
+              photo={settings?.profile_pic}
+              alt={user?.name || ui("Perfil")}
+              className="h-10 w-10 rounded-xl shadow-lg shadow-ocean/30 border border-white/20 transition-transform group-hover:scale-105"
+            />
             <div className="absolute -bottom-1 -right-1 hidden md:flex h-4 w-4 items-center justify-center rounded-full bg-white dark:bg-midnight shadow-sm border border-slate-100 dark:border-slate-800">
               <ChevronDown size={10} className="text-slate-400" />
             </div>

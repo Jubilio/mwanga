@@ -47,3 +47,17 @@ export async function loadToken() {
     localStorage.removeItem(KEY);
   }
 }
+
+// The user id inside the session token (read only, not verified: the server checks it).
+// Used to make sure a profile cached on this device belongs to whoever is signed in.
+export function tokenUserId(token = getToken()) {
+  try {
+    const part = String(token || '').split('.')[1];
+    if (!part) return null;
+    const json = atob(part.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(part.length / 4) * 4, '='));
+    const id = JSON.parse(json)?.id;
+    return id === undefined || id === null ? null : String(id);
+  } catch {
+    return null;
+  }
+}

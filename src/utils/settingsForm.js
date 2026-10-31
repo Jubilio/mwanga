@@ -1,4 +1,3 @@
-export const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff&size=128';
 const bool = (value, fallback = true) => value === undefined ? fallback : value === true || value === 'true' || value === '1';
 export function settingsForm(state) {
   const s = state.settings || {};
@@ -7,7 +6,6 @@ export function settingsForm(state) {
     household_name: s.household_name ?? '', cash_balance: s.cash_balance ?? 0,
     user_salary: s.user_salary ?? 0, default_rent: s.default_rent ?? 0, landlord_name: s.landlord_name ?? '',
     currency: s.currency ?? 'MT', financial_month_start_day: s.financial_month_start_day ?? s.cycle_start ?? 25,
-    profile_pic: s.profile_pic || DEFAULT_AVATAR,
     daily_entry_reminder_enabled: bool(s.daily_entry_reminder_enabled), daily_entry_reminder_time: s.daily_entry_reminder_time || '20:00',
     monthly_due_reminder_enabled: bool(s.monthly_due_reminder_enabled), monthly_due_reminder_time: s.monthly_due_reminder_time || '08:00',
     monthly_due_reminder_period: s.monthly_due_reminder_period || 'inicio', debt_due_reminder_enabled: bool(s.debt_due_reminder_enabled),

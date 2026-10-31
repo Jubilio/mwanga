@@ -14,9 +14,9 @@ import PasswordSettings from '../components/settings/PasswordSettings';
 import PasskeySettings from '../components/settings/PasskeySettings';
 import IdentitySettings from '../components/settings/IdentitySettings';
 import HouseholdSettings from '../components/settings/HouseholdSettings';
-import { DEFAULT_AVATAR, settingsForm, changedSettings, validateSettings, settingsActions } from '../utils/settingsForm';
+import { prepareProfilePhoto } from '../utils/avatar';
+import { settingsForm, changedSettings, validateSettings, settingsActions } from '../utils/settingsForm';
 
-const AVATARS = [DEFAULT_AVATAR, 'https://ui-avatars.com/api/?name=Fam&background=20c997&color=fff&size=128', 'https://ui-avatars.com/api/?name=Mwanga&background=0a4d68&color=fff&size=128', 'https://ui-avatars.com/api/?name=Admin&background=6c757d&color=fff&size=128'];
 export default function Settings() {
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
@@ -26,6 +26,7 @@ export default function Settings() {
   const [showAvatarGallery, setShowAvatarGallery] = useState(false);
   const [form, setForm] = useState(() => settingsForm(state));
   const [busy, setBusy] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const [saveStatus, setSaveStatus] = useState('saved');
   const [error, setError] = useState('');
   const dirty = useRef(new Set());
@@ -68,19 +69,37 @@ export default function Settings() {
     lock.current = false; setBusy(false);
   }
   function discard() { dirty.current.clear(); setForm(settingsForm(state)); setSaveStatus('saved'); setError(''); }
+  // The photo is shrunk on the phone (any size, any format the phone can show) and
+  // saved right away, so it does not wait for the main Save button.
+  async function saveProfilePhoto(value) {
+    setPhotoBusy(true);
+    try {
+      await dispatch({ type: 'UPDATE_SETTING', payload: { key: 'profile_pic', value } });
+      showToast(t(value ? 'settings.reliable.photo_saved' : 'settings.reliable.photo_removed'), 'success');
+      setShowAvatarGallery(false);
+    } catch {
+      showToast(t('settings.reliable.photo_save_error'), 'error');
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
   async function handleImageUpload(file) {
-    if (!file) return;
-    // A 600 KiB image remains below the API's 1 MiB JSON limit after base64 encoding.
-    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 600 * 1024) { showToast(t('settings.reliable.image_limit'), 'error'); return; }
-    const reader = new FileReader();
-    reader.onerror = () => showToast(t('settings.reliable.image_error'), 'error');
-    reader.onload = () => setFormDirty(previous => ({ ...previous, profile_pic: reader.result }));
-    reader.readAsDataURL(file);
+    if (!file || photoBusy) return;
+    setPhotoBusy(true);
+    let photo;
+    try {
+      photo = await prepareProfilePhoto(file);
+    } catch (error) {
+      setPhotoBusy(false);
+      showToast(t(error?.code === 'too_large' ? 'settings.reliable.image_too_large' : 'settings.reliable.image_unsupported'), 'error');
+      return;
+    }
+    await saveProfilePhoto(photo);
   }
   const tabs = [{ id: 'perfil', icon: User }, { id: 'financas', icon: Wallet }, { id: 'familia', icon: Users }, { id: 'pref', icon: Palette }, { id: 'notifications', icon: Bell }, { id: 'ai', icon: Bot }];
   const status = busy ? 'saving' : saveStatus === 'error' ? 'error' : pending ? 'pending' : 'saved';
   return <div className="settings-surface section-fade max-w-6xl mx-auto">
-    <SettingsHero form={form} state={state} isSaving={busy} saveStatus={status} showAvatarGallery={showAvatarGallery} setShowAvatarGallery={setShowAvatarGallery} AVATARS={AVATARS} setFormDirty={setFormDirty} fileInputRef={fileInputRef} handleImageUpload={handleImageUpload} />
+    <SettingsHero form={form} state={state} isSaving={busy} saveStatus={status} showAvatarGallery={showAvatarGallery} setShowAvatarGallery={setShowAvatarGallery} photoBusy={photoBusy} onRemovePhoto={() => saveProfilePhoto('')} fileInputRef={fileInputRef} handleImageUpload={handleImageUpload} />
     <nav aria-label={t('settings.reliable.navigation')} className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-8">
       {tabs.map(tab => <button key={tab.id} aria-pressed={activeTab === tab.id} onClick={() => setActiveTab(tab.id)} className={`btn ${activeTab === tab.id ? 'btn-primary' : 'btn-ghost'}`}><tab.icon size={18} />{t(`settings.reliable.tabs.${tab.id}`)}</button>)}
     </nav>

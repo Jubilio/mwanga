@@ -4,6 +4,7 @@ const { z } = require('zod');
 const { invalidateDashboardCache } = require('./dashboard.controller');
 const { validateSetting } = require('../schemas/settings.schema');
 const { parseJourneySetting } = require('../schemas/journey.schema');
+const { PROFILE_PIC_KEY, memberPhotoKey, isMemberPhotoKey, validateProfilePic, withMemberPhoto } = require('../utils/profilePhoto');
 
 const upsertSettingSchema = z.object({
   key: z.string().min(1).max(50).trim(),
@@ -17,7 +18,7 @@ const updateHouseholdSchema = z.object({
 
 // Plan and trial state are only changed by the server (startTrial) or an admin, never by the client.
 const BILLING_KEYS = ['subscription_tier', 'subscription_expires_at', 'trial_ends_at'];
-const isReservedSettingKey = (key) => key.startsWith('ai_') || key.startsWith('rr_') || BILLING_KEYS.includes(key);
+const isReservedSettingKey = (key) => key.startsWith('ai_') || key.startsWith('rr_') || BILLING_KEYS.includes(key) || isMemberPhotoKey(key);
 
 const TRIAL_DAYS = 14;
 const TRIAL_MIN_ACCOUNT_AGE_DAYS = 30;
@@ -29,10 +30,10 @@ const getSettings = async (req, res, next) => {
       sql: 'SELECT * FROM settings WHERE household_id = ?',
       args: [req.user.householdId]
     });
-    const settings = result.rows.filter(row => !row.key.startsWith('ai_') && !row.key.startsWith('rr_')).reduce((acc, curr) => {
+    const settings = withMemberPhoto(result.rows.filter(row => !row.key.startsWith('ai_') && !row.key.startsWith('rr_')).reduce((acc, curr) => {
       acc[curr.key] = curr.value;
       return acc;
-    }, {});
+    }, {}), req.user.id);
 
     // Include household data
     const household = await db.execute({
@@ -57,7 +58,17 @@ const upsertSetting = async (req, res, next) => {
     const householdId = req.user.householdId;
     if (isReservedSettingKey(key)) return res.status(400).json({ error: 'Reserved setting' });
     let safeValue;
-    if (key === 'financial_journey_v1') {
+    let storedKey = key;
+    if (key === PROFILE_PIC_KEY) {
+      try {
+        safeValue = validateProfilePic(value);
+      } catch (error) {
+        if (error.code === 'INVALID_PROFILE_PIC') return res.status(400).json({ error: error.message });
+        throw error;
+      }
+      // Each member keeps their own photo inside the shared household settings.
+      storedKey = memberPhotoKey(req.user.id);
+    } else if (key === 'financial_journey_v1') {
       const journey = parseJourneySetting(value);
       if (journey.goalId !== null) {
         const goal = await db.execute({
@@ -78,7 +89,7 @@ const upsertSetting = async (req, res, next) => {
 
     await db.execute({
       sql: 'INSERT INTO settings (key, value, household_id) VALUES (?, ?, ?) ON CONFLICT(key, household_id) DO UPDATE SET value = ?',
-      args: [key, safeValue, householdId, safeValue]
+      args: [storedKey, safeValue, householdId, safeValue]
     });
     
     await invalidateDashboardCache(householdId);
