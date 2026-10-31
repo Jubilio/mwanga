@@ -9,6 +9,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Lenis from 'lenis';
 import { MwangaTooltipProvider } from './components/ui/MwangaTooltip';
 import { Capacitor } from '@capacitor/core';
+import { LEGACY_REDIRECTS } from './config/navigation';
 
 // Critical path — loaded immediately
 import Dashboard from './pages/Dashboard';
@@ -17,11 +18,7 @@ import Login from './pages/Login';
 // Lazy-loaded pages — only downloaded when navigated to
 
 const Transactions = lazy(() => import('./pages/Transactions'));
-const Budget = lazy(() => import('./pages/Budget'));
-const Habitacao = lazy(() => import('./pages/Habitacao'));
 const RealityReview = lazy(() => import('./pages/RealityReview'));
-const FinancialJourney = lazy(() => import('./pages/FinancialJourney'));
-const Goals = lazy(() => import('./pages/Goals'));
 const Simulators = lazy(() => import('./pages/Simulators'));
 const Reports = lazy(() => import('./pages/Reports'));
 const Patrimony = lazy(() => import('./pages/Patrimony'));
@@ -29,14 +26,16 @@ const Xitique = lazy(() => import('./pages/Xitique'));
 const NexoVibe = lazy(() => import('./pages/NexoVibe'));
 const SmsImport = lazy(() => import('./pages/SmsImport'));
 const Settings = lazy(() => import('./pages/Settings'));
-const Dividas = lazy(() => import('./pages/Dividas'));
-const Credito = lazy(() => import('./pages/Credito'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Insights = lazy(() => import('./pages/Insights'));
 const Stewardship = lazy(() => import('./pages/Stewardship'));
 const Help = lazy(() => import('./pages/Help'));
-const TimeMachine = lazy(() => import('./pages/TimeMachine'));
 const Landing = lazy(() => import('./pages/Landing'));
+const Planear = lazy(() => import('./pages/Planear'));
+const Mais = lazy(() => import('./pages/Mais'));
+const GoalsHub = lazy(() => import('./pages/hubs').then((m) => ({ default: m.GoalsHub })));
+const DebtsHub = lazy(() => import('./pages/hubs').then((m) => ({ default: m.DebtsHub })));
+const BudgetHub = lazy(() => import('./pages/hubs').then((m) => ({ default: m.BudgetHub })));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const AdminLayout = lazy(() => import('./components/AdminLayout'));
@@ -153,15 +152,15 @@ export default function App() {
               <Route element={<RequireAuth><Layout /></RequireAuth>}>
                 <Route index element={<ErrorBoundary context="Dashboard"><Dashboard /></ErrorBoundary>} />
                 <Route path="transacoes" element={<ErrorBoundary context={ui("Transações")}><Transactions /></ErrorBoundary>} />
-                <Route path="orcamento" element={<ErrorBoundary context={ui("Orçamento")}><Budget /></ErrorBoundary>} />
-                <Route path="habitacao" element={<ErrorBoundary context={ui("Habitação")}><Habitacao /></ErrorBoundary>} />
+                <Route path="orcamento" element={<ErrorBoundary context={ui("Orçamento")}><BudgetHub /></ErrorBoundary>} />
+                <Route path="habitacao" element={<Navigate to={LEGACY_REDIRECTS['/habitacao']} replace />} />
                 <Route path="xitique" element={<ErrorBoundary context="Xitique"><Xitique /></ErrorBoundary>} />
-                <Route path="metas" element={<ErrorBoundary context={ui("Metas")}><Goals /></ErrorBoundary>} />
-                <Route path="dividas" element={<ErrorBoundary context={ui("Dívidas")}><Dividas /></ErrorBoundary>} />
-                <Route path="credito" element={<ErrorBoundary context={ui("Crédito")}><Credito /></ErrorBoundary>} />
+                <Route path="metas" element={<ErrorBoundary context={ui("Metas")}><GoalsHub /></ErrorBoundary>} />
+                <Route path="dividas" element={<ErrorBoundary context={ui("Dívidas")}><DebtsHub /></ErrorBoundary>} />
+                <Route path="credito" element={<Navigate to={LEGACY_REDIRECTS['/credito']} replace />} />
                 <Route path="simuladores" element={<ErrorBoundary context={ui("Simuladores")}><Simulators /></ErrorBoundary>} />
                 <Route path="rever-realidade" element={<RealityReview />} />
-                <Route path="jornada" element={<FinancialJourney />} />
+                <Route path="jornada" element={<Navigate to={LEGACY_REDIRECTS['/jornada']} replace />} />
                 <Route path="relatorio" element={<ErrorBoundary context={ui("Relatórios")}><Reports /></ErrorBoundary>} />
                 <Route path="patrimonio" element={<ErrorBoundary context={ui("Património")}><Patrimony /></ErrorBoundary>} />
                 <Route path="sms-import" element={<ErrorBoundary context="SMS Import"><SmsImport /></ErrorBoundary>} />
@@ -170,8 +169,10 @@ export default function App() {
                 <Route path="pricing" element={<ErrorBoundary context="Pricing"><Pricing /></ErrorBoundary>} />
                 <Route path="insights" element={<ErrorBoundary context={ui("Insights")}><Insights /></ErrorBoundary>} />
                 <Route path="mordomia" element={<ErrorBoundary context={ui("Mordomia")}><Stewardship /></ErrorBoundary>} />
-                <Route path="time-machine" element={<ErrorBoundary context={ui("Máquina do Tempo")}><TimeMachine /></ErrorBoundary>} />
+                <Route path="time-machine" element={<Navigate to={LEGACY_REDIRECTS['/time-machine']} replace />} />
                 <Route path="help" element={<ErrorBoundary context="Ajuda"><Help /></ErrorBoundary>} />
+                <Route path="planear" element={<ErrorBoundary context="Planear"><Planear /></ErrorBoundary>} />
+                <Route path="mais" element={<ErrorBoundary context="Mais"><Mais /></ErrorBoundary>} />
                 <Route path="quick-add" element={<Dashboard />} />
               </Route>
 

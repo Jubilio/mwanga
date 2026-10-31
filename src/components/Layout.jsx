@@ -1,35 +1,7 @@
 import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  ArrowRightLeft,
-  Home,
-  Target,
-  PieChart,
-  Calculator,
-  Moon,
-  Sun,
-  X,
-  Wallet,
-  Globe,
-  Settings as SettingsIcon,
-  Landmark,
-  BarChart3,
-  Crown,
-  Brain,
-  Bell,
-  CreditCard,
-  Sparkles,
-  Info,
-  HelpCircle,
-  Plus,
-  MessageSquare,
-  Menu,
-  ChevronDown,
-  Clock,
-  Shield,
-} from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
 import RealityReviewBanner from './RealityReviewBanner';
@@ -50,6 +22,7 @@ import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useSmsSync } from '../hooks/useSmsSync';
 import { SMS_INBOX_ENABLED } from '../config/features';
 import { getToken } from '../utils/authToken';
+import { BOTTOM_ITEMS, pageTitleKey } from '../config/navigation';
 
   // Dynamic items will be generated inside the component using t()
 
@@ -68,35 +41,7 @@ export default function Layout() {
   const { t } = useTranslation();
   const { state, dispatch } = useFinance();
   const { toast, showToast } = useToast();
-  const navItems = [
-    { to: '/jornada', icon: Clock, label: t('journey.nav') },
-    { to: '/', icon: LayoutDashboard, label: t('layout.dashboard') },
-    { to: '/transacoes', icon: ArrowRightLeft, label: t('layout.transactions') },
-    { to: '/orcamento', icon: PieChart, label: t('layout.budget') },
-    { to: '/credito', icon: CreditCard, label: t('layout.credit') },
-    { to: '/dividas', icon: CreditCard, label: t('layout.debts') },
-    { to: '/habitacao', icon: Home, label: t('layout.housing') },
-    { to: '/xitique', icon: Wallet, label: t('layout.xitique') },
-    { to: '/metas', icon: Target, label: t('layout.goals') },
-    { to: '/nexovibe', icon: Globe, label: t('layout.nexovibe') },
-    { to: '/insights', icon: Brain, label: t('layout.insights') },
-    { to: '/sms-import', icon: Globe, label: t('layout.sms_import') },
-    { to: '/patrimonio', icon: Landmark, label: t('layout.patrimony') },
-    { to: '/mordomia', icon: Crown, label: ui("Mordomia"), premium: true },
-    { to: '/simuladores', icon: Calculator, label: t('layout.simulators') },
-    { to: '/relatorio', icon: BarChart3, label: t('layout.report') },
-    { to: '/pricing', icon: Crown, label: t('layout.pricing') || 'Premium', premium: true },
-    { to: '/time-machine', icon: Clock, label: ui("Máquina do Tempo"), premium: true },
-    { to: '/help', icon: HelpCircle, label: t('layout.help') },
-    { to: '/settings', icon: SettingsIcon, label: t('layout.settings') },
-    ...(state.user?.role === 'admin' ? [{ to: '/admin', icon: Shield, label: t('layout.admin') }] : []),
-  ];
-
-  const bottomNavItems = [
-    { to: '/', icon: LayoutDashboard, label: t('layout.home') || 'Home' },
-    { to: null, icon: Plus, label: t('layout.add') || 'Add', isFab: true },
-    { to: '/dividas', icon: CreditCard, label: t('layout.debts') },
-  ];
+  const bottomNavItems = BOTTOM_ITEMS;
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -236,7 +181,7 @@ export default function Layout() {
   const unreadCount = Array.isArray(notifications)
     ? notifications.filter((notification) => !notification.read).length
     : 0;
-  const currentTitle = navItems.find((item) => item.to === location.pathname)?.label || 'Dashboard';
+  const currentTitle = t(pageTitleKey(location.pathname));
   const routeParams = location.pathname === '/quick-add' ? new URLSearchParams(location.search) : null;
   const routeQuickAddPayload = routeParams
     ? parseNotificationPayload({

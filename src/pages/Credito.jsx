@@ -66,11 +66,12 @@ export default function MwangaCredito() {
     { id: "simulator", label: t('credit.tabs.simulator'),    icon: "🧭" },
     { id: "compare",   label: t('credit.tabs.compare'),     icon: "⚖️" },
     { id: "consolidate", label: t('credit.tabs.consolidate'), icon: "🔄" },
-    { id: "apply",     label: t('credit.tabs.apply'),    icon: "💸" },
+    // "Solicitar" fica escondido até o pedido de crédito funcionar em produção
+    // (falta a coluna risk_score) e haver bancos parceiros reais.
     { id: "strategy",  label: t('credit.tabs.strategy'),  icon: "👑" },
   ];
 
-  function handleApply() { setTab("apply"); }
+  
 
   return (
     <div className="credito-gsap-root" style={{ minHeight: "100vh", background: G.bg, fontFamily: "'DM Sans','Segoe UI',sans-serif", color: G.text }}>
@@ -148,7 +149,7 @@ export default function MwangaCredito() {
 
       {/* Content */}
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px 24px 100px", animation: "fadeIn 0.3s ease" }} key={tab}>
-        {tab === "overview"  && <TabOverview   onApply={handleApply} scoreData={scoreData} eligData={eligData} hist={hist} isPro={isPro} />}
+        {tab === "overview"  && <TabOverview scoreData={scoreData} eligData={eligData} hist={hist} isPro={isPro} />}
         {tab === "vsla"      && <VslaModule />}
         {tab === "simulator" && <TabSimulator  eligData={eligData} userData={userData} isPro={isPro} />}
         {tab === "compare"   && <TabCompare    userData={userData} />}

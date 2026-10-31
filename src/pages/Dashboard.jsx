@@ -1,5 +1,5 @@
 import { uiLocale } from '../utils/uiTranslation';
-import { Plus, ArrowUpRight, Coins, Target } from 'lucide-react';
+import { Plus, ArrowUpRight, Coins, Target, MessageSquare, PieChart, CreditCard, Brain } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -87,35 +87,24 @@ export default function Dashboard() {
   const scoreColor = score > 70 ? 'text-leaf dark:text-leaf-light' : score > 40 ? 'text-gold dark:text-gold-light' : 'text-coral';
   const scoreLabel = score > 70 ? t('dashboard.health.excellent') : score > 40 ? t('dashboard.health.moderate') : t('dashboard.health.attention');
 
+  // Atalhos do Início: as tarefas do dia a dia, sem abrir menus.
   const quickActions = [
-    {
-      icon: Plus,
-      label: t('dashboard.quick_actions.expense'),
-      gradient: 'from-coral to-coral-light',
-      shadow: 'shadow-coral/20',
-      onClick: () => navigate('/transacoes', { state: { openModal: true, tipo: 'despesa' } })
-    },
-    {
-      icon: ArrowUpRight,
-      label: t('dashboard.quick_actions.income'),
-      gradient: 'from-leaf to-leaf-light',
-      shadow: 'shadow-leaf/20',
-      onClick: () => navigate('/transacoes', { state: { openModal: true, tipo: 'receita' } })
-    },
-    {
-      icon: Coins,
-      label: t('dashboard.quick_actions.xitique'),
-      gradient: 'from-gold to-gold-light',
-      shadow: 'shadow-gold/20',
-      onClick: () => navigate('/xitique')
-    },
-    {
-      icon: Target,
-      label: t('dashboard.quick_actions.goals'),
-      gradient: 'from-sky to-ocean',
-      shadow: 'shadow-ocean/20',
-      onClick: () => navigate('/metas')
-    }
+    { icon: Plus, label: t('nav.expense'), gradient: 'from-coral to-coral-light', shadow: 'shadow-coral/20',
+      onClick: () => navigate('/transacoes', { state: { openModal: true, tipo: 'despesa' } }) },
+    { icon: ArrowUpRight, label: t('nav.income'), gradient: 'from-leaf to-leaf-light', shadow: 'shadow-leaf/20',
+      onClick: () => navigate('/transacoes', { state: { openModal: true, tipo: 'receita' } }) },
+    { icon: MessageSquare, label: t('nav.sms_short'), gradient: 'from-ocean to-sky', shadow: 'shadow-ocean/20',
+      onClick: () => navigate('/sms-import') },
+    { icon: Coins, label: t('nav.xitique'), gradient: 'from-gold to-gold-light', shadow: 'shadow-gold/20',
+      onClick: () => navigate('/xitique') },
+    { icon: Target, label: t('nav.goals'), gradient: 'from-sky to-ocean', shadow: 'shadow-ocean/20',
+      onClick: () => navigate('/metas') },
+    { icon: PieChart, label: t('nav.budget'), gradient: 'from-leaf-light to-sky', shadow: 'shadow-sky/20',
+      onClick: () => navigate('/orcamento') },
+    { icon: CreditCard, label: t('nav.debts'), gradient: 'from-coral-light to-gold', shadow: 'shadow-coral/20',
+      onClick: () => navigate('/dividas') },
+    { icon: Brain, label: t('nav.ask_binth'), gradient: 'from-gold-deep to-ocean', shadow: 'shadow-ocean/20',
+      onClick: () => navigate('/insights') },
   ];
 
   const formattedBalance = useMemo(() => {
@@ -194,14 +183,14 @@ export default function Dashboard() {
 
       <TrialBanner />
 
-      {!state.loadError && <FirstStepsCard />}
-
-      <JourneySummary />
-
       <DashboardQuickActions 
         quickActions={quickActions} 
         itemVariants={itemVariants} 
       />
+
+      {!state.loadError && <FirstStepsCard />}
+
+      <JourneySummary />
 
       <MotionDiv variants={itemVariants}>
         <FinancialCoachCard 

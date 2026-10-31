@@ -8,6 +8,7 @@ import LanguageSwitcher from './LanguageSwitcher';
 import MwangaLogo from '../MwangaLogo';
 import { getEffectiveTier, hasFeatureAccess } from '../../config/features';
 import { clearToken } from '../../utils/authToken';
+import { ADMIN_ITEM, SIDEBAR_GROUPS } from '../../config/navigation';
 
 // ─── PRO Badge ───────────────────────────────────────────────────────────────
 function ProBadge({ label = 'PRO' }) {
@@ -115,52 +116,15 @@ export default function Sidebar({ isOpen, onClose }) {
     window.location.reload();
   };
 
-  const NAV = [
-    {
-      section: t('layout.management'),
-      items: [
-        { icon: '▦', label: t('layout.dashboard'), to: '/', end: true },
-        { icon: '✧', label: t('journey.nav'), to: '/jornada' },
-        { icon: '↕', label: t('layout.transactions'), to: '/transacoes' },
-        { icon: '◎', label: t('layout.budget'), to: '/orcamento' },
-      ],
-    },
-    {
-      section: t('layout.funding'),
-      items: [
-        { icon: '💸', label: t('layout.credit'), to: '/credito' },
-        { icon: '⊟', label: t('layout.debts'), to: '/dividas' },
-        { icon: '⌂', label: t('layout.housing'), to: '/habitacao' },
-      ],
-    },
-    {
-      section: t('layout.savings_goals'),
-      items: [
-        { icon: '✦', label: t('layout.xitique'), to: '/xitique' },
-        { icon: '◉', label: t('layout.goals'), to: '/metas' },
-        { icon: '🗺', label: t('layout.nexovibe'), to: '/nexovibe' },
-      ],
-    },
-    {
-      section: t('layout.pro_intelligence'),
-      items: [
-        { icon: '◈', label: t('layout.insights'), to: '/insights' },
-        { icon: '⇩', label: t('layout.sms_import'), to: '/sms-import', highlight: true },
-        { icon: '◧', label: t('layout.patrimony'), to: '/patrimonio' },
-        { icon: '⧉', label: t('layout.simulators'), to: '/simuladores' },
-        { icon: '⏳', label: ui("Máquina do Tempo"), to: '/time-machine' },
-        { icon: '👑', label: ui("Mordomia"), to: '/mordomia' },
-        { icon: '↗', label: t('layout.report'), to: '/relatorio' },
-      ],
-    },
-  ];
+  const NAV = SIDEBAR_GROUPS.map((group) => ({
+    section: t(group.section),
+    items: group.items.map((item) => ({ ...item, label: t(item.label) })),
+  }));
 
   const ADMIN_NAV = [
     {
       section: t('layout.administration'),
-      items: [
-        { icon: '⚙', label: t('layout.admin'), to: '/admin' },
-      ],
+      items: [{ ...ADMIN_ITEM, label: t(ADMIN_ITEM.label) }],
     },
   ];
 
@@ -245,7 +209,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 {group.section}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {group.items.map(item => ({ ...item, pro: item.to !== '/' && !hasFeatureAccess('free', item.to.slice(1)) })).map(item =>
+                {group.items.map(item => ({ ...item, pro: Boolean(item.feature) && !hasFeatureAccess('free', item.feature) })).map(item =>
                   item.pro ? (
                     <NavLink
                       key={item.to}
@@ -266,14 +230,14 @@ export default function Sidebar({ isOpen, onClose }) {
                           <span style={{
                             fontSize: 17, width: 22, textAlign: 'center', flexShrink: 0,
                             color: isActive ? '#F59E0B' : item.highlight ? '#F59E0B' : '#4a5568',
-                          }}>{item.icon}</span>
+                          }}><item.icon size={17} /></span>
                           <span style={{
                             fontSize: 14.5, flex: 1,
                             color: isActive ? '#F59E0B' : item.highlight ? '#e0a840' : '#4a5568',
                             fontWeight: isActive ? 600 : item.highlight ? 500 : 400,
                           }}>{ui(item.label)}</span>
-                          {!hasFeatureAccess(tier, item.to.slice(1)) && (
-                            <ProBadge label={hasFeatureAccess('growth', item.to.slice(1)) ? t('pricing.plans.growth.name').toUpperCase() : 'PRO'} />
+                          {!hasFeatureAccess(tier, item.feature) && (
+                            <ProBadge label={hasFeatureAccess('growth', item.feature) ? t('pricing.plans.growth.name').toUpperCase() : 'PRO'} />
                           )}
                         </>
                       )}
@@ -300,7 +264,7 @@ export default function Sidebar({ isOpen, onClose }) {
                             fontSize: 17, width: 22, textAlign: 'center', flexShrink: 0,
                             color: isActive ? '#F59E0B' : '#8a9ab8',
                             transition: 'color 0.18s',
-                          }}>{item.icon}</span>
+                          }}><item.icon size={17} /></span>
                           <span style={{
                             fontSize: 14.5, flex: 1,
                             color: isActive ? '#F59E0B' : '#c8d6e8',
@@ -332,7 +296,7 @@ export default function Sidebar({ isOpen, onClose }) {
                   >
                     {({ isActive }) => (
                       <>
-                        <span style={{ fontSize: 17, width: 22, textAlign: 'center', flexShrink: 0, color: isActive ? '#F59E0B' : '#8a9ab8' }}>{item.icon}</span>
+                        <span style={{ fontSize: 17, width: 22, textAlign: 'center', flexShrink: 0, color: isActive ? '#F59E0B' : '#8a9ab8' }}><item.icon size={17} /></span>
                         <span style={{ fontSize: 14.5, flex: 1, color: isActive ? '#F59E0B' : '#c8d6e8', fontWeight: isActive ? 600 : 400 }}>{ui(item.label)}</span>
                       </>
                     )}

@@ -1,24 +1,34 @@
 import { ui, useUiLanguage } from '../utils/uiTranslation';
-import { lazy, Suspense, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useRef } from 'react';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
-import { Banknote, Flame, Info, RefreshCcw, TrendingUp, Briefcase, Layers } from 'lucide-react';
+import { Banknote, Info, RefreshCcw, TrendingUp, Layers, Clock } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { useFinance } from '../hooks/useFinance';
 
 // Cada simulador é carregado apenas quando o utilizador navega para o respectivo tab.
 const SimulatorBudget  = lazy(() => import('../components/simulators/SimulatorBudget'));
 const SimulatorInvest  = lazy(() => import('../components/simulators/SimulatorInvest'));
-const SimulatorFire    = lazy(() => import('../components/simulators/SimulatorFire'));
 const SimulatorXitique = lazy(() => import('../components/simulators/SimulatorXitique'));
-const SimulatorQuality = lazy(() => import('../components/simulators/SimulatorQuality'));
 const SimulatorEstrutura = lazy(() => import('../components/simulators/SimulatorEstrutura'));
+// A Máquina do Tempo deixou de ter página própria: é o simulador de futuro.
+const TimeMachine = lazy(() => import('./TimeMachine'));
+
+// FIRE e "Qualidade Buffett" ficam escondidos: são ferramentas de investidor,
+// não de quem está a começar. Os componentes continuam no repositório.
+const TABS = ['budget', 'estrutura', 'invest', 'futuro', 'xitique'];
 
 function TabButton({ active, icon, label, onClick }) {
   useUiLanguage();
   const IconComponent = icon;
+  const ref = useRef(null);
+  // A tab opened from a link (?tab=futuro) may sit off-screen in the scrolling row.
+  useEffect(() => {
+    if (active) ref.current?.scrollIntoView?.({ block: 'nearest', inline: 'center' });
+  }, [active]);
   return (
     <button
+      ref={ref}
       onClick={onClick}
       style={{
         flex: 1,
@@ -60,9 +70,10 @@ export default function Simulators() {
   const { showToast } = useOutletContext();
 
   const currency = state.settings?.currency || 'MT';
-  const isPro    = state.settings?.subscription_tier === 'pro';
-
-  const [activeTab, setActiveTab] = useState('budget');
+  const [params, setParams] = useSearchParams();
+  const requested = params.get('tab');
+  const activeTab = TABS.includes(requested) ? requested : 'budget';
+  const setActiveTab = (tab) => setParams(tab === 'budget' ? {} : { tab }, { replace: true });
 
   return (
     <div className="w-full flex-1 flex flex-col pb-20">
@@ -76,8 +87,7 @@ export default function Simulators() {
         <TabButton active={activeTab === 'budget'}  icon={Banknote}   label={t('simulators.tabs.budget')}  onClick={() => setActiveTab('budget')}  />
         <TabButton active={activeTab === 'estrutura'} icon={Layers} label={ui("Estrutura do Salário")} onClick={() => setActiveTab('estrutura')} />
         <TabButton active={activeTab === 'invest'}  icon={TrendingUp} label={t('simulators.tabs.invest')}  onClick={() => setActiveTab('invest')}  />
-        <TabButton active={activeTab === 'quality'} icon={Briefcase}  label={ui("Qualidade Buffett")} onClick={() => setActiveTab('quality')} />
-        <TabButton active={activeTab === 'fire'}    icon={Flame}      label={t('simulators.tabs.fire')}    onClick={() => setActiveTab('fire')}    />
+        <TabButton active={activeTab === 'futuro'}  icon={Clock}      label={t('nav.tab_future')}          onClick={() => setActiveTab('futuro')}  />
         <TabButton active={activeTab === 'xitique'} icon={RefreshCcw} label={t('simulators.tabs.xitique')} onClick={() => setActiveTab('xitique')} />
       </div>
 
@@ -103,11 +113,8 @@ export default function Simulators() {
           {activeTab === 'invest' && (
             <SimulatorInvest currency={currency} />
           )}
-          {activeTab === 'quality' && (
-            <SimulatorQuality />
-          )}
-          {activeTab === 'fire' && (
-            <SimulatorFire currency={currency} isPro={isPro} />
+          {activeTab === 'futuro' && (
+            <TimeMachine />
           )}
           {activeTab === 'xitique' && (
             <SimulatorXitique currency={currency} />
