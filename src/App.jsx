@@ -45,6 +45,7 @@ const Admin = lazy(() => import('./pages/Admin'));
 const AdminUsers = lazy(() => import('./pages/AdminUsers'));
 const AdminSettings = lazy(() => import('./pages/AdminSettings'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
+const AdminEmails = lazy(() => import('./pages/AdminEmails'));
 
 import { useSmsSync } from './hooks/useSmsSync';
 import { getToken } from './utils/authToken';
@@ -187,6 +188,7 @@ export default function App() {
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="feedback" element={<AdminFeedback />} />
+                <Route path="emails" element={<AdminEmails />} />
               </Route>
 
               {/* ── Public auth pages ── */}

@@ -12,6 +12,7 @@ import {
   Bell,
   ChevronRight,
   MessageSquare,
+  Mail,
 } from 'lucide-react';
 
 const G = {
@@ -29,6 +30,7 @@ const adminNavItems = [
   { to: '/admin', icon: LayoutDashboard, label: ui("Painel Geral"), end: true },
   { to: '/admin/users', icon: Users, label: ui("Utilizadores"), end: false },
   { to: '/admin/feedback', icon: MessageSquare, label: 'Feedback', end: false },
+  { to: '/admin/emails', icon: Mail, label: 'Emails', end: false },
   { to: '/admin/settings', icon: Settings, label: ui("Configuração"), end: false },
 ];
 
