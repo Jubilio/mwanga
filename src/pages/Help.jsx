@@ -1,169 +1,261 @@
-import { ui, useUiLanguage } from '../utils/uiTranslation';
-import { useState } from 'react';
-import { useTranslation, Trans } from 'react-i18next';
-import { 
-  Book, ChevronRight, HelpCircle, LayoutDashboard, 
-  Wallet, Banknote, Users, Sparkles, Shield, 
-  Smartphone, Search, ArrowLeft
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useId, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ChevronDown, LifeBuoy, MessageCircle, MessageSquareWarning, Search, ShieldAlert, X } from 'lucide-react';
+import FeedbackModal from '../components/FeedbackModal';
+import Toast, { useToast } from '../components/Toast';
+import { PLAN_PRICES, SMS_FREE_MONTHLY_LIMIT, TRIAL } from '../config/features';
+import { getSupportWhatsAppUrl } from '../utils/support';
+import { HELP_CATEGORIES, HELP_FAQS, matchesQuery } from './help/helpTopics';
+
+// Layout uses inline styles on purpose: unlayered global CSS (.glass-card padding,
+// h1-h3 sizes, mobile .btn width) beats Tailwind utilities in this app.
+
+const FAQ_VALUES = {
+  limit: SMS_FREE_MONTHLY_LIMIT,
+  growth: PLAN_PRICES.growth.monthly,
+  pro: PLAN_PRICES.pro.monthly,
+  days: TRIAL.DAYS,
+  age: TRIAL.MIN_ACCOUNT_AGE_DAYS,
+};
+
+function CategoryChip({ active, onClick, icon: Icon, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`flex shrink-0 items-center gap-1.5 rounded-full border text-sm font-bold transition-colors ${
+        active
+          ? 'border-ocean bg-ocean text-white dark:border-sky dark:bg-sky/20 dark:text-sky-light'
+          : 'border-slate-200 bg-white/70 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300'
+      }`}
+      style={{ padding: '8px 14px', width: 'auto' }}
+    >
+      {Icon && <Icon size={15} />}
+      {children}
+    </button>
+  );
+}
+
+function FaqItem({ faq, open, onToggle }) {
+  const { t } = useTranslation();
+  const panelId = useId();
+  return (
+    <div className="border-b border-slate-200/70 last:border-0 dark:border-white/5">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={panelId}
+        className="flex w-full items-center gap-3 text-left"
+        style={{ padding: '14px 4px' }}
+      >
+        <span className="min-w-0 flex-1 text-[15px] font-bold leading-snug text-midnight dark:text-white">
+          {t(`help.faq.${faq.id}.q`)}
+        </span>
+        <ChevronDown
+          size={18}
+          className={`shrink-0 text-slate-400 transition-transform duration-300 ${open ? 'rotate-180 text-ocean dark:text-sky-light' : ''}`}
+        />
+      </button>
+      {open && (
+        <div id={panelId} className="animate-fade-in" style={{ padding: '0 4px 16px' }}>
+          <p className="whitespace-pre-line text-[14px] leading-relaxed text-slate-600 dark:text-slate-300" style={{ margin: 0 }}>
+            {t(`help.faq.${faq.id}.a`, FAQ_VALUES)}
+          </p>
+          {faq.to && (
+            <Link
+              to={faq.to}
+              className="mt-3 inline-flex items-center gap-1 rounded-full bg-ocean/10 text-sm font-bold text-ocean dark:bg-sky/15 dark:text-sky-light"
+              style={{ padding: '6px 14px' }}
+            >
+              {t('help.open_page', { page: t(faq.page) })}
+            </Link>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Help() {
-  useUiLanguage();
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const { toast, showToast, hideToast } = useToast();
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState(() => searchParams.get('q') || '');
+  const [category, setCategory] = useState('all');
+  const [openId, setOpenId] = useState(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
-  const HELP_SECTIONS = [
-    {
-      id: 'intro',
-      title: t('help.sections.intro.title'),
-      icon: Smartphone,
-      color: 'indigo',
-      content: t('help.sections.intro.content')
-    },
-    {
-      id: 'dashboard',
-      title: t('help.sections.dashboard.title'),
-      icon: LayoutDashboard,
-      color: 'emerald',
-      content: t('help.sections.dashboard.content')
-    },
-    {
-      id: 'finance',
-      title: t('help.sections.finance.title'),
-      icon: Wallet,
-      color: 'teal',
-      content: t('help.sections.finance.content')
-    },
-    {
-      id: 'credit',
-      title: t('help.sections.credit.title'),
-      icon: Banknote,
-      color: 'amber',
-      content: t('help.sections.credit.content')
-    },
-    {
-      id: 'community',
-      title: t('help.sections.community.title'),
-      icon: Users,
-      color: 'sky',
-      content: t('help.sections.community.content')
-    },
-    {
-      id: 'binth',
-      title: t('help.sections.binth.title'),
-      icon: Sparkles,
-      color: 'purple',
-      content: t('help.sections.binth.content')
-    },
-    {
-      id: 'security',
-      title: t('help.sections.security.title'),
-      icon: Shield,
-      color: 'rose',
-      content: t('help.sections.security.content')
+  const whatsappUrl = getSupportWhatsAppUrl(t('help.contact.whatsapp_message'));
+  const searching = query.trim().length > 0;
+
+  const results = useMemo(() => HELP_FAQS.filter((faq) => {
+    if (searching) {
+      const text = [
+        t(`help.faq.${faq.id}.q`),
+        t(`help.faq.${faq.id}.a`, FAQ_VALUES),
+        t(`help.categories.${faq.cat}`),
+      ].join(' ');
+      return matchesQuery(text, query);
     }
-  ];
+    return category === 'all' || faq.cat === category;
+  }), [query, searching, category, t]);
 
-  const filteredSections = HELP_SECTIONS.filter(s => 
-    s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // With a single match, show the answer straight away (until the user closes it).
+  const autoOpenId = searching && results.length === 1 ? results[0].id : null;
+  const currentOpenId = openId ?? autoOpenId;
+
+  const groups = HELP_CATEGORIES
+    .map((cat) => ({ ...cat, items: results.filter((faq) => faq.cat === cat.id) }))
+    .filter((group) => group.items.length);
 
   return (
-    <div className="min-h-screen bg-[#050B15] text-white/90 font-sans pb-24">
-      
-      {/* ═══ WORLD-CLASS HEADER ═══ */}
-      <div className="relative overflow-hidden bg-linear-to-b from-ocean/40 to-transparent pt-12 pb-20 px-6">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 blur-[120px] rounded-full animate-pulse" />
-        
-        <div className="max-w-4xl mx-auto flex flex-col items-center text-center relative z-10">
-          <button 
-            onClick={() => navigate(-1)}
-            className="self-start mb-8 p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group"
-          >
-            <ArrowLeft className="text-white/60 group-hover:text-white transition-colors" />
-          </button>
-
-          <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-teal-400 to-indigo-600 flex items-center justify-center shadow-[0_0_40px_rgba(20,184,166,0.3)] mb-6 animate-in zoom-in-75 duration-700">
-            <Book className="text-white" size={36} />
-          </div>
-          
-          <h1 className="text-4xl md:text-5xl font-black font-serif tracking-tight mb-4 drop-shadow-2xl">
-            <Trans i18nKey="help.hero.title" components={{ span: <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-300 to-indigo-300" /> }} />
-          </h1>
-          <p className="text-lg text-white/50 max-w-xl font-medium mb-10">
-            {t('help.hero.description')}
-          </p>
-
-          {/* Search Bar */}
-          <div className="w-full max-w-lg relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-teal-400 transition-colors" size={20} />
-            <input 
-              type="text" 
-              placeholder={t('help.hero.search_placeholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-6 outline-none focus:border-teal-500/50 focus:bg-white/10 transition-all font-medium backdrop-blur-xl"
-            />
+    <div className="animate-fade-in" style={{ paddingBottom: 112, width: '100%', minWidth: 0, maxWidth: 760, margin: '0 auto' }}>
+      {/* Hero: ocean to aurora, with the search inside so it is the first thing a thumb reaches. */}
+      <section
+        className="relative overflow-hidden text-white shadow-xl shadow-ocean/20"
+        style={{
+          borderRadius: 28,
+          padding: '22px 18px 18px',
+          marginBottom: 16,
+          background: 'linear-gradient(140deg, var(--color-ocean) 0%, var(--color-sky) 62%, #2a9d8f 100%)',
+        }}
+      >
+        <div aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/15 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-16 left-6 h-36 w-36 rounded-full bg-emerald-300/20 blur-3xl" />
+        <div className="relative flex items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-md">
+            <LifeBuoy size={22} />
+          </span>
+          <div className="min-w-0">
+            <h1 className="font-display font-black leading-tight text-white" style={{ fontSize: '1.45rem', margin: 0 }}>
+              {t('help.title')}
+            </h1>
+            <p className="mt-1 text-sm leading-snug text-white/75" style={{ marginBottom: 0 }}>{t('help.subtitle')}</p>
           </div>
         </div>
-      </div>
 
-      {/* ═══ CONTENT GRID ═══ */}
-      <div className="max-w-4xl mx-auto px-6 -mt-10 relative z-20">
-        <div className="grid grid-cols-1 gap-4">
-          {filteredSections.map((section, idx) => (
-            <div 
-              key={section.id}
-              className={`glass-card border border-white/5 hover:border-white/20 transition-all duration-500 overflow-hidden group ${activeTab === section.id ? 'border-teal-500/30!' : ''}`}
-              style={{ animationDelay: `${idx * 100}ms` }}
+        <div className="relative" style={{ marginTop: 16 }}>
+          <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            inputMode="search"
+            enterKeyHint="search"
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setOpenId(null); }}
+            placeholder={t('help.search_placeholder')}
+            aria-label={t('help.search_placeholder')}
+            className="w-full rounded-2xl border-0 bg-white text-[16px] text-midnight shadow-lg outline-none ring-2 ring-transparent placeholder:text-slate-400 focus:ring-white/60"
+            style={{ padding: '13px 44px 13px 42px' }}
+          />
+          {searching && (
+            <button
+              type="button"
+              onClick={() => { setQuery(''); setOpenId(null); }}
+              aria-label={t('help.search_clear')}
+              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100"
+              style={{ width: 32 }}
             >
-              <button 
-                onClick={() => setActiveTab(activeTab === section.id ? null : section.id)}
-                className="w-full p-6 flex items-center justify-between text-left"
-              >
-                <div className="flex items-center gap-5">
-                  <div className={`w-12 h-12 rounded-xl bg-${section.color}-500/10 flex items-center justify-center border border-${section.color}-500/20 group-hover:scale-110 transition-transform`}>
-                    <section.icon size={24} className={`text-${section.color}-400`} />
-                  </div>
-                  <h3 className="text-xl font-black tracking-tight">{ui(section.title)}</h3>
-                </div>
-                <div className={`p-2 rounded-lg bg-white/5 opacity-40 transition-all ${activeTab === section.id ? 'rotate-90 opacity-100 bg-teal-500/20' : ''}`}>
-                  <ChevronRight size={20} />
-                </div>
-              </button>
-              
-              {activeTab === section.id && (
-                <div className="px-6 pb-8 pt-2 animate-in fade-in slide-in-from-top-4 duration-300">
-                  <div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent mb-6" />
-                  <div className="text-white/60 leading-relaxed font-medium whitespace-pre-wrap pl-1">
-                    {section.content}
-                  </div>
-                </div>
-              )}
-            </div>
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </section>
+
+      {/* Categories scroll sideways on narrow phones instead of wrapping into a wall of chips. */}
+      {!searching && (
+        <div className="flex gap-2 overflow-x-auto" style={{ margin: '0 -4px 14px', padding: '2px 4px', maxWidth: 'calc(100% + 8px)', scrollbarWidth: 'none' }}>
+          <CategoryChip active={category === 'all'} onClick={() => setCategory('all')}>{t('help.all')}</CategoryChip>
+          {HELP_CATEGORIES.map((cat) => (
+            <CategoryChip key={cat.id} icon={cat.icon} active={category === cat.id} onClick={() => setCategory(cat.id)}>
+              {t(`help.categories.${cat.id}`)}
+            </CategoryChip>
           ))}
         </div>
+      )}
 
-        {/* Support CTA */}
-        <div className="mt-16 p-10 glass-card bg-linear-to-br from-indigo-600/20 to-teal-600/10 border-indigo-500/20 text-center animate-in zoom-in-95 duration-1000">
-          <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <HelpCircle size={32} className="text-teal-400" />
-          </div>
-          <h2 className="text-2xl font-black mb-2">{t('help.support.title')}</h2>
-          <p className="text-white/50 mb-8 max-w-md mx-auto">{t('help.support.description')}</p>
-          <button 
-             onClick={() => navigate('/chat')}
-             className="btn bg-white text-ocean hover:bg-slate-50 border-none font-black px-10 py-5 rounded-full text-base shadow-2xl transition-all active:scale-95"
+      {searching && (
+        <p className="px-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-400" style={{ margin: '0 0 10px' }} aria-live="polite">
+          {t('help.results', { count: results.length })}
+        </p>
+      )}
+
+      {groups.length > 0 ? (
+        <div style={{ display: 'grid', gap: 12 }}>
+          {groups.map((group) => (
+            <section key={group.id} className="glass-card" style={{ margin: 0, padding: '14px 16px 4px' }}>
+              <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em] text-ocean dark:text-sky-light">
+                <group.icon size={14} /> {t(`help.categories.${group.id}`)}
+              </div>
+              <div style={{ marginTop: 4 }}>
+                {group.items.map((faq) => (
+                  <FaqItem
+                    key={faq.id}
+                    faq={faq}
+                    open={currentOpenId === faq.id}
+                    onToggle={() => setOpenId(currentOpenId === faq.id ? '' : faq.id)}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <div className="glass-card text-center" style={{ margin: 0, padding: 24 }}>
+          <p className="font-bold text-midnight dark:text-white" style={{ margin: 0 }}>{t('help.empty_title', { query: query.trim() })}</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400" style={{ marginBottom: 0 }}>{t('help.empty_body')}</p>
+        </div>
+      )}
+
+      {/* Contact: a real person on WhatsApp, or the in-app report with a screenshot. */}
+      <section className="glass-card" style={{ margin: '20px 0 0', padding: 16 }}>
+        <h2 className="font-display font-black text-midnight dark:text-white" style={{ fontSize: '1.15rem', margin: 0 }}>
+          {t('help.contact.title')}
+        </h2>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400" style={{ marginBottom: 14 }}>{t('help.contact.body')}</p>
+
+        <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))' }}>
+          {whatsappUrl && (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-2xl bg-[#1f9d55] text-white shadow-lg shadow-emerald-900/20 transition-transform active:scale-[0.98]"
+              style={{ padding: '12px 14px' }}
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15"><MessageCircle size={20} /></span>
+              <span className="min-w-0">
+                <span className="block font-bold">{t('help.contact.whatsapp')}</span>
+                <span className="block text-xs text-white/80">{t('help.contact.whatsapp_desc')}</span>
+              </span>
+            </a>
+          )}
+          <button
+            type="button"
+            onClick={() => setFeedbackOpen(true)}
+            className="flex items-center gap-3 rounded-2xl border border-ocean/20 bg-ocean/5 text-left text-midnight transition-transform active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white"
+            style={{ padding: '12px 14px', width: '100%' }}
           >
-            {t('help.support.btn')}
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ocean/10 text-ocean dark:bg-sky/15 dark:text-sky-light">
+              <MessageSquareWarning size={20} />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-bold">{t('help.contact.feedback')}</span>
+              <span className="block text-xs text-slate-500 dark:text-slate-400">{t('help.contact.feedback_desc')}</span>
+            </span>
           </button>
         </div>
-      </div>
 
+        <p className="flex items-start gap-2 rounded-xl bg-gold/10 text-[13px] leading-snug text-slate-700 dark:text-slate-200" style={{ margin: '14px 0 0', padding: '10px 12px' }}>
+          <ShieldAlert size={16} className="mt-0.5 shrink-0 text-gold" />
+          {t('help.contact.safety')}
+        </p>
+      </section>
+
+      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} showToast={showToast} />
+      <Toast message={toast.message} visible={toast.visible} variant={toast.variant} onClose={hideToast} />
     </div>
   );
 }
