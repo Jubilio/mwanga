@@ -6,6 +6,9 @@ export default function HousingHistoryTable({ rendas, currency, handleDelete, sh
   const { t } = useTranslation();
   // Sort descending by month
   const sortedRendas = [...rendas].sort((a, b) => b.mes.localeCompare(a.mes));
+  const getLabel = (r) => (['own_home', 'condo', 'electricity', 'water', 'taxes', 'maintenance', 'insurance', 'other'].includes(r.proprietario)
+    ? t(`housing.categories.${r.proprietario}`)
+    : r.proprietario);
 
   return (
     <div className="glass-card overflow-hidden">
@@ -24,12 +27,12 @@ export default function HousingHistoryTable({ rendas, currency, handleDelete, sh
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-black/2 dark:bg-white/2 text-[10px] uppercase tracking-wider text-gray-500 font-bold border-b border-black/5 dark:border-white/5">
-              <th className="px-5 py-3 font-semibold">{t('housing.history.table_headers.month')}</th>
-              <th className="px-5 py-3 font-semibold">{t('housing.history.table_headers.description')}</th>
-              <th className="px-5 py-3 font-semibold">{t('housing.history.table_headers.value')}</th>
-              <th className="px-5 py-3 font-semibold">{t('housing.history.table_headers.status')}</th>
-              <th className="px-5 py-3 font-semibold hidden md:table-cell">{t('housing.history.table_headers.notes')}</th>
-              <th className="px-5 py-3 font-semibold text-right">{t('housing.history.table_headers.action')}</th>
+              <th className="px-3 py-3 sm:px-5 font-semibold">{t('housing.history.table_headers.month')}</th>
+              <th className="px-3 py-3 sm:px-5 font-semibold hidden sm:table-cell">{t('housing.history.table_headers.description')}</th>
+              <th className="px-3 py-3 sm:px-5 font-semibold">{t('housing.history.table_headers.value')}</th>
+              <th className="px-3 py-3 sm:px-5 font-semibold">{t('housing.history.table_headers.status')}</th>
+              <th className="px-3 py-3 sm:px-5 font-semibold hidden md:table-cell">{t('housing.history.table_headers.notes')}</th>
+              <th className="px-3 py-3 sm:px-5 font-semibold text-right">{t('housing.history.table_headers.action')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -42,34 +45,34 @@ export default function HousingHistoryTable({ rendas, currency, handleDelete, sh
             ) : (
               sortedRendas.map((r, idx) => (
                 <tr key={r.id || `rent-${idx}`} className="group hover:bg-black/2 dark:hover:bg-white/2 transition-colors">
-                  <td className="px-5 py-4 text-sm text-gray-700 dark:text-gray-300 font-medium">
+                  <td className="px-3 py-4 sm:px-5 text-sm text-gray-700 dark:text-gray-300 font-medium">
                     {r.mes}
+                    {/* On phones the description sits under the month so the status and delete button fit. */}
+                    <div className="mt-0.5 text-xs font-semibold text-gray-800 dark:text-white sm:hidden">{getLabel(r)}</div>
                   </td>
-                  <td className="px-5 py-4 text-sm text-gray-800 dark:text-white font-semibold">
-                    {['own_home', 'condo', 'electricity', 'water', 'taxes', 'maintenance', 'insurance', 'other'].includes(r.proprietario)
-                      ? t(`housing.categories.${r.proprietario}`)
-                      : r.proprietario}
+                  <td className="px-3 py-4 sm:px-5 text-sm text-gray-800 dark:text-white font-semibold hidden sm:table-cell">
+                    {getLabel(r)}
                   </td>
-                  <td className="px-5 py-4 text-sm text-gray-800 dark:text-white font-bold">
+                  <td className="px-3 py-4 sm:px-5 text-sm text-gray-800 dark:text-white font-bold">
                     {fmt(r.valor, currency)}
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="px-3 py-4 sm:px-5">
                     {r.estado === 'pago' ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-leaf/10 text-leaf text-[10px] font-bold uppercase tracking-wider border border-leaf/20">
-                        <CheckCircle2 size={12} /> {t('housing.form.status_pago')}
+                      <span className="inline-flex items-center gap-1 px-1.5 sm:gap-1.5 sm:px-2.5 py-1 rounded-md bg-leaf/10 text-leaf text-[10px] font-bold uppercase tracking-wider border border-leaf/20">
+                        <CheckCircle2 size={12} /> <span className="hidden xs:inline">{t('housing.form.status_pago')}</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-coral/10 text-coral text-[10px] font-bold uppercase tracking-wider border border-coral/20">
-                        <AlertCircle size={12} /> {t('housing.form.status_pendente')}
+                      <span className="inline-flex items-center gap-1 px-1.5 sm:gap-1.5 sm:px-2.5 py-1 rounded-md bg-coral/10 text-coral text-[10px] font-bold uppercase tracking-wider border border-coral/20">
+                        <AlertCircle size={12} /> <span className="hidden xs:inline">{t('housing.form.status_pendente')}</span>
                       </span>
                     )}
                   </td>
-                  <td className="px-5 py-4 text-xs text-gray-500 hidden md:table-cell truncate max-w-[150px]">
+                  <td className="px-3 py-4 sm:px-5 text-xs text-gray-500 hidden md:table-cell truncate max-w-[150px]">
                     {r.obs || '-'}
                   </td>
-                  <td className="px-5 py-4 text-right">
+                  <td className="px-3 py-4 sm:px-5 text-right">
                     <button
-                      className="p-2 text-gray-400 hover:text-coral hover:bg-coral/10 rounded-lg transition-colors opacity-50 group-hover:opacity-100"
+                      className="p-1.5 sm:p-2 text-gray-400 hover:text-coral hover:bg-coral/10 rounded-lg transition-colors md:opacity-50 md:group-hover:opacity-100"
                       onClick={() => { handleDelete(r.id); showToast(t('housing.toasts.removed')); }}
                       title={t('housing.history.delete_title')}
                     >

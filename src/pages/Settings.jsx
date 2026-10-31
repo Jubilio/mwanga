@@ -79,7 +79,7 @@ export default function Settings() {
   }
   const tabs = [{ id: 'perfil', icon: User }, { id: 'financas', icon: Wallet }, { id: 'familia', icon: Users }, { id: 'pref', icon: Palette }, { id: 'notifications', icon: Bell }, { id: 'ai', icon: Bot }];
   const status = busy ? 'saving' : saveStatus === 'error' ? 'error' : pending ? 'pending' : 'saved';
-  return <div className="settings-surface section-fade max-w-6xl mx-auto pb-28">
+  return <div className="settings-surface section-fade max-w-6xl mx-auto">
     <SettingsHero form={form} state={state} isSaving={busy} saveStatus={status} showAvatarGallery={showAvatarGallery} setShowAvatarGallery={setShowAvatarGallery} AVATARS={AVATARS} setFormDirty={setFormDirty} fileInputRef={fileInputRef} handleImageUpload={handleImageUpload} />
     <nav aria-label={t('settings.reliable.navigation')} className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-8">
       {tabs.map(tab => <button key={tab.id} aria-pressed={activeTab === tab.id} onClick={() => setActiveTab(tab.id)} className={`btn ${activeTab === tab.id ? 'btn-primary' : 'btn-ghost'}`}><tab.icon size={18} />{t(`settings.reliable.tabs.${tab.id}`)}</button>)}

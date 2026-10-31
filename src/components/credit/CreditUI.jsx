@@ -101,12 +101,14 @@ export function ProGate({ children, isPro, title, description }) {
   const { t } = useTranslation();
   if (isPro) return children;
   return (
-    <div style={{ position: "relative", borderRadius: 20, overflow: "hidden" }}>
-      <div style={{ filter: "blur(5px)", pointerEvents: "none", userSelect: "none", opacity: 0.45 }}>
+    // Both layers share one grid cell, so the card grows to whichever is taller.
+    // With an absolute overlay, a short locked card cut off the upgrade button.
+    <div style={{ display: "grid", borderRadius: 20, overflow: "hidden" }}>
+      <div style={{ gridArea: "1 / 1", filter: "blur(5px)", pointerEvents: "none", userSelect: "none", opacity: 0.45 }}>
         {children}
       </div>
       <div style={{
-        position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+        gridArea: "1 / 1", display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center", gap: 12, padding: 24,
         background: "rgba(7,9,15,0.72)", backdropFilter: "blur(2px)",
         borderRadius: 20, border: `1px solid ${G.gold}40`,

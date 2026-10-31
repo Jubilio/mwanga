@@ -106,7 +106,7 @@ export default function QuickAddNotificationModal({
   }
 
   return (
-    <div className="fixed inset-0 z-120 flex items-start justify-center overflow-y-auto px-4 py-8 sm:items-center sm:py-0">
+    <div className="fixed inset-0 z-120 flex items-start justify-center overflow-y-auto px-4 pt-[calc(2rem+var(--sat))] pb-[calc(2rem+var(--sab))] sm:items-center sm:py-0">
       <div className="fixed inset-0 bg-[#03141d]/70 backdrop-blur-md" onClick={onClose} />
 
       <div className="relative w-full max-w-2xl rounded-[2.5rem] border border-white/10 bg-white shadow-[0_30px_100px_rgba(3,20,29,0.3)]">

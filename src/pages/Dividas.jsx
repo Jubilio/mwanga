@@ -273,25 +273,26 @@ export default function Dividas() {
           <form onSubmit={handleAddDebt} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 border-l-4 border-l-gold pl-4">
             <div className="md:col-span-2">
               <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('debts.form.creditor_label')}</label>
-              <input type="text" className="input bg-gray-50 dark:bg-[#0c1018]" required value={newDebt.creditor_name} onChange={e => setNewDebt({ ...newDebt, creditor_name: e.target.value })} placeholder={t('debts.form.creditor_placeholder')} />
+              <input type="text" className="form-input bg-gray-50 dark:bg-[#0c1018]" required value={newDebt.creditor_name} onChange={e => setNewDebt({ ...newDebt, creditor_name: e.target.value })} placeholder={t('debts.form.creditor_placeholder')} />
             </div>
             
             <div>
               <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('debts.form.amount_label')}</label>
-              <input type="number" className="input bg-gray-50 dark:bg-[#0c1018]" required min="1" step="any" value={newDebt.principal_amount} onChange={e => setNewDebt({ ...newDebt, principal_amount: e.target.value })} placeholder={t('debts.form.amount_placeholder')} />
+              <input type="number" className="form-input bg-gray-50 dark:bg-[#0c1018]" required min="1" step="any" value={newDebt.principal_amount} onChange={e => setNewDebt({ ...newDebt, principal_amount: e.target.value })} placeholder={t('debts.form.amount_placeholder')} />
             </div>
 
             <div>
               <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('debts.form.date_label')}</label>
-              <input type="date" className="input bg-gray-50 dark:bg-[#0c1018]" value={newDebt.due_date} onChange={e => setNewDebt({ ...newDebt, due_date: e.target.value })} />
+              <input type="date" className="form-input bg-gray-50 dark:bg-[#0c1018]" value={newDebt.due_date} onChange={e => setNewDebt({ ...newDebt, due_date: e.target.value })} />
             </div>
 
             <div>
               <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('debts.form.rate_label')}</label>
               <div className="flex gap-2">
-                <input type="number" className="input bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 focus:border-blue-500 flex-1" step="any" min="0" value={newDebt.interest_rate} onChange={e => setNewDebt({ ...newDebt, interest_rate: e.target.value })} placeholder={t('debts.form.rate_placeholder')} />
+                <input type="number" className="form-input bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 focus:border-blue-500 min-w-0 flex-1" step="any" min="0" value={newDebt.interest_rate} onChange={e => setNewDebt({ ...newDebt, interest_rate: e.target.value })} placeholder={t('debts.form.rate_placeholder')} />
                 <select 
-                  className="input bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 focus:border-blue-500 w-28 px-2"
+                  className="form-input bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 focus:border-blue-500 px-2"
+                  style={{ width: '7rem', flexShrink: 0 }}
                   value={newDebt.interest_period}
                   onChange={e => setNewDebt({ ...newDebt, interest_period: e.target.value })}
                 >
@@ -303,13 +304,13 @@ export default function Dividas() {
 
             <div>
               <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('debts.form.months_label')}</label>
-              <input type="number" className="input bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 focus:border-blue-500" step="1" min="0" value={newDebt.months} onChange={e => setNewDebt({ ...newDebt, months: e.target.value })} placeholder={t('debts.form.months_placeholder')} />
+              <input type="number" className="form-input bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 focus:border-blue-500" step="1" min="0" value={newDebt.months} onChange={e => setNewDebt({ ...newDebt, months: e.target.value })} placeholder={t('debts.form.months_placeholder')} />
             </div>
 
             <div className="md:col-span-2">
               <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{ui("Depositar valor pedido na conta (Opcional)")}</label>
               <select 
-                className="input bg-green-50/30 dark:bg-green-900/10 border-green-200/50 focus:border-green-500"
+                className="form-input bg-green-50/30 dark:bg-green-900/10 border-green-200/50 focus:border-green-500"
                 value={newDebt.account_id}
                 onChange={e => setNewDebt({ ...newDebt, account_id: e.target.value })}
               >
@@ -430,11 +431,14 @@ export default function Dividas() {
                       </span>
                     </div>
                   </td>
-                  <td className="font-bold text-coral flex flex-col justify-center">
-                    <span>{showBalance ? fmt(getDynamicRemainingAmount(debt), currency) : '••••'}</span>
-                    {getElapsedMonths(debt.due_date || debt.created_at) > 0 && getMonthlyRate(debt) > 0 && debt.status !== 'paid' && (
-                      <span className="text-[9px] text-red-500 uppercase tracking-wider font-bold animate-pulse"> {ui("+ Juros Compostos")} </span>
-                    )}
+                  <td className="font-bold text-coral">
+                    {/* flex lives on an inner div: a flex <td> drops out of the table layout. */}
+                    <div className="flex flex-col justify-center">
+                      <span>{showBalance ? fmt(getDynamicRemainingAmount(debt), currency) : '••••'}</span>
+                      {getElapsedMonths(debt.due_date || debt.created_at) > 0 && getMonthlyRate(debt) > 0 && debt.status !== 'paid' && (
+                        <span className="text-[9px] text-red-500 uppercase tracking-wider font-bold animate-pulse"> {ui("+ Juros Compostos")} </span>
+                      )}
+                    </div>
                   </td>
                   <td className="hide-mobile">
                     {debt.due_date ? (
@@ -445,7 +449,7 @@ export default function Dividas() {
                     ) : '-'}
                   </td>
                   <td>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-0.5 sm:gap-2">
                       {debt.status !== 'paid' && (
                         <button
                           onClick={() => {
@@ -496,14 +500,14 @@ export default function Dividas() {
                         <div className="flex flex-wrap items-center gap-3">
                           <input 
                             type="number" 
-                            className="input py-2 text-sm w-32 border-gray-200 dark:border-gray-700 focus:border-gold" 
+                            className="form-input py-2 text-sm w-32 border-gray-200 dark:border-gray-700 focus:border-gold" 
                             placeholder={ui("Valor a Pagar...")}
                             value={paymentAmount} 
                             onChange={e => setPaymentAmount(e.target.value)} 
                             autoFocus
                           />
                           <select 
-                            className="input py-2 text-sm max-w-[200px] border-gray-200 dark:border-gray-700"
+                            className="form-input py-2 text-sm max-w-[200px] border-gray-200 dark:border-gray-700"
                             value={paymentAccount}
                             onChange={e => setPaymentAccount(e.target.value)}
                           >
@@ -588,19 +592,19 @@ export default function Dividas() {
                               }} className="flex flex-wrap items-end gap-3 pt-1">
                                 <div className="space-y-1">
                                   <label className="text-[9px] uppercase font-bold text-gray-400 block">{ui("Capital Principal")}</label>
-                                  <input type="number" name="principal" defaultValue={principal} className="input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-28 border border-gray-200 dark:border-gray-800" required />
+                                  <input type="number" name="principal" defaultValue={principal} className="form-input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-28 border border-gray-200 dark:border-gray-800" required />
                                 </div>
                                 <div className="space-y-1">
                                   <label className="text-[9px] uppercase font-bold text-gray-400 block">{ui("Taxa de Juro (% ao Mês)")}</label>
-                                  <input type="number" name="rate" defaultValue={30} className="input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-24 border border-gray-200 dark:border-gray-800" required />
+                                  <input type="number" name="rate" defaultValue={30} className="form-input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-24 border border-gray-200 dark:border-gray-800" required />
                                 </div>
                                 <div className="space-y-1">
                                   <label className="text-[9px] uppercase font-bold text-gray-400 block">{ui("Duração (Meses)")}</label>
-                                  <input type="number" name="duration" defaultValue={months_duration} className="input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-24 border border-gray-200 dark:border-gray-800" required />
+                                  <input type="number" name="duration" defaultValue={months_duration} className="form-input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-24 border border-gray-200 dark:border-gray-800" required />
                                 </div>
                                 <div className="space-y-1">
                                   <label className="text-[9px] uppercase font-bold text-gray-400 block">{ui("Início da Contração")}</label>
-                                  <input type="date" name="due_date" defaultValue={debt.due_date || debt.created_at?.split('T')[0] || '2026-03-01'} className="input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-32 border border-gray-200 dark:border-gray-800" required />
+                                  <input type="date" name="due_date" defaultValue={debt.due_date || debt.created_at?.split('T')[0] || '2026-03-01'} className="form-input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-32 border border-gray-200 dark:border-gray-800" required />
                                 </div>
                                 <button type="submit" className="btn py-1.5 px-4 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white border-none shrink-0 shadow-md"> {ui("Simular e Salvar")} </button>
                               </form>

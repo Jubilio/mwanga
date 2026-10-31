@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Dark utilities follow the app's own theme toggle (.dark on <html>), not the phone's
+   system setting. Without this, Tailwind v4 uses prefers-color-scheme, so a phone in light
+   mode showed dark-on-dark text and buttons inside the dark cards. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ══════════════════════════════════════════
    MWANGA DESIGN SYSTEM
    ══════════════════════════════════════════ */
@@ -43,10 +48,11 @@
   --color-muted: #94a3b8;
 }
 
-/* Base */
+/* Base
+   Tailwind's preflight already zeroes margin and padding inside its base layer.
+   Repeating it here, outside any layer, beat every p-* / m-* utility in the app,
+   so cards lost their inner padding and their buttons touched or crossed the edges. */
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
@@ -885,11 +891,10 @@ textarea {
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Optimize spacing */
-  main {
-    padding: 1rem 0.75rem !important;
-    will-change: transform;
-  }
+  /* Main padding comes from Layout.jsx, which keeps room for the bottom nav and the
+     Android gesture bar. An !important override here used to hide the last card's
+     buttons under the bottom nav. will-change is also dropped: it turned <main> into
+     the containing block of fixed overlays inside it. */
 
   .glass-card {
     padding: 1rem !important;
@@ -956,11 +961,6 @@ textarea {
     font-size: 1rem;
   }
 
-  /* Bottom nav spacing */
-  main {
-    padding-bottom: 6rem;
-  }
-
   /* Charts responsive */
   .recharts-responsive-container {
     height: 250px !important;
@@ -971,11 +971,6 @@ textarea {
     width: 90vw !important;
     max-height: 90vh !important;
     border-radius: 16px !important;
-  }
-
-  /* Flex direction for mobile */
-  .flex-row {
-    flex-direction: column;
   }
 
   /* Gap reduction on mobile */
@@ -992,10 +987,6 @@ textarea {
 
   .glass-card {
     padding: 0.875rem !important;
-  }
-
-  main {
-    padding: 0.75rem 0.5rem !important;
   }
 }
 
@@ -1016,15 +1007,7 @@ textarea {
 }
 
 /* Orientation handling */
-@media (orientation: landscape) and (max-height: 500px) {
-  header {
-    padding: 0.5rem !important;
-  }
 
-  main {
-    padding-bottom: 3rem !important;
-  }
-}
 
 /* Print styles */
 @media print {

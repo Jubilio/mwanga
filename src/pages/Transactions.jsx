@@ -178,7 +178,7 @@ export default function Transactions() {
   const balance = totals.in - totals.out;
 
   return (
-    <div className="flex flex-col gap-6 transactions-gsap-root" style={{ paddingBottom: '7rem' }}>
+    <div className="flex flex-col gap-6 transactions-gsap-root">
       
       <TransactionsHeader 
         t={t}

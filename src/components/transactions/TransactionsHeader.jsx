@@ -49,24 +49,24 @@ export default function TransactionsHeader({
       </div>
 
       <div className="glass-card p-5 flex flex-col gap-6">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 flex-col">
               <span className="text-[8px] uppercase font-black tracking-[0.2em] text-gray-500">{ui("Entradas")}</span>
-              <span className="text-sm font-black tabular-nums text-leaf-light">
+              <span className="text-xs xs:text-sm font-black tabular-nums text-leaf-light">
                 {showBalance ? fmt(totals.in, currency) : '••••'}
               </span>
             </div>
-            <div className="h-8 w-px bg-white/5" />
-            <div className="flex flex-col">
+            <div className="h-8 w-px shrink-0 bg-white/5" />
+            <div className="flex min-w-0 flex-col">
               <span className="text-[8px] uppercase font-black tracking-[0.2em] text-gray-500">{ui("Saídas")}</span>
-              <span className="text-sm font-black tabular-nums text-coral-light">
+              <span className="text-xs xs:text-sm font-black tabular-nums text-coral-light">
                 {showBalance ? fmt(totals.out, currency) : '••••'}
               </span>
             </div>
-            <div className="h-8 w-px bg-white/5" />
-            <div className="flex flex-col">
+            <div className="h-8 w-px shrink-0 bg-white/5" />
+            <div className="flex min-w-0 flex-col">
               <span className="text-[8px] uppercase font-black tracking-[0.2em] text-gray-500">{ui("Balanço")}</span>
-              <span className={`text-sm font-black tabular-nums ${balance >= 0 ? 'text-white' : 'text-coral'}`}>
+              <span className={`text-xs xs:text-sm font-black tabular-nums ${balance >= 0 ? 'text-midnight dark:text-white' : 'text-coral'}`}>
                 {showBalance ? `${balance >= 0 ? '+' : ''}${fmt(balance, currency)}` : '••••'}
               </span>
             </div>

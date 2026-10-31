@@ -101,7 +101,7 @@ export default function RealityReview() {
   const selected = status.sections[section];
   const money = value => value === null ? t('reality.not_recorded') : fmt(value, 'MT');
   const accounts = [{ id: null, name: t('reality.cash'), balance: snapshot.balances.cash }, ...snapshot.balances.accounts];
-  return <div className="space-y-6 pb-28">
+  return <div className="space-y-6">
     <header><h1 className="text-3xl font-black">{t('reality.title')}</h1><p className="text-slate-500 mt-3">{t('reality.intro')}</p><p className="text-xs text-slate-500 mt-3">{t('reality.scope')}</p></header>
     <section className="glass-card p-5"><p className="font-bold">{t('reality.progress', { count: confirmedCount })}</p><progress max={3} value={confirmedCount} className="w-full accent-emerald-500 mt-3" aria-label={t('reality.progress', { count: confirmedCount })} /><div className="flex flex-wrap gap-2 mt-4">{GROUPS.map((group, index) => <button key={group} disabled={busy} aria-pressed={section === group} onClick={() => { setSection(group); setEditor(null); setRestart(null); }} className={`btn ${section === group ? 'btn-primary' : 'btn-ghost'}`}>{index + 1}. {t(`reality.sections.${group}`)}{status.sections[group].confirmed ? ' ✓' : ''}</button>)}</div></section>
     {notice ? <p role="status" className="text-emerald-600 dark:text-emerald-400">{t(`reality.${notice}`)}</p> : null}

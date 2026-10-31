@@ -157,13 +157,13 @@ export default function NexoVibe() {
             <div style={{ position: 'absolute', bottom: '15px', right: '15px', width: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', border: '4px solid var(--color-surface)' }}></div>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-            <a href="https://github.com/Jubilio" target="_blank" rel="noopener noreferrer" className="btn btn-ghost" style={{ background: 'var(--color-cream)', color: 'var(--color-ocean)' }}>
+            <a href="https://github.com/Jubilio" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="btn btn-ghost" style={{ background: 'var(--color-cream)', color: 'var(--color-ocean)', width: 'auto' }}>
               <Github size={20} />
             </a>
-            <a href="https://www.linkedin.com/in/jubilio-mausse" target="_blank" rel="noopener noreferrer" className="btn btn-ghost" style={{ background: 'var(--color-cream)', color: 'var(--color-ocean)' }}>
+            <a href="https://www.linkedin.com/in/jubilio-mausse" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="btn btn-ghost" style={{ background: 'var(--color-cream)', color: 'var(--color-ocean)', width: 'auto' }}>
               <Linkedin size={20} />
             </a>
-            <a href="mailto:contact@nexovibe.com" className="btn btn-ghost" style={{ background: 'var(--color-cream)', color: 'var(--color-ocean)' }}>
+            <a href="mailto:contact@nexovibe.com" aria-label="Email" className="btn btn-ghost" style={{ background: 'var(--color-cream)', color: 'var(--color-ocean)', width: 'auto' }}>
               <Mail size={20} />
             </a>
           </div>

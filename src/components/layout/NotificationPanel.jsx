@@ -125,7 +125,7 @@ export default function NotificationPanel({
                 >
                   <button
                     onClick={(event) => onDeleteOne(event, notification.id)}
-                    className="absolute right-2 top-2 rounded-full p-1 opacity-0 transition-opacity hover:bg-red-500/10 group-hover:opacity-100"
+                    className="absolute right-2 top-2 rounded-full p-1 transition-opacity hover:bg-red-500/10 md:opacity-0 md:group-hover:opacity-100"
                   >
                     <X size={12} className="text-gray-400 hover:text-red-500" />
                   </button>
