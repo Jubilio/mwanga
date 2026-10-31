@@ -34,3 +34,21 @@ describe('latest release', () => {
     expect(summariseRelease({ assets: [] })).toBeNull();
   });
 });
+
+describe('pickRelease', () => {
+  const apk = { name: 'mwanga.apk', browser_download_url: 'https://x/v1.apk', size: 1048576 };
+  it('accepts a pre-release that has the APK', async () => {
+    const { pickRelease } = await import('./latestRelease');
+    const result = pickRelease([
+      { tag_name: 'v1.1.0', draft: true, assets: [apk] },
+      { tag_name: 'v1.0.0', prerelease: true, published_at: '2026-10-31T17:42:29Z', assets: [apk], body: '' },
+    ]);
+    expect(result.version).toBe('1.0.0');
+    expect(result.url).toBe('https://x/v1.apk');
+  });
+  it('returns null when no release has the APK', async () => {
+    const { pickRelease } = await import('./latestRelease');
+    expect(pickRelease([{ tag_name: 'v1', assets: [] }])).toBeNull();
+    expect(pickRelease(null)).toBeNull();
+  });
+});

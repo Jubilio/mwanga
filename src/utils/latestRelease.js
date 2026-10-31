@@ -2,6 +2,7 @@
 // The release notes are written by .github/workflows/android-release.yml.
 export const RELEASES_REPO = import.meta.env.VITE_RELEASES_REPO || 'Jubilio/mwanga';
 export const RELEASES_PAGE = `https://github.com/${RELEASES_REPO}/releases`;
+// Só funciona para versões finais; enquanto a página não lê a lista, o botão aponta para ela.
 export const LATEST_APK_URL = `${RELEASES_PAGE}/latest/download/mwanga.apk`;
 
 const HEX_64 = /`([0-9a-f]{64})`/i;
@@ -33,10 +34,21 @@ export function summariseRelease(release) {
 }
 
 export async function fetchLatestRelease(signal) {
-  const response = await fetch(`https://api.github.com/repos/${RELEASES_REPO}/releases/latest`, {
+  // /releases/latest ignora pre-releases; a lista inclui-as, por ordem da mais recente.
+  const response = await fetch(`https://api.github.com/repos/${RELEASES_REPO}/releases?per_page=10`, {
     headers: { Accept: 'application/vnd.github+json' },
     signal,
   });
   if (!response.ok) throw new Error(`GitHub ${response.status}`);
-  return summariseRelease(await response.json());
+  return pickRelease(await response.json());
+}
+
+/** The newest published release (pre-releases included) that has the APK attached. */
+export function pickRelease(releases) {
+  if (!Array.isArray(releases)) return null;
+  for (const release of releases) {
+    const summary = summariseRelease(release);
+    if (summary) return summary;
+  }
+  return null;
 }
