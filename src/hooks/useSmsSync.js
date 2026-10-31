@@ -5,7 +5,9 @@ import { Capacitor } from '@capacitor/core';
 import { useFinance } from './useFinance';
 import { parseMobileMoneySMS } from '../utils/smsParser';
 import api from '../utils/api';
-import { SMS_INBOX_ENABLED } from '../config/features';
+import { SMS_INBOX_ENABLED, getEffectiveTier } from '../config/features';
+import { getSmsQuota } from '../utils/smsQuota';
+import i18n from '../i18n';
 
 export function useSmsSync(showToast) {
   useUiLanguage();
@@ -58,7 +60,16 @@ export function useSmsSync(showToast) {
       // Sort oldest first to maintain chronological order
       filteredList.sort((a, b) => a.date - b.date);
 
+      // Free accounts import up to SMS_FREE_MONTHLY_LIMIT a month. When the cap stops the
+      // loop, the sync date only advances to the last imported SMS so nothing is skipped.
+      const quota = getSmsQuota(getEffectiveTier(settings), transacoes);
+      let stoppedAt = null;
+
       for (const sms of filteredList) {
+        if (parsedCount >= quota.remaining) {
+          stoppedAt = sms.date;
+          break;
+        }
         const result = parseMobileMoneySMS(sms.body);
         if (result && result.amount) {
            let accountId = null;
@@ -117,8 +128,13 @@ export function useSmsSync(showToast) {
         if (manual) showToast?.(ui("Nenhuma transação nova identificada."), 'info');
       }
 
+      if (stoppedAt !== null) {
+        showToast?.(i18n.t('sms_quota.sync_stopped', { limit: quota.limit, count: parsedCount }), 'info');
+      }
+
       // Update the sync timestamp
-      const newSettings = { ...settings, last_sms_sync_date: new Date().toISOString() };
+      const syncedUntil = stoppedAt !== null ? new Date(stoppedAt - 1) : new Date();
+      const newSettings = { ...settings, last_sms_sync_date: syncedUntil.toISOString() };
       dispatch({ type: 'UPDATE_SETTINGS', payload: newSettings });
       try {
         await api.post('/settings', { key: 'last_sms_sync_date', value: newSettings.last_sms_sync_date });

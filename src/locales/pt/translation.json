@@ -51,9 +51,9 @@
   "credit": {
     "header": {
       "title": "Crédito",
-      "subtitle": "Microcrédito inteligente · Powered by Binth",
+      "subtitle": "Conhece a tua capacidade de crédito",
       "refresh_title": "Atualizar",
-      "score_label": "Score actual",
+      "score_label": "Pontuação atual",
       "pro": "👑 PRO",
       "basic": "BASIC"
     },
@@ -72,7 +72,7 @@
       "btn": "Atualizar para PRO"
     },
     "overview": {
-      "score_title": "Score de Crédito",
+      "score_title": "Pontuação de crédito",
       "eligible": "Pré-aprovado até",
       "not_eligible": "Não elegível para crédito bancário",
       "capacity_title": "Capacidade de Endividamento",
@@ -82,8 +82,8 @@
       "per_month": "por mês",
       "factors_detail_title": "Detalhamento de Factores PRO",
       "factors_detail_desc": "Veja exatamente como o seu comportamento financeiro influencia o seu acesso a crédito.",
-      "score_factors": "Factores do Score",
-      "integrated_score": "Score Integrado Mwanga",
+      "score_factors": "O que conta na pontuação",
+      "integrated_score": "Pontuação Mwanga",
       "capacity_factor": "Capacidade de Endividamento",
       "burden_factor": "Carga de Dívidas Ativas",
       "transparency_title": "Transparência de Dados",
@@ -95,7 +95,7 @@
       "history_installment": "Prestação:",
       "history_months": "meses",
       "cta_apply": "Solicitar Financiamento",
-      "insufficient_score": "Score de Crédito Insuficiente",
+      "insufficient_score": "Pontuação ainda insuficiente",
       "insufficient_desc": "O seu perfil atual não cumpre os requisitos mínimos dos nossos parceiros bancários. Foco na poupança e no registo regular das suas transações para subir o score."
     },
     "simulator": {
@@ -297,7 +297,7 @@
       "risk_red_label": "Zona Vermelha (Risco)",
       "risk_red_desc": "Acesso a crédito bloqueado ou apenas disponível com taxas de agiotagem altíssimas.",
       "risk_here": "(Você está aqui)",
-      "improve_title": "PLANO DE MELHORIA DE SCORE",
+      "improve_title": "PLANO PARA MELHORAR A PONTUAÇÃO",
       "tip_xitique": "Concluir ciclo de Xitique sem atrasos",
       "tip_savings": "Manter saldo poupança constante por 60 dias",
       "tip_card": "Amortizar antecipadamente dívida microcrédito",
@@ -467,8 +467,8 @@
     "toast_updated": "Transação atualizada com sucesso!"
   },
   "sms_import": {
-    "title": "Análise Inteligente de SMS",
-    "description": "Cole ou partilhe mensagens bancárias para registar despesas e receitas automaticamente com a ajuda da IA.",
+    "title": "Importar SMS",
+    "description": "Cola ou partilha um SMS do M-Pesa, e-Mola ou do banco e a Binth regista a despesa ou receita por ti.",
     "input_header": "Texto da Mensagem",
     "mobile_tip": {
       "title": "Dica para Telemóvel",
@@ -945,7 +945,7 @@
     },
     "hero": {
       "default_user_name": "Explorador Financeiro",
-      "premium_account": "Conta Premium Nexo Vibe",
+      "premium_account": "Conta Premium Mwanga",
       "saving": "Guardando...",
       "synced": "Sincronizado",
       "currency_label": "Moeda",
@@ -1171,6 +1171,7 @@
         "btn": "Começar grátis",
         "features": [
           "Transações ilimitadas",
+          "Importação de SMS: 30 por mês",
           "Orçamento por categoria",
           "Metas de poupança",
           "Habitação e rendas",
@@ -1185,6 +1186,7 @@
         "badge": "Recomendado para famílias",
         "features": [
           "Tudo do Starter",
+          "Importação de SMS sem limite",
           "Dívidas e calendário de pagamentos",
           "Património: activos e passivos",
           "Relatórios do mês"
@@ -1196,11 +1198,9 @@
         "btn": "Escolher Património",
         "features": [
           "Tudo do Crescimento",
-          "Simuladores: orçamento, salário, investimento e reforma",
-          "Crédito",
-          "Insights da Binth",
-          "Importação de SMS",
-          "Máquina do Tempo e Mordomia"
+          "Simuladores: orçamento, salário, investimento, futuro e Xitique",
+          "Crédito: pontuação, simulador e comparação",
+          "Binth, a tua assistente financeira"
         ]
       }
     },
@@ -1300,9 +1300,9 @@
     "empty_state": "Sem despesas para analisar"
   },
   "insights": {
-    "title": "Binth Insights",
+    "title": "Binth",
     "subtitle": "A tua mentora financeira pessoal ✦",
-    "score_label": "Score",
+    "score_label": "Pontuação",
     "placeholder": "Pergunta algo à Binth…",
     "welcome_default": "Olá! Já li o teu contexto financeiro e estou pronta para te ajudar.",
     "welcome_error": "Não consegui processar o teu pedido. Tenta novamente! 😊",
@@ -1314,7 +1314,7 @@
       "Analisa o meu orcamento"
     ],
     "score_section": {
-      "title": "Score Financeiro Bíblico"
+      "title": "Pontuação financeira bíblica"
     },
     "mic_errors": {
       "not_allowed": "Permissão de microfone negada. Verifica as definições do browser.",
@@ -1968,7 +1968,7 @@
     "s0e236f6b75ab": "A base de qualquer planeamento. Os dados de transações devem ser fáceis de aceder, precisos e sem lacunas.",
     "s646061f14b38": "Simulação de Futuro Financeiro",
     "sf896528bfb8f": "Horizonte Temporal",
-    "s2c9b8123ba8b": "Retorno Anual (ROI)",
+    "s2c9b8123ba8b": "Rendimento anual",
     "s09138aa29fe8": "*Assume que investes a tua poupança mensal",
     "sc0626e29f7cd": "Duração do Contrato",
     "s0061c3dcb40a": "Meses com Salário Fixo",
@@ -2058,7 +2058,7 @@
     "s8627f6a5496a": "Prioridade Estratégica",
     "sff711d67acd4": "Garantir que todas as pequenas transações do dia estão registadas.",
     "s9d0454d18d29": "Ver plano detalhado",
-    "s950e08de72e4": "Explorar Insights",
+    "s950e08de72e4": "Falar com a Binth",
     "se9868e966a55": "Abrir Menu Principal",
     "s6bf330c92a59": "Pressão",
     "s750733a7271b": "Limpar Tudo",
@@ -2561,7 +2561,7 @@
     "history": "Histórico de reconciliação",
     "history_note": "Mostra os últimos 50 ajustes do agregado. Cada ajuste guarda o autor, a data de registo, a data de referência, os saldos e o motivo. Os ajustes não entram nas receitas ou despesas.",
     "finish": "Concluir revisão",
-    "back": "Voltar ao dashboard",
+    "back": "Voltar ao Início",
     "recorded_by": "Registado pelo utilizador {{user}} em {{date}}",
     "restart_title": "Zerar e recomeçar saldos",
     "restart_hint": "Ficaste algum tempo sem usar o Mwanga? Põe todas as contas a zero e introduz os valores que tens hoje, de uma só vez.",
@@ -2652,13 +2652,13 @@
     "desc_budget": "Limites por categoria, renda e casa",
     "desc_goals": "Objetivos e plano mensal",
     "desc_xitique": "Grupos de poupança rotativa",
-    "desc_debts": "Dívidas, crédito e score",
+    "desc_debts": "Dívidas, crédito e pontuação",
     "desc_binth": "Pergunta à tua assistente financeira",
     "desc_sms": "Cola SMS do M-Pesa, e-Mola ou banco",
     "desc_patrimony": "Contas, bens e património líquido",
     "desc_simulators": "Poupança, futuro e Xitique",
     "desc_report": "Entradas, saídas e exportação",
-    "desc_pricing": "O teu plano e upgrades",
+    "desc_pricing": "O teu plano e as opções disponíveis",
     "desc_help": "Tutorial e suporte",
     "desc_settings": "Perfil, preferências e segurança",
     "desc_about": "Quem faz o Mwanga",
@@ -2671,5 +2671,11 @@
     "tab_future": "Futuro",
     "sms_button": "Importar SMS",
     "sms_short": "SMS"
+  },
+  "sms_quota": {
+    "used": "{{used}} de {{limit}} SMS importados este mês no plano grátis.",
+    "reached": "Chegaste aos {{limit}} SMS deste mês. Os planos pagos não têm limite.",
+    "see_plans": "Ver planos",
+    "sync_stopped": "Limite de {{limit}} SMS do mês atingido. Importámos {{count}}."
   }
 }

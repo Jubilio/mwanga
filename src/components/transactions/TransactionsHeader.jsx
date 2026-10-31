@@ -80,12 +80,8 @@ export default function TransactionsHeader({
              >
                <MessageSquare size={14} /> {t('nav.sms_button')}
              </Link>
-             <button
-               onClick={() => setIsScanOpen(true)}
-               className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-all text-[10px] font-black uppercase tracking-widest border border-indigo-500/20"
-             >
-               <Plus size={14} /> Smart Scan
-             </button>
+             {/* "Smart Scan" escondido: a leitura de extratos ainda é uma simulação
+                 (mostra "12 transações" sem ler o ficheiro). Volta quando for real. */}
              <Link
                to="/relatorio"
                className="p-3 rounded-2xl bg-white/5 text-gray-400 hover:text-ocean transition-all shrink-0"

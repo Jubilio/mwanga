@@ -25,11 +25,12 @@ export const SUBSCRIPTION_TIERS = {
  */
 export const SMS_INBOX_ENABLED = true;
 
-const FREE_FEATURES = ['jornada', 'transacoes', 'orcamento', 'habitacao', 'metas', 'xitique'];
+// SMS import is free with a monthly cap (see SMS_FREE_MONTHLY_LIMIT); paid plans have no cap.
+const FREE_FEATURES = ['jornada', 'transacoes', 'orcamento', 'habitacao', 'metas', 'xitique', 'sms-import'];
 const GROWTH_FEATURES = [...FREE_FEATURES, 'dividas', 'patrimonio', 'relatorio'];
 const PRO_FEATURES = [
     ...GROWTH_FEATURES,
-    'credito', 'simuladores', 'insights', 'sms-import', 'time-machine', 'mordomia', 'nexovibe'
+    'credito', 'simuladores', 'insights', 'time-machine', 'mordomia', 'nexovibe'
 ];
 
 export const TIER_FEATURES = {
@@ -38,6 +39,9 @@ export const TIER_FEATURES = {
     pro: PRO_FEATURES,
     legacy: ['*']
 };
+
+/** SMS a free account can import per calendar month. Paid plans have no cap. */
+export const SMS_FREE_MONTHLY_LIMIT = 30;
 
 /** Monthly prices in MZN, per billing cycle. */
 export const PLAN_PRICES = {

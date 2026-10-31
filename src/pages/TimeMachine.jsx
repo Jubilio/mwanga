@@ -93,7 +93,7 @@ export default function TimeMachine() {
 
             <div>
               <div className="flex justify-between mb-4">
-                <span className="text-xs font-black uppercase tracking-widest text-gray-400">{ui("Retorno Anual (ROI)")}</span>
+                <span className="text-xs font-black uppercase tracking-widest text-gray-400">{ui("Rendimento anual")}</span>
                 <span className="text-lg font-black text-emerald-500">{returnRate}%</span>
               </div>
               <input type="range" min="0" max="25" value={returnRate} onChange={(e) => setReturnRate(parseInt(e.target.value))} className="time-slider w-full h-2 bg-white/5 rounded-lg appearance-none cursor-pointer" />
