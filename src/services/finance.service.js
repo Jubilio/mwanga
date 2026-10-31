@@ -168,9 +168,18 @@ export class DataLoadError extends Error {
 
 // Data requests go through axios (XMLHttpRequest). In the Android app the patched
 // window.fetch never delivered GET requests to the server, while XHR requests did.
+// The native HTTP bridge can hand the body over as text, so parse it here too
+// instead of treating a JSON string as "no data" and showing zeros.
+export function parseBody(data) {
+  if (typeof data !== 'string') return data;
+  const text = data.trim();
+  if (!text.startsWith('{') && !text.startsWith('[')) return data;
+  try { return JSON.parse(text); } catch { return data; }
+}
+
 async function getJson(url, headers) {
   const res = await api.get(url, { headers, validateStatus: () => true });
-  return { status: res.status, ok: res.status >= 200 && res.status < 300, data: res.data };
+  return { status: res.status, ok: res.status >= 200 && res.status < 300, data: parseBody(res.data) };
 }
 
 async function fetchWithRetry(url, headers, delays = RETRY_DELAYS_MS) {
@@ -237,7 +246,8 @@ export async function fetchAllData(headers, dispatch, { retryDelays = RETRY_DELA
       try {
         const r = await getJson(url, headers);
         if (r.status === 401) unauthorized = true;
-        if (r.ok) return r.data;
+        // A 200 whose body is not JSON (e.g. an HTML error page) is not data either.
+        if (r.ok && r.data && typeof r.data === 'object') return r.data;
         if (REQUIRED.has(i)) failedStatus = failedStatus || r.status;
       } catch {
         if (REQUIRED.has(i)) failedStatus = failedStatus || -1;

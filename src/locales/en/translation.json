@@ -2246,7 +2246,9 @@
     "sb9bed32eff60": "Edit record",
     "scf54dbe78f14": "Refresh dashboard",
     "s5967a78a8842": "Active cash burn",
-    "s5c38a44eae85": "Mwanga Finance - Smart management and digital stewardship"
+    "s5c38a44eae85": "Mwanga Finance - Smart management and digital stewardship",
+    "sSplashWaking": "The server is waking up, this can take up to a minute...",
+    "sSplashAlmost": "Almost there, finishing loading your data..."
   },
   "journey": {
     "nav": "Financial journey",

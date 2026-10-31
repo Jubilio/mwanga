@@ -48,23 +48,9 @@ const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
 import { useSmsSync } from './hooks/useSmsSync';
 import { getToken } from './utils/authToken';
+import { FINANCIAL_QUOTE_TEXTS } from './utils/financialQuotes';
 
-const FINANCIAL_QUOTES = [
-  ui("O melhor investimento que podes fazer é em ti mesmo."),
-  ui("Riqueza não é o que ganhas, é o que guardas."),
-  ui("Orçamento não é sobre limitação, é sobre priorização."),
-  ui("A disciplina financeira é o passaporte para a liberdade."),
-  ui("Pequenos riachos formam grandes rios; controla as pequenas despesas."),
-  ui("O tempo é o teu maior aliado nos juros compostos."),
-  ui("Dinheiro é um excelente escravo, mas um mestre terrível."),
-  ui("A paciência é a chave para o crescimento patrimonial."),
-  ui("O rico domina sobre o pobre, e o que toma emprestado é servo do que empresta. (Provérbios 22:7)"),
-  ui("A riqueza obtida com pressa diminuirá, mas quem a ajunta pelo trabalho terá aumento. (Provérbios 13:11)"),
-  ui("Foste fiel no pouco, sobre o muito te colocarei. (Mateus 25:21)"),
-  ui("Honra ao Senhor com os teus bens e com a primícia de toda a tua renda. (Provérbios 3:9)"),
-  ui("Os planos do diligente levam à fartura, mas a pressa excessiva leva à pobreza. (Provérbios 21:5)"),
-  ui("Pois onde estiver o vosso tesouro, ali estará também o vosso coração. (Mateus 6:21)")
-];
+const FINANCIAL_QUOTES = FINANCIAL_QUOTE_TEXTS.map(quote => ui(quote));
 
 function PageLoader() {
   useUiLanguage();

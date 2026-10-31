@@ -102,8 +102,10 @@ describe('Calculations Utility', () => {
       // We'll use a date far in the future
       const target = 10000;
       const saved = 4000;
-      const future = new Date();
-      future.setMonth(future.getMonth() + 6); // ~6 months from now
+      // Day 1 of the month six months ahead: setMonth(+6) from the 29th-31st
+      // overflows into the following month (Oct 31 -> May 1), i.e. 7 months.
+      const now = new Date();
+      const future = new Date(now.getFullYear(), now.getMonth() + 6, 1);
       
       const needed = calcMonthlySavingsNeeded(target, saved, future.toISOString());
       expect(needed).toBe(1000); // 6000 / 6
