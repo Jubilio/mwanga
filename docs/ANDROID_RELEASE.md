@@ -54,6 +54,7 @@ Para release/bundle, configure os seguintes Repository Secrets:
 - `ANDROID_KEY_PASSWORD`
 
 Com `mode=bundle` e `play_track` diferente de `none`, o workflow envia o AAB ao Google Play. Veja [GOOGLE_PLAY.md](GOOGLE_PLAY.md).
+Para publicar o APK ao público sem a Play Store (GitHub Releases + página /baixar), veja [DISTRIBUICAO_APK.md](DISTRIBUICAO_APK.md).
 As notificações nativas precisam do Firebase configurado (ver abaixo).
 
 ## Notificações nativas (Firebase)

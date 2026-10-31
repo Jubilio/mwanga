@@ -2619,9 +2619,10 @@
       "Defina um orçamento e uma meta"
     ],
     "honest_title": "Ainda estamos a crescer",
-    "honest_body": "A app Android ainda está em desenvolvimento. Hoje o Mwanga funciona no navegador do telemóvel e do computador, e pode instalá-lo no ecrã inicial.",
+    "honest_body": "O Mwanga funciona no navegador do telemóvel e do computador, e já tem uma app Android para descarregar. Ainda não está na Google Play.",
     "final_title": "Comece hoje a organizar o próximo mês.",
-    "footer": "Mwanga · um produto NexoVibe"
+    "footer": "Mwanga · um produto NexoVibe",
+    "download_link": "Descarregar a app Android"
   },
   "nav": {
     "home": "Início",
@@ -2682,5 +2683,29 @@
     "reached": "Chegaste aos {{limit}} SMS deste mês. Os planos pagos não têm limite.",
     "see_plans": "Ver planos",
     "sync_stopped": "Limite de {{limit}} SMS do mês atingido. Importámos {{count}}."
+  },
+  "download": {
+    "back": "Voltar",
+    "title": "Mwanga para Android",
+    "subtitle": "Descarregue a app oficial directamente de nós. Funciona em Android 7 ou mais recente e as actualizações instalam-se por cima, sem perder dados.",
+    "cta": "Descarregar APK",
+    "loading": "A procurar a versão mais recente…",
+    "meta": "Versão {{version}} · {{size}} MB · publicada a {{date}}",
+    "unavailable": "Não foi possível ler os detalhes da versão. O botão descarrega sempre a versão mais recente.",
+    "steps_title": "Como instalar",
+    "steps": [
+      "Abra esta página no telemóvel Android e toque em Descarregar APK.",
+      "Quando terminar, abra o ficheiro mwanga.apk nas notificações ou na pasta Transferências.",
+      "Se o Android avisar, toque em Definições e permita instalar apps desta origem (Chrome ou Ficheiros).",
+      "Volte atrás e toque em Instalar. Depois abra o Mwanga e entre na sua conta."
+    ],
+    "update_note": "Para actualizar, descarregue a nova versão e instale por cima. Não desinstale antes, para não perder dados guardados no telemóvel.",
+    "verify_title": "Confirme que é o ficheiro original",
+    "verify_body": "Cada versão é assinada sempre com a mesma chave do Mwanga. Ao instalar uma actualização, o Android recusa ficheiros assinados por outra pessoa.",
+    "package": "Nome do pacote",
+    "cert": "Certificado de assinatura (SHA-256)",
+    "apk_hash": "SHA-256 deste APK",
+    "not_play": "O Mwanga ainda não está na Google Play. Descarregue apenas desta página ou da página oficial de versões. Nunca instale um APK do Mwanga enviado por outras pessoas.",
+    "history": "Ver todas as versões e o que mudou"
   }
 }
