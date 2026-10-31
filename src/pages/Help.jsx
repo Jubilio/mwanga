@@ -178,7 +178,7 @@ export default function Help() {
 
       {searching && (
         <p className="px-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-400" style={{ margin: '0 0 10px' }} aria-live="polite">
-          {t('help.results', { count: results.length })}
+          {t(results.length === 1 ? 'help.results_one' : 'help.results_other', { count: results.length })}
         </p>
       )}
 
