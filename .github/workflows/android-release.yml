@@ -1,0 +1,248 @@
+name: Android public release
+# Builds the signed APK, checks it, scans it with MobSF and publishes it on GitHub Releases.
+# Start it by pushing a tag such as v1.0.1, or from Actions → Android public release → Run workflow.
+# Download link that always points at the newest version:
+#   https://github.com/<owner>/<repo>/releases/latest/download/mwanga.apk
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Version tag to create, e.g. v1.0.1 (MAJOR.MINOR.PATCH)
+        required: true
+        type: string
+      draft:
+        description: Keep the release as a draft (not visible to users until you publish it)
+        required: true
+        default: true
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: android-release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version_name: ${{ steps.version.outputs.version_name }}
+      version_code: ${{ steps.version.outputs.version_code }}
+    env:
+      VITE_API_URL: ${{ vars.VITE_API_URL || 'https://mwanga-z1f4.onrender.com' }}
+      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read version from the tag
+        id: version
+        run: |
+          [[ "$TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]] || { echo "::error::Tag must look like v1.2.3 (got $TAG)"; exit 1; }
+          major=${BASH_REMATCH[1]} minor=${BASH_REMATCH[2]} patch=${BASH_REMATCH[3]}
+          (( minor < 100 && patch < 100 )) || { echo "::error::MINOR and PATCH must be below 100"; exit 1; }
+          # v1.2.3 → 10203. Always grows with the version, so Android accepts it as an update.
+          code=$(( major * 10000 + minor * 100 + patch ))
+          echo "version_name=${TAG#v}" >> "$GITHUB_OUTPUT"
+          echo "version_code=$code" >> "$GITHUB_OUTPUT"
+          echo "MWANGA_VERSION_NAME=${TAG#v}" >> "$GITHUB_ENV"
+          echo "MWANGA_VERSION_CODE=$code" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - run: npm ci
+      - run: npm test
+      - run: npm run check:i18n
+      - name: Configure release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          for name in KEYSTORE_BASE64 STORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            [ -n "${!name}" ] || { echo "::error::Missing signing secret for $name (see docs/DISTRIBUICAO_APK.md)"; exit 1; }
+          done
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/mwanga.jks"
+          echo "MWANGA_KEYSTORE_PATH=$RUNNER_TEMP/mwanga.jks" >> "$GITHUB_ENV"
+          echo "MWANGA_KEYSTORE_PASSWORD=$STORE_PASSWORD" >> "$GITHUB_ENV"
+          echo "MWANGA_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "MWANGA_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
+      - name: Add Firebase config (native push)
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          fi
+      - run: chmod +x android/gradlew
+      - name: Build signed APK
+        run: node scripts/android-build.mjs release
+      - name: Remove signing file
+        if: always()
+        run: rm -f "$RUNNER_TEMP/mwanga.jks"
+      - name: Verify signature and fingerprint
+        env:
+          EXPECTED_CERT_SHA256: ${{ vars.MWANGA_CERT_SHA256 }}
+        run: |
+          mkdir -p release
+          cp android/app/build/outputs/apk/release/app-release.apk release/mwanga.apk
+          apksigner="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          "$apksigner" verify --verbose --print-certs release/mwanga.apk | tee release/signature.txt
+          grep -q 'Verified using v2 scheme (APK Signature Scheme v2): true' release/signature.txt \
+            || { echo "::error::APK is not signed with the v2 scheme"; exit 1; }
+          if grep -q 'CN=Android Debug' release/signature.txt; then echo "::error::APK is signed with a debug key"; exit 1; fi
+          cert=$(grep -m1 'certificate SHA-256 digest:' release/signature.txt | awk '{print $NF}' | tr 'a-f' 'A-F' | sed 's/../&:/g; s/:$//')
+          [ -n "$cert" ] || { echo "::error::Could not read the certificate fingerprint"; exit 1; }
+          if [ -n "$EXPECTED_CERT_SHA256" ]; then
+            expected=$(echo "$EXPECTED_CERT_SHA256" | tr -d ': ' | tr 'a-f' 'A-F')
+            [ "$expected" = "$(echo "$cert" | tr -d ':')" ] \
+              || { echo "::error::Signing certificate changed! Expected $EXPECTED_CERT_SHA256, got $cert. Phones will refuse the update."; exit 1; }
+          else
+            echo "::warning::Repository variable MWANGA_CERT_SHA256 is not set. Set it to $cert so a wrong key can never be published."
+          fi
+          (cd release && sha256sum mwanga.apk > mwanga.apk.sha256)
+          printf '%s\n' "$cert" > release/certificate-sha256.txt
+          echo "### Mwanga $TAG" >> "$GITHUB_STEP_SUMMARY"
+          echo "- APK SHA-256: \`$(cut -d' ' -f1 release/mwanga.apk.sha256)\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Certificate SHA-256: \`$cert\`" >> "$GITHUB_STEP_SUMMARY"
+      - name: Check the APK for secrets
+        run: node scripts/scan-apk-secrets.mjs release/mwanga.apk --json release/secret-scan.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mwanga-release
+          path: release/
+          if-no-files-found: error
+          retention-days: 30
+
+  mobsf:
+    # Static security analysis. A broken scanner must not block a release, so this job may fail;
+    # the release notes then say the report is missing.
+    needs: build
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    services:
+      mobsf:
+        image: opensecurity/mobile-security-framework-mobsf:latest
+        ports: ['8000:8000']
+        env:
+          MOBSF_API_KEY: ci-only-local-key
+    env:
+      MOBSF: http://localhost:8000
+      KEY: ci-only-local-key
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: mwanga-release
+          path: release
+      - name: Wait for MobSF
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf -o /dev/null "$MOBSF/login/" && exit 0
+            sleep 5
+          done
+          echo "::error::MobSF did not start"; exit 1
+      - name: Scan APK
+        run: |
+          set -euo pipefail
+          mkdir -p mobsf
+          curl -sf -H "Authorization: $KEY" -F "file=@release/mwanga.apk" "$MOBSF/api/v1/upload" > mobsf/upload.json
+          hash=$(jq -r .hash mobsf/upload.json)
+          curl -sf -H "Authorization: $KEY" --max-time 1200 -d "hash=$hash" "$MOBSF/api/v1/scan" > /dev/null
+          curl -sf -H "Authorization: $KEY" -d "hash=$hash" "$MOBSF/api/v1/scorecard" > mobsf/scorecard.json
+          curl -sf -H "Authorization: $KEY" -d "hash=$hash" "$MOBSF/api/v1/report_json" > mobsf/report.json
+          curl -sf -H "Authorization: $KEY" -d "hash=$hash" "$MOBSF/api/v1/download_pdf" -o mobsf/mobsf-report.pdf || true
+      - name: Summarise findings
+        run: |
+          s=mobsf/scorecard.json
+          {
+            echo "**MobSF security score:** $(jq -r '.security_score // "?"' $s)/100"
+            echo "High: $(jq '.high | length' $s) · Warning: $(jq '.warning | length' $s) · Trackers: $(jq -r '.trackers // .total_trackers // 0' $s)"
+            echo
+            echo "High findings:"
+            jq -r '.high[]? | "- " + .title' $s
+            echo
+            echo "Warnings:"
+            jq -r '.warning[]? | "- " + .title' $s
+          } > mobsf/summary.md
+          cat mobsf/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mobsf-report
+          path: mobsf/
+          retention-days: 90
+
+  publish:
+    needs: [build, mobsf]
+    if: always() && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      DRAFT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.draft == 'true' }}
+      VERSION_CODE: ${{ needs.build.outputs.version_code }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: mwanga-release
+          path: release
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: mobsf-report
+          path: mobsf
+      - name: Write release notes
+        run: |
+          apk_sha=$(cut -d' ' -f1 release/mwanga.apk.sha256)
+          cert=$(cat release/certificate-sha256.txt)
+          size=$(du -m release/mwanga.apk | cut -f1)
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          {
+            echo "## Instalar o Mwanga no Android"
+            echo
+            echo "1. No telemóvel, abra e descarregue **mwanga.apk** (${size} MB) da lista abaixo."
+            echo "2. Abra o ficheiro. Se o Android pedir, permita instalar apps desta origem (Chrome ou Ficheiros)."
+            echo "3. Toque em **Instalar**. Para actualizar, instale a nova versão por cima: os seus dados mantêm-se."
+            echo
+            echo "## Verificar que o ficheiro é original"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Versão | ${TAG#v} (código $VERSION_CODE) |"
+            echo "| Pacote | \`com.mwanga.app\` |"
+            echo "| SHA-256 do APK | \`$apk_sha\` |"
+            echo "| Certificado de assinatura (SHA-256) | \`$cert\` |"
+            echo
+            echo "O certificado é sempre o mesmo em todas as versões. Se for diferente, não instale."
+            echo
+            echo "## Verificações automáticas"
+            echo
+            echo "- Assinatura v2 verificada com \`apksigner\`; chave de release, não de teste."
+            echo "- Procura de credenciais de servidor dentro do APK: sem resultados."
+            if [ -f mobsf/summary.md ]; then
+              echo "- Análise estática MobSF: $(head -1 mobsf/summary.md | sed 's/\*\*//g')"
+            else
+              echo "- Análise estática MobSF: relatório não disponível nesta versão."
+            fi
+            echo "- Relatórios completos: [execução do build]($run_url)."
+            echo
+            echo "Estas verificações são automáticas e não são uma certificação oficial."
+            echo
+          } > notes.md
+          cat notes.md
+      - name: Create GitHub release
+        run: |
+          args=(--title "Mwanga ${TAG#v}" --notes-file notes.md --generate-notes --target "$GITHUB_SHA")
+          [ "$DRAFT" = true ] && args+=(--draft)
+          gh release create "$TAG" release/mwanga.apk release/mwanga.apk.sha256 "${args[@]}"

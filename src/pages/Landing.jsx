@@ -1,6 +1,7 @@
 import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Wallet, Target, Users, Home, ShieldCheck, MapPin, MessageCircle, Info } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { ArrowRight, Smartphone, Wallet, Target, Users, Home, ShieldCheck, MapPin, MessageCircle, Info } from 'lucide-react';
 import { useUiLanguage } from '../utils/uiTranslation';
 import { getSupportWhatsAppUrl } from '../utils/support';
 import MwangaLogo from '../components/MwangaLogo';
@@ -48,6 +49,11 @@ export default function Landing() {
             <Link to="/login" className="text-sm font-semibold underline" style={{ color: 'var(--color-muted)' }}>
               {t('landing.login_link')}
             </Link>
+            {!Capacitor.isNativePlatform() && (
+              <Link to="/baixar" className="inline-flex items-center gap-1.5 text-sm font-semibold underline" style={{ color: 'var(--color-muted)' }}>
+                <Smartphone size={16} /> {t('landing.download_link')}
+              </Link>
+            )}
           </div>
           <ul className="flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold" style={{ color: 'var(--color-muted)' }}>
             <li className="inline-flex items-center gap-1.5"><MapPin size={14} /> {t('landing.trust.local')}</li>

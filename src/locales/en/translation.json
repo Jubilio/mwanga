@@ -2619,9 +2619,10 @@
       "Set a budget and a goal"
     ],
     "honest_title": "We are still growing",
-    "honest_body": "The Android app is still in development. Today Mwanga works in your phone or computer browser, and you can install it on your home screen.",
+    "honest_body": "Mwanga works in your phone or computer browser, and there is now an Android app to download. It is not on Google Play yet.",
     "final_title": "Start organising next month today.",
-    "footer": "Mwanga · a NexoVibe product"
+    "footer": "Mwanga · a NexoVibe product",
+    "download_link": "Download the Android app"
   },
   "nav": {
     "home": "Home",
@@ -2682,5 +2683,29 @@
     "reached": "You have reached this month's {{limit}} SMS. Paid plans have no limit.",
     "see_plans": "See plans",
     "sync_stopped": "Monthly limit of {{limit}} SMS reached. We imported {{count}}."
+  },
+  "download": {
+    "back": "Back",
+    "title": "Mwanga for Android",
+    "subtitle": "Download the official app straight from us. It runs on Android 7 or newer, and updates install over the old version without losing data.",
+    "cta": "Download APK",
+    "loading": "Looking for the latest version…",
+    "meta": "Version {{version}} · {{size}} MB · published {{date}}",
+    "unavailable": "Could not read the version details. The button always downloads the latest version.",
+    "steps_title": "How to install",
+    "steps": [
+      "Open this page on your Android phone and tap Download APK.",
+      "When it finishes, open mwanga.apk from the notifications or the Downloads folder.",
+      "If Android warns you, tap Settings and allow installs from this source (Chrome or Files).",
+      "Go back and tap Install. Then open Mwanga and sign in."
+    ],
+    "update_note": "To update, download the new version and install it over the old one. Do not uninstall first, so data stored on the phone is kept.",
+    "verify_title": "Check it is the original file",
+    "verify_body": "Every version is signed with the same Mwanga key. When you install an update, Android refuses files signed by anyone else.",
+    "package": "Package name",
+    "cert": "Signing certificate (SHA-256)",
+    "apk_hash": "SHA-256 of this APK",
+    "not_play": "Mwanga is not on Google Play yet. Only download it from this page or the official releases page. Never install a Mwanga APK sent to you by someone else.",
+    "history": "See all versions and what changed"
   }
 }

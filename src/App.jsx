@@ -31,6 +31,7 @@ const Insights = lazy(() => import('./pages/Insights'));
 const Stewardship = lazy(() => import('./pages/Stewardship'));
 const Help = lazy(() => import('./pages/Help'));
 const Landing = lazy(() => import('./pages/Landing'));
+const Download = lazy(() => import('./pages/Download'));
 const Planear = lazy(() => import('./pages/Planear'));
 const Mais = lazy(() => import('./pages/Mais'));
 const GoalsHub = lazy(() => import('./pages/hubs').then((m) => ({ default: m.GoalsHub })));
@@ -190,6 +191,7 @@ export default function App() {
 
               {/* ── Public auth pages ── */}
               <Route path="bem-vindo" element={<Landing />} />
+              <Route path="baixar" element={<Download />} />
               <Route path="login" element={<Login />} />
               <Route path="forgot-password" element={<ForgotPassword />} />
               <Route path="reset-password" element={<ResetPassword />} />
