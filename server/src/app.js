@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { corsOptions } = require('./config/cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
@@ -49,22 +50,7 @@ app.use(helmet({
 }));
 
 // 2. CORS
-app.use(cors({
-  origin: [
-    'https://mwanga-opal.vercel.app',
-    'https://mwanga-qdsmbf6ck-jubilio-projects.vercel.app',
-    'https://mwangafin.netlify.app',
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:8081',
-    // Capacitor WebView origins for the native apps (Android / iOS)
-    'https://localhost',
-    'capacitor://localhost'
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors(corsOptions));
 
 // 3. Compression
 app.use(compression());
