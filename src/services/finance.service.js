@@ -1,5 +1,5 @@
 import { normalizeCategory } from '../utils/categories';
-import { getToken, clearToken } from '../utils/authToken';
+import { getToken, setToken, clearToken } from '../utils/authToken';
 import api from '../utils/api';
 
 // API Base URL
@@ -271,6 +271,27 @@ export async function fetchAllData(headers, dispatch, { retryDelays = RETRY_DELA
     user: results[8], debts: results[9], accounts: results[10],
     loanApplications: results[11], loans: results[12]
   };
+}
+
+// Swaps a still-valid session token for a fresh one, so someone who opens the app
+// regularly stays signed in instead of hitting the 7-day expiry. Failures are ignored:
+// the current token keeps working until it expires.
+export async function refreshSessionToken() {
+  const token = getToken();
+  if (!token) return null;
+  try {
+    const res = await api.post(`${FINANCE_API_URL}/auth/refresh`, null, {
+      headers: { Authorization: `Bearer ${token}` },
+      validateStatus: () => true
+    });
+    const body = parseBody(res.data);
+    if (res.status >= 200 && res.status < 300 && body && typeof body.token === 'string') {
+      // Only replace the token the request was made with (not one from a new login).
+      if (getToken() === token) setToken(body.token);
+      return body.token;
+    }
+  } catch { /* offline or server asleep: keep the current token */ }
+  return null;
 }
 
 // --- Generic API call helper ---

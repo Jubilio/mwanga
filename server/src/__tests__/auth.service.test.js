@@ -236,3 +236,17 @@ describe('Auth Service', () => {
     });
   });
 });
+
+describe('refreshSession', () => {
+  it('issues a new token with the role and household from the database', async () => {
+    db.execute.mockResolvedValueOnce({ rows: [{ id: 5, household_id: 9, role: 'admin' }] });
+    const { token } = await authService.refreshSession(5);
+    const decoded = jwt.verify(token, 'test_secret_123');
+    expect(decoded).toMatchObject({ id: 5, householdId: 9, role: 'admin' });
+  });
+
+  it('rejects a user that no longer exists', async () => {
+    db.execute.mockResolvedValueOnce({ rows: [] });
+    await expect(authService.refreshSession(5)).rejects.toThrow('USER_NOT_FOUND');
+  });
+});

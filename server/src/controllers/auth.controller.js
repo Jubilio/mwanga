@@ -57,6 +57,15 @@ const getMe = async (req, res) => {
   }
 };
 
+const refresh = async (req, res) => {
+  try {
+    res.json(await authService.refreshSession(req.user.id));
+  } catch (error) {
+    if (error.message === 'USER_NOT_FOUND') return res.status(401).json({ error: 'Sessão inválida.' });
+    res.status(500).json({ error: 'Failed to refresh session' });
+  }
+};
+
 const updateProfile = async (req, res, next) => {
   try {
     const data = updateProfileSchema.parse(req.body);
@@ -221,4 +230,4 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, getMe, updateProfile, googleLogin, googleAccessTokenLogin, forgotPassword, resetPassword };
+module.exports = { register, login, refresh, getMe, updateProfile, googleLogin, googleAccessTokenLogin, forgotPassword, resetPassword };

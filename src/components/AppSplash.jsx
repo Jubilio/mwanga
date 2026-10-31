@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Capacitor } from '@capacitor/core';
 import { useFinance } from '../hooks/useFinance';
 import { hideSplash } from '../utils/splash';
+import { getToken } from '../utils/authToken';
 import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { FINANCIAL_QUOTE_TEXTS } from '../utils/financialQuotes';
 
@@ -11,12 +12,14 @@ const MotionSvg = motion.svg;
 const MotionPath = motion.path;
 const MotionSpan = motion.span;
 
-// Long enough for the intro animation to finish even when the data is cached.
-const MIN_VISIBLE_MS = 1600;
+// A signed-in user gets time to read a couple of the quotes even when the data
+// arrives quickly; someone heading to the login screen only sees the intro.
+const MIN_VISIBLE_MS = 10000;
+const MIN_VISIBLE_SIGNED_OUT_MS = 2500;
 // Past this the regular loading screen behind the splash takes over. A Render cold
 // start plus the client retries can take well over a minute.
 const MAX_VISIBLE_MS = 120000;
-const QUOTE_ROTATE_MS = 6000;
+const QUOTE_ROTATE_MS = 5000;
 // Status line while the app waits for the server, by elapsed time.
 const STATUS_STEPS = [
   [0, 'Sincronizando dados financeiros...'],
@@ -42,7 +45,7 @@ export default function AppSplash() {
     if (!native) return undefined;
     // The animated splash is on screen now, so the static native one can go.
     hideSplash();
-    const min = setTimeout(() => setMinElapsed(true), MIN_VISIBLE_MS);
+    const min = setTimeout(() => setMinElapsed(true), getToken() ? MIN_VISIBLE_MS : MIN_VISIBLE_SIGNED_OUT_MS);
     const max = setTimeout(() => setTimedOut(true), MAX_VISIBLE_MS);
     return () => { clearTimeout(min); clearTimeout(max); };
   }, [native]);
