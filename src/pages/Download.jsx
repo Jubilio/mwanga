@@ -1,20 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Download as DownloadIcon, ShieldCheck, Smartphone, ExternalLink, ArrowLeft } from 'lucide-react';
 import { uiLocale, useUiLanguage } from '../utils/uiTranslation';
 import { fetchLatestRelease, LATEST_APK_URL, RELEASES_PAGE } from '../utils/latestRelease';
 import MwangaLogo from '../components/MwangaLogo';
+import IosInstallGuide from '../components/IosInstallGuide';
+import { currentInstallPlatform } from '../utils/installPlatform';
 
 /**
  * Public page with the official Android download (GitHub Releases), install steps
  * and the fingerprints people can use to check the file is the original one.
+ * iPhone visitors first see how to add the web app to the Home Screen from Safari.
  */
 export default function Download() {
   useUiLanguage();
   const { t } = useTranslation();
   const [release, setRelease] = useState(null);
   const [status, setStatus] = useState('loading');
+  const platform = useMemo(() => currentInstallPlatform(), []);
+  const HeroTitle = platform.ios ? 'h2' : 'h1';
 
   useEffect(() => {
     const controller = new AbortController();
@@ -38,8 +43,10 @@ export default function Download() {
           </Link>
         </header>
 
-        <section className="flex flex-col gap-5">
-          <h1 className="font-display text-3xl font-black leading-tight sm:text-4xl">{t('download.title')}</h1>
+        {platform.ios && <IosInstallGuide platform={platform} primary />}
+
+        <section className="flex flex-col gap-5" style={platform.ios ? { borderTop: '1px solid var(--color-border, rgba(0,0,0,0.08))', paddingTop: '2rem' } : undefined}>
+          <HeroTitle className="font-display text-3xl font-black leading-tight sm:text-4xl">{t('download.title')}</HeroTitle>
           <p className="max-w-xl text-base" style={muted}>{t('download.subtitle')}</p>
           <div className="flex flex-col items-start gap-2">
             <a href={downloadUrl} className="btn btn-primary inline-flex items-center gap-2" style={{ padding: '1rem 1.75rem', fontSize: '1rem' }}>
@@ -99,6 +106,8 @@ export default function Download() {
             {t('download.history')} <ExternalLink size={14} />
           </a>
         </section>
+
+        {!platform.ios && <IosInstallGuide platform={platform} />}
       </div>
     </div>
   );
