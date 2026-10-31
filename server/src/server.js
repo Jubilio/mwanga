@@ -6,6 +6,7 @@ const { checkRedis } = require('./config/redis');
 const logger = require('./utils/logger');
 const { startNotificationEventEngine } = require('./services/notificationEventEngine.service');
 const { startNotificationScheduler } = require('./services/notificationScheduler.service');
+const { resumePendingCampaigns } = require('./services/emailCampaign.service');
 
 const PORT = process.env.PORT || 3001;
 
@@ -25,6 +26,8 @@ async function startServer() {
 
     startNotificationEventEngine();
     startNotificationScheduler();
+    // Campanhas de email interrompidas por um reinício continuam de onde pararam.
+    setTimeout(resumePendingCampaigns, 10_000);
 
     const server = app.listen(PORT, () => {
       logger.info(`Mwanga server running in ${process.env.NODE_ENV || 'development'} mode on http://localhost:${PORT}`);

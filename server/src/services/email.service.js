@@ -31,12 +31,46 @@ class EmailService {
         return;
       }
 
-      this.transporter = nodemailer.createTransport(config);
+      // pool reutiliza a mesma ligação SMTP quando se enviam campanhas em lotes.
+      this.transporter = nodemailer.createTransport({ ...config, pool: true, maxConnections: 1 });
       await this.transporter.verify();
       logger.info('Email service initialized successfully.');
     } catch (error) {
       logger.error('Email service initialization failed:', error.message);
     }
+  }
+
+  isConfigured() {
+    return Boolean(this.transporter);
+  }
+
+  fromAddress() {
+    return process.env.EMAIL_FROM || process.env.EMAIL_USER || '';
+  }
+
+  fromHeader() {
+    const name = (process.env.EMAIL_FROM_NAME || 'Mwanga · NexoVibe').replace(/"/g, '');
+    return `"${name}" <${this.fromAddress()}>`;
+  }
+
+  /**
+   * Envia um email genérico (campanhas do admin). Lança erro se falhar,
+   * para quem chama poder registar a falha por destinatário.
+   */
+  async send({ to, subject, text, html, headers }) {
+    if (!this.transporter) {
+      logger.info(`[EMAIL LOG] "${subject}" para ${to}`);
+      return { logged: true };
+    }
+    return this.transporter.sendMail({
+      from: this.fromHeader(),
+      replyTo: process.env.EMAIL_REPLY_TO || undefined,
+      to,
+      subject,
+      text,
+      html,
+      headers,
+    });
   }
 
   /**

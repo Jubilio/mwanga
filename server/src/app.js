@@ -22,6 +22,7 @@ const { getNotificationReadValue } = require('./services/notificationRead.servic
 const { initFeedbackTable } = require('./services/feedback.service');
 const { initHouseholdExtras } = require('./services/household.service');
 const { initWhatsAppSchema } = require('./services/whatsappMigration.service');
+const { initEmailCampaignSchema } = require('./services/emailCampaign.service');
 const logger = require('./utils/logger');
 
 const app = express();
@@ -30,6 +31,7 @@ const app = express();
 initFeedbackTable();
 initHouseholdExtras();
 initWhatsAppSchema();
+initEmailCampaignSchema();
 
 app.set('trust proxy', 1);
 
@@ -163,6 +165,7 @@ app.use('/api/files', require('./routes/files.routes'));
 app.use('/api/credit', creditRoutes);
 app.use('/api/kyc', kycRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/email', require('./routes/email.routes'));
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/households', inviteRoutes);
 app.use('/api/behavior', require('./routes/behavior.routes'));
