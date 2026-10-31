@@ -126,6 +126,9 @@ export default function App() {
       smoothWheel: true,
       wheelMultiplier: 1.0,
       touchMultiplier: 1.5,
+      // Let scrollable cards, modals and sheets scroll themselves. Without this the
+      // wheel moved the page behind an open modal and its save button stayed out of reach.
+      allowNestedScroll: true,
     });
 
     let rafId;

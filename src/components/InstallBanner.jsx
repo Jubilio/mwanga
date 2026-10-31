@@ -12,7 +12,7 @@ export default function InstallBanner({ installPrompt, onClose }) {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-24 left-4 right-4 z-70 md:hidden"
+        className="fixed bottom-[calc(6rem+var(--sab))] left-4 right-4 z-70 md:hidden"
       >
         <div className="glass-card flex items-center justify-between bg-ocean/95 p-4 text-white shadow-2xl backdrop-blur-xl">
           <div className="flex items-center gap-4">

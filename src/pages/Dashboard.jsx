@@ -173,8 +173,7 @@ export default function Dashboard() {
       initial="hidden"
       animate="show"
       variants={containerVariants}
-      className="flex flex-col gap-6 dashboard-gsap-root" 
-      style={{ paddingBottom: '7rem' }}
+      className="flex flex-col gap-6 dashboard-gsap-root"
     >
       <DashboardHero 
         greeting={greeting}

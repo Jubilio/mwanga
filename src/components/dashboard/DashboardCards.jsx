@@ -246,7 +246,7 @@ export function StewardshipCard({ navigate, stats, badges, itemVariants }) {
 
       <div className="flex items-center gap-6">
         <div className="flex flex-col">
-          <span className="text-4xl font-black text-white tabular-nums">{stats.totalScore}</span>
+          <span className="text-4xl font-black text-midnight dark:text-white tabular-nums">{stats.totalScore}</span>
           <span className="text-[9px] font-black uppercase tracking-widest text-gold/60">{ui("Índice Global")}</span>
         </div>
         

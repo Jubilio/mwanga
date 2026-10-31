@@ -414,7 +414,7 @@ export default function Layout() {
             settings={state.settings}
           />
 
-          <main className="flex w-full max-w-full flex-1 flex-col overflow-hidden bg-cream pb-[calc(6rem+var(--sab))] dark:bg-midnight md:pb-8">
+          <main className="flex w-full max-w-full flex-1 flex-col overflow-hidden bg-cream pb-[calc(9.5rem+var(--sab))] dark:bg-midnight md:pb-8">
             <div className="flex w-full flex-1 flex-col p-4 pt-6 md:p-8">
               <RealityReviewBanner />
               <Outlet context={{ showToast }} />
@@ -463,7 +463,7 @@ export default function Layout() {
       {/* Floating Feedback Button */}
       <button
         onClick={() => setIsFeedbackModalOpen(true)}
-        className="fixed bottom-24 right-4 z-49 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-ocean/90 text-white shadow-xl shadow-ocean/30 backdrop-blur-md transition-all hover:scale-110 hover:bg-ocean active:scale-95 dark:border-white/10 dark:bg-aurora/90 dark:shadow-aurora/20 md:bottom-8 md:right-8"
+        className="fixed bottom-[calc(6.5rem+var(--sab))] right-4 z-49 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/20 bg-ocean/90 text-white shadow-xl shadow-ocean/30 backdrop-blur-md transition-all hover:scale-110 hover:bg-ocean active:scale-95 dark:border-white/10 dark:bg-aurora/90 dark:shadow-aurora/20 md:bottom-8 md:right-8"
         title={ui("Enviar Feedback ou Reportar Erro")}
       >
         <MessageSquare size={20} className="animate-pulse" />

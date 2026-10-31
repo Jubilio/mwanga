@@ -38,7 +38,7 @@ export default function FinancialJourney() {
     start: review.start, end: review.end, income: fmt(review.income, 'MT'), expenses: fmt(review.expenses, 'MT'), title, body,
   }) } });
   const links = [['budget', '/orcamento'], ['debts', '/dividas'], ['goals', '/metas'], ['assets', '/patrimonio'], ['simulators', '/simuladores'], ['reports', '/relatorio'], ['binth', '/insights']];
-  return <div className="space-y-6 pb-28">
+  return <div className="space-y-6">
     <header><p className="text-xs font-black uppercase tracking-widest text-ocean dark:text-aurora">{t('journey.brand')}</p><h1 className="text-3xl font-black mt-2">{t('journey.title')}</h1><p className="text-gray-500 dark:text-gray-400 mt-3">{t('journey.subtitle')}</p><p className="text-xs mt-3 text-gray-500 dark:text-gray-400">{t('journey.shared')} {t('journey.base_currency')}</p></header>
     <nav className="flex flex-wrap gap-2" aria-label={t('journey.nav')}>
       {['plan', 'review', 'learn'].map(id => <button key={id} onClick={() => setTab(id)} aria-pressed={tab === id} className={`btn ${tab === id ? 'btn-primary' : 'btn-ghost'}`}>{t(`journey.${id}_tab`)}</button>)}
