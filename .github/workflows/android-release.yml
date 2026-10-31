@@ -34,7 +34,7 @@ jobs:
       VITE_API_URL: ${{ vars.VITE_API_URL || 'https://mwanga-z1f4.onrender.com' }}
       VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Read version from the tag
         id: version
         run: |
@@ -47,11 +47,11 @@ jobs:
           echo "version_code=$code" >> "$GITHUB_OUTPUT"
           echo "MWANGA_VERSION_NAME=${TAG#v}" >> "$GITHUB_ENV"
           echo "MWANGA_VERSION_CODE=$code" >> "$GITHUB_ENV"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -117,7 +117,7 @@ jobs:
           echo "- Certificate SHA-256: \`$cert\`" >> "$GITHUB_STEP_SUMMARY"
       - name: Check the APK for secrets
         run: node scripts/scan-apk-secrets.mjs release/mwanga.apk --json release/secret-scan.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: mwanga-release
           path: release/
@@ -140,7 +140,7 @@ jobs:
       MOBSF: http://localhost:8000
       KEY: ci-only-local-key
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: mwanga-release
           path: release
@@ -174,8 +174,9 @@ jobs:
             echo "Warnings:"
             jq -r '.warning[]? | "- " + .title' $s
           } > mobsf/summary.md
+          cat mobsf/summary.md
           cat mobsf/summary.md >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: mobsf-report
           path: mobsf/
@@ -193,11 +194,11 @@ jobs:
       DRAFT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.draft == 'true' }}
       VERSION_CODE: ${{ needs.build.outputs.version_code }}
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: mwanga-release
           path: release
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         continue-on-error: true
         with:
           name: mobsf-report
