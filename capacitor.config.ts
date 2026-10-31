@@ -40,9 +40,11 @@ const config: CapacitorConfig = {
     },
     SystemBars: {
       // index.html has no viewport-fit=cover, so Capacitor pads the WebView
-      // natively below the status bar and above the gesture bar on every
-      // Android/WebView version. CSS injection would double that padding.
-      insetsHandling: "disable",
+      // natively below the status bar and above the gesture bar, and the
+      // injected --safe-area-inset-* values stay 0 (no double padding).
+      // Not "disable": since Capacitor 8.4 that also turns off the native
+      // padding, which put the header back under the status bar.
+      insetsHandling: "css",
       // Light status bar icons over the teal window background.
       style: "DARK"
     }
