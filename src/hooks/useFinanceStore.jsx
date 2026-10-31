@@ -16,6 +16,7 @@ import {
   mapAccount, 
   mapXitique, 
   fetchAllData,
+  refreshSessionToken,
   apiCall
 } from '../services/finance.service';
 import { getToken } from '../utils/authToken';
@@ -44,6 +45,7 @@ function createInitialState(darkMode) {
 }
 
 let fetchPromise = null;
+let sessionRefreshed = false;
 
 // Last copy saved on this device, shown when the server cannot be reached.
 async function loadCachedData() {
@@ -127,6 +129,11 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
         db.settings.put({ id: 'current', ...mergedSettings }),
         resolvedUser ? db.settings.put({ id: 'user_profile', ...resolvedUser }) : Promise.resolve()
       ]);
+
+      if (!sessionRefreshed) {
+        sessionRefreshed = true;
+        refreshSessionToken();
+      }
 
       fetchPromise = null;
       return resolvedUser;

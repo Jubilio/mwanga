@@ -206,8 +206,23 @@ const completePasswordReset = async (token, password) => {
   return { success: true };
 };
 
+// Issues a fresh session token for a still-valid one, so the Android app keeps a
+// returning user signed in. Role and household come from the database, not the old token.
+const refreshSession = async (userId) => {
+  const result = await db.execute({
+    sql: 'SELECT id, household_id, role FROM users WHERE id = $1',
+    args: [userId]
+  });
+  const user = result.rows[0];
+  if (!user) throw new Error('USER_NOT_FOUND');
+  return {
+    token: createSessionToken({ id: user.id, householdId: user.household_id, role: user.role || 'user' })
+  };
+};
+
 module.exports = {
   registerUser,
+  refreshSession,
   authenticateUser,
   getUserProfile,
   updateProfile,

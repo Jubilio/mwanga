@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-vi.mock('../utils/authToken', () => ({ getToken: vi.fn(), clearToken: vi.fn() }));
+vi.mock('../utils/authToken', () => ({ getToken: vi.fn(), setToken: vi.fn(), clearToken: vi.fn() }));
 vi.mock('../utils/api', () => ({ default: { get: vi.fn(), request: vi.fn() } }));
 import { fetchAllData, DataLoadError } from './finance.service';
 import { clearToken } from '../utils/authToken';
@@ -53,4 +53,23 @@ it('treats a non-JSON 200 as a failed load instead of an empty household', async
   fetch.mockImplementation(async () => json('<html>Service waking up</html>'));
   const err = await fetchAllData({}, vi.fn(), noDelay).catch(e => e);
   expect(err).toBeInstanceOf(DataLoadError);
+});
+
+it('stores the refreshed session token so a returning user stays signed in', async () => {
+  const { refreshSessionToken } = await import('./finance.service');
+  const { getToken, setToken } = await import('../utils/authToken');
+  getToken.mockReturnValue('old');
+  api.post = vi.fn().mockResolvedValue({ status: 200, data: { token: 'new' } });
+  expect(await refreshSessionToken()).toBe('new');
+  expect(setToken).toHaveBeenCalledWith('new');
+});
+
+it('keeps the current token when the refresh fails', async () => {
+  const { refreshSessionToken } = await import('./finance.service');
+  const { getToken, setToken } = await import('../utils/authToken');
+  getToken.mockReturnValue('old');
+  setToken.mockClear();
+  api.post = vi.fn().mockRejectedValue(new Error('Network Error'));
+  expect(await refreshSessionToken()).toBeNull();
+  expect(setToken).not.toHaveBeenCalled();
 });

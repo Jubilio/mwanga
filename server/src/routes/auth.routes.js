@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, getMe, updateProfile, googleLogin, googleAccessTokenLogin, forgotPassword, resetPassword } = require('../controllers/auth.controller');
+const { register, login, refresh, getMe, updateProfile, googleLogin, googleAccessTokenLogin, forgotPassword, resetPassword } = require('../controllers/auth.controller');
 const { authenticate } = require('../middleware/auth.middleware');
 
 const router = express.Router();
@@ -9,6 +9,7 @@ router.post('/login', login);
 router.post('/google', googleLogin);
 router.post('/google-access-token', googleAccessTokenLogin);
 router.get('/me', authenticate, getMe);
+router.post('/refresh', authenticate, refresh);
 router.put('/profile', authenticate, updateProfile);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
