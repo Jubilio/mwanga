@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Download as DownloadIcon, ShieldCheck, Smartphone, ExternalLink, ArrowLeft } from 'lucide-react';
 import { uiLocale, useUiLanguage } from '../utils/uiTranslation';
-import { fetchLatestRelease, LATEST_APK_URL, RELEASES_PAGE } from '../utils/latestRelease';
+import { fetchLatestRelease, RELEASES_PAGE } from '../utils/latestRelease';
 import MwangaLogo from '../components/MwangaLogo';
 import IosInstallGuide from '../components/IosInstallGuide';
 import { currentInstallPlatform } from '../utils/installPlatform';
@@ -30,7 +30,8 @@ export default function Download() {
   }, []);
 
   const steps = t('download.steps', { returnObjects: true });
-  const downloadUrl = release?.url || LATEST_APK_URL;
+  // Sem versão lida (erro ou só pre-releases antigas), a página de versões mostra sempre o APK.
+  const downloadUrl = release?.url || RELEASES_PAGE;
   const muted = { color: 'var(--color-muted)' };
 
   return (

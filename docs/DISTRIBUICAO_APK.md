@@ -1,7 +1,7 @@
 # Distribuir o APK fora da Google Play
 
 Canal oficial: **GitHub Releases** deste repositório (público), mais a página **/baixar** da app web.
-O link `https://github.com/Jubilio/mwanga/releases/latest/download/mwanga.apk` aponta sempre para a versão mais recente.
+O link `https://github.com/Jubilio/mwanga/releases/latest/download/mwanga.apk` só funciona para versões finais (não pre-release). A página /baixar lê a lista de versões e aceita também pre-releases.
 
 Cada versão é feita pelo workflow **Android public release** (`.github/workflows/android-release.yml`), que:
 
