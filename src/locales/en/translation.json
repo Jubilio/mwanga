@@ -1228,45 +1228,144 @@
     }
   },
   "help": {
-    "hero": {
-      "title": "Mwanga <span className=\"text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-indigo-300\">Help Center</span>",
-      "description": "Everything you need to know to light your financial path and master the Mwanga 2.0 system.",
-      "search_placeholder": "Search manual..."
+    "title": "How can we help?",
+    "subtitle": "Short answers about what Mwanga does, and a real person when you need one.",
+    "search_placeholder": "Search: SMS, xitique, pay for a plan…",
+    "search_clear": "Clear search",
+    "all": "All",
+    "results_one": "{{count}} answer",
+    "results_other": "{{count}} answers",
+    "open_page": "Open {{page}}",
+    "empty_title": "Nothing found for \"{{query}}\"",
+    "empty_body": "Try another word, or write to us: we answer on WhatsApp.",
+    "contact": {
+      "title": "Talk to a person",
+      "body": "Questions, payments or something not working? Write to us.",
+      "whatsapp": "WhatsApp",
+      "whatsapp_desc": "Chat with the Mwanga team",
+      "whatsapp_message": "Hello! I need help with Mwanga.",
+      "feedback": "Report a problem",
+      "feedback_desc": "Send a message and a screenshot",
+      "safety": "The Mwanga team never asks for your M-Pesa, e-Mola or bank PIN, or your password."
     },
-    "sections": {
-      "intro": {
-        "title": "📱 First Steps",
-        "content": "Mwanga is a PWA application. This means you can install it on your phone without going to the Play Store or App Store.\n\n• On Android: Click on the 3 dots in Chrome and select \"Install Financial Messenger\".\n• On iPhone: Use the Share button and select \"Add to Home Screen\"."
+    "categories": {
+      "start": "Getting started",
+      "daily": "Day to day",
+      "sms": "SMS import",
+      "plan": "Planning",
+      "binth": "Binth",
+      "plans": "Plans and payment",
+      "account": "Account and security"
+    },
+    "faq": {
+      "what_is": {
+        "q": "What is Mwanga?",
+        "a": "Mwanga helps you organise your household money in meticais. You record what comes in and goes out, set limits per category, save towards goals and keep track of your xitique and your debts, all in one place."
       },
-      "dashboard": {
-        "title": "📊 Dashboard",
-        "content": "The Dashboard offers a 360º view of your finances.\n\n• Radar Chart: Quickly identify if your spending is balanced with your earnings.\n• Widgets: Track the total balance of your accounts and the progress of your savings goals at a glance."
+      "first_steps": {
+        "q": "Where do I start?",
+        "a": "1. In Settings, check your name, currency and the day your month starts (for example, payday).\n2. Record this week's income and spending with the + button in the middle of the bottom bar, or import your M-Pesa, e-Mola or bank SMS.\n3. In Plan, set limits for the categories where you spend most and create a savings goal."
       },
-      "finance": {
-        "title": "💰 Financial Management",
-        "content": "Master your money with budgeting tools.\n\n• Transactions: Record every metical that goes out or comes in. Separate by account (M-Pesa, Wallet, Bank).\n• 50/30/20 Rule: The system helps you meet the goal of spending 50% on needs, 30% on wants, and 20% for the future.\n• Goals: Set clear objectives (e.g., \"Motorcycle Purchase\") and let Mwanga calculate how much you need to save monthly."
+      "devices": {
+        "q": "Can I use it on my phone and my computer?",
+        "a": "Yes. Use the Android app on your phone and the browser on your computer, with the same account. Your data is stored in your account, so it shows up on both."
       },
-      "credit": {
-        "title": "⚖️ Intelligent Credit",
-        "content": "Before asking for a loan, consult our simulators.\n\n• Installment Simulator: Know exactly how much you will pay the bank per month.\n• Comparator: See if a bank loan, a Xitique, or waiting and saving is more worthwhile.\n• Consolidation: Learn to combine several debts into one to pay less total interest."
+      "add_move": {
+        "q": "How do I record an expense or income?",
+        "a": "Tap the + button in the middle of the bottom bar, choose Expense or Income and enter the amount, category and description. You can also import M-Pesa, e-Mola or bank SMS so you don't have to type everything."
       },
-      "community": {
-        "title": "🤝 Mwanga Community (VSLA)",
-        "content": "Save together with your family or friends.\n\n• Shares: In the Digital VSLA, you buy monthly \"shares\" that form the group's capital.\n• Internal Loans: Members can request loans from the group at rates decided by the community.\n• Profits: Accumulated interest is distributed equally at the end of the savings cycle."
+      "edit_move": {
+        "q": "I made a mistake. How do I fix or delete an entry?",
+        "a": "Open Activity, find the entry and tap the pencil to fix it, or the bin to delete it. The month's totals and your budget update straight away."
       },
-      "binth": {
-        "title": "🤖 Binth AI Assistant",
-        "content": "Binth is the brain of Mwanga.\n\n• Quick Diagnostics: Ask for advice on whether or not you should make a purchase.\n• Real Context: Binth analyzes your real spending (anonymously) to give precise answers."
+      "month_start": {
+        "q": "My month starts on payday. Can I change that?",
+        "a": "Yes. In Settings → Preferences, choose the Reset Day. Your budget and monthly summary then count from that day."
+      },
+      "report": {
+        "q": "Where do I see the monthly summary and export my data?",
+        "a": "In More → Monthly summary you see the month's income, spending and categories. The export button saves your moves to a CSV file that opens in Excel. The monthly summary is part of the Growth plan."
+      },
+      "sms_how": {
+        "q": "How do I import M-Pesa, e-Mola or bank SMS?",
+        "a": "Open More → Import SMS. Copy the message on your phone, paste it in the box and tap Analyse Message. Check the amount, type and date, then tap Confirm and Record.\n\nIn the Android app you can also tap Sync SMS Now: Mwanga asks permission to read your SMS and records the ones from M-Pesa, e-Mola, mKesh and banks (BIM, BCI, Absa, Standard Bank)."
+      },
+      "sms_limit": {
+        "q": "Is there a limit on SMS imports?",
+        "a": "On the free plan you can import up to {{limit}} SMS a month. The counter resets at the start of each month and the Import SMS page shows how many you have used. The Growth and Wealth plans have no limit."
+      },
+      "sms_privacy": {
+        "q": "Does Mwanga read all my messages?",
+        "a": "No. When you sync in the Android app, Mwanga only looks at SMS from the last few days and picks the ones from money services and banks. Those are read on the phone itself and only the transaction (amount, date, description) is saved to your account. Other messages never leave the phone.\n\nWhen you paste an SMS into the box, that text is sent to the Mwanga server to be analysed."
+      },
+      "sms_wrong": {
+        "q": "What if the SMS is read wrongly?",
+        "a": "You always see the result before saving. If something is wrong, don't confirm, and record it by hand with the + button. If you already saved it, fix it in Activity with the pencil. If one kind of SMS always fails, send us the example (without your PIN) with Report a problem."
+      },
+      "budget": {
+        "q": "How does the Budget work?",
+        "a": "In Plan → Budget you set a monthly limit per category (for example, Food: 8,000 MT). Mwanga adds up the month's spending in that category and shows how much you spent and how much is left. When you go over, the category shows as Exceeded. The Rent and home tab tracks rent and household costs."
+      },
+      "goals": {
+        "q": "How do I create a savings goal?",
+        "a": "In Plan → Goals, tap Create New Goal. Give it a name (for example, Emergency Fund), the amount you want to save and, if you like, a deadline. Each time you put money aside, tap Deposit on the goal. The Plan tab shows your next steps to organise your finances."
+      },
+      "xitique": {
+        "q": "How do I use Xitique in Mwanga?",
+        "a": "In Plan → Xitique, tap New Xitique and enter the group name, the monthly amount, how many people take part, the start month and your turn in the rotation. Mwanga creates the months of the cycle and shows how much you have paid in and how much you will receive.\n\nEach month, tap Pay when you hand over your share. In your month, tap Receive. Mwanga records the expense or income in your moves, on the account you choose."
+      },
+      "xitique_money": {
+        "q": "Does Mwanga hold the xitique money?",
+        "a": "No. The money still moves between group members as always (cash, M-Pesa or e-Mola). Mwanga only helps you track your share: what you paid, what is left and when it is your turn."
+      },
+      "debts": {
+        "q": "How do I track debts and loans?",
+        "a": "In Plan → Debts, tap New Debt and enter who you owe (bank, shop or family), the amount, the monthly interest rate and the term in months. Mwanga estimates the instalment and the total you will pay. Debts is part of the Growth plan; the Credit tab (score, simulator and comparison) is part of the Wealth plan."
+      },
+      "binth_what": {
+        "q": "Who is Binth?",
+        "a": "Binth is Mwanga's financial assistant. On Home, Goals and Debts she leaves short tips based on your numbers. In More → Binth you can ask her questions about your money, for example: \"Can I save 2,000 MT this month?\". Chatting with Binth is part of the Wealth plan.\n\nBinth gives general guidance. It is not a substitute for professional advice before big decisions, such as a loan."
+      },
+      "binth_data": {
+        "q": "What data does Binth use?",
+        "a": "To answer, Binth sends an AI service a summary of your finances: your name, the month's income and spending, your balances, and your total assets and debts. Don't type ID numbers, PINs or passwords in the chat."
+      },
+      "plans_list": {
+        "q": "What plans are there and how much do they cost?",
+        "a": "Starter (free): unlimited moves, {{limit}} SMS a month, budget, goals, rent and home, xitique and financial plan.\n\nGrowth ({{growth}} MT/month): everything in Starter, unlimited SMS, debts, assets and monthly summary.\n\nWealth ({{pro}} MT/month): everything in Growth, simulators, credit and chatting with Binth.\n\nPay for the year and you get 20% off."
+      },
+      "pay": {
+        "q": "How do I pay for a plan?",
+        "a": "In More → Plans, choose the plan and whether to pay monthly or yearly. WhatsApp opens with a message already written with the plan and your account email. Send it and pay with M-Pesa or e-Mola. Once we confirm the payment, we activate the plan on your account."
+      },
+      "trial": {
+        "q": "Can I try before paying?",
+        "a": "Yes. After you have used Mwanga for {{age}} days, Home offers you a {{days}}-day trial of the Growth plan, once, at no cost. When it ends you go back to the free plan with no charges and your data stays."
+      },
+      "cancel": {
+        "q": "Is there a contract? How do I cancel?",
+        "a": "There is no contract and no automatic debit: you make each payment yourself, with M-Pesa or e-Mola. To change plan or stop paying, talk to us on WhatsApp. Your data stays available on the free plan."
+      },
+      "stay_signed": {
+        "q": "Why does the app ask me to sign in again?",
+        "a": "In the Android app your session is stored securely on the phone and renews every time you open Mwanga. If you go more than 7 days without opening the app, we ask you to sign in again for security.\n\nIf it asks you to sign in every day, install the latest version of the app over the old one, without uninstalling."
+      },
+      "forgot_password": {
+        "q": "I forgot my password. What now?",
+        "a": "On the sign-in screen, tap Forgot password and enter your account email. You will get a link to create a new password. If you created your account with Google, use the Sign in with Google button."
+      },
+      "photo": {
+        "q": "How do I change my profile photo?",
+        "a": "In Settings, tap the camera icon next to your photo and then Upload photo. Any photo from the gallery or camera works: Mwanga shrinks it on the phone before sending. To go back to your initials, tap Use my initials."
       },
       "security": {
-        "title": "🛡️ Security and Alerts",
-        "content": "Your privacy is our focus.\n\n• Push Notifications: Enable reminders to never be caught by surprise by rent or installments.\n• Protected Data: We use military-grade encryption to protect your financial records."
+        "q": "Is my data safe?",
+        "a": "The connection between the app and the server is encrypted (HTTPS). ID documents are stored with AES-256 encryption. In the Android app, your session is kept in the phone's secure storage."
+      },
+      "scams": {
+        "q": "Someone asked for my PIN on behalf of Mwanga. Is it real?",
+        "a": "No. The Mwanga team never asks for your M-Pesa, e-Mola or bank PIN, or your account password, by SMS, call or WhatsApp. Mwanga does not move your money either. If someone asks for this, don't reply and let us know."
       }
-    },
-    "support": {
-      "title": "Still have questions?",
-      "description": "Binth is available 24/7 to answer specific questions about your financial context.",
-      "btn": "Talk to Binth"
     }
   },
   "reports": {

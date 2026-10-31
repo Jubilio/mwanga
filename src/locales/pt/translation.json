@@ -1228,45 +1228,144 @@
     }
   },
   "help": {
-    "hero": {
-      "title": "Centro de <span>Ajuda Mwanga</span>",
-      "description": "Tudo o que precisa de saber para iluminar o seu caminho financeiro e dominar o sistema Mwanga 2.0.",
-      "search_placeholder": "Pesquisar manual..."
+    "title": "Como podemos ajudar?",
+    "subtitle": "Respostas curtas sobre o que o Mwanga faz, e uma pessoa do outro lado quando precisares.",
+    "search_placeholder": "Pesquisar: SMS, xitique, pagar plano…",
+    "search_clear": "Limpar pesquisa",
+    "all": "Tudo",
+    "results_one": "{{count}} resposta",
+    "results_other": "{{count}} respostas",
+    "open_page": "Abrir {{page}}",
+    "empty_title": "Não encontrámos nada para \"{{query}}\"",
+    "empty_body": "Tenta outra palavra, ou escreve-nos: respondemos por WhatsApp.",
+    "contact": {
+      "title": "Falar com uma pessoa",
+      "body": "Dúvidas, pagamentos ou algo que não funciona? Escreve-nos.",
+      "whatsapp": "WhatsApp",
+      "whatsapp_desc": "Conversa com a equipa Mwanga",
+      "whatsapp_message": "Olá! Preciso de ajuda com o Mwanga.",
+      "feedback": "Reportar um problema",
+      "feedback_desc": "Envia uma mensagem e uma captura de ecrã",
+      "safety": "A equipa Mwanga nunca te pede o PIN do M-Pesa, do e-Mola ou do banco, nem a tua senha."
     },
-    "sections": {
-      "intro": {
-        "title": "📱 Primeiros Passos",
-        "content": "O Mwanga é uma aplicação PWA. Isso significa que pode instalá-lo no seu telemóvel sem ir à Play Store ou App Store.\n\n• No Android: Clique nos 3 pontos do Chrome e selecione \"Instalar Mensageiro Financeiro\".\n• No iPhone: Use o botão Partilhar e selecione \"Adicionar ao Ecrã Principal\"."
+    "categories": {
+      "start": "Começar",
+      "daily": "Dia a dia",
+      "sms": "Importar SMS",
+      "plan": "Planear",
+      "binth": "Binth",
+      "plans": "Planos e pagamento",
+      "account": "Conta e segurança"
+    },
+    "faq": {
+      "what_is": {
+        "q": "O que é o Mwanga?",
+        "a": "O Mwanga ajuda-te a organizar o dinheiro da casa em meticais. Registas o que entra e o que sai, defines limites por categoria, poupas para metas e acompanhas o teu xitique e as tuas dívidas, tudo no mesmo sítio."
       },
-      "dashboard": {
-        "title": "📊 Painel de Controlo",
-        "content": "O Dashboard oferece uma visão 360º das suas finanças.\n\n• Gráfico de Radar: Identifique rapidamente se os seus gastos estão equilibrados com os ganhos.\n• Widgets: Acompanhe o saldo total das suas contas e o progresso das suas metas de poupança num relance."
+      "first_steps": {
+        "q": "Por onde começo?",
+        "a": "1. Em Definições, confirma o teu nome, a moeda e o dia em que o teu mês começa (por exemplo, o dia do salário).\n2. Regista as entradas e saídas desta semana com o botão + no meio da barra de baixo, ou importa os SMS do M-Pesa, e-Mola ou do banco.\n3. Em Planear, define limites para as categorias onde gastas mais e cria uma meta de poupança."
       },
-      "finance": {
-        "title": "💰 Gestão Financeira",
-        "content": "Domine o seu dinheiro com as ferramentas de orçamento.\n\n• Transações: Registe cada metical que sai ou entra. Separe por conta (M-Pesa, Carteira, Banco).\n• Regra 50/30/20: O sistema ajuda-o a cumprir a meta de gastar 50% em necessidades, 30% em desejos e 20% para o futuro.\n• Metas: Defina objetivos claros (ex: \"Compra de Moto\") e deixe o Mwanga calcular quanto precisa de poupar mensalmente."
+      "devices": {
+        "q": "Posso usar no telemóvel e no computador?",
+        "a": "Sim. Usa a app Android no telemóvel e o navegador no computador, com a mesma conta. Os teus dados ficam guardados na tua conta, por isso aparecem nos dois."
       },
-      "credit": {
-        "title": "⚖️ Crédito Inteligente",
-        "content": "Antes de pedir um empréstimo, consulte os nossos simuladores.\n\n• Simulador de Prestação: Saiba exatamente quanto vai pagar ao banco por mês.\n• Comparador: Veja se compensa mais um empréstimo bancário, um Xitique ou esperar e poupar.\n• Consolidação: Aprenda a juntar várias dívidas numa só para pagar menos juros totais."
+      "add_move": {
+        "q": "Como registo uma despesa ou uma receita?",
+        "a": "Toca no botão + no meio da barra de baixo, escolhe Despesa ou Receita e escreve o valor, a categoria e a descrição. Também podes importar SMS do M-Pesa, e-Mola ou do banco para não escrever tudo à mão."
       },
-      "community": {
-        "title": "🤝 Mwanga Community (VSLA)",
-        "content": "Poupe em conjunto com a sua família ou amigos.\n\n• Shares: No Digital VSLA, você compra \"shares\" mensais que formam o capital do grupo.\n• Empréstimos Internos: Os membros podem pedir empréstimos ao grupo a taxas decididas pela comunidade.\n• Lucros: Os juros acumulados são distribuídos equitativamente no final do ciclo de pouça."
+      "edit_move": {
+        "q": "Enganei-me num movimento. Como corrijo ou apago?",
+        "a": "Abre Movimentos, encontra o registo e toca no lápis para o corrigir, ou no caixote do lixo para o apagar. Os totais do mês e o orçamento atualizam-se logo."
       },
-      "binth": {
-        "title": "🤖 Assistente Binth IA",
-        "content": "O Binth é o cérebro do Mwanga.\n\n• Diagnósticos Rápidos: Peça conselhos sobre se deve ou não fazer uma compra.\n• Contexto Real: O Binth analisa os seus gastos reais (anonimamente) para dar respostas precisas."
+      "month_start": {
+        "q": "O meu mês começa no dia do salário. Dá para mudar?",
+        "a": "Dá. Em Definições → Preferências, escolhe o Dia de Reinício. O orçamento e o resumo do mês passam a contar a partir desse dia."
+      },
+      "report": {
+        "q": "Onde vejo o resumo do mês e exporto os dados?",
+        "a": "Em Mais → Resumo do mês vês as entradas, as saídas e as categorias do mês. O botão de exportar guarda os teus movimentos num ficheiro CSV que abre no Excel. O resumo do mês faz parte do plano Crescimento."
+      },
+      "sms_how": {
+        "q": "Como importo SMS do M-Pesa, e-Mola ou do banco?",
+        "a": "Abre Mais → Importar SMS. Copia a mensagem no teu telemóvel, cola-a na caixa e toca em Analisar Mensagem. Confere o valor, o tipo e a data, e toca em Confirmar e Registar.\n\nNa app Android também podes tocar em Sincronizar SMS Agora: o Mwanga pede autorização para ler os SMS e regista os de M-Pesa, e-Mola, mKesh e dos bancos (BIM, BCI, Absa, Standard Bank)."
+      },
+      "sms_limit": {
+        "q": "Há limite de SMS que posso importar?",
+        "a": "No plano grátis podes importar até {{limit}} SMS por mês. O contador volta a zero no início de cada mês e a página Importar SMS mostra quantos já usaste. Os planos Crescimento e Património não têm limite."
+      },
+      "sms_privacy": {
+        "q": "O Mwanga lê todas as minhas mensagens?",
+        "a": "Não. Quando sincronizas na app Android, o Mwanga só olha para os SMS dos últimos dias e escolhe os que vêm de serviços de dinheiro e bancos. Esses são lidos no próprio telemóvel e só a transação (valor, data, descrição) é guardada na tua conta. As outras mensagens não saem do telemóvel.\n\nQuando colas um SMS na caixa, esse texto é enviado ao servidor do Mwanga para ser analisado."
+      },
+      "sms_wrong": {
+        "q": "E se a análise do SMS sair errada?",
+        "a": "Antes de guardar vês sempre o resultado. Se algo estiver mal, não confirmes e regista à mão com o botão +. Se já guardaste, corrige em Movimentos com o lápis. Se um tipo de SMS falha sempre, envia-nos o exemplo (sem o PIN) pelo botão Reportar um problema."
+      },
+      "budget": {
+        "q": "Como funciona o Orçamento?",
+        "a": "Em Planear → Orçamento defines um limite mensal por categoria (por exemplo, Alimentação: 8 000 MT). O Mwanga soma as despesas do mês nessa categoria e mostra quanto gastaste e quanto ainda resta. Quando passas o limite, a categoria aparece como Excedido. Na aba Renda e casa acompanhas a renda e as despesas da casa."
+      },
+      "goals": {
+        "q": "Como crio uma meta de poupança?",
+        "a": "Em Planear → Metas, toca em Criar Novo Objectivo. Dá-lhe um nome (por exemplo, Fundo de Emergência), o valor que queres juntar e, se quiseres, um prazo. Sempre que guardares dinheiro, toca em Depositar na meta. Na aba Plano tens os próximos passos para organizar as tuas finanças."
+      },
+      "xitique": {
+        "q": "Como uso o Xitique no Mwanga?",
+        "a": "Em Planear → Xitique, toca em Novo Xitique e indica o nome do grupo, o valor mensal, quantas pessoas participam, o mês de início e a tua vez na roda. O Mwanga cria os meses do ciclo e mostra quanto já contribuíste e quanto vais receber.\n\nCada mês, toca em Pagar quando entregares a tua parte. No teu mês, toca em Receber. O Mwanga regista a despesa ou a receita nos teus movimentos, na conta que escolheres."
+      },
+      "xitique_money": {
+        "q": "O Mwanga guarda o dinheiro do xitique?",
+        "a": "Não. O dinheiro continua a circular entre os membros do grupo como sempre (em mão, M-Pesa ou e-Mola). O Mwanga só te ajuda a acompanhar a tua parte: o que pagaste, o que falta e quando é a tua vez."
+      },
+      "debts": {
+        "q": "Como acompanho dívidas e empréstimos?",
+        "a": "Em Planear → Dívidas, toca em Nova Dívida e indica a quem deves (banco, loja ou familiar), o valor, a taxa de juro mensal e o prazo em meses. O Mwanga estima a prestação e quanto vais pagar no total. A secção Dívidas faz parte do plano Crescimento; a aba Crédito (pontuação, simulador e comparação) faz parte do plano Património."
+      },
+      "binth_what": {
+        "q": "Quem é a Binth?",
+        "a": "A Binth é a assistente financeira do Mwanga. No Início, em Metas e em Dívidas deixa dicas curtas com base nos teus números. Em Mais → Binth podes fazer-lhe perguntas sobre o teu dinheiro, por exemplo: \"Consigo poupar 2 000 MT este mês?\". A conversa com a Binth faz parte do plano Património.\n\nA Binth dá orientações gerais. Não substitui um conselho profissional antes de decisões grandes, como um empréstimo."
+      },
+      "binth_data": {
+        "q": "Que dados a Binth usa?",
+        "a": "Para responder, a Binth envia a um serviço de inteligência artificial um resumo das tuas finanças: o teu nome, as receitas e despesas do mês, os saldos, o total de bens e de dívidas. Não escrevas no chat números de documentos, PINs ou senhas."
+      },
+      "plans_list": {
+        "q": "Que planos existem e quanto custam?",
+        "a": "Starter (grátis): movimentos sem limite, {{limit}} SMS por mês, orçamento, metas, renda e casa, xitique e plano financeiro.\n\nCrescimento ({{growth}} MT/mês): tudo do Starter, SMS sem limite, dívidas, património e resumo do mês.\n\nPatrimónio ({{pro}} MT/mês): tudo do Crescimento, simuladores, crédito e conversa com a Binth.\n\nSe pagares o ano, tens 20% de desconto."
+      },
+      "pay": {
+        "q": "Como pago um plano?",
+        "a": "Em Mais → Planos, escolhe o plano e se queres pagar ao mês ou ao ano. Abre-se o WhatsApp com uma mensagem já escrita com o plano e o email da tua conta. Envia-a e pagas por M-Pesa ou e-Mola. Quando confirmarmos o pagamento, ativamos o plano na tua conta."
+      },
+      "trial": {
+        "q": "Posso experimentar antes de pagar?",
+        "a": "Sim. Depois de usares o Mwanga durante {{age}} dias, aparece no Início a oferta para experimentar o plano Crescimento durante {{days}} dias, uma vez, sem pagar. No fim voltas ao plano grátis sem cobranças e os teus dados ficam guardados."
+      },
+      "cancel": {
+        "q": "Há contrato? Como cancelo?",
+        "a": "Não há contrato nem débito automático: o pagamento é feito por ti, por M-Pesa ou e-Mola. Para mudar de plano ou deixar de pagar, fala connosco no WhatsApp. Os teus dados continuam acessíveis no plano grátis."
+      },
+      "stay_signed": {
+        "q": "Porque é que a app me pede para entrar outra vez?",
+        "a": "Na app Android a sessão fica guardada de forma segura no telemóvel e renova-se sempre que abres o Mwanga. Se passares mais de 7 dias sem abrir a app, por segurança, pedimos que entres de novo.\n\nSe te pede para entrar todos os dias, instala a versão mais recente da app por cima da antiga, sem desinstalar."
+      },
+      "forgot_password": {
+        "q": "Esqueci-me da senha. E agora?",
+        "a": "No ecrã de entrada, toca em Esqueci-me da senha e escreve o email da tua conta. Recebes uma ligação para criar uma senha nova. Se criaste a conta com o Google, usa o botão Entrar com Google."
+      },
+      "photo": {
+        "q": "Como mudo a foto de perfil?",
+        "a": "Em Definições, toca no ícone da câmara junto à tua foto e depois em Carregar fotografia. Qualquer foto da galeria ou da câmara serve: o Mwanga reduz o tamanho no telemóvel antes de enviar. Para voltar às iniciais, toca em Usar as minhas iniciais."
       },
       "security": {
-        "title": "🛡️ Segurança e Alertas",
-        "content": "A sua privacidade é o nosso foco.\n\n• Notificações Push: Ative os lembretes para nunca ser apanhado de surpresa pela renda ou prestações.\n• Dados Protegidos: Usamos encriptação de nível militar para proteger os seus registos financeiros."
+        "q": "Os meus dados estão seguros?",
+        "a": "A ligação entre a app e o servidor é encriptada (HTTPS). Os documentos de identificação são guardados com encriptação AES-256. Na app Android, a tua sessão fica no armazenamento seguro do telemóvel."
+      },
+      "scams": {
+        "q": "Alguém me pediu o PIN em nome do Mwanga. É verdade?",
+        "a": "Não. A equipa Mwanga nunca pede o PIN do M-Pesa, do e-Mola ou do banco, nem a senha da tua conta, por SMS, chamada ou WhatsApp. O Mwanga também não movimenta o teu dinheiro. Se alguém te pedir isso, não respondas e avisa-nos."
       }
-    },
-    "support": {
-      "title": "Ainda tem dúvidas?",
-      "description": "O Binth está disponível 24/7 para responder a questões específicas sobre o seu contexto financeiro.",
-      "btn": "Falar com o Binth"
     }
   },
   "reports": {
