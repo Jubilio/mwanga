@@ -2799,6 +2799,7 @@
       "Go back and tap Install. Then open Mwanga and sign in."
     ],
     "update_note": "To update, download the new version and install it over the old one. Do not uninstall first, so data stored on the phone is kept.",
+    "sms_note": "To import M-Pesa, e-Mola and mKesh SMS, Mwanga asks for SMS access. On Android 13 or newer, if the request doesn't appear, open App settings, tap the three dots (⋮), choose Allow restricted settings and then turn on Permissions → SMS.",
     "verify_title": "Check it is the original file",
     "verify_body": "Every version is signed with the same Mwanga key. When you install an update, Android refuses files signed by anyone else.",
     "package": "Package name",
@@ -2806,5 +2807,39 @@
     "apk_hash": "SHA-256 of this APK",
     "not_play": "Mwanga is not on Google Play yet. Only download it from this page or the official releases page. Never install a Mwanga APK sent to you by someone else.",
     "history": "See all versions and what changed"
+  },
+  "sms_permission": {
+    "title": "Import your M-Pesa, e-Mola and mKesh transactions",
+    "body": "To record your payments without copying each message, Mwanga needs to read the confirmation SMS you receive. Android will ask you next.",
+    "promises": [
+      "We only read SMS from M-Pesa, e-Mola, mKesh and banks (BIM, BCI, Absa, Standard Bank).",
+      "Your personal conversations are never read or sent anywhere.",
+      "We only keep the amount, date and reference of each transaction.",
+      "You can remove the permission at any time in Android settings."
+    ],
+    "allow": "Allow SMS access",
+    "not_now": "Not now",
+    "close": "Close",
+    "denied_title": "No SMS access",
+    "denied_body": "You chose not to allow it. You can still paste SMS by hand, but automatic import won't work without this permission.",
+    "try_again": "Try again",
+    "blocked_title": "Android blocked SMS access",
+    "blocked_body": "Android no longer shows Mwanga's permission request. You can turn it on in the app settings in under a minute:",
+    "restricted_title": "First: allow restricted settings",
+    "restricted_steps": [
+      "Tap Open app settings below.",
+      "Tap the three dots (⋮) in the top right corner.",
+      "Choose Allow restricted settings and confirm with your PIN or fingerprint."
+    ],
+    "restricted_note": "Android asks this of every app installed from an APK file, outside the Play Store. If you don't see the three dots, skip this step.",
+    "settings_title": "Turn on the permission",
+    "settings_title_then": "Then: turn on the permission",
+    "settings_steps": [
+      "In the app settings, tap Permissions.",
+      "Tap SMS.",
+      "Choose Allow."
+    ],
+    "open_settings": "Open app settings",
+    "come_back": "When you come back to Mwanga, the import carries on by itself."
   }
 }

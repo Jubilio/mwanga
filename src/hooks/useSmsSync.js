@@ -1,7 +1,7 @@
 import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useEffect, useCallback } from 'react';
-import { SMSInboxReader as SmsInbox } from 'capacitor-sms-inbox';
-import { Capacitor } from '@capacitor/core';
+import { getSmsPermission, isSmsInboxSupported, listMoneySms } from '../services/moneySms';
+import { ensureSmsAccess } from '../services/smsAccess';
 import { useFinance } from './useFinance';
 import { parseMobileMoneySMS } from '../utils/smsParser';
 import api from '../utils/api';
@@ -16,7 +16,7 @@ export function useSmsSync(showToast) {
 
   const syncSms = useCallback(async (manual = false) => {
     if (!SMS_INBOX_ENABLED) return;
-    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'android') {
+    if (!isSmsInboxSupported()) {
       if (manual) showToast?.(ui("Sincronização SMS só funciona na App Nativa (Android)."), 'error');
       return;
     }
@@ -24,39 +24,22 @@ export function useSmsSync(showToast) {
     if (!settings?.sms_automation_enabled && !manual) return;
 
     try {
-      const permissions = await SmsInbox.checkPermissions();
-      if (permissions.sms !== 'granted') {
-        const req = await SmsInbox.requestPermissions();
-        if (req.sms !== 'granted') {
-          if (manual) showToast?.(ui("Permissão de leitura de SMS negada."), 'error');
-          return;
-        }
-      }
+      // Automatic syncs never prompt: the explanation sheet only opens when the user asks.
+      const granted = manual ? await ensureSmsAccess() : (await getSmsPermission()) === 'granted';
+      if (!granted) return;
 
       // Default to last 7 days if no sync date is found
       const lastSync = settings?.last_sms_sync_date ? new Date(settings.last_sms_sync_date).getTime() : Date.now() - (7 * 24 * 60 * 60 * 1000);
 
-      const { smsList } = await SmsInbox.getSMSList({
-        filter: {
-          minDate: lastSync,
-          maxCount: 200
-        }
-      });
+      // Only mobile money and bank SMS come back; the sender filter runs natively.
+      const filteredList = await listMoneySms({ minDate: lastSync, maxCount: 200 });
 
-      if (!smsList || smsList.length === 0) {
+      if (filteredList.length === 0) {
         if (manual) showToast?.(ui("Nenhum SMS novo encontrado."), 'info');
         return;
       }
 
       let parsedCount = 0;
-      const allowedSenders = ['M-Pesa', 'e-Mola', 'Millennium', 'BIM', 'BCI', 'mKesh', 'Absa', 'Standard'];
-      
-      const filteredList = smsList.filter(sms => 
-        allowedSenders.some(sender => sms.address?.toLowerCase().includes(sender.toLowerCase())) ||
-        sms.body?.toLowerCase().includes('m-pesa') ||
-        /800\s?224\s?224/.test(sms.body || '') // BCI card alerts only carry BCI's free line
-      );
-
       // Sort oldest first to maintain chronological order
       filteredList.sort((a, b) => a.date - b.date);
 

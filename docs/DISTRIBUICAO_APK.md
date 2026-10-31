@@ -93,6 +93,18 @@ Confirmado nas páginas oficiais em 31/10/2026 ([visão geral](https://developer
 - APKs instalados por outras vias ainda não são bloqueados. Depois da expansão, quem não estiver registado obriga os utilizadores a um "modo avançado" com 24 horas de espera.
 - Para registar o pacote é preciso a chave de assinatura: mais um motivo para não a perder.
 
+## Permissão de SMS em APKs fora da Play
+
+O Mwanga lê só as SMS de M-Pesa, e-Mola, mKesh e dos bancos (o filtro corre na consulta nativa, em `MoneySmsPlugin.java`; a lista está em `src/utils/moneySmsSenders.js`).
+A app mostra primeiro uma explicação e só depois o pedido do Android. Se o Android já não mostrar o pedido, a app abre um guia com o botão *Abrir definições da app*.
+
+- **Android 13 ou mais recente**: o Android trata `READ_SMS` como "definição restrita" para apps instaladas a partir de um ficheiro. O pedido é recusado sem aparecer nada.
+  O utilizador desbloqueia em *Definições da app → ⋮ (canto superior direito) → Permitir definições restritas*, confirma com o PIN e depois activa *Permissões → SMS → Permitir*.
+  O menu ⋮ só aparece depois de a app ter pedido a permissão uma vez, por isso o guia aparece depois do primeiro pedido.
+- **"Não permitir" duas vezes**: o Android deixa de perguntar. O mesmo guia leva às *Permissões*.
+- **Play Protect**: ao instalar pode aparecer "App desconhecida" ou "Analisar app". Toque em *Mais detalhes → Instalar mesmo assim*, ou envie a app para análise.
+  Em alguns países a Google bloqueia por completo apps instaladas fora de lojas que pedem SMS. Se isso chegar a Moçambique, a única solução é publicar na Play Store com a declaração de SMS (ver `docs/GOOGLE_PLAY.md`).
+
 ## Outros canais
 
 - **Firebase App Distribution**: útil para testadores (convites por email). Não serve para o público.

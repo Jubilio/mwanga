@@ -21,6 +21,7 @@ import MwangaLogo from './MwangaLogo';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useSmsSync } from '../hooks/useSmsSync';
 import { SMS_INBOX_ENABLED } from '../config/features';
+import SmsPermissionSheet from './SmsPermissionSheet';
 import { getToken } from '../utils/authToken';
 import { BOTTOM_ITEMS, pageTitleKey } from '../config/navigation';
 
@@ -379,6 +380,8 @@ export default function Layout() {
         onClose={() => setShowInstallBanner(false)}
         visible={showInstallBanner}
       />
+
+      {SMS_INBOX_ENABLED && <SmsPermissionSheet />}
 
       <QuickAddNotificationModal
         isOpen={Boolean(activeQuickAddPayload)}

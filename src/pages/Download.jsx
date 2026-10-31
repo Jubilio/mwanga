@@ -70,6 +70,7 @@ export default function Download() {
             ))}
           </ol>
           <p className="text-xs" style={muted}>{t('download.update_note')}</p>
+          <p className="text-xs" style={muted}>{t('download.sms_note')}</p>
         </section>
 
         <section className="glass-card flex flex-col gap-3" style={{ padding: '1.25rem' }}>
