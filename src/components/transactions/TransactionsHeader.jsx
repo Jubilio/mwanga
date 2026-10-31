@@ -1,5 +1,6 @@
 import { ui, useUiLanguage } from '../../utils/uiTranslation';
-import { Plus, FileText, Download } from 'lucide-react';
+import { Plus, FileText, Download, MessageSquare, BarChart3 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { fmt } from '../../utils/calculations';
 import { generateTransactionsPDF } from '../../utils/pdfGenerator';
 
@@ -27,7 +28,7 @@ export default function TransactionsHeader({
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between px-1">
         <div>
-          <h1 className="text-2xl font-black dark:text-white leading-tight">{ui("Transações")}</h1>
+          <h1 className="text-2xl font-black dark:text-white leading-tight">{t('nav.moves')}</h1>
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">
             {filteredCount} {t('transactions.records')}
           </p>
@@ -73,12 +74,26 @@ export default function TransactionsHeader({
           </div>
 
           <div className="flex items-center gap-2 border-t border-white/5 pt-4">
+             <Link
+               to="/sms-import"
+               className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-ocean/10 text-ocean dark:text-sky-light hover:bg-ocean/20 transition-all text-[10px] font-black uppercase tracking-widest border border-ocean/20"
+             >
+               <MessageSquare size={14} /> {t('nav.sms_button')}
+             </Link>
              <button
                onClick={() => setIsScanOpen(true)}
                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-all text-[10px] font-black uppercase tracking-widest border border-indigo-500/20"
              >
                <Plus size={14} /> Smart Scan
              </button>
+             <Link
+               to="/relatorio"
+               className="p-3 rounded-2xl bg-white/5 text-gray-400 hover:text-ocean transition-all shrink-0"
+               title={t('nav.report')}
+               aria-label={t('nav.report')}
+             >
+               <BarChart3 size={20} />
+             </Link>
              <button
                onClick={() => generateTransactionsPDF(filtered, state)} // Wait, state/filtered are not here. I should pass them.
                className="p-3 rounded-2xl bg-white/5 text-gray-400 hover:text-indigo-400 transition-all shrink-0"

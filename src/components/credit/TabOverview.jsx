@@ -112,9 +112,11 @@ export default function TabOverview({ onApply, scoreData, eligData, hist, isPro 
 
       {/* CTA */}
       {scoreData.eligible ? (
-        <Btn variant="green" size="lg" onClick={onApply} style={{ width: "100%" }}>
-          {t('credit.overview.cta_apply')}
-        </Btn>
+        onApply ? (
+          <Btn variant="green" size="lg" onClick={onApply} style={{ width: "100%" }}>
+            {t('credit.overview.cta_apply')}
+          </Btn>
+        ) : null
       ) : (
         <Card style={{ background: "rgba(255,76,76,0.06)", border: `1px solid rgba(255,76,76,0.2)`, textAlign: "center", padding: 24 }}>
           <div style={{ fontSize: 24, marginBottom: 10 }}>🔒</div>
