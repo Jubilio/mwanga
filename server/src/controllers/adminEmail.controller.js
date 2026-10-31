@@ -8,6 +8,7 @@ const getStatus = async (req, res) => {
     const { dailyLimit, batchSize, batchDelayMs } = campaigns.settings();
     res.json({
       configured: emailService.isConfigured(),
+      mode: emailService.mode,
       from: emailService.fromAddress() || null,
       audience,
       sentToday,
@@ -25,7 +26,7 @@ const sendTest = async (req, res) => {
   const content = campaigns.validateContent(req.body || {});
   if (content.error) return res.status(400).json({ error: content.error });
   if (!emailService.isConfigured()) {
-    return res.status(503).json({ error: 'O envio de email não está configurado no servidor (variáveis EMAIL_* no Render).' });
+    return res.status(503).json({ error: 'O envio de email não está configurado no servidor (variáveis GMAIL_* no Render).' });
   }
   try {
     const to = await campaigns.sendTest({ ...content, adminId: req.user.id });
@@ -40,7 +41,7 @@ const createCampaign = async (req, res) => {
   const content = campaigns.validateContent(req.body || {});
   if (content.error) return res.status(400).json({ error: content.error });
   if (!emailService.isConfigured()) {
-    return res.status(503).json({ error: 'O envio de email não está configurado no servidor (variáveis EMAIL_* no Render).' });
+    return res.status(503).json({ error: 'O envio de email não está configurado no servidor (variáveis GMAIL_* no Render).' });
   }
   try {
     if (await campaigns.activeCampaign()) {

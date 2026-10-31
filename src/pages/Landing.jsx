@@ -117,6 +117,10 @@ export default function Landing() {
 
         <footer className="border-t text-xs" style={{ borderColor: 'var(--color-border)', color: 'var(--color-muted)', padding: '1.5rem 0 1rem' }}>
           {t('landing.footer')}
+          <span style={{ display: 'inline-flex', gap: '1rem', marginLeft: '1rem' }}>
+            <Link to="/privacidade" className="underline">Privacidade</Link>
+            <Link to="/termos" className="underline">Termos</Link>
+          </span>
         </footer>
       </div>
     </div>
