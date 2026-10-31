@@ -105,7 +105,7 @@ export default function FinancialCoachCard({ coach, loading, error, onRefresh })
               type="button"
               onClick={() => navigate('/insights')}
               className="flex items-center gap-2 rounded-full border border-white/10 bg-transparent px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-300 transition-all hover:bg-white/10 hover:text-white"
-            > {ui("Explorar Insights")} </button>
+            > {ui("Falar com a Binth")} </button>
           </div>
         </div>
       )}

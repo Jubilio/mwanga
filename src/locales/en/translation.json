@@ -51,7 +51,7 @@
   "credit": {
     "header": {
       "title": "Credit",
-      "subtitle": "Intelligent microcredit · Powered by Binth",
+      "subtitle": "See how much credit you can handle",
       "refresh_title": "Refresh",
       "score_label": "Current Score",
       "pro": "👑 PRO",
@@ -467,8 +467,8 @@
     "toast_updated": "Transaction updated successfully!"
   },
   "sms_import": {
-    "title": "Smart SMS Analysis",
-    "description": "Paste or share bank messages to automatically log expenses and income with Binth's AI help.",
+    "title": "Import SMS",
+    "description": "Paste or share an M-Pesa, e-Mola or bank SMS and Binth records the expense or income for you.",
     "input_header": "Message Text",
     "mobile_tip": {
       "title": "Mobile Tip",
@@ -945,7 +945,7 @@
     },
     "hero": {
       "default_user_name": "Financial Explorer",
-      "premium_account": "Nexo Vibe Premium Account",
+      "premium_account": "Mwanga Premium Account",
       "saving": "Saving...",
       "synced": "Synced",
       "currency_label": "Currency",
@@ -1171,6 +1171,7 @@
         "btn": "Start free",
         "features": [
           "Unlimited transactions",
+          "SMS import: 30 per month",
           "Budget by category",
           "Savings goals",
           "Housing and rent",
@@ -1185,6 +1186,7 @@
         "badge": "Recommended for families",
         "features": [
           "Everything in Starter",
+          "Unlimited SMS import",
           "Debts and payment calendar",
           "Wealth: assets and liabilities",
           "Monthly reports"
@@ -1196,11 +1198,9 @@
         "btn": "Choose Wealth",
         "features": [
           "Everything in Growth",
-          "Simulators: budget, salary, investment and retirement",
-          "Credit",
-          "Binth insights",
-          "SMS import",
-          "Time Machine and Stewardship"
+          "Simulators: budget, salary, investment, future and Xitique",
+          "Credit: score, simulator and comparison",
+          "Binth, your financial assistant"
         ]
       }
     },
@@ -1300,7 +1300,7 @@
     "empty_state": "No expenses to analyze"
   },
   "insights": {
-    "title": "Binth Insights",
+    "title": "Binth",
     "subtitle": "Your personal financial mentor ✦",
     "score_label": "Score",
     "placeholder": "Ask Binth anything…",
@@ -1968,7 +1968,7 @@
     "s0e236f6b75ab": "The foundation of planning: transaction data should be accessible, accurate and complete.",
     "s646061f14b38": "Financial future simulation",
     "sf896528bfb8f": "Time horizon",
-    "s2c9b8123ba8b": "Annual return (ROI)",
+    "s2c9b8123ba8b": "Annual return",
     "s09138aa29fe8": "*Assumes you invest your monthly savings",
     "sc0626e29f7cd": "Contract duration",
     "s0061c3dcb40a": "Months with a fixed salary",
@@ -2058,7 +2058,7 @@
     "s8627f6a5496a": "Strategic priority",
     "sff711d67acd4": "Ensure all daily transactions are recorded, including small ones.",
     "s9d0454d18d29": "View detailed plan",
-    "s950e08de72e4": "Explore insights",
+    "s950e08de72e4": "Talk to Binth",
     "se9868e966a55": "Open main menu",
     "s6bf330c92a59": "Pressure",
     "s750733a7271b": "Clear all",
@@ -2561,7 +2561,7 @@
     "history": "Reconciliation history",
     "history_note": "Shows the household’s latest 50 adjustments. Each stores the author, recording date, reference date, balances and reason. Adjustments are excluded from income and expenses.",
     "finish": "Finish review",
-    "back": "Back to dashboard",
+    "back": "Back to Home",
     "recorded_by": "Recorded by user {{user}} on {{date}}",
     "restart_title": "Reset and restart balances",
     "restart_hint": "Haven't used Mwanga for a while? Set every account to zero and enter what you have today, all at once.",
@@ -2658,7 +2658,7 @@
     "desc_patrimony": "Accounts, assets and net worth",
     "desc_simulators": "Savings, future and Xitique",
     "desc_report": "Income, spending and export",
-    "desc_pricing": "Your plan and upgrades",
+    "desc_pricing": "Your plan and the options available",
     "desc_help": "Tutorial and support",
     "desc_settings": "Profile, preferences and security",
     "desc_about": "Who makes Mwanga",
@@ -2671,5 +2671,11 @@
     "tab_future": "Future",
     "sms_button": "Import SMS",
     "sms_short": "SMS"
+  },
+  "sms_quota": {
+    "used": "{{used}} of {{limit}} SMS imported this month on the free plan.",
+    "reached": "You have reached this month's {{limit}} SMS. Paid plans have no limit.",
+    "see_plans": "See plans",
+    "sync_stopped": "Monthly limit of {{limit}} SMS reached. We imported {{count}}."
   }
 }

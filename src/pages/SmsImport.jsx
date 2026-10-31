@@ -1,13 +1,15 @@
 import { ui, useUiLanguage, uiLocale } from '../utils/uiTranslation';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, Clipboard, MessageSquare, RefreshCw, ShieldCheck, Smartphone, Zap } from 'lucide-react';
 import api from '../utils/api';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../components/Toast';
 import { Capacitor } from '@capacitor/core';
 import { useSmsSync } from '../hooks/useSmsSync';
-import { SMS_INBOX_ENABLED } from '../config/features';
+import { SMS_INBOX_ENABLED, getEffectiveTier } from '../config/features';
+import { useFinance } from '../hooks/useFinance';
+import { getSmsQuota } from '../utils/smsQuota';
 
 const SAMPLE_SMS = [
   'A conta 406659018 foi debitada no valor de 20.00 MZN as 23:17 do dia 24/02/26. Millennium bim',
@@ -107,6 +109,11 @@ export default function SmsImport() {
   const { showToast } = useToast();
   const { syncSms } = useSmsSync(showToast);
   const [syncing, setSyncing] = useState(false);
+  const { state } = useFinance();
+  // Saves from this page are not pushed into the store, so count them here too.
+  const [savedHere, setSavedHere] = useState(0);
+  const quota = getSmsQuota(getEffectiveTier(state.settings), state.transacoes, new Date(), savedHere);
+  const quotaReached = quota.limited && quota.remaining <= 0;
   const canReadInbox = SMS_INBOX_ENABLED && Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
 
   async function handleInboxSync() {
@@ -212,6 +219,10 @@ export default function SmsImport() {
 
   async function saveTransaction() {
     if (!result || !result.is_financial || !result.amount) return;
+    if (quotaReached) {
+      showToast(t('sms_quota.reached', { limit: quota.limit }), 'error');
+      return;
+    }
 
     setSaving(true);
     try {
@@ -225,6 +236,7 @@ export default function SmsImport() {
       };
 
       await api.post('/transactions', payload);
+      setSavedHere((count) => count + 1);
       showToast(t('sms_import.toasts.save_success'), 'success');
       setResult(null);
       setSmsText('');
@@ -246,6 +258,19 @@ export default function SmsImport() {
         <p className="text-slate-400 mt-2">
           {t('sms_import.description')}
         </p>
+        {quota.limited && (
+          <div
+            className="glass-card mt-4 flex flex-wrap items-center justify-between gap-3 text-sm"
+            style={{ padding: '12px 16px', borderColor: quotaReached ? 'rgba(224,122,95,0.4)' : undefined }}
+          >
+            <span className={quotaReached ? 'text-coral' : 'text-slate-300'}>
+              {quotaReached
+                ? t('sms_quota.reached', { limit: quota.limit })
+                : t('sms_quota.used', { used: quota.used, limit: quota.limit })}
+            </span>
+            <Link to="/pricing" className="font-bold text-gold">{t('sms_quota.see_plans')}</Link>
+          </div>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
@@ -390,7 +415,7 @@ export default function SmsImport() {
                   <div className="mt-6 space-y-3">
                     <button
                       onClick={saveTransaction}
-                      disabled={saving || !result.amount}
+                      disabled={saving || !result.amount || quotaReached}
                       className="w-full py-3 bg-aurora/20 hover:bg-aurora/30 text-aurora border border-aurora/40 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(46,204,113,0.1)] hover:shadow-[0_0_20px_rgba(46,204,113,0.2)] disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {saving ? <RefreshCw size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
