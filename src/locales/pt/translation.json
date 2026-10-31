@@ -2806,7 +2806,29 @@
     "cert": "Certificado de assinatura (SHA-256)",
     "apk_hash": "SHA-256 deste APK",
     "not_play": "O Mwanga ainda não está na Google Play. Descarregue apenas desta página ou da página oficial de versões. Nunca instale um APK do Mwanga enviado por outras pessoas.",
-    "history": "Ver todas as versões e o que mudou"
+    "history": "Ver todas as versões e o que mudou",
+    "ios": {
+      "title": "Mwanga no iPhone",
+      "subtitle": "No iPhone não há ficheiro para descarregar. O Mwanga instala-se a partir do Safari e fica no ecrã principal com o seu ícone, como qualquer app.",
+      "other_title": "Tem um iPhone?",
+      "other_body": "Não precisa de descarregar nada. Abra {{url}} no Safari do iPhone e siga estes passos.",
+      "steps_title": "Como instalar no iPhone",
+      "steps": [
+        "Toque no botão Partilhar, o quadrado com a seta para cima, na barra do Safari.",
+        "Deslize a lista e toque em Adicionar ao ecrã principal.",
+        "Confirme o nome Mwanga e toque em Adicionar.",
+        "Abra o Mwanga pelo novo ícone e entre na sua conta."
+      ],
+      "not_safari_title": "Abra esta página no Safari",
+      "not_safari_body": "Só o Safari mostra a opção Adicionar ao ecrã principal. Copie o link e cole-o no Safari, ou toque nos três pontos e escolha Abrir no Safari.",
+      "copy_link": "Copiar link",
+      "copied": "Link copiado",
+      "installed_title": "O Mwanga já está no seu iPhone",
+      "installed_body": "Está a usar a app instalada. Para a abrir de novo, toque no ícone do Mwanga no ecrã principal.",
+      "open_app": "Ir para o Mwanga",
+      "sms_note": "No iPhone, a importação automática de SMS do M-Pesa, e-Mola e mKesh não está disponível, porque o iOS não deixa as apps lerem mensagens. Pode registar as transacções à mão em segundos.",
+      "android_hint": "Tem Android? A app para Android está mais abaixo."
+    }
   },
   "sms_permission": {
     "title": "Importar as tuas transacções do M-Pesa, e-Mola e mKesh",
