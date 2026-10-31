@@ -1082,10 +1082,7 @@
       "partial_error": "Uma ou mais alterações não foram guardadas. As alterações confirmadas pelo servidor foram mantidas; tenta guardar novamente as restantes.",
       "avatar": "Fotografia de perfil",
       "change_avatar": "Escolher fotografia",
-      "choose_avatar": "Escolher avatar {{number}}",
       "upload_avatar": "Carregar fotografia",
-      "image_limit": "Escolhe uma imagem PNG, JPEG ou WebP até 600 KB.",
-      "image_error": "Não foi possível ler a imagem.",
       "subscription": "Plano atual",
       "all_features": "Todas as funcionalidades",
       "tiers": {
@@ -1101,7 +1098,15 @@
       "push_disable_error": "Não foi possível concluir a desativação. Tenta novamente.",
       "push_unsupported": "As notificações push não estão disponíveis neste ambiente.",
       "journey_title": "O teu plano no Mwanga",
-      "journey_note": "Define prioridades e acompanha metas, hábitos e aprendizagem na Jornada financeira."
+      "journey_note": "Define prioridades e acompanha metas, hábitos e aprendizagem na Jornada financeira.",
+      "image_too_large": "A fotografia é demasiado grande, mesmo depois de reduzida. Escolhe outra.",
+      "image_unsupported": "Este formato não abre neste telemóvel. Escolhe uma foto JPG, PNG ou WebP (nas definições da câmara, usa \"Mais compatível\" em vez de HEIC).",
+      "photo_saved": "Fotografia de perfil atualizada.",
+      "photo_removed": "Voltaste a usar as tuas iniciais.",
+      "photo_save_error": "Não foi possível guardar a fotografia. Verifica a ligação e tenta de novo.",
+      "use_initials": "Usar as minhas iniciais",
+      "photo_processing": "A preparar a fotografia",
+      "photo_hint": "Qualquer foto da galeria ou da câmara serve: o Mwanga reduz o tamanho no telemóvel antes de enviar. Só tu vês a tua fotografia."
     },
     "household": {
       "title": "Membros da família",

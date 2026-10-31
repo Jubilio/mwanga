@@ -1,5 +1,7 @@
-import { Camera, Sparkles, Loader2, CloudCheck, Clock, AlertTriangle, Home as HomeIcon } from 'lucide-react';
+import { Camera, Sparkles, Loader2, CloudCheck, Clock, AlertTriangle, Home as HomeIcon, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import UserAvatar from '../UserAvatar';
+import { hasOwnPhoto } from '../../utils/avatar';
 
 export default function SettingsHero({
   form,
@@ -7,8 +9,8 @@ export default function SettingsHero({
   isSaving,
   showAvatarGallery,
   setShowAvatarGallery,
-  AVATARS,
-  setFormDirty,
+  photoBusy,
+  onRemovePhoto,
   saveStatus,
   fileInputRef,
   handleImageUpload
@@ -16,6 +18,8 @@ export default function SettingsHero({
   const { t } = useTranslation();
   const tier = state.settings?.subscription_tier || 'free';
   const tierLabel = t(`settings.reliable.tiers.${tier}`, { defaultValue: t('settings.reliable.tiers.free') });
+  const photo = state.settings?.profile_pic;
+  const disabled = isSaving || photoBusy;
 
   return (
     <div className="relative mb-10 md:mb-16 animate-in fade-in slide-in-from-top-12 duration-1000">
@@ -29,24 +33,31 @@ export default function SettingsHero({
           <div className="flex flex-col md:flex-row items-center gap-10 w-full">
             <div className="relative group shrink-0">
               <div className="w-28 h-28 md:w-40 md:h-40 rounded-3xl md:rounded-[2.5rem] p-1 bg-linear-to-br from-white/20 to-transparent backdrop-blur-2xl border border-white/20 shadow-2xl relative overflow-hidden transition-transform duration-500 group-hover:scale-105">
-                <img
-                  src={form.profile_pic}
+                <UserAvatar
+                  name={state.user?.name || form.user_name}
+                  photo={photo}
                   alt={t('settings.reliable.avatar')}
-                  className="w-full h-full object-cover rounded-[2.2rem]"
+                  className="w-full h-full rounded-[2.2rem]"
+                  textClassName="text-4xl md:text-5xl"
+                  iconSize={44}
                 />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <button
-                    disabled={isSaving}
-                    aria-label={t('settings.reliable.change_avatar')} aria-expanded={showAvatarGallery}
-                    onClick={() => setShowAvatarGallery(!showAvatarGallery)}
-                    className="p-3 bg-white text-midnight rounded-2xl shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform"
-                  >
-                    <Camera size={24} />
-                  </button>
-                </div>
+                {photoBusy ? (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center" role="status" aria-label={t('settings.reliable.photo_processing')}>
+                    <Loader2 size={28} className="animate-spin text-white" />
+                  </div>
+                ) : null}
               </div>
-
-
+              {/* Always visible: hover-only buttons cannot be found on Android. */}
+              <button
+                type="button"
+                disabled={disabled}
+                aria-label={t('settings.reliable.change_avatar')} aria-expanded={showAvatarGallery}
+                onClick={() => setShowAvatarGallery(!showAvatarGallery)}
+                className="absolute -bottom-2 -right-2 p-2.5 bg-white text-midnight rounded-2xl shadow-xl border border-slate-200 transition-transform hover:scale-105 active:scale-95 disabled:opacity-60"
+                style={{ width: 'auto' }}
+              >
+                <Camera size={20} />
+              </button>
             </div>
 
             <div className="flex-1 text-center md:text-left">
@@ -86,42 +97,34 @@ export default function SettingsHero({
           </div>
         </div>
       </div>
-              {showAvatarGallery && (
-                <div className="glass-card mt-4 p-5 flex gap-4">
-                  <div className="grid grid-cols-5 gap-3">
-                    {AVATARS.map((url, i) => (
-                      <button
-                        disabled={isSaving}
-                        aria-label={t('settings.reliable.choose_avatar', { number: i + 1 })}
-                        key={i}
-                        onClick={() => {
-                          setFormDirty(f => ({ ...f, profile_pic: url }));
-                          setShowAvatarGallery(false);
-                        }}
-                        className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all ${form.profile_pic === url ? 'border-teal-400 scale-110 shadow-lg shadow-teal-500/20' : 'border-transparent hover:scale-105 opacity-60 hover:opacity-100'}`}
-                      >
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                    <button
-                      disabled={isSaving}
-                        aria-label={t('settings.reliable.upload_avatar')}
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-12 h-12 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center text-slate-500 hover:border-teal-400 hover:text-teal-400 transition-colors bg-white/5"
-                    >
-                      <Camera size={20} />
-                    </button>
-                  </div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    disabled={isSaving}
-                    accept="image/png,image/jpeg,image/webp"
-                    onChange={(e) => handleImageUpload(e.target.files[0])}
-                  />
-                </div>
-              )}
+      {showAvatarGallery && (
+        <div className="glass-card mt-4 p-5 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => fileInputRef.current?.click()}
+            className="btn btn-primary"
+            style={{ width: 'auto' }}
+          >
+            {photoBusy ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
+            {t('settings.reliable.upload_avatar')}
+          </button>
+          {hasOwnPhoto(photo) ? (
+            <button type="button" disabled={disabled} onClick={onRemovePhoto} className="btn btn-ghost" style={{ width: 'auto' }}>
+              <Trash2 size={18} /> {t('settings.reliable.use_initials')}
+            </button>
+          ) : null}
+          <p className="w-full text-xs text-slate-500">{t('settings.reliable.photo_hint')}</p>
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            disabled={disabled}
+            accept="image/*"
+            onChange={(e) => { handleImageUpload(e.target.files?.[0]); e.target.value = ''; }}
+          />
+        </div>
+      )}
     </div>
   );
 }

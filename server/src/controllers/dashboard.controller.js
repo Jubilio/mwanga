@@ -15,6 +15,12 @@ const redis = require('../utils/redis');
 const logger = require('../utils/logger');
 
 const CACHE_TTL_SECONDS = 30;
+const { withMemberPhoto } = require('../utils/profilePhoto');
+
+// The summary holds the signed-in member's own profile, so it is cached per member.
+// The household set lists those keys so one write can clear them all.
+const memberCacheKey = (householdId, userId) => `dashboard:${householdId}:u${userId}`;
+const householdKeysSet = (householdId) => `dashboard-keys:${householdId}`;
 
 const getDashboardSummary = async (req, res) => {
   const { householdId, id: userId } = req.user;
@@ -25,7 +31,7 @@ const getDashboardSummary = async (req, res) => {
   }
 
   // ── Cache check ──────────────────────────────────────────────────────────────
-  const cacheKey = `dashboard:${householdId}`;
+  const cacheKey = memberCacheKey(householdId, userId);
   if (redis) {
     try {
       const cached = await redis.get(cacheKey);
@@ -226,10 +232,10 @@ const getDashboardSummary = async (req, res) => {
     // ── Fase 3: Normalizar settings ──────────────────────────────────────────────
     const householdRow = householdResult.rows[0] || {};
     const settingsRows = (settingsResult.rows || []).filter(row => !row.key.startsWith('ai_') && !row.key.startsWith('rr_'));
-    const settingsMap = settingsRows.reduce((acc, row) => {
+    const settingsMap = withMemberPhoto(settingsRows.reduce((acc, row) => {
       acc[row.key] = row.value;
       return acc;
-    }, {});
+    }, {}), userId);
 
     const settings = {
       cash_balance: Number(householdRow.cash_balance || 0),
@@ -284,6 +290,9 @@ const getDashboardSummary = async (req, res) => {
     // ── Cache com TTL curto — dados financeiros mudam frequentemente ─────────────
     if (redis) {
       try {
+        // Register the key first, so a write landing in between still clears it.
+        await redis.sadd(householdKeysSet(householdId), cacheKey);
+        await redis.expire(householdKeysSet(householdId), CACHE_TTL_SECONDS * 4);
         await redis.setex(cacheKey, CACHE_TTL_SECONDS, JSON.stringify(summary));
       } catch (redisError) {
         logger.warn({ err: redisError }, 'Redis cache set failed on dashboard summary');
@@ -307,7 +316,8 @@ const getDashboardSummary = async (req, res) => {
 const invalidateDashboardCache = async (householdId) => {
   if (!redis || !householdId) return;
   try {
-    await redis.del(`dashboard:${householdId}`);
+    const keys = await redis.smembers(householdKeysSet(householdId));
+    await redis.del(`dashboard:${householdId}`, householdKeysSet(householdId), ...(keys || []));
   } catch (err) {
     logger.warn({ err, householdId }, 'Failed to invalidate dashboard cache');
   }

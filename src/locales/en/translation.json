@@ -1082,10 +1082,7 @@
       "partial_error": "One or more changes were not saved. Changes confirmed by the server were kept; try saving the remaining changes again.",
       "avatar": "Profile photo",
       "change_avatar": "Choose photo",
-      "choose_avatar": "Choose avatar {{number}}",
       "upload_avatar": "Upload photo",
-      "image_limit": "Choose a PNG, JPEG or WebP image up to 600 KB.",
-      "image_error": "Could not read the image.",
       "subscription": "Current plan",
       "all_features": "All features",
       "tiers": {
@@ -1101,7 +1098,15 @@
       "push_disable_error": "Could not complete disabling notifications. Please try again.",
       "push_unsupported": "Push notifications are unavailable in this environment.",
       "journey_title": "Your plan in Mwanga",
-      "journey_note": "Set priorities and track goals, habits and learning in your Financial journey."
+      "journey_note": "Set priorities and track goals, habits and learning in your Financial journey.",
+      "image_too_large": "This photo is too large, even after shrinking it. Choose another one.",
+      "image_unsupported": "This format cannot be opened on this phone. Choose a JPG, PNG or WebP photo (in camera settings, pick \"Most compatible\" instead of HEIC).",
+      "photo_saved": "Profile photo updated.",
+      "photo_removed": "You are using your initials again.",
+      "photo_save_error": "Could not save the photo. Check your connection and try again.",
+      "use_initials": "Use my initials",
+      "photo_processing": "Preparing the photo",
+      "photo_hint": "Any photo from your gallery or camera works: Mwanga shrinks it on your phone before sending. Only you see your photo."
     },
     "household": {
       "title": "Family members",

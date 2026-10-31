@@ -19,7 +19,7 @@ import {
   refreshSessionToken,
   apiCall
 } from '../services/finance.service';
-import { getToken } from '../utils/authToken';
+import { getToken, tokenUserId } from '../utils/authToken';
 
 const defaultState = {
   transacoes: [],
@@ -50,19 +50,32 @@ let sessionRefreshed = false;
 // Last copy saved on this device, shown when the server cannot be reached.
 async function loadCachedData() {
   try {
-    const [transacoes, budgets, metas, rendas, settings, profile] = await Promise.all([
+    const [transacoes, budgets, metas, rendas, settings] = await Promise.all([
       db.transacoes.toArray(), db.budgets.toArray(), db.metas.toArray(), db.rendas.toArray(),
-      db.settings.get('current'), db.settings.get('user_profile')
+      db.settings.get('current')
     ]);
     const { id: _settingsId, ...cachedSettings } = settings || {};
-    const { id: _profileId, ...cachedUser } = profile || {};
+    // The profile is read separately by loadCachedUser, which checks the account.
     return {
       transacoes, budgets, metas, rendas,
-      ...(settings ? { settings: normalizeSettings(cachedSettings) } : {}),
-      user: profile ? cachedUser : null
+      ...(settings ? { settings: normalizeSettings(cachedSettings) } : {})
     };
   } catch {
     return {};
+  }
+}
+
+// The profile saved on this device, but only if it belongs to the signed-in account.
+async function loadCachedUser() {
+  try {
+    const profile = await db.settings.get('user_profile');
+    if (!profile) return null;
+    // The row key is 'user_profile', so the account id is kept as userId.
+    const { id: _rowId, userId, ...user } = profile;
+    const owner = tokenUserId();
+    return owner && userId !== undefined && String(userId) === owner ? { ...user, id: userId } : null;
+  } catch {
+    return null;
   }
 }
 
@@ -79,6 +92,13 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
 
     const headers = { Authorization: `Bearer ${token}` };
 
+    // Show who is signed in straight away, from this device's copy, while the
+    // server (often slow to wake up) is still answering.
+    if (!preferredUser) {
+      const cachedUser = await loadCachedUser();
+      if (cachedUser) dispatch({ type: 'SET_USER', payload: cachedUser });
+    }
+
     try {
       const fetched = await fetchAllData(headers, dispatch);
       if (fetched === null) {
@@ -88,7 +108,15 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
 
       const { ts, rendas, metas, budgets, assets, liabs, xitiques, settingsResp, user, debts, accounts, loanApplications, loans } = fetched;
       const mergedSettings = normalizeSettings(settingsResp && !Array.isArray(settingsResp) ? settingsResp : {});
-      const resolvedUser = preferredUser || user || null;
+      // The summary can come back without the profile (its query failed): ask for it
+      // directly, then fall back to this device's copy, instead of showing a stranger.
+      let resolvedUser = preferredUser || (user && user.name ? user : null);
+      if (!resolvedUser) {
+        const me = await apiCall('auth/me').catch(() => null);
+        // Keep only what the app shows; /auth/me also carries private fields.
+        const meProfile = me && me.name ? { id: me.id, name: me.name, email: me.email, role: me.role } : null;
+        resolvedUser = meProfile || (await loadCachedUser()) || user || null;
+      }
 
       dispatch({
         type: 'SET_DATA',
@@ -127,7 +155,9 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
         db.metas.clear().then(() => db.metas.bulkPut(Array.isArray(metas) ? metas.map(mapGoal) : [])),
         db.rendas.clear().then(() => db.rendas.bulkPut(Array.isArray(rendas) ? rendas.map(mapRental) : [])),
         db.settings.put({ id: 'current', ...mergedSettings }),
-        resolvedUser ? db.settings.put({ id: 'user_profile', ...resolvedUser }) : Promise.resolve()
+        // Spreading the user first keeps the row key: { id: 'user_profile', ...user } used
+        // to be overwritten by the account id, so the copy was never found again.
+        resolvedUser ? db.settings.put({ ...resolvedUser, id: 'user_profile', userId: resolvedUser.id }) : Promise.resolve()
       ]);
 
       if (!sessionRefreshed) {
@@ -141,7 +171,7 @@ async function fetchSessionData(dispatch, { preferredUser = null } = {}) {
       // Never show demo or empty figures as if they were the household's data.
       console.error('Session load failed, showing the cached copy.', err);
       const cached = await loadCachedData();
-      const user = preferredUser || cached.user || null;
+      const user = preferredUser || (await loadCachedUser()) || null;
       dispatch({
         type: 'SET_DATA',
         payload: { ...cached, user, loadError: { status: err?.status ?? 0, message: err?.message || String(err) } }

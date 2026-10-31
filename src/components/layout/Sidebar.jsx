@@ -6,6 +6,7 @@ import { useFinance } from '../../hooks/useFinance';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
 import MwangaLogo from '../MwangaLogo';
+import UserAvatar from '../UserAvatar';
 import { getEffectiveTier, hasFeatureAccess } from '../../config/features';
 import { clearToken } from '../../utils/authToken';
 import { ADMIN_ITEM, SIDEBAR_GROUPS } from '../../config/navigation';
@@ -107,7 +108,6 @@ export default function Sidebar({ isOpen, onClose }) {
 
   const userName = state.user?.name || t('sidebar.user.default_name');
   const familyName = state.settings?.household_name || t('sidebar.user.default_household');
-  const userInitial = userName.charAt(0).toUpperCase();
   const tier = getEffectiveTier(state.settings);
   const isFree = tier === 'free';
 
@@ -332,12 +332,13 @@ export default function Sidebar({ isOpen, onClose }) {
         <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 20px' }} />
 
         <div style={{ padding: '16px 20px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 38, height: 38, borderRadius: 12,
-            background: 'linear-gradient(135deg, #F59E0B, #F97316)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, fontWeight: 700, color: '#000', flexShrink: 0,
-          }}>{userInitial}</div>
+          <UserAvatar
+            name={state.user?.name}
+            photo={state.settings?.profile_pic}
+            className="h-[38px] w-[38px] shrink-0 rounded-xl"
+            textClassName="text-[15px]"
+            iconSize={16}
+          />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13.5, fontWeight: 600, color: '#e2eaf4', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {userName}
