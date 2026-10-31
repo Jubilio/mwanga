@@ -5,6 +5,7 @@ import { useSmsSync } from '../../hooks/useSmsSync';
 import { SMS_INBOX_ENABLED } from '../../config/features';
 import { useOutletContext } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
+import { ensureSmsAccess } from '../../services/smsAccess';
 
 export default function TabFinancas({ form, setFormDirty, state }) {
   useUiLanguage();
@@ -169,7 +170,10 @@ export default function TabFinancas({ form, setFormDirty, state }) {
                   showToast?.(t('settings.financas.native_only_toast') || ui("Sincronização SMS só funciona na App Nativa (Android)."), 'info');
                   return;
                 }
+                const turningOn = !form.sms_automation_enabled;
                 setFormDirty(f => ({ ...f, sms_automation_enabled: !f.sms_automation_enabled }));
+                // Ask for SMS access (with the explanation first) as soon as it is switched on.
+                if (turningOn) ensureSmsAccess();
               }}
               className={`flex items-center justify-between p-6 rounded-2xl border transition-all group shadow-sm h-fit ${!isNative ? 'bg-slate-50 dark:bg-slate-900 border-slate-100 opacity-60 grayscale' : 'bg-indigo-50 border-indigo-100/50 cursor-pointer hover:bg-white'}`}
             >

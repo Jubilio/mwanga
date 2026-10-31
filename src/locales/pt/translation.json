@@ -2799,6 +2799,7 @@
       "Volte atrás e toque em Instalar. Depois abra o Mwanga e entre na sua conta."
     ],
     "update_note": "Para actualizar, descarregue a nova versão e instale por cima. Não desinstale antes, para não perder dados guardados no telemóvel.",
+    "sms_note": "Para importar SMS do M-Pesa, e-Mola e mKesh, o Mwanga pede acesso às SMS. Em Android 13 ou mais recente, se o pedido não aparecer, abra Definições da app, toque nos três pontos (⋮), escolha Permitir definições restritas e depois active Permissões → SMS.",
     "verify_title": "Confirme que é o ficheiro original",
     "verify_body": "Cada versão é assinada sempre com a mesma chave do Mwanga. Ao instalar uma actualização, o Android recusa ficheiros assinados por outra pessoa.",
     "package": "Nome do pacote",
@@ -2806,5 +2807,39 @@
     "apk_hash": "SHA-256 deste APK",
     "not_play": "O Mwanga ainda não está na Google Play. Descarregue apenas desta página ou da página oficial de versões. Nunca instale um APK do Mwanga enviado por outras pessoas.",
     "history": "Ver todas as versões e o que mudou"
+  },
+  "sms_permission": {
+    "title": "Importar as tuas transacções do M-Pesa, e-Mola e mKesh",
+    "body": "Para registar os teus movimentos sem copiar mensagem a mensagem, o Mwanga precisa de ler as SMS de confirmação que recebes. A seguir o Android vai perguntar se permites.",
+    "promises": [
+      "Só lemos SMS do M-Pesa, e-Mola, mKesh e dos bancos (BIM, BCI, Absa, Standard Bank).",
+      "As tuas conversas pessoais nunca são lidas nem enviadas para lado nenhum.",
+      "Guardamos apenas o valor, a data e a referência da transacção.",
+      "Podes retirar a permissão quando quiseres nas definições do Android."
+    ],
+    "allow": "Permitir acesso às SMS",
+    "not_now": "Agora não",
+    "close": "Fechar",
+    "denied_title": "Sem acesso às SMS",
+    "denied_body": "Escolheste não permitir. Sem esta permissão podes continuar a colar SMS à mão, mas a importação automática não funciona.",
+    "try_again": "Tentar de novo",
+    "blocked_title": "O Android bloqueou o acesso às SMS",
+    "blocked_body": "O Android já não mostra o pedido de permissão ao Mwanga. Podes activá-la nas definições da app, em menos de um minuto:",
+    "restricted_title": "Primeiro: permitir definições restritas",
+    "restricted_steps": [
+      "Toca em Abrir definições da app, em baixo.",
+      "Toca nos três pontos (⋮) no canto superior direito.",
+      "Escolhe Permitir definições restritas e confirma com o teu PIN ou impressão digital."
+    ],
+    "restricted_note": "O Android pede isto a todas as apps instaladas a partir de um ficheiro APK, fora da Play Store. Se não vires os três pontos, salta este passo.",
+    "settings_title": "Activar a permissão",
+    "settings_title_then": "Depois: activar a permissão",
+    "settings_steps": [
+      "Nas definições da app, toca em Permissões.",
+      "Toca em SMS.",
+      "Escolhe Permitir."
+    ],
+    "open_settings": "Abrir definições da app",
+    "come_back": "Quando voltares ao Mwanga, a importação continua sozinha."
   }
 }
