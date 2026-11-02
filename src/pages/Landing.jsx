@@ -68,6 +68,35 @@ export default function Landing() {
           </ul>
         </section>
 
+        {/* Vídeo de apresentação: vertical no telemóvel, horizontal em ecrãs largos.
+            preload="none" para que só o vídeo visível seja descarregado ao tocar. */}
+        <section className="flex flex-col gap-5" aria-labelledby="landing-video-title">
+          <div className="flex flex-col gap-2">
+            <h2 id="landing-video-title" className="text-2xl font-black">{t('landing.video_title')}</h2>
+            <p className="max-w-xl text-sm" style={{ color: 'var(--color-muted)' }}>{t('landing.video_subtitle')}</p>
+          </div>
+          <video
+            className="w-full sm:hidden"
+            style={{ maxWidth: 360, borderRadius: 24, background: '#050C12', boxShadow: '0 20px 50px rgba(0,0,0,0.25)' }}
+            src="/videos/mwanga-30s-vertical.mp4"
+            poster="/videos/mwanga-30s-vertical.jpg"
+            controls
+            playsInline
+            preload="none"
+            aria-label={t('landing.video_title')}
+          />
+          <video
+            className="hidden w-full sm:block"
+            style={{ borderRadius: 24, background: '#050C12', boxShadow: '0 20px 50px rgba(0,0,0,0.25)' }}
+            src="/videos/mwanga-60s-horizontal.mp4"
+            poster="/videos/mwanga-60s-horizontal.jpg"
+            controls
+            playsInline
+            preload="none"
+            aria-label={t('landing.video_title')}
+          />
+        </section>
+
         <section className="flex flex-col gap-5">
           <h2 className="text-2xl font-black">{t('landing.features_title')}</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
