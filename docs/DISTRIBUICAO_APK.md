@@ -99,8 +99,13 @@ O Mwanga lê só as SMS de M-Pesa, e-Mola, mKesh e dos bancos (o filtro corre na
 A app mostra primeiro uma explicação e só depois o pedido do Android. Se o Android já não mostrar o pedido, a app abre um guia com o botão *Abrir definições da app*.
 
 - **Android 13 ou mais recente**: o Android trata `READ_SMS` como "definição restrita" para apps instaladas a partir de um ficheiro. O pedido é recusado sem aparecer nada.
-  O utilizador desbloqueia em *Definições da app → ⋮ (canto superior direito) → Permitir definições restritas*, confirma com o PIN e depois activa *Permissões → SMS → Permitir*.
-  O menu ⋮ só aparece depois de a app ter pedido a permissão uma vez, por isso o guia aparece depois do primeiro pedido.
+  Ordem que funciona (testada nos passos do Pixel, Android 15 a 17):
+  1. *Definições da app → Permissões → SMS → Permitir*. O Android mostra "Definição restrita"; tocar em OK. Sem este passo, a opção do passo 2 não aparece.
+  2. Voltar a *Informações da app* (a primeira página) → ⋮ no canto superior direito → *Permitir definições restritas* → PIN.
+  3. *Permissões → SMS → Permitir*.
+  Se o ⋮ continuar sem aparecer: a **Proteção avançada** (Android 16+, *Definições → Segurança e privacidade → Proteção avançada*) esconde a opção. A app detecta isto (`advancedProtection` em `MoneySms.getInfo`) e avisa. Desligar, desbloquear o Mwanga e voltar a ligar.
+  Último recurso com um computador: `adb install -r mwanga.apk` (instalação por sessão, não fica restrita) ou `adb shell appops set com.mwanga.app ACCESS_RESTRICTED_SETTINGS allow`.
+- **Sem permissão nenhuma**: o Mwanga recebe SMS partilhadas. Na app Mensagens, tocar sem soltar na SMS → *Partilhar* → *Mwanga*; abre a página Importar SMS com o texto já pronto (`ACTION_SEND text/plain` no `AndroidManifest.xml`, evento `sharedText` do `MoneySmsPlugin`).
 - **"Não permitir" duas vezes**: o Android deixa de perguntar. O mesmo guia leva às *Permissões*.
 - **Play Protect**: ao instalar pode aparecer "App desconhecida" ou "Analisar app". Toque em *Mais detalhes → Instalar mesmo assim*, ou envie a app para análise.
   Em alguns países a Google bloqueia por completo apps instaladas fora de lojas que pedem SMS. Se isso chegar a Moçambique, a única solução é publicar na Play Store com a declaração de SMS (ver `docs/GOOGLE_PLAY.md`).

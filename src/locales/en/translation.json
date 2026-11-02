@@ -483,7 +483,7 @@
     "input_header": "Message Text",
     "mobile_tip": {
       "title": "Mobile Tip",
-      "desc": "You can paste copied text or share the SMS directly to this page if you have the App installed."
+      "desc": "On Android: in Messages, long-press the M-Pesa, e-Mola, mKesh or bank SMS, choose Share, then Mwanga. The SMS opens here ready to analyse. You can also copy and paste the text."
     },
     "placeholder": "Paste your bank SMS text here (BIM, BCI, M-Pesa, etc.)...",
     "btn_paste": "Paste from phone",
@@ -2898,22 +2898,34 @@
     "try_again": "Try again",
     "blocked_title": "Android blocked SMS access",
     "blocked_body": "Android no longer shows Mwanga's permission request. You can turn it on in the app settings in under a minute:",
-    "restricted_title": "First: allow restricted settings",
+    "restricted_title": "Unblock the permission (one time only)",
     "restricted_steps": [
       "Tap Open app settings below.",
-      "Tap the three dots (⋮) in the top right corner.",
-      "Choose Allow restricted settings and confirm with your PIN or fingerprint."
+      "Tap Permissions, then SMS, and choose Allow. Android shows \"Restricted setting\": tap OK. Don't skip this step, it is what makes the next option appear.",
+      "Go back to the App info page. Tap the three dots (⋮) in the top right corner and choose Allow restricted settings. Confirm with your PIN or fingerprint.",
+      "Go back to Permissions, then SMS, and choose Allow."
     ],
-    "restricted_note": "Android asks this of every app installed from an APK file, outside the Play Store. If you don't see the three dots, skip this step.",
+    "restricted_note": "Android requires this for every app installed from an APK file, outside the Play Store. You only do it once; Mwanga updates keep the permission.",
     "settings_title": "Turn on the permission",
-    "settings_title_then": "Then: turn on the permission",
     "settings_steps": [
       "In the app settings, tap Permissions.",
       "Tap SMS.",
       "Choose Allow."
     ],
     "open_settings": "Open app settings",
-    "come_back": "When you come back to Mwanga, the import carries on by itself."
+    "come_back": "When you come back to Mwanga, the import carries on by itself.",
+    "advanced_protection_title": "Advanced Protection is on",
+    "advanced_protection_body": "With Advanced Protection on, Android hides the Allow restricted settings option. To see it, turn it off in Settings, Security & privacy, Advanced Protection. If you'd rather keep it on, share your SMS with Mwanga (button below).",
+    "missing_title": "Can't see the three dots (⋮)?",
+    "missing_reasons": [
+      "Do step 2 first: the three dots only appear after Android shows \"Restricted setting\".",
+      "The three dots are on the App info page (the first one), not on the Permissions page.",
+      "If Advanced Protection is on (Settings, Security & privacy, Advanced Protection), Android hides the option. Turn it off, unblock Mwanga, then turn it back on.",
+      "On a work phone, your administrator can block this option.",
+      "If none of this works, use Share SMS with Mwanga: it works without this permission."
+    ],
+    "share_instead": "Share SMS with Mwanga",
+    "share_instead_hint": "Works without the permission too: in Messages, long-press the SMS, choose Share, then Mwanga."
   },
   "ai_status": {
     "personal_no_credits": "Your AI account ran out of credits.",

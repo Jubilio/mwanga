@@ -2,6 +2,7 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '../i18n';
 
 const native = vi.hoisted(() => ({ state: 'prompt', afterRequest: 'granted', info: { sdkInt: 34, fromPlayStore: false } }));
@@ -11,6 +12,7 @@ vi.mock('../services/moneySms', () => ({
   getInstallInfo: vi.fn(async () => native.info),
   needsRestrictedSettings: info => Boolean(info && info.sdkInt >= 33 && !info.fromPlayStore),
   openAppSettings: vi.fn(async () => true),
+  restrictedSettingsBlocker: info => (info?.advancedProtection ? 'advanced_protection' : null),
 }));
 
 const { default: SmsPermissionSheet } = await import('./SmsPermissionSheet');
@@ -24,7 +26,15 @@ beforeEach(async () => {
   Object.assign(native, { state: 'prompt', afterRequest: 'granted', info: { sdkInt: 34, fromPlayStore: false } });
   vi.clearAllMocks();
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
-  await act(async () => root.render(<SmsPermissionSheet />));
+  await act(async () => root.render(
+    <MemoryRouter initialEntries={['/']}>
+      <SmsPermissionSheet />
+      <Routes>
+        <Route path="/" element={<p>home-page</p>} />
+        <Route path="/sms-import" element={<p>sms-import-page</p>} />
+      </Routes>
+    </MemoryRouter>,
+  ));
 });
 afterEach(async () => { await act(async () => root.unmount()); host.remove(); });
 
@@ -87,4 +97,32 @@ it('resolves false when the user closes the sheet', async () => {
   await act(async () => button('Agora não').click());
   await flush();
   expect(result).toBe(false);
+});
+
+it('tells the user to trigger the restricted dialog before looking for the ⋮ menu', async () => {
+  native.state = 'denied';
+  await act(async () => { ensureSmsAccess(); });
+  await flush();
+  expect(document.body.textContent).toContain('Definição restrita');
+  expect(document.body.textContent).toContain('Não aparecem os três pontos');
+  expect(document.body.textContent).not.toContain('A Proteção avançada está ligada');
+});
+
+it('says when Advanced Protection hides the restricted settings option', async () => {
+  native.state = 'denied';
+  native.info = { sdkInt: 37, fromPlayStore: false, advancedProtection: true };
+  await act(async () => { ensureSmsAccess(); });
+  await flush();
+  expect(document.body.textContent).toContain('A Proteção avançada está ligada');
+});
+
+it('offers sharing SMS as a fallback that works without the permission', async () => {
+  native.state = 'denied';
+  let result;
+  await act(async () => { ensureSmsAccess().then(r => { result = r; }); });
+  await flush();
+  await act(async () => button('Partilhar SMS com o Mwanga').click());
+  await flush();
+  expect(result).toBe(false);
+  expect(document.body.textContent).toContain('sms-import-page');
 });
