@@ -20,7 +20,11 @@ it('explains network, session and server failures from the API', () => {
   const server = describePushError(err('x', { isAxiosError: true, response: { status: 500, data: { message: 'Failed to save push subscription.' } } }));
   expect(server).toEqual({ key: 'server', values: { status: 500 }, code: 'HTTP 500: Failed to save push subscription.' });
 });
-it('falls back to the raw error name so nothing is silent', () => {
+it('explains when the browser cannot reach its push service', () => {
   const abort = Object.assign(new Error('Registration failed - push service error'), { name: 'AbortError' });
-  expect(describePushError(abort)).toMatchObject({ key: 'unknown', code: 'AbortError: Registration failed - push service error' });
+  expect(describePushError(abort)).toMatchObject({ key: 'browser_push_service', code: 'AbortError: Registration failed - push service error' });
+});
+it('falls back to the raw error name so nothing is silent', () => {
+  const other = Object.assign(new Error('boom'), { name: 'TypeError' });
+  expect(describePushError(other)).toMatchObject({ key: 'unknown', code: 'TypeError: boom' });
 });

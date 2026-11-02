@@ -27,5 +27,10 @@ export function describePushError(error, { isNative = false } = {}) {
   }
   // pushManager.subscribe() rejects with DOMExceptions such as NotAllowedError or AbortError.
   if (error?.name === 'NotAllowedError') return { key: 'denied_web', values: {}, code: 'NotAllowedError' };
+  // The browser could not reach its own push service (Brave with Google push off,
+  // a browser without Google services, or a network/VPN that blocks it).
+  if (error?.name === 'AbortError' && /push service/i.test(message)) {
+    return { key: 'browser_push_service', values: {}, code: `AbortError: ${message}` };
+  }
   return { key: 'unknown', values: {}, code: [error?.name, message].filter(Boolean).join(': ') || 'UNKNOWN' };
 }
