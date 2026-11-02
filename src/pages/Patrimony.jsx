@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useFinance } from '../hooks/useFinance';
 import { useOutletContext, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { TrendingUp, TrendingDown, Medal, Plus, Trash2, Pencil, Home, Car, Smartphone, Briefcase, Star, Shield, Zap, Flame, Target, Info, ArrowRight, ShieldAlert, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown, Medal, Plus, Trash2, Pencil, Home, Car, Smartphone, Briefcase, Star, Shield, Zap, Flame, Target, Info, ArrowRight, ShieldAlert, Wallet, Loader2 } from 'lucide-react';
 import { fmt } from '../utils/calculations';
 import { usePageAnimation } from '../hooks/useMwangaAnimations';
 
@@ -21,6 +21,7 @@ export default function Patrimony() {
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [editBalance, setEditBalance] = useState('');
+  const [savingBalance, setSavingBalance] = useState(false);
   const [errorModal, setErrorModal] = useState(null);
 
   const [assetForm, setAssetForm] = useState({ name: '', type: 'imóvel', value: '' });
@@ -146,7 +147,9 @@ export default function Patrimony() {
 
   const handleEditAccount = async (e) => {
     e.preventDefault();
-    if (!editingAccount || editBalance === '') return;
+    if (!editingAccount || editBalance === '' || savingBalance) return;
+    // The server can take several seconds to answer: show that the tap was received.
+    setSavingBalance(true);
     try {
       await dispatch({ 
         type: 'UPDATE_ACCOUNT_BALANCE', 
@@ -154,7 +157,9 @@ export default function Patrimony() {
       });
       showToast(ui("Saldo actualizado com sucesso!"));
     } catch (err) {
-      showToast(ui("Erro ao actualizar saldo."));
+      showToast(ui("Erro ao actualizar saldo."), 'error');
+    } finally {
+      setSavingBalance(false);
     }
     setEditingAccount(null);
     setEditBalance('');
@@ -376,7 +381,7 @@ export default function Patrimony() {
 
       {/* MODALS (Simplified styling) */}
       {showAccountModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-midnight/80 backdrop-blur-md">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-midnight/80 backdrop-blur-md">
           <div className="glass-card p-8 w-full max-w-md animate-scale-in">
             <h3 className="text-xl font-black text-white mb-6">{ui("Nova Conta")}</h3>
             <form onSubmit={handleAddAccount} className="space-y-4">
@@ -395,7 +400,7 @@ export default function Patrimony() {
 
       {/* EDIT ACCOUNT MODAL */}
       {editingAccount && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-midnight/80 backdrop-blur-md" onClick={() => setEditingAccount(null)}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-midnight/80 backdrop-blur-md" onClick={() => { if (!savingBalance) setEditingAccount(null); }}>
           <div className="glass-card p-8 w-full max-w-md animate-scale-in" onClick={e => e.stopPropagation()}>
             <h3 className="text-xl font-black text-white mb-2">{ui("Editar Conta")}</h3>
             <p className="text-sm text-gray-400 mb-6">{ui("Corrigir o saldo de")} <span className="text-sky font-bold">{editingAccount.name}</span></p>
@@ -418,7 +423,7 @@ export default function Patrimony() {
               </div>
               <div className="flex gap-4 pt-4">
                 <button type="button" className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors" onClick={() => setEditingAccount(null)}>{ui("Cancelar")}</button>
-                <button type="submit" className="flex-1 btn-primary py-3 rounded-xl text-xs font-black uppercase tracking-widest">{ui("Guardar")}</button>
+                <button type="submit" disabled={savingBalance} aria-busy={savingBalance} className="flex-1 btn-primary py-3 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-70">{savingBalance && <Loader2 size={14} className="animate-spin" />}{savingBalance ? t('common.saving') : ui("Guardar")}</button>
               </div>
             </form>
           </div>

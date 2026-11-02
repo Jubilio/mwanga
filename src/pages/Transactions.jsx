@@ -1,5 +1,5 @@
 import { ui, useUiLanguage } from '../utils/uiTranslation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useOutletContext, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
@@ -8,6 +8,7 @@ import { fmt, exportToCSV } from '../utils/calculations';
 import { motion } from 'framer-motion';
 import { MAIN_CATEGORIES } from '../utils/categories';
 import { usePageAnimation } from '../hooks/useMwangaAnimations';
+import { useRevealOnOpen } from '../hooks/useRevealOnOpen';
 
 // Sub-components
 import TransactionsHeader from '../components/transactions/TransactionsHeader';
@@ -33,6 +34,7 @@ export default function Transactions() {
   const [filterType, setFilterType] = useState('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const formRef = useRef(null);
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [isMagicPasteOpen, setIsMagicPasteOpen] = useState(false);
@@ -59,13 +61,8 @@ export default function Transactions() {
     account_id: state.settings.default_expense_account_id || ''
   });
 
-  useEffect(() => {
-    if (isFormOpen && !editingId) {
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 100);
-    }
-  }, [isFormOpen, editingId]);
+  // Show the form when it opens, even if the user tapped "edit" far down the list.
+  useRevealOnOpen(formRef, isFormOpen, editingId);
 
   useEffect(() => {
     if (location.state?.openModal) {
@@ -144,7 +141,6 @@ export default function Transactions() {
       account_id: tr.account_id || ''
     });
     setIsFormOpen(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function handleDelete(id) {
@@ -234,6 +230,7 @@ export default function Transactions() {
         </div>
       </div>
 
+      <div ref={formRef} className="scroll-mt-24">
       <TransactionsForm 
         isOpen={isFormOpen}
         handleSubmit={handleSubmit}
@@ -249,6 +246,7 @@ export default function Transactions() {
         defaultIncomeAccount={state.settings.default_income_account_id}
         defaultExpenseAccount={state.settings.default_expense_account_id}
       />
+      </div>
 
       <TransactionsList 
         filtered={filtered}

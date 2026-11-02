@@ -23,7 +23,8 @@ import {
   AlertCircle,
   X,
   ShieldCheck,
-  PiggyBank
+  PiggyBank,
+  Loader2
 } from 'lucide-react';
 import { fmt, daysUntil } from '../utils/calculations';
 import BinthContextual from '../components/BinthContextual';
@@ -50,6 +51,7 @@ export default function Goals() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const [depositing, setDepositing] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [depositForm, setDepositForm] = useState({ amount: '', account_id: '' });
@@ -101,6 +103,7 @@ export default function Goals() {
 
   async function handleConfirmDeposit(e) {
     e.preventDefault();
+    if (depositing) return;
     const amount = parseFloat(depositForm.amount);
     if (!amount || amount <= 0) {
       showToast(t('goals.deposit_modal.toast_invalid'));
@@ -116,6 +119,8 @@ export default function Goals() {
       if (!confirm(t('goals.deposit_modal.toast_balance_warning', { name: account.name, balance: fmt(account.current_balance, currency) }))) return;
     }
 
+    // The server can take several seconds to answer: show that the tap was received.
+    setDepositing(true);
     try {
       await dispatch({
         type: 'UPDATE_META',
@@ -129,7 +134,9 @@ export default function Goals() {
       showToast(t('goals.deposit_modal.toast_success', { amount: fmt(amount, currency) }));
       setIsDepositModalOpen(false);
     } catch {
-      showToast(t('goals.deposit_modal.toast_error'));
+      showToast(t('goals.deposit_modal.toast_error'), 'error');
+    } finally {
+      setDepositing(false);
     }
   }
 
@@ -500,10 +507,12 @@ export default function Goals() {
 
                 <button 
                    type="submit" 
-                   disabled={!depositForm.account_id}
-                   className="w-full btn btn-primary py-4 text-sm font-black shadow-xl shadow-sky/20 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
+                   disabled={!depositForm.account_id || depositing}
+                   aria-busy={depositing}
+                   className="w-full btn btn-primary py-4 text-sm font-black shadow-xl shadow-sky/20 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-2"
                 >
-                  {t('goals.deposit_modal.btn_confirm')}
+                  {depositing && <Loader2 size={16} className="animate-spin" />}
+                  {depositing ? t('common.saving') : t('goals.deposit_modal.btn_confirm')}
                 </button>
               </form>
             </motion.div>
