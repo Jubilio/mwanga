@@ -618,6 +618,13 @@ select.form-input {
   text-overflow: ellipsis;
 }
 
+/* Native pickers follow the app theme, not the phone's. Options without their own
+   colours inherited the select's light text and showed white on white in dark mode. */
+html { color-scheme: light; }
+html.dark { color-scheme: dark; }
+select option { color: #0f172a; background-color: #ffffff; }
+.dark select option { color: #e2e8f0; background-color: #0c1821; }
+
 .form-label {
   display: block;
   font-size: 0.75rem;
