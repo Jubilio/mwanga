@@ -9,6 +9,15 @@ function urlBase64ToUint8Array(value) {
   const base64 = (value + '='.repeat((4 - value.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/');
   return Uint8Array.from(window.atob(base64), char => char.charCodeAt(0));
 }
+// getRegistration() is empty for a moment after the page loads, before
+// registerSW() finishes; wait for the active worker instead of failing.
+async function waitForServiceWorker(timeoutMs = 10000) {
+  const existing = await navigator.serviceWorker.getRegistration();
+  if (existing?.active) return existing;
+  let timer;
+  const timeout = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('SERVICE_WORKER_NOT_READY')), timeoutMs); });
+  try { return await Promise.race([navigator.serviceWorker.ready, timeout]); } finally { clearTimeout(timer); }
+}
 export function usePushNotifications() {
   const { state } = useFinance();
   const storageKey = `mwanga-native-push-v1-${state.user?.id || 'guest'}`;
@@ -53,6 +62,9 @@ export function usePushNotifications() {
         if (['prompt', 'prompt-with-rationale'].includes(perm.receive)) perm = await PushNotifications.requestPermissions();
         setPermission(perm.receive);
         if (perm.receive !== 'granted') throw new Error('PERMISSION_DENIED');
+        const { data: config } = await api.get('/notifications/push-config');
+        // Older servers do not send nativeEnabled; only stop on an explicit false.
+        if (config?.nativeEnabled === false) throw new Error('NATIVE_PUSH_NOT_CONFIGURED');
         const endpoint = await registerNativePush(PushNotifications);
         localStorage.setItem(storageKey, JSON.stringify({ endpoint, enabled: false }));
         await api.post('/notifications/push-subscriptions', { subscription: { endpoint, isNative: true }, deviceType: 'native', platform: Capacitor.getPlatform() });
@@ -64,8 +76,7 @@ export function usePushNotifications() {
       if (permissionResult !== 'granted') throw new Error('PERMISSION_DENIED');
       const { data } = await api.get('/notifications/push-config');
       if (!data?.enabled || !data.publicKey) throw new Error('PUSH_NOT_CONFIGURED');
-      const registration = await navigator.serviceWorker.getRegistration();
-      if (!registration) throw new Error('SERVICE_WORKER_NOT_READY');
+      const registration = await waitForServiceWorker();
       const subscription = await registration.pushManager.getSubscription() || await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(data.publicKey) });
       localStorage.setItem(`${storageKey}-web-enabled`, 'false');
       await api.post('/notifications/push-subscriptions', { subscription: subscription.toJSON(), deviceType: 'pwa', platform: Capacitor.getPlatform() });

@@ -1,6 +1,6 @@
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
-const { sendPushNotification, getVapidKeys, hasPushCredentials } = require('./push.service');
+const { sendPushNotification, getVapidKeys, hasPushCredentials, hasNativePushCredentials } = require('./push.service');
 const { trackBehaviorEvent } = require('./behaviorTracking.service');
 const { getNotificationSchema } = require('./notificationSchema.service');
 
@@ -499,6 +499,7 @@ function getPushConfig() {
   return {
     publicKey,
     enabled: hasPushCredentials(),
+    nativeEnabled: hasNativePushCredentials(),
   };
 }
 

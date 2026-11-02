@@ -1048,7 +1048,22 @@
       "img_updated": "Foto actualizada! ✦",
       "push_enabled": "Push ativado! ✦",
       "push_error": "Erro ao ativar notificações",
-      "push_blocked": "Permissão bloqueada pelo navegador. Reset as permissões no URL."
+      "push_blocked": "O navegador bloqueou as notificações. Toca no cadeado ao lado do endereço e permite as notificações para este site.",
+      "push_errors": {
+        "denied_native": "A permissão de notificações está desligada. Abre as Definições do telemóvel > Apps > Mwanga > Notificações e ativa-as.",
+        "denied_web": "O navegador bloqueou as notificações. Toca no cadeado ao lado do endereço e permite as notificações para este site.",
+        "web_not_configured": "As notificações no navegador ainda não estão configuradas no servidor do Mwanga.",
+        "native_not_configured": "O servidor do Mwanga ainda não está ligado ao Firebase, por isso as notificações não chegariam ao telemóvel.",
+        "service_worker": "O navegador ainda não carregou o serviço de notificações. Recarrega a página e tenta de novo.",
+        "fcm_failed": "O telemóvel não conseguiu registar-se no serviço de notificações da Google. Confirma que os Serviços Google Play estão instalados e atualizados.",
+        "fcm_timeout": "O registo no serviço de notificações da Google demorou demasiado. Verifica a internet e tenta de novo.",
+        "busy": "Já estamos a ativar as notificações. Aguarda um momento.",
+        "offline": "Sem ligação ao servidor do Mwanga. Verifica a internet e tenta de novo.",
+        "session": "A tua sessão expirou. Entra de novo e tenta outra vez.",
+        "server": "O servidor não conseguiu guardar este dispositivo (erro {{status}}). Tenta mais tarde.",
+        "unknown": "Não foi possível ativar as notificações.",
+        "code": "Código: {{code}}"
+      }
     },
     "reliable": {
       "navigation": "Secções das definições",

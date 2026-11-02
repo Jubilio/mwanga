@@ -59,6 +59,12 @@ function getVapidKeys() {
 
 let vapidConfigured = false;
 
+// Native Android push goes through Firebase; without a valid service account the
+// server accepts device tokens but can never deliver to them.
+function hasNativePushCredentials() {
+  return Boolean(firebaseApp);
+}
+
 function hasPushCredentials() {
   const { publicKey, privateKey } = getVapidKeys();
   return Boolean(publicKey && privateKey);
@@ -341,6 +347,7 @@ module.exports = {
   parseServiceAccount,
   buildPushPayload,
   hasPushCredentials,
+  hasNativePushCredentials,
   sendPushNotification,
   sendRawPush,
   getVapidKeys,
