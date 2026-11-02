@@ -2,7 +2,7 @@ import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { useTranslation } from "react-i18next";
 import { G } from "../../theme/tokens";
 import { fmtShort } from "../../utils/calculations";
-import { Card, ScoreRing, Badge, ProgressBar, ProGate, Btn } from "./CreditUI";
+import { autoGrid, Card, ScoreRing, Badge, ProgressBar, ProGate, Btn } from "./CreditUI";
 
 export default function TabOverview({ onApply, scoreData, eligData, hist, isPro }) {
   useUiLanguage();
@@ -11,7 +11,7 @@ export default function TabOverview({ onApply, scoreData, eligData, hist, isPro 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Score + Elegibilidade hero */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: autoGrid(240), gap: 16 }}>
         {/* Score */}
         <Card glow={scoreData.color} style={{ textAlign: "center", padding: "24px 16px" }}>
           <div style={{ fontSize: 11, color: G.muted, letterSpacing: "0.12em", marginBottom: 14 }}>{t('credit.overview.score_title')}</div>
@@ -20,7 +20,7 @@ export default function TabOverview({ onApply, scoreData, eligData, hist, isPro 
           </div>
           <Badge label={ui(scoreData.label)} color={scoreData.color} />
           <div style={{ fontSize: 11, color: G.muted, marginTop: 10 }}>
-            {scoreData.eligible ? `${t('credit.overview.eligible')} MT ${fmtShort(scoreData.maxAmount)}` : t('credit.overview.not_eligible')}
+            {scoreData.eligible ? `${t('credit.overview.eligible')} ${fmtShort(scoreData.maxAmount)}` : t('credit.overview.not_eligible')}
           </div>
         </Card>
 
@@ -29,18 +29,18 @@ export default function TabOverview({ onApply, scoreData, eligData, hist, isPro 
           <div style={{ fontSize: 11, color: G.muted, letterSpacing: "0.12em", marginBottom: 14 }}>{t('credit.overview.capacity_title')}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, marginBottom: 5 }}>
                 <span style={{ fontSize: 12, color: G.muted }}>{t('credit.overview.current_commitment')}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: eligData.comprometimento_atual > 35 ? G.red : G.green }}>
+                <span style={{ fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", color: eligData.comprometimento_atual > 35 ? G.red : G.green }}>
                   {eligData.comprometimento_atual.toFixed(1)}%
                 </span>
               </div>
               <ProgressBar value={eligData.comprometimento_atual} color={eligData.comprometimento_atual > 35 ? G.red : G.green} animated />
             </div>
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, marginBottom: 5 }}>
                 <span style={{ fontSize: 12, color: G.muted }}>{t('credit.overview.available_margin')}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: G.gold }}>{eligData.margem.toFixed(1)}%</span>
+                <span style={{ fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", color: G.gold }}>{eligData.margem.toFixed(1)}%</span>
               </div>
               <ProgressBar value={eligData.margem} color={G.gold} animated />
             </div>
@@ -62,12 +62,12 @@ export default function TabOverview({ onApply, scoreData, eligData, hist, isPro 
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {scoreData.factors.map((f, i) => (
               <div key={i}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                     <span style={{ fontSize: 16 }}>{f.icon}</span>
                     <span style={{ fontSize: 13, color: G.text }}>{ui(f.name)}</span>
                   </div>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: f.pts >= f.max * 0.7 ? G.green : f.pts >= f.max * 0.4 ? G.gold : G.red }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", color: f.pts >= f.max * 0.7 ? G.green : f.pts >= f.max * 0.4 ? G.gold : G.red }}>
                     {f.pts}/{f.max}
                   </span>
                 </div>
@@ -81,7 +81,7 @@ export default function TabOverview({ onApply, scoreData, eligData, hist, isPro 
       {/* Aviso transparência */}
       <Card style={{ background: "rgba(245,158,11,0.06)", border: `1px solid rgba(245,158,11,0.22)` }}>
         <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-          <span style={{ fontSize: 22 }}>⚠️</span>
+          <span style={{ fontSize: 22, flexShrink: 0 }}>⚠️</span>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: G.gold, marginBottom: 6 }}>{t('credit.overview.transparency_title')}</div>
             <div style={{ fontSize: 12, color: G.muted, lineHeight: 1.7 }}>
@@ -97,9 +97,9 @@ export default function TabOverview({ onApply, scoreData, eligData, hist, isPro 
           <div style={{ fontSize: 11, fontWeight: 700, color: G.muted, letterSpacing: "0.12em" }}>{t('credit.overview.history_title')}</div>
           <Card style={{ padding: 0, overflow: "hidden" }}>
             {hist.map((l, i) => (
-              <div key={l.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", borderBottom: i < hist.length - 1 ? `1px solid ${G.border}` : "none" }}>
-                <div style={{ width: 42, height: 42, borderRadius: 13, background: `${G.credit}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>💸</div>
-                <div style={{ flex: 1 }}>
+              <div key={l.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderBottom: i < hist.length - 1 ? `1px solid ${G.border}` : "none" }}>
+                <div style={{ width: 42, height: 42, flexShrink: 0, borderRadius: 13, background: `${G.credit}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>💸</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 600, color: G.text }}>{fmtShort(l.valor)} · {l.meses} {t('credit.overview.history_months')}</div>
                   <div style={{ fontSize: 12, color: G.muted }}>{l.data} · {t('credit.overview.history_rate')} {(l.taxa * 100).toFixed(0)}{ui("%/mês ·")} {t('credit.overview.history_installment')} {fmtShort(l.parcela)}</div>
                 </div>

@@ -88,11 +88,11 @@ export default function MwangaCredito() {
       `}</style>
 
       {/* Header */}
-      <div style={{ background: G.bg2, borderBottom: `1px solid ${G.border}`, padding: "20px 24px" }}>
+      <div style={{ background: G.bg2, borderBottom: `1px solid ${G.border}`, padding: "20px clamp(4px, 4vw, 24px)" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg,${G.credit},${G.credit2})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, boxShadow: `0 4px 16px ${G.credit}40` }}>💸</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+              <div style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 14, background: `linear-gradient(135deg,${G.credit},${G.credit2})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, boxShadow: `0 4px 16px ${G.credit}40` }}>💸</div>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 900, fontFamily: "Sora,sans-serif", color: G.text, letterSpacing: "-0.01em" }}>
                   Mwanga <span style={{ color: G.credit }}>{ui("Credit")}</span>
@@ -116,16 +116,16 @@ export default function MwangaCredito() {
                 </div>
               </div>
             </div>
-            <div style={{ textAlign: "right" }}>
+            <div style={{ textAlign: "right", marginLeft: "auto" }}>
               <div style={{ fontSize: 11, color: G.muted }}>{t('credit.header.score_label')}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6 }}>
                 <span style={{ fontSize: 22, fontWeight: 900, color: scoreData.color, fontFamily: "Sora,sans-serif" }}>{scoreData.score}</span>
                 <Badge label={ui(scoreData.label)} color={scoreData.color} />
               </div>
               <div style={{ marginTop: 6 }}>
                 {isPro
                   ? <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: `${G.gold}20`, color: G.gold, border: `1px solid ${G.gold}40` }}>👑 PRO</span>
-                  : <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: `${G.muted2}40`, color: G.muted, border: `1px solid ${G.muted2}` }}>BASIC</span>
+                  : <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: `color-mix(in srgb, ${G.muted2} 25%, transparent)`, color: G.muted, border: `1px solid ${G.muted2}` }}>BASIC</span>
                 }
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function MwangaCredito() {
       </div>
 
       {/* Content */}
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px 24px 100px", animation: "fadeIn 0.3s ease" }} key={tab}>
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px clamp(4px, 4vw, 24px) 100px", animation: "fadeIn 0.3s ease" }} key={tab}>
         {tab === "overview"  && <TabOverview scoreData={scoreData} eligData={eligData} hist={hist} isPro={isPro} />}
         {tab === "vsla"      && <VslaModule />}
         {tab === "simulator" && <TabSimulator  eligData={eligData} userData={userData} isPro={isPro} />}
