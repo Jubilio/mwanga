@@ -1566,14 +1566,37 @@
       "invite_tip": "Se alguém da tua família te convidou, escreve o código para entrares no mesmo agregado."
     },
     "forgot": {
-      "title": "Recuperar senha",
-      "subtitle": "Introduza o seu email para receber um link de recuperação.",
-      "btn_send": "Enviar link",
+      "title": "Esqueceu a senha?",
+      "subtitle": "Acontece. Escolha a forma mais fácil de voltar a entrar.",
+      "google_btn": "Entrar com Google",
+      "google_tip": "Se a sua conta Mwanga usa um email Gmail, entre com Google e não precisa de senha. Os seus dados ficam os mesmos.",
+      "or_email": "ou receba um código por email",
+      "email_label": "Email da sua conta",
+      "email_placeholder": "seu@email.com",
+      "btn_send": "Enviar código",
       "back_link": "Voltar",
-      "success_title": "Link enviado!",
-      "success_desc": "Se o email <strong>{{email}}</strong> estiver registado, receberá as instruções de redefinição em breve.",
+      "code_title": "Veja o seu email",
+      "code_desc_before": "Enviámos um código de 6 dígitos para",
+      "code_desc_after": "Escreva-o aqui e escolha a nova senha. Também pode tocar no botão do email.",
+      "code_label": "Código do email",
+      "new_password_label": "Nova senha",
+      "new_password_placeholder": "Pelo menos 8 caracteres",
+      "show_password": "Mostrar senha",
+      "hide_password": "Esconder senha",
+      "btn_save": "Guardar nova senha",
+      "resend": "Enviar outro código",
+      "resend_wait": "Enviar outro código em {{seconds}}s",
+      "resent": "Enviámos um novo código. Use o mais recente.",
+      "help_title": "O email não chegou?",
+      "help_spam": "Veja as pastas Spam e Promoções. O remetente é Mwanga.",
+      "help_wait": "Pode demorar até 2 minutos. Confirme que o email está bem escrito.",
+      "help_google": "Se o email é Gmail, volte atrás e use \"Entrar com Google\".",
+      "whatsapp_cta": "Pedir ajuda no WhatsApp",
+      "whatsapp_message": "Olá, esqueci a senha do Mwanga e não recebo o email. O email da minha conta é {{email}}.",
+      "success_title": "Código enviado!",
+      "success_desc": "Se o email {{email}} estiver registado, receberá as instruções em breve.",
       "btn_to_login": "Ir para o login",
-      "error_fallback": "Falha ao processar pedido"
+      "error_fallback": "Não foi possível enviar agora. Tente de novo."
     },
     "reset": {
       "title": "Nova senha",
@@ -1585,10 +1608,11 @@
       "errors": {
         "match": "As senhas não coincidem",
         "length": "A senha deve ter pelo menos 8 caracteres",
-        "token": "Token de recuperação em falta ou inválido.",
+        "token": "Este link está incompleto ou foi cortado.",
         "fallback": "Falha ao redefinir senha"
       },
-      "confirm_label": "Confirmar palavra-passe"
+      "confirm_label": "Confirmar nova senha",
+      "request_new": "Pedir um novo código"
     }
   },
   "quick_add": {

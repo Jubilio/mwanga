@@ -119,36 +119,43 @@ class EmailService {
     }
   }
 
+  passwordResetUrl(token) {
+    const base = String(process.env.FRONTEND_URL || 'http://localhost:5173').split(',')[0].trim().replace(/\/$/, '');
+    return `${base}/reset-password?token=${encodeURIComponent(token)}`;
+  }
+
   /**
-   * Sends a password reset email
-   * @param {string} to - Recipient email
-   * @param {string} token - The reset token
-   * @param {string} name - User's name
+   * Sends a password reset email with a link and a 6-digit code.
+   * @returns {Promise<boolean>} whether the email was handed to the provider
    */
-  async sendPasswordReset(to, token, name) {
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}`;
-    
-    const subject = 'Mwanga ✦ - Recuperação de Senha';
-    const text = `Olá ${name},\n\nRecebemos um pedido para redefinir a sua senha no Mwanga. Clique no link abaixo para proceder:\n\n${resetUrl}\n\nEste link é válido por 1 hora.\n\nSe não solicitou esta alteração, pode ignorar este email.\n\nAbraço,\nEquipa Mwanga`;
-    
+  async sendPasswordReset(to, token, name, code) {
+    const resetUrl = this.passwordResetUrl(token);
+    const safeName = escapeHtml(name || '');
+    const subject = code ? `Mwanga: o seu código é ${code}` : 'Mwanga: recuperar a senha';
+    const codeLine = code ? `\n\nOu, no Mwanga, escreva este código: ${code}` : '';
+    const text = `Olá ${name || ''},\n\nRecebemos um pedido para criar uma nova senha no Mwanga.\n\nAbra este link:\n${resetUrl}${codeLine}\n\nO link e o código valem durante 1 hora.\n\nSe não foi você que pediu, ignore este email. A sua senha continua a mesma.\n\nEquipa Mwanga`;
+
+    const codeBlock = code ? `
+        <p style="margin: 24px 0 8px; color: #334155;">Ou, na app, escreva este código:</p>
+        <div style="font-size: 32px; letter-spacing: 8px; font-weight: 800; color: #0f172a; background: #f1f5f9; border-radius: 10px; padding: 14px; text-align: center;">${code}</div>` : '';
+
     const html = `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
-        <h2 style="color: #0ea5e9;">Mwanga ✦</h2>
-        <p>Olá <strong>${name}</strong>,</p>
-        <p>Recebemos um pedido para redefinir a sua senha. Clique no botão abaixo para criar uma nova senha:</p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${resetUrl}" style="background-color: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Redefinir Senha</a>
-        </div>
-        <p style="font-size: 0.9rem; color: #64748b;">Este link é válido por <strong>1 hora</strong>.</p>
-        <p style="font-size: 0.9rem; color: #64748b;">Se não solicitou esta alteração, pode ignorar este email com segurança.</p>
-        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
-        <p style="font-size: 0.8rem; color: #94a3b8;">Binth Intelligence - Soluções Financeiras Inteligentes</p>
+      <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
+        <h2 style="color: #0ea5e9; margin-top: 0;">Mwanga ✦</h2>
+        <p>Olá <strong>${safeName}</strong>,</p>
+        <p>Recebemos um pedido para criar uma nova senha. Toque no botão:</p>
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${resetUrl}" style="background-color: #0ea5e9; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Criar nova senha</a>
+        </div>${codeBlock}
+        <p style="font-size: 0.9rem; color: #64748b; margin-top: 24px;">O link e o código valem durante <strong>1 hora</strong>.</p>
+        <p style="font-size: 0.9rem; color: #64748b;">Se não foi você que pediu, ignore este email. A sua senha continua a mesma.</p>
       </div>
     `;
 
     if (!this.isConfigured()) {
-      logger.info(`[EMAIL LOG] Password reset for ${to}: ${resetUrl}`);
-      return true;
+      logger.warn(`[EMAIL] Password reset requested for ${to}, but email is not configured. The user cannot receive it.`);
+      if (this.isDevelopment) logger.info(`[RECOVERY LINK]: ${resetUrl} code=${code}`);
+      return false;
     }
 
     try {
@@ -156,11 +163,14 @@ class EmailService {
       return true;
     } catch (error) {
       logger.error(`Failed to send password reset email to ${to}: ${describeError(error)}`);
-      // Still log the link in dev if sending fails
-      if (this.isDevelopment) logger.info(`[RECOVERY LINK]: ${resetUrl}`);
+      if (this.isDevelopment) logger.info(`[RECOVERY LINK]: ${resetUrl} code=${code}`);
       return false;
     }
   }
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
 
 function describeError(error) {
