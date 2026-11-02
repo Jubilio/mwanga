@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Long-press the Mwanga icon. Handled by QuickActionsPlugin, which opens the quick-add sheet. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="voice"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_voice"
+        android:shortcutShortLabel="@string/shortcut_voice_short"
+        android:shortcutLongLabel="@string/shortcut_voice_long">
+        <intent
+            android:action="com.mwanga.app.action.QUICK_ADD"
+            android:targetPackage="com.mwanga.app"
+            android:targetClass="com.mwanga.app.MainActivity">
+            <extra android:name="mode" android:value="voice" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="expense"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_expense"
+        android:shortcutShortLabel="@string/shortcut_expense_short"
+        android:shortcutLongLabel="@string/shortcut_expense_long">
+        <intent
+            android:action="com.mwanga.app.action.QUICK_ADD"
+            android:targetPackage="com.mwanga.app"
+            android:targetClass="com.mwanga.app.MainActivity">
+            <extra android:name="mode" android:value="expense" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="income"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_income"
+        android:shortcutShortLabel="@string/shortcut_income_short"
+        android:shortcutLongLabel="@string/shortcut_income_long">
+        <intent
+            android:action="com.mwanga.app.action.QUICK_ADD"
+            android:targetPackage="com.mwanga.app"
+            android:targetClass="com.mwanga.app.MainActivity">
+            <extra android:name="mode" android:value="income" />
+        </intent>
+    </shortcut>
+</shortcuts>

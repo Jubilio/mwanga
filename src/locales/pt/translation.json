@@ -1613,7 +1613,21 @@
     "exit_fast": "Saída rápida",
     "habit_hint": "Cada pequeno registo reforça o teu hábito e melhora a qualidade das recomendações do Mwanga.",
     "saving": "A guardar...",
-    "save": "Guardar agora"
+    "save": "Guardar agora",
+    "voice": {
+      "button": "Falar",
+      "listening": "A ouvir…",
+      "tap_to_stop": "Toca para parar",
+      "example": "Diz por exemplo: «gastei 200 meticais em pão com M-Pesa»",
+      "prompt": "Diz o valor e em quê. Ex: gastei 200 meticais em pão",
+      "heard": "Ouvi:",
+      "review": "Confere os campos e guarda.",
+      "check": "Preenchido pela voz. Confere e guarda.",
+      "no_amount": "Não percebi o valor. Escreve-o ou tenta outra vez.",
+      "no_speech": "Não ouvi nada. Tenta outra vez.",
+      "denied": "Permite o microfone no navegador para registar por voz.",
+      "unavailable": "Este dispositivo não tem reconhecimento de voz."
+    }
   },
   "binth_local": {
     "language": "Idioma",

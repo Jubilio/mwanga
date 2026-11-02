@@ -40,21 +40,27 @@ export default defineConfig({
         },
         shortcuts: [
           {
-            name: 'Nova Transação',
-            short_name: 'Adicionar',
-            url: '/quick-add',
+            name: 'Registar por voz',
+            short_name: 'Por voz',
+            url: '/quick-add?action=VOICE',
+            icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }],
+          },
+          {
+            name: 'Nova despesa',
+            short_name: 'Despesa',
+            url: '/quick-add?action=ADD_EXPENSE',
+            icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }],
+          },
+          {
+            name: 'Nova receita',
+            short_name: 'Receita',
+            url: '/quick-add?action=ADD_INCOME',
             icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }],
           },
           {
             name: 'Resumo Binth',
             short_name: 'Insights',
             url: '/insights',
-            icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }],
-          },
-          {
-            name: 'Simuladores',
-            short_name: 'Simular',
-            url: '/simuladores',
             icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }],
           },
         ],

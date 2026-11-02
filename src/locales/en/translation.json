@@ -1613,7 +1613,21 @@
     "exit_fast": "Fast exit",
     "habit_hint": "Every small record reinforces your habit and improves the quality of Mwanga's recommendations.",
     "saving": "Saving...",
-    "save": "Save now"
+    "save": "Save now",
+    "voice": {
+      "button": "Speak",
+      "listening": "Listening…",
+      "tap_to_stop": "Tap to stop",
+      "example": "Say in Portuguese, e.g. «gastei 200 meticais em pão com M-Pesa»",
+      "prompt": "Say the amount and what for. E.g. gastei 200 meticais em pão",
+      "heard": "I heard:",
+      "review": "Check the fields and save.",
+      "check": "Filled in by voice. Check and save.",
+      "no_amount": "I didn't catch the amount. Type it or try again.",
+      "no_speech": "I didn't hear anything. Try again.",
+      "denied": "Allow the microphone in your browser to add by voice.",
+      "unavailable": "This device has no speech recognition."
+    }
   },
   "binth_local": {
     "language": "Language",

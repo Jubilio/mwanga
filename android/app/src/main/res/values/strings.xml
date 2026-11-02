@@ -5,4 +5,10 @@
     <string name="package_name">com.mwanga.app</string>
     <string name="custom_url_scheme">com.mwanga.app</string>
     <string name="share_sms_label">Importar SMS no Mwanga</string>
+    <string name="shortcut_voice_short">Por voz</string>
+    <string name="shortcut_voice_long">Registar por voz</string>
+    <string name="shortcut_expense_short">Despesa</string>
+    <string name="shortcut_expense_long">Nova despesa</string>
+    <string name="shortcut_income_short">Receita</string>
+    <string name="shortcut_income_long">Nova receita</string>
 </resources>
