@@ -124,6 +124,31 @@ function pickAccountId(result, contas = [], settings = {}) {
   return fallback ? Number(fallback) : undefined;
 }
 
+function toBalance(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const n = toAmount(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * An older SMS must not overwrite a newer balance: only suggest syncing when
+ * the account has no transaction dated after this message.
+ */
+export function shouldSyncBalance(result, accountId, transacoes = []) {
+  if (!accountId || toBalance(result?.balance_after) === null) return false;
+  const smsDate = toIsoDate(result.transaction_datetime);
+  return !transacoes.some((tx) => String(tx.account_id) === String(accountId) && String(tx.data || tx.date || '') > smsDate);
+}
+
+// ui() only interpolates strings it has a translation for; fill the rest here.
+function uiFill(text, params) {
+  return String(ui(text, params)).replace(/\{\{(\w+)\}\}/g, (match, key) => (key in params ? params[key] : match));
+}
+
+function formatMzn(value, currency = 'MZN') {
+  return `${Number(value).toLocaleString(uiLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+}
+
 function saveErrorMessage(error, t) {
   if (!error?.response) return ui('Sem ligação ao servidor. Verifique a internet e tente novamente.');
   const data = error.response.data || {};
@@ -166,6 +191,7 @@ export default function SmsImport() {
   const { state, reloadData } = useFinance();
   const [saveError, setSaveError] = useState('');
   const [accountId, setAccountId] = useState('');
+  const [syncBalance, setSyncBalance] = useState(false);
   // Saves from this page are not pushed into the store, so count them here too.
   const [savedHere, setSavedHere] = useState(0);
   const quota = getSmsQuota(getEffectiveTier(state.settings), state.transacoes, new Date(), savedHere);
@@ -210,7 +236,9 @@ export default function SmsImport() {
       const parsedData = res.data.data.parsed_data;
       setResult(parsedData);
       setSaveError('');
-      setAccountId(parsedData ? String(pickAccountId(parsedData, state.contas, state.settings) ?? '') : '');
+      const pickedAccount = parsedData ? String(pickAccountId(parsedData, state.contas, state.settings) ?? '') : '';
+      setAccountId(pickedAccount);
+      setSyncBalance(shouldSyncBalance(parsedData, pickedAccount, state.transacoes));
       showToast(ui("SMS analisado com sucesso!"), 'success');
     } catch (error) {
       console.error(error);
@@ -222,7 +250,7 @@ export default function SmsImport() {
     } finally {
       setLoading(false);
     }
-  }, [showToast, state.contas, state.settings]);
+  }, [showToast, state.contas, state.settings, state.transacoes]);
 
   useEffect(() => {
     if (!incomingSharedText) return;
@@ -304,7 +332,20 @@ export default function SmsImport() {
 
       await api.post('/transactions', payload);
       setSavedHere((count) => count + 1);
-      showToast(t('sms_import.toasts.save_success'), 'success');
+
+      const smsBalance = toBalance(result.balance_after);
+      if (syncBalance && accountId && smsBalance !== null) {
+        try {
+          // The server records any remaining difference (e.g. the fee) as a balance adjustment.
+          await api.put(`/accounts/${accountId}/balance`, { current_balance: smsBalance });
+          showToast(uiFill('Transação registada e saldo da conta acertado para {{p0}}.', { p0: formatMzn(smsBalance, result.currency || 'MZN') }), 'success');
+        } catch (error) {
+          console.error(error);
+          showToast(uiFill('Transação registada, mas não foi possível acertar o saldo: {{p0}}', { p0: saveErrorMessage(error, t) }), 'warning');
+        }
+      } else {
+        showToast(t('sms_import.toasts.save_success'), 'success');
+      }
       setResult(null);
       setSmsText('');
       // Bring the new transaction and account balances into the rest of the app.
@@ -318,6 +359,17 @@ export default function SmsImport() {
       setSaving(false);
     }
   }
+
+  const selectedAccount = state.contas?.find((c) => String(c.id) === String(accountId));
+  const smsBalanceValue = result ? toBalance(result.balance_after) : null;
+  const resultAmount = result ? toAmount(result.amount) : NaN;
+  const balancePreview = selectedAccount && smsBalanceValue !== null && Number.isFinite(resultAmount)
+    ? (() => {
+      const signed = inferTransactionType(result) === 'receita' ? resultAmount : -resultAmount;
+      const expected = Number(selectedAccount.current_balance || 0) + signed;
+      return { name: selectedAccount.name, smsBalance: smsBalanceValue, expected, difference: smsBalanceValue - expected };
+    })()
+    : null;
 
   return (
     <div className="p-4 md:p-6 w-full max-w-none font-mono">
@@ -491,13 +543,40 @@ export default function SmsImport() {
                           id="sms-import-account"
                           className="form-input w-full"
                           value={accountId}
-                          onChange={(e) => setAccountId(e.target.value)}
+                          onChange={(e) => {
+                            setAccountId(e.target.value);
+                            setSyncBalance(shouldSyncBalance(result, e.target.value, state.transacoes));
+                          }}
                         >
                           <option value="">{ui('Sem conta')}</option>
                           {state.contas.map((c) => (
                             <option key={c.id} value={String(c.id)}>{c.name}</option>
                           ))}
                         </select>
+                      </label>
+                    )}
+                    {balancePreview && (
+                      <label className="flex items-start gap-3 rounded-xl border border-aurora/30 bg-aurora/5 p-3 text-xs text-slate-300 leading-5 cursor-pointer">
+                        <input
+                          id="sms-import-sync-balance"
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 shrink-0 accent-[#2ecc71]"
+                          checked={syncBalance}
+                          onChange={(e) => setSyncBalance(e.target.checked)}
+                        />
+                        <span>
+                          <span className="block font-bold text-aurora">
+                            {uiFill('Acertar o saldo de {{p0}} para {{p1}}', { p0: balancePreview.name, p1: formatMzn(balancePreview.smsBalance, result.currency || 'MZN') })}
+                          </span>
+                          <span className="block text-slate-400">
+                            {Math.abs(balancePreview.difference) < 0.005
+                              ? ui('Bate certo com o saldo no Mwanga depois desta transação.')
+                              : uiFill('No Mwanga ficaria {{p0}}. A diferença de {{p1}} fica registada como ajuste de saldo.', { p0: formatMzn(balancePreview.expected, result.currency || 'MZN'), p1: formatMzn(Math.abs(balancePreview.difference), result.currency || 'MZN') })}
+                          </span>
+                          {!syncBalance && !shouldSyncBalance(result, accountId, state.transacoes) && (
+                            <span className="block text-gold">{ui('Esta conta já tem movimentos mais recentes do que esta mensagem.')}</span>
+                          )}
+                        </span>
                       </label>
                     )}
                     {saveError && (
