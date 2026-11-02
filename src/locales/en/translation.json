@@ -1048,7 +1048,22 @@
       "img_updated": "Photo updated! ✦",
       "push_enabled": "Push enabled! ✦",
       "push_error": "Error enabling notifications",
-      "push_blocked": "Permission blocked by browser. Reset permissions in URL bar."
+      "push_blocked": "Your browser blocked notifications. Tap the lock next to the address and allow notifications for this site.",
+      "push_errors": {
+        "denied_native": "Notification permission is off. Open phone Settings > Apps > Mwanga > Notifications and turn them on.",
+        "denied_web": "Your browser blocked notifications. Tap the lock next to the address and allow notifications for this site.",
+        "web_not_configured": "Browser notifications are not set up on the Mwanga server yet.",
+        "native_not_configured": "The Mwanga server is not connected to Firebase yet, so notifications would not reach your phone.",
+        "service_worker": "The browser has not loaded the notification service yet. Reload the page and try again.",
+        "fcm_failed": "Your phone could not register with Google's notification service. Make sure Google Play services are installed and up to date.",
+        "fcm_timeout": "Registering with Google's notification service took too long. Check your internet and try again.",
+        "busy": "Notifications are already being enabled. Please wait a moment.",
+        "offline": "Cannot reach the Mwanga server. Check your internet and try again.",
+        "session": "Your session expired. Sign in again and retry.",
+        "server": "The server could not save this device (error {{status}}). Try again later.",
+        "unknown": "Could not enable notifications.",
+        "code": "Code: {{code}}"
+      }
     },
     "reliable": {
       "navigation": "Settings sections",

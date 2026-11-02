@@ -9,7 +9,12 @@ export async function registerNativePush(plugin, timeoutMs = 15000) {
   token.catch(() => {});
   try {
     listeners.push(await plugin.addListener('registration', result => resolveToken(result.value)));
-    listeners.push(await plugin.addListener('registrationError', () => rejectToken(new Error('REGISTRATION_FAILED'))));
+    listeners.push(await plugin.addListener('registrationError', err => {
+      const error = new Error('REGISTRATION_FAILED');
+      // Firebase's own reason (for example SERVICE_NOT_AVAILABLE when the phone has no Google Play services).
+      error.detail = err?.error || '';
+      rejectToken(error);
+    }));
     timer = setTimeout(() => rejectToken(new Error('REGISTRATION_TIMEOUT')), timeoutMs);
     await Promise.race([plugin.register(), token.then(() => undefined)]);
     const value = await token;

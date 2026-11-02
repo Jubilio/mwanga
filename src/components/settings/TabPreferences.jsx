@@ -1,6 +1,9 @@
 import { ui, useUiLanguage } from '../../utils/uiTranslation';
 import { Palette, Globe, Zap, Sun, Moon, Bell, AlertTriangle, Calendar, Banknote, ShieldAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { describePushError } from '../../services/pushErrors';
 
 export default function TabPreferences({
   section,
@@ -13,6 +16,7 @@ export default function TabPreferences({
 }) {
   useUiLanguage();
   const { t, i18n } = useTranslation();
+  const [pushError, setPushError] = useState(null);
   const {
     enablePush,
     disablePush,
@@ -120,15 +124,14 @@ export default function TabPreferences({
                   type="button"
                   disabled={!isSupported || isPushLoading || isSubscribed}
                   onClick={async () => {
+                    setPushError(null);
                     try {
                       await enablePush();
                       showToast(t('settings.toasts.push_enabled'), 'success');
                     } catch (error) {
-                      if (['BLOCKED_BY_BROWSER', 'PERMISSION_DENIED'].includes(error.message)) {
-                        showToast(t('settings.toasts.push_blocked'), 'error');
-                      } else {
-                        showToast(t('settings.toasts.push_error'), 'error');
-                      }
+                      const reason = describePushError(error, { isNative: Capacitor.isNativePlatform() });
+                      setPushError(reason);
+                      showToast(t(`settings.toasts.push_errors.${reason.key}`, reason.values), 'error');
                     }
                   }}
                   className="rounded-2xl bg-white px-6 py-3 text-xs font-black uppercase tracking-widest text-ocean hover:bg-slate-50 dark:bg-slate-900 transition-all disabled:opacity-50 shadow-xl"
@@ -158,6 +161,13 @@ export default function TabPreferences({
               </div>
             </div>
 
+            {pushError && !isSubscribed ? (
+              <div role="alert" className="mb-4 rounded-2xl border border-rose-300/30 bg-rose-500/15 p-4 text-[12px] leading-relaxed text-white">
+                <p className="font-bold">{t('settings.toasts.push_error')}</p>
+                <p className="mt-1 text-white/85">{t(`settings.toasts.push_errors.${pushError.key}`, pushError.values)}</p>
+                <p className="mt-2 font-mono text-[10px] text-white/60 break-all">{t('settings.toasts.push_errors.code', { code: pushError.code, interpolation: { escapeValue: false } })}</p>
+              </div>
+            ) : null}
             {!isSupported ? <p role="status" className="mb-4 text-sm">{t('settings.reliable.push_unsupported')}</p> : null}
             {permission === 'denied' && (
               <div className="mb-8 flex items-start gap-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 p-5 text-white animate-pulse-slow">
