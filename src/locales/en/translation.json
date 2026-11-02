@@ -1061,6 +1061,7 @@
         "offline": "Cannot reach the Mwanga server. Check your internet and try again.",
         "session": "Your session expired. Sign in again and retry.",
         "server": "The server could not save this device (error {{status}}). Try again later.",
+        "browser_push_service": "Your browser could not reach its push service. In Brave, turn on \"Use Google services for push messaging\" at brave://settings/privacy. Elsewhere, turn off VPN or blockers and retry, or use Chrome.",
         "unknown": "Could not enable notifications.",
         "code": "Code: {{code}}"
       }

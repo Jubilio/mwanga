@@ -1061,6 +1061,7 @@
         "offline": "Sem ligação ao servidor do Mwanga. Verifica a internet e tenta de novo.",
         "session": "A tua sessão expirou. Entra de novo e tenta outra vez.",
         "server": "O servidor não conseguiu guardar este dispositivo (erro {{status}}). Tenta mais tarde.",
+        "browser_push_service": "O navegador não conseguiu ligar ao serviço de notificações dele. No Brave, ativa \"Usar os serviços Google para mensagens push\" em brave://settings/privacy. Noutros navegadores, desliga a VPN ou bloqueador e tenta de novo, ou usa o Chrome.",
         "unknown": "Não foi possível ativar as notificações.",
         "code": "Código: {{code}}"
       }
