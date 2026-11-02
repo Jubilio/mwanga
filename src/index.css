@@ -607,6 +607,17 @@ textarea {
   background: #1a2735;
 }
 
+/* Selects size to their text. Fixed heights such as h-10 plus the 0.8rem mobile
+   padding left ~11px for a 16px label, so the chosen option was cut in half. */
+select.form-input {
+  height: auto;
+  min-height: 2.75rem;
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+}
+
 .form-label {
   display: block;
   font-size: 0.75rem;
