@@ -36,6 +36,7 @@ public class MoneySmsPlugin extends Plugin {
     private static final String PLAY_STORE = "com.android.vending";
     private static final int MAX_PATTERNS = 40;
     private static final int MAX_COUNT = 500;
+    private static final int MAX_SHARED_CHARS = 2000;
 
     /** Android version and installer, so the app knows when "restricted settings" applies. */
     @PluginMethod
@@ -57,7 +58,56 @@ public class MoneySmsPlugin extends Plugin {
         ret.put("sdkInt", Build.VERSION.SDK_INT);
         ret.put("installer", installer);
         ret.put("fromPlayStore", PLAY_STORE.equals(installer));
+        ret.put("advancedProtection", isAdvancedProtectionOn());
         call.resolve(ret);
+    }
+
+    /**
+     * Android 16+ Advanced Protection hides "Allow restricted settings" for apps installed from a file.
+     * Read through reflection so older SDKs and devices without the service simply report false.
+     */
+    private boolean isAdvancedProtectionOn() {
+        if (Build.VERSION.SDK_INT < 36) return false;
+        try {
+            Object manager = getContext().getSystemService("advanced_protection");
+            if (manager == null) return false;
+            Object on = manager.getClass().getMethod("isAdvancedProtectionEnabled").invoke(manager);
+            return Boolean.TRUE.equals(on);
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    // ---- Text shared to Mwanga (Messages → Share → Mwanga), the fallback when READ_SMS is blocked ----
+
+    @Override
+    public void load() {
+        Intent intent = getActivity() == null ? null : getActivity().getIntent();
+        if (deliverSharedText(intent)) {
+            // Don't hand the same SMS over again if the activity is recreated.
+            getActivity().setIntent(new Intent(Intent.ACTION_MAIN));
+        }
+    }
+
+    @Override
+    protected void handleOnNewIntent(Intent intent) {
+        super.handleOnNewIntent(intent);
+        deliverSharedText(intent);
+    }
+
+    /** Emits "sharedText" (kept until the WebView listens) for ACTION_SEND text/plain. */
+    private boolean deliverSharedText(Intent intent) {
+        if (intent == null || !Intent.ACTION_SEND.equals(intent.getAction())) return false;
+        String type = intent.getType();
+        if (type == null || !type.startsWith("text/")) return false;
+        CharSequence text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT);
+        if (text == null || text.toString().trim().isEmpty()) return false;
+        String value = text.toString().trim();
+        if (value.length() > MAX_SHARED_CHARS) value = value.substring(0, MAX_SHARED_CHARS);
+        JSObject data = new JSObject();
+        data.put("text", value);
+        notifyListeners("sharedText", data, true);
+        return true;
     }
 
     /** Opens this app's page in Android settings (Permissions, and the ⋮ menu for restricted settings). */

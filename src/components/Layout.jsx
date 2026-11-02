@@ -22,6 +22,7 @@ import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useSmsSync } from '../hooks/useSmsSync';
 import { SMS_INBOX_ENABLED } from '../config/features';
 import SmsPermissionSheet from './SmsPermissionSheet';
+import { onSharedText } from '../services/moneySms';
 import { getToken } from '../utils/authToken';
 import { BOTTOM_ITEMS, pageTitleKey } from '../config/navigation';
 
@@ -57,6 +58,12 @@ export default function Layout() {
   const [showInstallBanner, setShowInstallBanner] = useState(true);
   const { isSubscribed } = usePushNotifications();
   const { syncSms } = useSmsSync(showToast);
+
+  // An SMS shared from the Messages app opens the import page with its text,
+  // which works even when Android blocks READ_SMS.
+  useEffect(() => onSharedText((text) => {
+    navigate(`/sms-import?text=${encodeURIComponent(text)}`);
+  }), [navigate]);
 
   // Auto SMS Sync
   useEffect(() => {
