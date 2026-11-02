@@ -19,11 +19,17 @@ export default function Toast({ message, visible, variant = 'success', onClose }
   const Icon = theme.icon;
 
   return (
-    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none w-full max-w-sm px-4">
+    // On phones the toast sits at the top, under the status bar: at the bottom it was
+    // drawn over the navigation bar and under the thumb, so a save looked like it did nothing.
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed left-1/2 top-[calc(0.75rem+var(--sat))] z-[9999] w-full max-w-sm -translate-x-1/2 px-4 pointer-events-none md:top-auto md:bottom-10"
+    >
       <AnimatePresence>
         {visible && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9, filter: 'blur(10px)' }}
+            initial={{ opacity: 0, y: -24, scale: 0.9, filter: 'blur(10px)' }}
             animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, scale: 0.9, filter: 'blur(10px)', transition: { duration: 0.2 } }}
             className="pointer-events-auto relative bg-midnight/90 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-4"

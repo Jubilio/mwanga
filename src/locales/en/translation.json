@@ -591,6 +591,7 @@
     }
   },
   "common": {
+    "saving": "Saving…",
     "categories": {
       "salary": "Salary",
       "house_rent": "House Rent",

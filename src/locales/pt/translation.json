@@ -591,6 +591,7 @@
     }
   },
   "common": {
+    "saving": "A guardar…",
     "categories": {
       "salary": "Salário",
       "house_rent": "Renda Casa",
