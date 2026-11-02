@@ -16,14 +16,12 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@libsql/client": "^0.17.0",
     "@sentry/node": "^10.53.1",
     "@simplewebauthn/server": "^13.3.0",
     "@types/pg": "^8.18.0",
     "@upstash/redis": "^1.37.0",
     "axios": "^1.15.0",
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.6.2",
     "compression": "^1.8.1",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
@@ -51,6 +49,6 @@
     "nodemon": "^3.1.13"
   },
   "engines": {
-    "node": ">=22"
+    "node": "22.x"
   }
 }
