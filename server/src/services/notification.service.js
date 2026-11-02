@@ -399,8 +399,17 @@ async function upsertPushSubscription({
 
   const endpoint = subscription.endpoint;
   const expirationTime = subscription.expirationTime || null;
-  const p256dh = subscription.keys?.p256dh || null;
-  const auth = subscription.keys?.auth || null;
+  // Native (FCM) tokens have no Web Push keys, but the production table keeps
+  // p256dh_key/auth_key NOT NULL; store empty strings so the insert succeeds.
+  // Delivery picks FCM from device_type, so the keys are never read for these.
+  const isNative = deviceType === 'native' || subscription.isNative === true;
+  const p256dh = subscription.keys?.p256dh || (isNative ? '' : null);
+  const auth = subscription.keys?.auth || (isNative ? '' : null);
+  if (!isNative && (!p256dh || !auth)) {
+    const error = new Error('Web push subscription is missing its keys.');
+    error.statusCode = 400;
+    throw error;
+  }
 
     const result = await db.execute({
       sql: `
