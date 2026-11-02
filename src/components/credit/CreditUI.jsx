@@ -3,6 +3,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { G } from "../../theme/tokens";
 
+// Columns that stack on narrow phones instead of squeezing cards until the text breaks.
+export const autoGrid = (min) => `repeat(auto-fit, minmax(min(100%, ${min}px), 1fr))`;
+
 export function Card({ children, style = {}, onClick, glow }) {
   useUiLanguage();
   const [h, setH] = useState(false);
@@ -13,7 +16,7 @@ export function Card({ children, style = {}, onClick, glow }) {
       style={{
         background: h ? G.cardHov : G.card,
         border: `1px solid ${glow ? `${glow}35` : G.border}`,
-        borderRadius: 20, padding: 20,
+        borderRadius: 20, padding: 20, minWidth: 0,
         backdropFilter: "blur(16px)",
         boxShadow: glow ? `0 0 24px ${glow}18` : "none",
         transition: "all 0.2s",
@@ -110,7 +113,7 @@ export function ProGate({ children, isPro, title, description }) {
       <div style={{
         gridArea: "1 / 1", display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center", gap: 12, padding: 24,
-        background: "rgba(7,9,15,0.72)", backdropFilter: "blur(2px)",
+        background: "var(--credit-overlay, rgba(7,9,15,0.72))", backdropFilter: "blur(2px)",
         borderRadius: 20, border: `1px solid ${G.gold}40`,
       }}>
         <div style={{ fontSize: 36 }}>👑</div>

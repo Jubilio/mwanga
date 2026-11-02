@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { G } from "../../theme/tokens";
 import { CreditEngine } from "../../utils/creditEngine";
 import { fmt, fmtShort } from "../../utils/calculations";
-import { Card, Btn, ProgressBar } from "./CreditUI";
+import { autoGrid, Card, Btn, ProgressBar } from "./CreditUI";
 
 export default function TabConsolidate({ debts, userData }) {
   const { t } = useTranslation();
@@ -38,7 +38,7 @@ export default function TabConsolidate({ debts, userData }) {
       ) : (
         <Card>
           <div style={{ fontSize: 12, fontWeight: 700, color: G.muted, letterSpacing: '0.12em', marginBottom: 16 }}>{t('credit.consolidate.sim_title')}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: autoGrid(220), gap: 12, marginBottom: 24 }}>
             <div style={{ background: G.muted3, padding: 16, borderRadius: 16 }}>
               <div style={{ fontSize: 12, color: G.muted, marginBottom: 4 }}>{t('credit.consolidate.current_debt')}</div>
               <div style={{ fontSize: 24, fontWeight: 900, color: G.red, fontFamily: 'Sora,sans-serif' }}>{fmtShort(currentTotal)}</div>
@@ -56,7 +56,7 @@ export default function TabConsolidate({ debts, userData }) {
             <div style={{ display: 'flex', gap: 8 }}>
               {[12, 24, 36, 48, 60].map(m => (
                 <button key={m} onClick={() => setMonths(m)} style={{
-                  flex: 1, padding: '10px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                  flex: 1, minWidth: 0, padding: '10px 4px', borderRadius: 12, border: 'none', cursor: 'pointer',
                   background: months === m ? `linear-gradient(135deg,${G.credit},${G.credit2})` : G.muted3,
                   color: months === m ? '#000' : G.muted, fontWeight: 700, fontSize: 13,
                 }}>{m}m</button>
@@ -67,13 +67,13 @@ export default function TabConsolidate({ debts, userData }) {
           <div style={{ padding: 16, background: 'rgba(139,92,246,0.06)', borderRadius: 16, border: `1px solid ${G.purple}20` }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: G.purple, marginBottom: 12 }}>{t('credit.consolidate.benefits_title')}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, fontSize: 13 }}>
                 <span style={{ color: G.muted }}>{t('credit.consolidate.complexity_reduction')}</span>
-                <span style={{ color: G.text, fontWeight: 700 }}>{activeDebts.length} ➔ 1</span>
+                <span style={{ color: G.text, fontWeight: 700, whiteSpace: 'nowrap' }}>{activeDebts.length} ➔ 1</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, fontSize: 13 }}>
                 <span style={{ color: G.muted }}>{t('credit.consolidate.monthly_relief')}</span>
-                <span style={{ color: G.green, fontWeight: 700 }}>{((savingsMonthly / currentMonthly) * 100).toFixed(0)}%</span>
+                <span style={{ color: G.green, fontWeight: 700, whiteSpace: 'nowrap' }}>{((savingsMonthly / currentMonthly) * 100).toFixed(0)}%</span>
               </div>
             </div>
           </div>

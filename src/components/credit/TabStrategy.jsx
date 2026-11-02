@@ -37,7 +37,7 @@ export default function TabStrategy({ scoreData, debts }) {
           {t('credit.strategy.avalanche_desc')}
         </div>
         <div style={{ padding: "12px 14px", background: `${G.credit}10`, border: `1px solid ${G.credit}25`, borderRadius: 12, fontSize: 13, color: G.credit, fontWeight: 600, marginBottom: 16 }}>
-          {t('credit.strategy.current_interest')} MT {fmt(totalJuros)} {payoffStrategy[0].restante > 0 ? `${t('credit.strategy.eliminated_in')} ${Math.ceil(payoffStrategy[0].restante / payoffStrategy[0].parcela)} ${t('credit.strategy.months')}` : t('credit.strategy.in_progress')}
+          {t('credit.strategy.current_interest')} {fmt(totalJuros)} {payoffStrategy[0].restante > 0 ? `${t('credit.strategy.eliminated_in')} ${Math.ceil(payoffStrategy[0].restante / payoffStrategy[0].parcela)} ${t('credit.strategy.months')}` : t('credit.strategy.in_progress')}
         </div>
         {payoffStrategy.map((d, i) => (
           <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "14px 0", borderBottom: i < payoffStrategy.length - 1 ? `1px solid ${G.border}` : "none" }}>
@@ -53,7 +53,7 @@ export default function TabStrategy({ scoreData, debts }) {
                 <Badge label={`${d.taxa}% a.a.`} color={d.taxa >= 20 ? G.red : d.taxa >= 14 ? G.gold : G.green} />
               </div>
               <div style={{ fontSize: 12, color: G.muted, marginBottom: 6 }}>
-                {t('credit.strategy.remaining')} MT {fmtShort(d.restante)} · {t('credit.strategy.installment')} MT {fmtShort(d.parcela)}{t('credit.strategy.per_month')}
+                {t('credit.strategy.remaining')} {fmtShort(d.restante)} · {t('credit.strategy.installment')} {fmtShort(d.parcela)}{t('credit.strategy.per_month')}
               </div>
               <div style={{ fontSize: 11, color: G.credit, fontStyle: "italic" }}>✦ {ui(d.reason)}</div>
             </div>

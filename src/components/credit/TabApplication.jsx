@@ -6,7 +6,7 @@ import { CreditEngine } from "../../utils/creditEngine";
 import { fmt, fmtShort } from "../../utils/calculations";
 import api from "../../utils/api";
 import { useToast } from "../Toast";
-import { Card, Btn, Badge } from "./CreditUI";
+import { autoGrid, Card, Btn, Badge } from "./CreditUI";
 
 export default function TabApplication({ scoreData, eligData, onSuccess }) {
   useUiLanguage();
@@ -141,13 +141,13 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
             <div style={{ fontSize: 18, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif", marginBottom: 8 }}>{t('credit.apply.pre_title')}</div>
             <div style={{ fontSize: 14, color: G.muted, lineHeight: 1.7, marginBottom: 20 }}>
               {t('credit.apply.pre_desc_1')}
-              <strong style={{ color: G.text }}> MT {fmtShort(scoreData.maxAmount)}</strong>.
+              <strong style={{ color: G.text }}> {fmtShort(scoreData.maxAmount)}</strong>.
               {t('credit.apply.pre_desc_2')} <strong style={{ color: G.credit }}>{scoreData.score}/100 — {ui(scoreData.label)}</strong>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
+            <div style={{ display: "grid", gridTemplateColumns: autoGrid(90), gap: 10, marginBottom: 20 }}>
               {[
-                { l: t('credit.apply.pre_grid_1'), v: `MT ${fmtShort(scoreData.maxAmount)}`, c: G.credit },
-                { l: t('credit.apply.pre_grid_2'), v: `MT ${fmtShort(eligData.maxParcela)}`, c: G.gold },
+                { l: t('credit.apply.pre_grid_1'), v: `${fmtShort(scoreData.maxAmount)}`, c: G.credit },
+                { l: t('credit.apply.pre_grid_2'), v: `${fmtShort(eligData.maxParcela)}`, c: G.gold },
                 { l: t('credit.apply.pre_grid_3'), v: `${eligData.comprometimento_atual.toFixed(0)}%`, c: eligData.comprometimento_atual > 30 ? G.warn : G.green },
               ].map((s, i) => (
                 <div key={i} style={{ background: G.muted3, borderRadius: 12, padding: "12px 8px", textAlign: "center" }}>
@@ -176,7 +176,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                   <label style={{ fontSize: 13, color: G.text, fontWeight: 600 }}>{t('credit.apply.req_amount')}</label>
-                  <span style={{ fontSize: 18, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif" }}>MT {fmtShort(form.amount)}</span>
+                  <span style={{ fontSize: 18, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif" }}>{fmtShort(form.amount)}</span>
                 </div>
                 <input type="range" min={1000} max={scoreData.maxAmount} step={500} value={form.amount}
                   onChange={e => setForm(f => ({ ...f, amount: +e.target.value }))}
@@ -235,14 +235,14 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
 
           {/* Resumo */}
           <Card style={{ background: `${G.credit}08`, border: `1px solid ${G.credit}25` }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div style={{ display: "grid", gridTemplateColumns: autoGrid(130), gap: 10 }}>
               <div style={{ background: G.muted3, borderRadius: 12, padding: "12px 14px" }}>
                 <div style={{ fontSize: 11, color: G.muted }}>{t('credit.apply.summary_install')}</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif" }}>MT {fmt(parcela)}</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif" }}>{fmt(parcela)}</div>
               </div>
               <div style={{ background: G.muted3, borderRadius: 12, padding: "12px 14px" }}>
                 <div style={{ fontSize: 11, color: G.muted }}>{t('credit.apply.summary_total')}</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: G.text, fontFamily: "Sora,sans-serif" }}>MT {fmt(totalDue)}</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: G.text, fontFamily: "Sora,sans-serif" }}>{fmt(totalDue)}</div>
               </div>
             </div>
           </Card>
@@ -316,12 +316,12 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
           <Card style={{ background: `${G.credit}06`, border: `1px solid ${G.credit}22` }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: G.credit, letterSpacing: "0.12em", marginBottom: 18 }}>{t('credit.apply.review_title')}</div>
             {[
-              { l: t('credit.apply.rev_amount'), v: `MT ${fmt(form.amount)}` },
+              { l: t('credit.apply.rev_amount'), v: `${fmt(form.amount)}` },
               { l: t('credit.apply.rev_term'), v: `${form.months} ${form.months === 1 ? t('credit.simulator.month_single') : t('credit.simulator.months')}` },
               { l: t('credit.apply.rev_rate'), v: `${(rate * 100).toFixed(0)}%` },
-              { l: t('credit.apply.rev_install'), v: `MT ${fmt(parcela)}`, strong: true },
-              { l: t('credit.apply.rev_total'), v: `MT ${fmt(totalDue)}`, strong: true },
-              { l: t('credit.apply.rev_interest'), v: `MT ${fmt(totalDue - form.amount)}`, color: G.red },
+              { l: t('credit.apply.rev_install'), v: `${fmt(parcela)}`, strong: true },
+              { l: t('credit.apply.rev_total'), v: `${fmt(totalDue)}`, strong: true },
+              { l: t('credit.apply.rev_interest'), v: `${fmt(totalDue - form.amount)}`, color: G.red },
               { l: t('credit.apply.rev_cet'), v: `${CreditEngine.cet(form.amount, rate, form.months).toFixed(0)}%` },
               { l: t('credit.apply.rev_purpose'), v: form.purpose },
               { l: t('credit.apply.rev_partner'), v: PARTNERS.find(p => p.id === form.partner)?.name },
@@ -357,10 +357,10 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
             {t('credit.apply.sub_title')}
           </div>
           <div style={{ fontSize: 14, color: G.muted, lineHeight: 1.8, marginBottom: 24 }}>
-            {t('credit.apply.sub_desc_1')} <strong style={{ color: G.text }}>MT {fmt(form.amount)}</strong> {t('credit.apply.sub_desc_2')} <strong style={{ color: G.text }}>{PARTNERS.find(p => p.id === form.partner)?.name}</strong>.
+            {t('credit.apply.sub_desc_1')} <strong style={{ color: G.text }}>{fmt(form.amount)}</strong> {t('credit.apply.sub_desc_2')} <strong style={{ color: G.text }}>{PARTNERS.find(p => p.id === form.partner)?.name}</strong>.
             {t('credit.apply.sub_desc_3')} <strong style={{ color: G.credit }}>{t('credit.apply.sub_desc_4')}</strong>.
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: autoGrid(130), gap: 10, marginBottom: 24 }}>
             <div style={{ background: G.muted3, borderRadius: 14, padding: 14 }}>
               <div style={{ fontSize: 11, color: G.muted }}>{t('credit.apply.sub_ref')}</div>
               <div style={{ fontSize: 14, fontWeight: 800, color: G.text }}>MWG-2026-0{Math.floor(Math.random() * 999 + 100)}</div>

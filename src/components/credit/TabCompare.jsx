@@ -92,16 +92,16 @@ export default function TabCompare({ userData }) {
                 </div>
                 <div style={{ marginBottom: 12 }}>
                   <div style={{ fontSize: 11, color: G.muted }}>{t('credit.compare.cost_month')}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: G.text, fontFamily: 'Sora,sans-serif' }}>MT {fmt(parcela)}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: G.text, fontFamily: 'Sora,sans-serif' }}>{fmt(parcela)}</div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: `1px solid ${opt.color}20`, paddingTop: 12 }}>
                   <div>
                     <div style={{ fontSize: 10, color: G.muted }}>{t('credit.compare.total_pay')}</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: G.text }}>MT {fmtShort(total)}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: G.text }}>{fmtShort(total)}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 10, color: G.muted }}>{t('credit.compare.interest_only')}</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: opt.rate > 0 ? G.red : G.green }}>MT {fmtShort(juros)}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: opt.rate > 0 ? G.red : G.green }}>{fmtShort(juros)}</div>
                   </div>
                 </div>
               </div>
@@ -115,7 +115,7 @@ export default function TabCompare({ userData }) {
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: G.credit, marginBottom: 4 }}>{t('credit.compare.verdict_title')}</div>
               <div style={{ fontSize: 13, color: G.muted, lineHeight: 1.6 }}>
-                {t('credit.compare.verdict_desc_1')} <strong>MT {fmtShort(amount)}</strong> {t('credit.compare.verdict_desc_2')} <strong>{months} {months === 1 ? t('credit.simulator.month_single') : t('credit.simulator.months')}</strong>{t('credit.compare.verdict_desc_3')} <strong style={{color:G.red}}>Millennium BIM</strong> {t('credit.compare.verdict_desc_4')} <strong>MT {fmtShort((CreditEngine.installment(amount, 0.10, months, false) * months) - (CreditEngine.installment(amount, 0.28, months, true) * months))}</strong> {t('credit.compare.verdict_desc_5')}
+                {t('credit.compare.verdict_desc_1')} <strong>{fmtShort(amount)}</strong> {t('credit.compare.verdict_desc_2')} <strong>{months} {months === 1 ? t('credit.simulator.month_single') : t('credit.simulator.months')}</strong>{t('credit.compare.verdict_desc_3')} <strong style={{color:G.red}}>Millennium BIM</strong> {t('credit.compare.verdict_desc_4')} <strong>{fmtShort((CreditEngine.installment(amount, 0.10, months, false) * months) - (CreditEngine.installment(amount, 0.28, months, true) * months))}</strong> {t('credit.compare.verdict_desc_5')}
               </div>
             </div>
           </div>

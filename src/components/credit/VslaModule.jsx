@@ -1,3 +1,4 @@
+import { autoGrid } from './CreditUI';
 import { ui, useUiLanguage, uiLocale } from '../../utils/uiTranslation';
 import { useState } from 'react';
 import { useVsla } from '../../hooks/useVsla';
@@ -5,11 +6,11 @@ import { useFinance } from '../../hooks/useFinance';
 import { Plus, Users, TrendingUp, ShieldCheck, Calendar, Info, ArrowRight } from 'lucide-react';
 
 const G = {
-  bg: "var(--color-midnight)", bg2: "var(--color-midnight-light)", bg3: "#101620",
-  card: "rgba(255,255,255,0.04)", cardHov: "rgba(255,255,255,0.07)",
-  border: "rgba(255,255,255,0.07)", borderS: "rgba(255,255,255,0.13)",
+  bg: "var(--color-midnight)", bg2: "var(--color-midnight-light)", bg3: "var(--credit-bg3, #101620)",
+  card: "var(--credit-card, rgba(255,255,255,0.04))", cardHov: "var(--credit-cardhov, rgba(255,255,255,0.07))",
+  border: "var(--credit-border, rgba(255,255,255,0.07))", borderS: "var(--credit-borders, rgba(255,255,255,0.13))",
   gold: "var(--color-gold)", gold2: "var(--color-gold-light)", goldGlow: "rgba(245,158,11,0.28)",
-  text: "#e8f0fe", muted: "#6b7fa3", muted2: "#3a4a62", muted3: "#1a2535",
+  text: "var(--credit-text, #e8f0fe)", muted: "var(--credit-muted, #6b7fa3)", muted2: "var(--credit-muted2, #3a4a62)", muted3: "var(--credit-muted3, #1a2535)",
   green: "var(--color-leaf)", red: "var(--color-coral)", blue: "var(--color-ocean)", purple: "#8B5CF6",
   credit: "var(--color-leaf)",
   credit2: "#059669",
@@ -95,7 +96,7 @@ export default function VslaModule() {
               background: G.card, border: `1px solid ${G.border}`, borderRadius: 20, 
               padding: 24, animation: 'slideUp 0.3s ease' 
             }}>
-              <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16 }}>
                 <div style={{ gridColumn: 'span 2' }}>
                   <label style={{ fontSize: 12, color: G.muted, display: 'block', marginBottom: 6 }}>{ui("Nome do Grupo")}</label>
                   <input 
@@ -164,7 +165,7 @@ export default function VslaModule() {
               <p style={{ color: G.muted, fontSize: 14, marginTop: 10 }}>{ui("Começa uma associação comunitária com os teus amigos ou família hoje mesmo.")}</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 16 }}>
               {groups.map(group => (
                 <div 
                   key={group.id} 
@@ -185,7 +186,7 @@ export default function VslaModule() {
                     <div style={{ fontSize: 24 }}>🏦</div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: autoGrid(120), gap: 12, marginBottom: 20 }}>
                     <div style={{ background: G.muted3, padding: 12, borderRadius: 12 }}>
                       <div style={{ fontSize: 10, color: G.muted, textTransform: 'uppercase' }}>{ui("Valor Share")}</div>
                       <div style={{ fontSize: 14, fontWeight: 700, color: G.green }}>{fmt(group.share_value)} {group.currency}</div>
@@ -240,7 +241,7 @@ export default function VslaModule() {
       {/* Info Card */}
       <div style={{ padding: 16, background: "rgba(96,165,250,0.05)", border: `1px solid ${G.blue}20`, borderRadius: 16, display: 'flex', gap: 12 }}>
         <Info size={20} color={G.blue} />
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 12, color: G.muted, lineHeight: 1.6 }}>
           <strong>{ui("Segurança Mwanga:")}</strong> {ui("O Mwanga apenas regista as movimentações para garantir transparência total. O dinheiro físico ou digital deve continuar a ser gerido pelo Tesoureiro eleito do vosso grupo na \"Box\" ou conta mobile money dedicada.")} </div>
       </div>
     </div>

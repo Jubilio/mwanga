@@ -1312,3 +1312,19 @@ h3 {
 /* Settings inputs follow the selected theme; light mode needs no extra class. */
 .settings-surface .premium-input { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
 .dark .settings-surface .premium-input { background: #0f172a; border-color: #334155; color: #f1f5f9; }
+
+/* The Crédito page styles its cards with inline tokens from src/theme/tokens.js that
+   default to the dark palette. In the light theme, give them light values so text
+   stays readable and tiles are not dark blocks on a cream page. */
+html:not(.dark) .credito-gsap-root {
+  --credit-bg3: #f1f5f9;
+  --credit-card: #ffffff;
+  --credit-cardhov: #f6f8fb;
+  --credit-border: rgba(15, 27, 45, 0.09);
+  --credit-borders: rgba(15, 27, 45, 0.16);
+  --credit-text: #0f1b2d;
+  --credit-muted: #5b6b85;
+  --credit-muted2: #94a3b8;
+  --credit-muted3: #e9eef5;
+  --credit-overlay: rgba(250, 247, 240, 0.8);
+}
