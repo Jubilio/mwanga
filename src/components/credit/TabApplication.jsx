@@ -12,6 +12,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
   useUiLanguage();
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const [scoreConsent, setScoreConsent] = useState(false);
   const [step, setStep] = useState(1); // 1-pre | 2-form | 3-docs | 4-review | 5-submitted
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -68,6 +69,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
       formData.append('months', form.months);
       formData.append('partner', form.partner);
       formData.append('purpose', form.purpose);
+      formData.append('scoreConsent', scoreConsent ? 'true' : 'false');
       
       if (docs.biDocument) formData.append('biDocument', docs.biDocument);
       if (docs.residenciaDocument) formData.append('residenciaDocument', docs.residenciaDocument);
@@ -340,9 +342,25 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
             </div>
           </Card>
 
+          <Card style={{ border: `1px solid ${scoreConsent ? G.green : G.border}` }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: G.text, marginBottom: 8 }}>{t('credit.apply.consent_title')}</div>
+            <p style={{ fontSize: 12, color: G.muted, lineHeight: 1.7, margin: "0 0 12px" }}>{t('credit.apply.consent_body')}</p>
+            <label htmlFor="credit-score-consent" style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, color: G.text, cursor: "pointer", lineHeight: 1.5 }}>
+              <input
+                id="credit-score-consent"
+                type="checkbox"
+                checked={scoreConsent}
+                onChange={(event) => setScoreConsent(event.target.checked)}
+                style={{ marginTop: 3, width: 18, height: 18, flexShrink: 0 }}
+              />
+              <span>{t('credit.apply.consent_check')}</span>
+            </label>
+            {!scoreConsent ? <div style={{ fontSize: 12, color: G.muted, marginTop: 8 }}>{t('credit.apply.consent_required')}</div> : null}
+          </Card>
+
           <div style={{ display: "flex", gap: 12 }}>
             <Btn variant="ghost" onClick={() => setStep(3)} style={{ flex: 1 }} disabled={isSubmitting}>{t('credit.apply.btn_back')}</Btn>
-            <Btn variant="green" size="lg" onClick={submitApplication} style={{ flex: 2 }} disabled={isSubmitting}>
+            <Btn variant="green" size="lg" onClick={submitApplication} style={{ flex: 2 }} disabled={isSubmitting || !scoreConsent}>
               {isSubmitting ? t('credit.apply.btn_submitting') : t('credit.apply.btn_submit')}
             </Btn>
           </div>

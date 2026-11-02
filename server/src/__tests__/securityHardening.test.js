@@ -14,7 +14,7 @@ const filesRoutes = require('../routes/files.routes');
 const res = () => { const r = { status: jest.fn(), json: jest.fn() }; r.status.mockReturnValue(r); return r; };
 const tokenFor = (id) => `Bearer ${jwt.sign({ id, householdId: 1, role: 'admin' }, process.env.JWT_SECRET)}`;
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => { jest.clearAllMocks(); db.execute.mockReset(); db.execute.mockResolvedValue({ rows: [] }); });
 
 describe('isAdmin', () => {
   test('ignores the role inside the token and asks the database', async () => {
@@ -138,7 +138,7 @@ describe('upload filter', () => {
     const upload = createUploader('kyc', DOCUMENT_TYPES);
     app.post('/up', (req, _res, next) => { req.user = { id: 5 }; next(); },
       handleUploadErrors(upload.single('document')),
-      (req, response) => { fs.rmSync(req.file.path, { force: true }); response.json({ name: req.file.filename }); });
+      (req, response) => response.json({ name: req.file.filename, buffer: Boolean(req.file.buffer) }));
     await new Promise((resolve) => { server = app.listen(0, resolve); });
     url = `http://127.0.0.1:${server.address().port}/up`;
   });
@@ -157,6 +157,64 @@ describe('upload filter', () => {
   test('names the file from its type, not the original name', async () => {
     const response = await send('image/png', 'evil.html');
     expect(response.status).toBe(200);
-    expect((await response.json()).name).toMatch(/^5-document-\d+-[a-f0-9]{24}\.png$/);
+    const body = await response.json();
+    expect(body.name).toMatch(/^5-document-\d+-[a-f0-9]{24}\.png$/);
+    expect(body.buffer).toBe(false);
+  });
+
+  test('stores the file encrypted in the database, not on disk', async () => {
+    await send('image/png', 'bi.png');
+    const insert = db.execute.mock.calls.find(([q]) => /INSERT INTO secure_files/.test(q.sql));
+    expect(insert).toBeDefined();
+    const [, category, userId, mime, size, content] = insert[0].args;
+    expect([category, userId, mime, size]).toEqual(['kyc', 5, 'image/png', 1]);
+    expect(require('../services/secureFiles.service').decrypt(content).toString()).toBe('x');
+  });
+
+  test('answers 503 when the database cannot store the file', async () => {
+    db.execute.mockRejectedValueOnce(new Error('db down'));
+    expect((await send('image/png', 'bi.png')).status).toBe(503);
+  });
+});
+
+describe('encrypted files', () => {
+  const secureFiles = require('../services/secureFiles.service');
+  const filesRoutesEnc = require('../routes/files.routes');
+  let server; let base;
+
+  beforeAll(async () => {
+    const app = express();
+    app.use('/api/files', filesRoutesEnc);
+    await new Promise((resolve) => { server = app.listen(0, resolve); });
+    base = `http://127.0.0.1:${server.address().port}/api/files/kyc/9-document-1-abc.png`;
+  });
+  afterAll(() => server.close());
+
+  test('round-trips and rejects tampering', () => {
+    const sealed = secureFiles.encrypt(Buffer.from('bilhete de identidade'));
+    expect(sealed.includes(Buffer.from('bilhete'))).toBe(false);
+    expect(secureFiles.decrypt(sealed).toString()).toBe('bilhete de identidade');
+    sealed[sealed.length - 1] ^= 1;
+    expect(() => secureFiles.decrypt(sealed)).toThrow();
+  });
+
+  test('uses FILE_ENCRYPTION_KEY when set', () => {
+    process.env.FILE_ENCRYPTION_KEY = 'a'.repeat(64);
+    secureFiles.resetKeyCacheForTests();
+    expect(secureFiles.encryptionKey()).toEqual(Buffer.alloc(32, 0xaa));
+    delete process.env.FILE_ENCRYPTION_KEY;
+    secureFiles.resetKeyCacheForTests();
+  });
+
+  test('serves the decrypted file to its owner and logs the view', async () => {
+    const content = secureFiles.encrypt(Buffer.from('png-bytes'));
+    db.execute.mockImplementation(async ({ sql }) => (
+      /FROM secure_files/.test(sql) ? { rows: [{ mime_type: 'image/png', content }] } : { rows: [] }
+    ));
+    const response = await fetch(base, { headers: { Authorization: tokenFor(9) } });
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toMatch(/image\/png/);
+    expect(await response.text()).toBe('png-bytes');
+    expect(db.execute.mock.calls.some(([q]) => /INSERT INTO audit_log/.test(q.sql) && q.args[1] === 'FILE_VIEW_OWN')).toBe(true);
   });
 });

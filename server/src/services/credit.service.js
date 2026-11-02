@@ -2,6 +2,7 @@ const { db } = require('../config/db');
 const logger = require('../utils/logger');
 const scoringService = require('./scoring.service');
 const loanService = require('./loan.service');
+const { logAction } = require('../utils/audit');
 
 const getApplicationData = async (householdId, partner, amount, months) => {
   // 1. Fetch User Salary for Affordability Check
@@ -32,13 +33,33 @@ const getApplicationData = async (householdId, partner, amount, months) => {
   return { salary, rate, isAnnual, monthlyPayment, maxAllowed };
 };
 
+// O Mwanga não concede crédito: encaminha o pedido para um parceiro
+// licenciado pelo Banco de Moçambique, que decide e entrega o dinheiro.
+// Por isso guardamos o consentimento para o cálculo do score e a referência
+// do contrato do parceiro quando ele confirma o desembolso.
+async function initCreditSchema() {
+  const statements = [
+    'ALTER TABLE public.credit_applications ADD COLUMN IF NOT EXISTS risk_score integer',
+    'ALTER TABLE public.credit_applications ADD COLUMN IF NOT EXISTS score_consent_at TIMESTAMP',
+    'ALTER TABLE public.credit_applications ADD COLUMN IF NOT EXISTS partner_reference TEXT',
+    'ALTER TABLE public.credit_applications ADD COLUMN IF NOT EXISTS partner_disbursed_at TIMESTAMP',
+  ];
+  try {
+    for (const sql of statements) await db.execute({ sql, args: [] });
+    logger.info('credit_applications compliance columns initialized or already exist.');
+  } catch (error) {
+    logger.warn(`Failed to initialize credit_applications columns: ${error.message}`);
+  }
+}
+
 const submitApplication = async (userId, householdId, data, files) => {
-  const { amount, months, partner, purpose } = data;
+  const { amount, months, partner, purpose, scoreConsent } = data;
+  if (scoreConsent !== true) throw new Error('CONSENT_REQUIRED');
 
   const { monthlyPayment } = await getApplicationData(householdId, partner, amount, months);
 
   // Calculate Credit Score
-  const { score, riskLevel } = await scoringService.calculateScore(userId, householdId);
+  const { score, riskLevel, breakdown } = await scoringService.calculateScore(userId, householdId);
 
   // Get file paths
   const biPath = files['biDocument'] ? files['biDocument'][0].filename : null;
@@ -50,8 +71,8 @@ const submitApplication = async (userId, householdId, data, files) => {
     sql: `
       INSERT INTO credit_applications (
         household_id, amount, months, partner, purpose, status, risk_score,
-        bi_path, residencia_path, renda_path, selfie_path
-      ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?) RETURNING id
+        bi_path, residencia_path, renda_path, selfie_path, score_consent_at
+      ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, NOW()) RETURNING id
     `,
     args: [householdId, amount, months, partner, purpose, score, biPath, residenciaPath, rendaPath, selfiePath]
   });
@@ -60,7 +81,9 @@ const submitApplication = async (userId, householdId, data, files) => {
   // Proactively update user score
   await scoringService.updateUserInfo(userId, score);
 
-  return { id: applicationId, score, riskLevel, monthlyPayment };
+  await logAction(userId, 'CREDIT_SCORE_CONSENT', 'CREDIT_APPLICATION', applicationId);
+
+  return { id: applicationId, score, riskLevel, breakdown, monthlyPayment };
 };
 
 const getApplications = async (householdId) => {
@@ -79,7 +102,13 @@ const getLoans = async (householdId) => {
   return result.rows;
 };
 
-const disburseLoan = async (applicationId, manualRate) => {
+/**
+ * Regista que o parceiro licenciado entregou o dinheiro. O Mwanga não move
+ * fundos: isto só cria o plano de prestações para o utilizador acompanhar a
+ * dívida, ligado à referência do contrato do parceiro.
+ */
+const recordPartnerDisbursement = async (applicationId, { partnerReference, rate } = {}) => {
+  if (!partnerReference) throw new Error('PARTNER_REFERENCE_REQUIRED');
   // 1. Fetch application details
   const appResult = await db.execute({
     sql: 'SELECT * FROM credit_applications WHERE id = ?',
@@ -106,10 +135,15 @@ const disburseLoan = async (applicationId, manualRate) => {
     userId,
     app.household_id,
     app.amount,
-    manualRate || (isAnnual ? 0.231 : 0.10),
+    rate || (isAnnual ? 0.231 : 0.10),
     app.months,
     isAnnual
   );
+
+  await db.execute({
+    sql: 'UPDATE credit_applications SET partner_reference = ?, partner_disbursed_at = NOW() WHERE id = ?',
+    args: [partnerReference, app.id],
+  });
 
   return loanId;
 };
@@ -118,6 +152,7 @@ module.exports = {
   submitApplication,
   getApplications,
   getLoans,
-  disburseLoan,
-  getApplicationData
+  recordPartnerDisbursement,
+  getApplicationData,
+  initCreditSchema
 };

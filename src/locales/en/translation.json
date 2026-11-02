@@ -248,7 +248,7 @@
       "doc_rent_desc": "Latest pay slip or bank statement.",
       "doc_selfie_label": "Verification Selfie",
       "doc_selfie_desc": "Clear photo of your face for proof of life.",
-      "docs_crypto": "🛡️ Your documents are encrypted and sent via a secure tunnel directly to the banking partner. Mwanga does not store copies on the server.",
+      "docs_crypto": "🛡️ Your documents are encrypted and stored privately. Only you and the team reviewing the application can open them, and every view is logged. Deleting your account deletes them.",
       "docs_status": "Submitted: {{count}} of 4 documents",
       "btn_next_review": "Review Application",
       "review_title": "FINAL PROPOSAL REVIEW",
@@ -262,7 +262,7 @@
       "rev_purpose": "Purpose",
       "rev_partner": "Financing Entity",
       "rev_docs": "Documentation",
-      "rev_disclaimer": "By submitting, you authorize the secure sharing of your data with the selected entity for credit analysis purposes. Response time may vary by partner.",
+      "rev_disclaimer": "Credit is granted by the licensed partner, not by Mwanga. By submitting, you authorise sharing your data with that partner to review the application. Response time depends on the partner.",
       "btn_submitting": "Processing...",
       "btn_submit": "Confirm and Submit",
       "sub_title": "Application Sent!",
@@ -276,7 +276,11 @@
       "btn_new": "New Simulation",
       "partner_a_name": "Moza Bank",
       "partner_b_name": "Access Bank",
-      "partner_c_name": "Micro-Lender Express"
+      "partner_c_name": "Micro-Lender Express",
+      "consent_title": "Permission to calculate your score",
+      "consent_body": "To assess the application, Mwanga calculates a score from 0 to 1000 using: your average income over the last 3 months, your instalment repayment history and the number of financial SMS you imported. The score is stored with the application and shared only with the partner you chose.",
+      "consent_check": "I authorise the score calculation with my transactions and sharing it with the chosen partner.",
+      "consent_required": "Tick the permission to submit the application."
     },
     "strategy": {
       "strategy_title": "PRO Payoff Strategy",
@@ -309,6 +313,13 @@
       "reg_title": "BANKING RISK REGISTER",
       "reg_desc": "In the banking system, your overdue debts are reported to the Credit Risk Information Center. A clean name is your greatest asset.",
       "months": "months"
+    },
+    "partner_disbursement": {
+      "prompt": "Contract or disbursement reference in the licensed partner's system:",
+      "success": "Partner disbursement recorded",
+      "error": "Could not record the disbursement.",
+      "button": "Record disbursement",
+      "confirm": "Record that the partner has already paid out this credit?"
     }
   },
   "dashboard": {
@@ -1156,6 +1167,16 @@
       "device": "Device added on {{date}}",
       "enabled": "Biometric sign-in is on.",
       "error": "Could not complete the action."
+    },
+    "delete_account": {
+      "title": "Delete account",
+      "body": "Deletes your account and your personal data: transactions, documents, credit applications, imported messages and settings. If you are the only household member, the household data is deleted too. This cannot be undone.",
+      "shared_note": "If there are other household members, the shared household data stays with them.",
+      "label": "Type APAGAR to confirm",
+      "button": "Delete my account",
+      "busy": "Deleting…",
+      "done": "Account deleted.",
+      "error": "The account could not be deleted. Nothing was deleted. Please try again."
     }
   },
   "pricing": {

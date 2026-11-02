@@ -9,7 +9,7 @@ const creditController = require('../controllers/credit.controller');
 router.post('/apply', authenticate, creditController.uploadMiddleware, creditController.submitApplication);
 router.get('/applications', authenticate, creditController.getApplications);
 router.get('/loans', authenticate, creditController.getLoans);
-// Disbursing creates a loan for another household, so only admins may do it.
-router.post('/disburse/:applicationId', authenticate, isAdmin, creditController.disburseLoan);
+// O Mwanga não empresta: um admin só regista o desembolso feito pelo parceiro licenciado.
+router.post('/applications/:applicationId/partner-disbursement', authenticate, isAdmin, creditController.recordPartnerDisbursement);
 
 module.exports = router;

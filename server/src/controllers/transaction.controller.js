@@ -2,6 +2,7 @@ const { z } = require('zod');
 const logger = require('../utils/logger');
 const transactionService = require('../services/transaction.service');
 const { transactionSchema } = require('../schemas/transaction.schema');
+const { isSmsNote, assertSmsQuota } = require('../services/smsQuota.service');
 
 const getTransactions = async (req, res) => {
   try {
@@ -19,10 +20,18 @@ const getTransactions = async (req, res) => {
 const createTransaction = async (req, res, next) => {
   try {
     const data = transactionSchema.parse(req.body);
+    if (isSmsNote(data.note)) await assertSmsQuota(req.user.householdId);
     const result = await transactionService.createTransaction(req.user.id, req.user.householdId, data);
     res.status(201).json(result);
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error.message === 'SMS_LIMIT_REACHED') {
+      return res.status(402).json({
+        error: `Chegou ao limite de ${error.limit} SMS importados este mês no plano grátis.`,
+        code: 'SMS_LIMIT_REACHED',
+        limit: error.limit,
+      });
+    }
     next(error);
   }
 };

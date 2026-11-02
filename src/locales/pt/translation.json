@@ -248,7 +248,7 @@
       "doc_rent_desc": "Último recibo de vencimento ou extrato bancário.",
       "doc_selfie_label": "Selfie de Verificação",
       "doc_selfie_desc": "Foto clara do seu rosto para prova de vida.",
-      "docs_crypto": "🛡️ Os seus documentos são encriptados e enviados via túnel seguro diretamente para o parceiro bancário. O Mwanga não armazena cópias no servidor.",
+      "docs_crypto": "🛡️ Os seus documentos são cifrados e guardados de forma privada. Só você e a equipa que analisa o pedido os podem abrir, e cada abertura fica registada. Ao apagar a conta, os documentos são apagados.",
       "docs_status": "Submetidos: {{count}} de 4 documentos",
       "btn_next_review": "Revisar Solicitação",
       "review_title": "REVISÃO FINAL DA PROPOSTA",
@@ -262,7 +262,7 @@
       "rev_purpose": "Finalidade",
       "rev_partner": "Entidade Financiadora",
       "rev_docs": "Documentação",
-      "rev_disclaimer": "Ao submeter, você autoriza a partilha segura dos seus dados com a entidade selecionada para efeitos de análise de crédito. O tempo de resposta pode variar conforme o parceiro.",
+      "rev_disclaimer": "O crédito é concedido pelo parceiro licenciado, não pelo Mwanga. Ao submeter, autoriza a partilha dos seus dados com esse parceiro para análise do pedido. O tempo de resposta depende do parceiro.",
       "btn_submitting": "A processar...",
       "btn_submit": "Confirmar e Submeter",
       "sub_title": "Solicitação Enviada!",
@@ -276,7 +276,11 @@
       "btn_new": "Nova Simulação",
       "partner_a_name": "Moza Banco",
       "partner_b_name": "Access Bank",
-      "partner_c_name": "Micro-Lender Express"
+      "partner_c_name": "Micro-Lender Express",
+      "consent_title": "Autorização para calcular o seu score",
+      "consent_body": "Para avaliar o pedido, o Mwanga calcula um score de 0 a 1000 com: a média das suas receitas dos últimos 3 meses, o seu histórico de pagamento de prestações e o número de SMS financeiros importados. O score é guardado com o pedido e partilhado só com o parceiro que escolheu.",
+      "consent_check": "Autorizo o cálculo do score com as minhas transacções e a partilha com o parceiro escolhido.",
+      "consent_required": "Marque a autorização para submeter o pedido."
     },
     "strategy": {
       "strategy_title": "Estratégia de Liquidação PRO",
@@ -309,6 +313,13 @@
       "reg_title": "REGISTO DE RISCO BANCÁRIO",
       "reg_desc": "No sistema bancário, as suas dívidas em atraso são reportadas à Central de Informação de Risco de Crédito. Um nome limpo é o seu maior activo.",
       "months": "meses"
+    },
+    "partner_disbursement": {
+      "prompt": "Referência do contrato ou desembolso no sistema do parceiro licenciado:",
+      "success": "Desembolso do parceiro registado",
+      "error": "Falha ao registar o desembolso.",
+      "button": "Registar desembolso",
+      "confirm": "Registar que o parceiro já entregou este crédito?"
     }
   },
   "dashboard": {
@@ -1156,6 +1167,16 @@
       "device": "Dispositivo ativado em {{date}}",
       "enabled": "Biometria ativada.",
       "error": "Não foi possível concluir a operação."
+    },
+    "delete_account": {
+      "title": "Apagar conta",
+      "body": "Apaga a sua conta e os seus dados pessoais: transacções, documentos, pedidos de crédito, mensagens importadas e definições. Se for o único membro da família, os dados da família também são apagados. Não é possível desfazer.",
+      "shared_note": "Se houver outros membros na família, os dados partilhados da família ficam com eles.",
+      "label": "Escreva APAGAR para confirmar",
+      "button": "Apagar a minha conta",
+      "busy": "A apagar…",
+      "done": "Conta apagada.",
+      "error": "Não foi possível apagar a conta. Nada foi apagado. Tente de novo."
     }
   },
   "pricing": {

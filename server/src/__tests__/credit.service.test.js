@@ -74,17 +74,25 @@ describe('Credit Service', () => {
       db.execute.mockResolvedValueOnce({ rows: [{ id: 99 }] }); // Insert app
       scoringService.updateUserInfo.mockResolvedValueOnce({});
 
-      const data = { amount: 100000, months: 24, partner: 'BIM', purpose: 'Carro' };
+      const data = { amount: 100000, months: 24, partner: 'BIM', purpose: 'Carro', scoreConsent: true };
       const files = { biDocument: [{ filename: 'bi.pdf' }] };
 
       const result = await creditService.submitApplication(MOCK_USER_ID, MOCK_HOUSEHOLD_ID, data, files);
 
       expect(db.execute).toHaveBeenNthCalledWith(2, {
-        sql: expect.stringContaining('INSERT INTO credit_applications'),
+        sql: expect.stringContaining('score_consent_at'),
         args: [MOCK_HOUSEHOLD_ID, 100000, 24, 'BIM', 'Carro', 750, 'bi.pdf', null, null, null]
       });
       expect(scoringService.updateUserInfo).toHaveBeenCalledWith(MOCK_USER_ID, 750);
-      expect(result).toEqual({ id: 99, score: 750, riskLevel: 'Baixo', monthlyPayment: 5000 });
+      expect(result).toEqual({ id: 99, score: 750, riskLevel: 'Baixo', breakdown: undefined, monthlyPayment: 5000 });
+      expect(db.execute.mock.calls.some(([q]) => /audit_log/.test(q.sql) && q.args[1] === 'CREDIT_SCORE_CONSENT')).toBe(true);
+    });
+
+    it('refuses to score without explicit consent', async () => {
+      const data = { amount: 1000, months: 6, partner: 'BIM', purpose: 'Carro', scoreConsent: false };
+      await expect(creditService.submitApplication(MOCK_USER_ID, MOCK_HOUSEHOLD_ID, data, {})).rejects.toThrow('CONSENT_REQUIRED');
+      expect(scoringService.calculateScore).not.toHaveBeenCalled();
+      expect(db.execute).not.toHaveBeenCalled();
     });
   });
 
@@ -110,17 +118,24 @@ describe('Credit Service', () => {
     });
   });
 
-  describe('disburseLoan', () => {
+  describe('recordPartnerDisbursement', () => {
+    const ref = { partnerReference: 'CTR-2027-001' };
+
+    it('needs the partner contract reference', async () => {
+      await expect(creditService.recordPartnerDisbursement(1, {})).rejects.toThrow('PARTNER_REFERENCE_REQUIRED');
+      expect(db.execute).not.toHaveBeenCalled();
+    });
+
     it('should throw NOT_FOUND if app does not exist', async () => {
       db.execute.mockResolvedValueOnce({ rows: [] });
 
-      await expect(creditService.disburseLoan(999)).rejects.toThrow('NOT_FOUND');
+      await expect(creditService.recordPartnerDisbursement(999, ref)).rejects.toThrow('NOT_FOUND');
     });
 
     it('should throw INVALID_STATUS if app is rejected', async () => {
       db.execute.mockResolvedValueOnce({ rows: [{ id: 1, status: 'rejected' }] });
 
-      await expect(creditService.disburseLoan(1)).rejects.toThrow('INVALID_STATUS');
+      await expect(creditService.recordPartnerDisbursement(1, ref)).rejects.toThrow('INVALID_STATUS');
     });
 
     it('should call loanService.disburseLoan for valid pending app', async () => {
@@ -130,9 +145,14 @@ describe('Credit Service', () => {
       db.execute.mockResolvedValueOnce({ rows: [{ id: MOCK_USER_ID }] }); // Fetch user
       loanService.disburseLoan.mockResolvedValueOnce(55); // Returns new loan_id
 
-      const result = await creditService.disburseLoan(1);
+      db.execute.mockResolvedValueOnce({ rows: [] }); // Save partner reference
+      const result = await creditService.recordPartnerDisbursement(1, ref);
 
-      expect(db.execute).toHaveBeenCalledTimes(2);
+      expect(db.execute).toHaveBeenCalledTimes(3);
+      expect(db.execute).toHaveBeenLastCalledWith({
+        sql: expect.stringContaining('partner_reference'),
+        args: ['CTR-2027-001', 1]
+      });
       expect(loanService.disburseLoan).toHaveBeenCalledWith(
         1, MOCK_USER_ID, MOCK_HOUSEHOLD_ID, 5000, 0.10, 6, false
       );
