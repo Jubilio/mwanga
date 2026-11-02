@@ -106,5 +106,5 @@ export function usePushNotifications() {
       setIsSubscribed(false); announce();
     } finally { lock.current = false; setIsLoading(false); }
   }
-  return { disablePush, enablePush, isLoading, isSubscribed, isSupported, permission, refreshSubscriptionStatus: refreshStatus, sendTestPush: () => api.post('/notifications/test') };
+  return { disablePush, enablePush, isLoading, isSubscribed, isSupported, permission, refreshSubscriptionStatus: refreshStatus };
 }

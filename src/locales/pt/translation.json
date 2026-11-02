@@ -1021,9 +1021,7 @@
         "ai_sync": "Sincronizado com o motor Binth AI",
         "blocked_title": "Notificações Bloqueadas",
         "blocked_desc": "O navegador bloqueou os alertas. Para ativar, clica no ícone de ajustes (ou cadeado) na barra de endereços acima e altera 'Notificações' para 'Permitir'.",
-        "blocked_btn": "Ver Como Desbloquear",
-        "test_btn": "Enviar notificação de teste",
-        "test_sent": "Notificação de teste enviada."
+        "blocked_btn": "Ver Como Desbloquear"
       }
     },
     "sidebar": {

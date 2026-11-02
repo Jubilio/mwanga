@@ -1021,9 +1021,7 @@
         "blocked_desc": "The browser blocked alerts. To enable, click the settings (or lock) icon in the address bar above and change 'Notifications' to 'Allow'.",
         "blocked_btn": "See How to Unblock",
         "debt_reminder": "Debt reminders",
-        "debt_reminder_tip": "Receive reminders about upcoming debt payments.",
-        "test_btn": "Send test notification",
-        "test_sent": "Test notification sent."
+        "debt_reminder_tip": "Receive reminders about upcoming debt payments."
       }
     },
     "sidebar": {

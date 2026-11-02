@@ -23,8 +23,7 @@ export default function TabPreferences({
     isLoading: isPushLoading,
     isSubscribed,
     isSupported,
-    permission,
-    sendTestPush
+    permission
   } = pushProps;
 
   return (
@@ -146,16 +145,6 @@ export default function TabPreferences({
                     className="px-6 py-2 text-[10px] font-bold text-white/50 hover:text-white transition-colors"
                   >
                     {t('settings.pref.push.disable_btn')}
-                  </button>
-                )}
-                {isSubscribed && (
-                  <button
-                    type="button"
-                    disabled={isPushLoading}
-                    onClick={async () => { try { await sendTestPush(); showToast(t('settings.pref.push.test_sent'), 'success'); } catch { showToast(t('settings.toasts.push_error'), 'error'); } }}
-                    className="px-6 py-2 text-[10px] font-bold text-white/50 hover:text-white transition-colors"
-                  >
-                    {t('settings.pref.push.test_btn')}
                   </button>
                 )}
               </div>
