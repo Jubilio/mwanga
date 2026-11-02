@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Lock, MessageSquareText, Settings2, ShieldCheck, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Lock, MessageSquareText, Settings2, Share2, ShieldAlert, ShieldCheck, X } from 'lucide-react';
 import { onSmsAccessRequest } from '../services/smsAccess';
 import {
   getInstallInfo,
@@ -9,6 +10,7 @@ import {
   needsRestrictedSettings,
   openAppSettings,
   requestSmsPermission,
+  restrictedSettingsBlocker,
 } from '../services/moneySms';
 
 /**
@@ -18,9 +20,11 @@ import {
  */
 export default function SmsPermissionSheet() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [request, setRequest] = useState(null);
   const [phase, setPhase] = useState('explain');
   const [restricted, setRestricted] = useState(false);
+  const [blocker, setBlocker] = useState(null);
   const [busy, setBusy] = useState(false);
   const requestRef = useRef(null);
 
@@ -35,7 +39,10 @@ export default function SmsPermissionSheet() {
     requestRef.current = next;
     setPhase(next.state === 'denied' ? 'blocked' : 'explain');
     setRequest(next);
-    getInstallInfo().then(info => setRestricted(needsRestrictedSettings(info)));
+    getInstallInfo().then((info) => {
+      setRestricted(needsRestrictedSettings(info));
+      setBlocker(restrictedSettingsBlocker(info));
+    });
   }), []);
 
   // Coming back from Android settings: check again and carry on if access was given.
@@ -62,6 +69,12 @@ export default function SmsPermissionSheet() {
 
   const list = (key) => t(key, { returnObjects: true });
 
+  // Without READ_SMS, the user can still share or paste each SMS into the import page.
+  function openShareFallback() {
+    finish(false);
+    navigate('/sms-import');
+  }
+
   return (
     <AnimatePresence>
       {request && (
@@ -87,28 +100,49 @@ export default function SmsPermissionSheet() {
                 <h3 id="sms-permission-title" className="text-lg font-black text-midnight dark:text-white mb-2">{t('sms_permission.blocked_title')}</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">{t('sms_permission.blocked_body')}</p>
 
-                {restricted && (
+                {restricted && blocker === 'advanced_protection' && (
+                  <div role="alert" className="rounded-2xl border border-coral/40 bg-coral/10 p-4 mb-3 flex gap-3">
+                    <ShieldAlert size={18} className="text-coral shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-black text-midnight dark:text-white mb-1">{t('sms_permission.advanced_protection_title')}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">{t('sms_permission.advanced_protection_body')}</p>
+                    </div>
+                  </div>
+                )}
+
+                {restricted ? (
                   <div className="rounded-2xl border border-gold/30 bg-gold/5 p-4 mb-3">
                     <p className="text-xs font-black uppercase tracking-wider text-gold mb-2">{t('sms_permission.restricted_title')}</p>
-                    <ol className="list-decimal pl-5 space-y-1 text-sm text-midnight dark:text-slate-200">
+                    <ol className="list-decimal pl-5 space-y-1.5 text-sm text-midnight dark:text-slate-200">
                       {list('sms_permission.restricted_steps').map(step => <li key={step}>{step}</li>)}
                     </ol>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{t('sms_permission.restricted_note')}</p>
                   </div>
+                ) : (
+                  <div className="rounded-2xl border border-white/10 bg-black/5 dark:bg-white/5 p-4 mb-3">
+                    <p className="text-xs font-black uppercase tracking-wider text-sky mb-2">{t('sms_permission.settings_title')}</p>
+                    <ol className="list-decimal pl-5 space-y-1 text-sm text-midnight dark:text-slate-200">
+                      {list('sms_permission.settings_steps').map(step => <li key={step}>{step}</li>)}
+                    </ol>
+                  </div>
                 )}
 
-                <div className="rounded-2xl border border-white/10 bg-black/5 dark:bg-white/5 p-4 mb-5">
-                  <p className="text-xs font-black uppercase tracking-wider text-sky mb-2">
-                    {restricted ? t('sms_permission.settings_title_then') : t('sms_permission.settings_title')}
-                  </p>
-                  <ol className="list-decimal pl-5 space-y-1 text-sm text-midnight dark:text-slate-200">
-                    {list('sms_permission.settings_steps').map(step => <li key={step}>{step}</li>)}
-                  </ol>
-                </div>
+                {restricted && (
+                  <details className="rounded-2xl border border-white/10 bg-black/5 dark:bg-white/5 p-4 mb-5 text-sm text-midnight dark:text-slate-200">
+                    <summary className="font-bold cursor-pointer">{t('sms_permission.missing_title')}</summary>
+                    <ul className="list-disc pl-5 space-y-1.5 mt-2 text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                      {list('sms_permission.missing_reasons').map(item => <li key={item}>{item}</li>)}
+                    </ul>
+                  </details>
+                )}
 
                 <button type="button" onClick={openAppSettings} className="w-full py-4 rounded-2xl font-black text-sm tracking-wider uppercase text-white flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, var(--color-ocean), var(--color-sky))' }}>
                   <Settings2 size={16} /> {t('sms_permission.open_settings')}
                 </button>
+                <button type="button" onClick={openShareFallback} className="w-full py-3 mt-2 rounded-2xl font-bold text-sm text-sky border border-sky/30 hover:bg-sky/10 flex items-center justify-center gap-2">
+                  <Share2 size={16} /> {t('sms_permission.share_instead')}
+                </button>
+                <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">{t('sms_permission.share_instead_hint')}</p>
                 <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-3">{t('sms_permission.come_back')}</p>
               </>
             ) : (

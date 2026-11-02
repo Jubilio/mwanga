@@ -4,4 +4,5 @@
     <string name="title_activity_main">Mwanga</string>
     <string name="package_name">com.mwanga.app</string>
     <string name="custom_url_scheme">com.mwanga.app</string>
+    <string name="share_sms_label">Importar SMS no Mwanga</string>
 </resources>

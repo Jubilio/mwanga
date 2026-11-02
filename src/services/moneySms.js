@@ -68,3 +68,34 @@ export async function listMoneySms({ minDate, maxCount = 200 }) {
   });
   return (smsList || []).filter(isMoneySms);
 }
+
+/**
+ * Text shared to Mwanga from another app (Messages → Share → Mwanga). This is the
+ * import path that works without READ_SMS. Returns an unsubscribe function.
+ */
+export function onSharedText(handler) {
+  if (!isSmsInboxSupported()) return () => {};
+  let handle = null;
+  let stopped = false;
+  Promise.resolve(MoneySms.addListener('sharedText', (event) => {
+    const text = String(event?.text || '').trim();
+    if (text) handler(text);
+  }))
+    .then((h) => {
+      handle = h;
+      if (stopped) h?.remove?.();
+    })
+    .catch(() => {});
+  return () => {
+    stopped = true;
+    handle?.remove?.();
+  };
+}
+
+/**
+ * Why "Allow restricted settings" may be missing: 'advanced_protection' when Android
+ * Advanced Protection is on (it removes that option), otherwise null.
+ */
+export function restrictedSettingsBlocker(info) {
+  return info?.advancedProtection ? 'advanced_protection' : null;
+}

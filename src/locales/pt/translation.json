@@ -483,7 +483,7 @@
     "input_header": "Texto da Mensagem",
     "mobile_tip": {
       "title": "Dica para Telemóvel",
-      "desc": "Pode colar o texto copiado ou partilhar o SMS diretamente para esta página se tiver a App instalada."
+      "desc": "No Android: na app Mensagens, toca sem soltar na SMS do M-Pesa, e-Mola, mKesh ou do banco, escolhe Partilhar e depois Mwanga. A SMS abre aqui já pronta a analisar. Também podes copiar e colar o texto."
     },
     "placeholder": "Cole aqui o texto do seu SMS bancário (BIM, BCI, M-Pesa, etc.)...",
     "btn_paste": "Colar do telemóvel",
@@ -2898,22 +2898,34 @@
     "try_again": "Tentar de novo",
     "blocked_title": "O Android bloqueou o acesso às SMS",
     "blocked_body": "O Android já não mostra o pedido de permissão ao Mwanga. Podes activá-la nas definições da app, em menos de um minuto:",
-    "restricted_title": "Primeiro: permitir definições restritas",
+    "restricted_title": "Desbloquear a permissão (uma só vez)",
     "restricted_steps": [
       "Toca em Abrir definições da app, em baixo.",
-      "Toca nos três pontos (⋮) no canto superior direito.",
-      "Escolhe Permitir definições restritas e confirma com o teu PIN ou impressão digital."
+      "Toca em Permissões, depois em SMS e escolhe Permitir. O Android mostra «Definição restrita»: toca em OK. Este passo é obrigatório, porque é ele que faz aparecer a opção seguinte.",
+      "Volta atrás para a página Informações da app. Toca nos três pontos (⋮) no canto superior direito e escolhe Permitir definições restritas. Confirma com o PIN ou a impressão digital.",
+      "Volta a Permissões, depois SMS, e escolhe Permitir."
     ],
-    "restricted_note": "O Android pede isto a todas as apps instaladas a partir de um ficheiro APK, fora da Play Store. Se não vires os três pontos, salta este passo.",
+    "restricted_note": "O Android exige isto a todas as apps instaladas a partir de um ficheiro APK, fora da Play Store. Só é preciso uma vez; as actualizações do Mwanga mantêm a permissão.",
     "settings_title": "Activar a permissão",
-    "settings_title_then": "Depois: activar a permissão",
     "settings_steps": [
       "Nas definições da app, toca em Permissões.",
       "Toca em SMS.",
       "Escolhe Permitir."
     ],
     "open_settings": "Abrir definições da app",
-    "come_back": "Quando voltares ao Mwanga, a importação continua sozinha."
+    "come_back": "Quando voltares ao Mwanga, a importação continua sozinha.",
+    "advanced_protection_title": "A Proteção avançada está ligada",
+    "advanced_protection_body": "Com a Proteção avançada ligada, o Android esconde a opção Permitir definições restritas. Para a ver, desliga-a em Definições, Segurança e privacidade, Proteção avançada. Se preferires mantê-la ligada, partilha as SMS com o Mwanga (botão em baixo).",
+    "missing_title": "Não aparecem os três pontos (⋮)?",
+    "missing_reasons": [
+      "Faz primeiro o passo 2: os três pontos só aparecem depois de o Android mostrar «Definição restrita».",
+      "Os três pontos estão na página Informações da app (a primeira), não na página Permissões.",
+      "Se a Proteção avançada estiver ligada (Definições, Segurança e privacidade, Proteção avançada), o Android esconde a opção. Desliga-a, desbloqueia o Mwanga e volta a ligá-la.",
+      "Num telemóvel de trabalho, o administrador pode bloquear esta opção.",
+      "Se nada disto resultar, usa Partilhar SMS com o Mwanga: funciona sem esta permissão."
+    ],
+    "share_instead": "Partilhar SMS com o Mwanga",
+    "share_instead_hint": "Sem permissão também funciona: na app Mensagens, toca sem soltar na SMS, escolhe Partilhar e depois Mwanga."
   },
   "ai_status": {
     "personal_no_credits": "A tua conta de IA ficou sem créditos.",
