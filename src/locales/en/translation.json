@@ -1626,7 +1626,9 @@
       "no_amount": "I didn't catch the amount. Type it or try again.",
       "no_speech": "I didn't hear anything. Try again.",
       "denied": "Allow the microphone in your browser to add by voice.",
-      "unavailable": "This device has no speech recognition."
+      "unavailable": "This device has no speech recognition.",
+      "header": "Add by voice",
+      "desc": "Say the amount and what for. Mwanga fills in the fields and you confirm before saving."
     }
   },
   "binth_local": {

@@ -45,6 +45,7 @@ export default function QuickAddNotificationModal({
   const [listening, setListening] = useState(false);
   const [heard, setHeard] = useState('');
   const voiceSupported = isVoiceInputSupported();
+  const isVoiceShortcut = payload?.actionId === 'VOICE' && voiceSupported;
   const autoVoiceFor = useRef(null);
   const listenAbort = useRef(null);
 
@@ -72,7 +73,18 @@ export default function QuickAddNotificationModal({
       account_id: initialType === 'receita' ? state.settings.default_income_account_id || '' : state.settings.default_expense_account_id || '',
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [payloadKey, state.settings]);
+  }, [payloadKey]);
+
+  // Settings often arrive after the sheet opens: fill the default account then, without wiping the form.
+  const defaultIncomeAccount = state.settings.default_income_account_id || '';
+  const defaultExpenseAccount = state.settings.default_expense_account_id || '';
+  useEffect(() => {
+    if (!isOpen) return;
+    setForm((current) => (current.account_id ? current : {
+      ...current,
+      account_id: current.tipo === 'receita' ? defaultIncomeAccount : defaultExpenseAccount,
+    }));
+  }, [isOpen, defaultIncomeAccount, defaultExpenseAccount]);
 
   async function startVoice() {
     if (listening) {
@@ -115,8 +127,10 @@ export default function QuickAddNotificationModal({
   // Opened from the "Registar por voz" shortcut: start listening straight away.
   useEffect(() => {
     if (!isOpen || payload?.actionId !== 'VOICE' || !voiceSupported || autoVoiceFor.current === payloadKey) return;
-    autoVoiceFor.current = payloadKey;
-    const timer = setTimeout(() => { startVoice(); }, 350);
+    const timer = setTimeout(() => {
+      autoVoiceFor.current = payloadKey;
+      startVoice();
+    }, 350);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, payloadKey, voiceSupported]);
@@ -180,9 +194,9 @@ export default function QuickAddNotificationModal({
               <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em]">
                 <Wallet size={12} /> {t('quick_add.title')}
               </div>
-              <h2 className="text-2xl font-black tracking-tight">{t('quick_add.header')}</h2>
+              <h2 className="text-2xl font-black tracking-tight">{isVoiceShortcut ? t('quick_add.voice.header') : t('quick_add.header')}</h2>
               <p className="mt-2 max-w-xl text-sm text-white/80">
-                {t('quick_add.desc')}
+                {isVoiceShortcut ? t('quick_add.voice.desc') : t('quick_add.desc')}
               </p>
             </div>
 

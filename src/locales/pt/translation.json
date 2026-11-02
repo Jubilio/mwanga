@@ -1626,7 +1626,9 @@
       "no_amount": "Não percebi o valor. Escreve-o ou tenta outra vez.",
       "no_speech": "Não ouvi nada. Tenta outra vez.",
       "denied": "Permite o microfone no navegador para registar por voz.",
-      "unavailable": "Este dispositivo não tem reconhecimento de voz."
+      "unavailable": "Este dispositivo não tem reconhecimento de voz.",
+      "header": "Regista por voz",
+      "desc": "Fala o valor e em quê. O Mwanga preenche os campos e tu confirmas antes de guardar."
     }
   },
   "binth_local": {
