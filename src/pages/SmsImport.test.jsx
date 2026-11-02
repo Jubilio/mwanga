@@ -6,10 +6,10 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import i18n from '../i18n';
 import { FinanceContext } from '../hooks/FinanceContext';
 import api from '../utils/api';
-import SmsImport from './SmsImport';
+import SmsImport, { shouldSyncBalance } from './SmsImport';
 
 vi.mock('../hooks/useSmsSync', () => ({ useSmsSync: () => ({ syncSms: vi.fn() }) }));
-vi.mock('../utils/api', () => ({ default: { post: vi.fn() } }));
+vi.mock('../utils/api', () => ({ default: { post: vi.fn(), put: vi.fn() } }));
 
 const BCI_PURCHASE = 'Caro Cliente, registamos uma compra de 2.580,00 MZN a 31/10/2026 15:46 na(o) CENTRO MED com cartao ***5710. Se nao reconhece, ligue gratis 800224224/(+258)21224224.';
 const PARSED = {
@@ -23,7 +23,7 @@ let root, host, showToast, reloadData;
 const state = {
   settings: { subscription_tier: 'pro', default_expense_account_id: 7 },
   transacoes: [],
-  contas: [{ id: 3, name: 'BCI Conta' }, { id: 7, name: 'Carteira' }],
+  contas: [{ id: 3, name: 'BCI Conta' }, { id: 7, name: 'Carteira' }, { id: 9, name: 'M-Pesa', current_balance: 2266.16 }],
 };
 
 beforeEach(async () => {
@@ -32,6 +32,7 @@ beforeEach(async () => {
   showToast = vi.fn();
   reloadData = vi.fn().mockResolvedValue(undefined);
   api.post.mockReset();
+  api.put.mockReset();
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
   await act(async () => root.render(
     <FinanceContext.Provider value={{ state, dispatch: vi.fn(), reloadData }}>
@@ -49,13 +50,13 @@ afterEach(async () => { await act(async () => root.unmount()); host.remove(); aw
 
 const button = (text) => [...host.querySelectorAll('button')].find((el) => el.textContent.trim().includes(text));
 
-async function analyse() {
+async function analyse(sms = BCI_PURCHASE, parsed = PARSED) {
   const textarea = host.querySelector('textarea');
   await act(async () => {
-    Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(textarea, BCI_PURCHASE);
+    Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(textarea, sms);
     textarea.dispatchEvent(new Event('input', { bubbles: true }));
   });
-  api.post.mockResolvedValueOnce({ data: { data: { parsed_data: PARSED } } });
+  api.post.mockResolvedValueOnce({ data: { data: { parsed_data: parsed } } });
   await act(async () => button('Analyze').click());
 }
 
@@ -82,4 +83,40 @@ it('shows why the save failed instead of doing nothing', async () => {
   expect(host.querySelector('[role="alert"]')?.textContent).toContain('Validation failed');
   // The parsed result stays on screen so the user can try again.
   expect(button('Confirm and Log to Account')).toBeTruthy();
+});
+
+const MPESA_AGENT = {
+  is_financial: true, bank_name: 'Vodacom M-Pesa', transaction_type: 'levantamento', transaction_id: 'CO261102.1209.T42855',
+  account_number: null, amount: 100, currency: 'MZN', fee_amount: 3, balance_after: 2163.16, recipient_name: 'ANIJA AMIMO',
+  recipient_account: null, agent_code: '448365', description: 'levantamento', transaction_datetime: '2026-11-02T12:09:00', confidence_score: 0.9,
+};
+
+it('sets the mobile wallet balance to the balance in the SMS', async () => {
+  await analyse('Novo saldo: 2,163.16MT', MPESA_AGENT);
+  const checkbox = host.querySelector('#sms-import-sync-balance');
+  expect(checkbox.checked).toBe(true);
+  // 2266.16 - 100 = 2166.16 in Mwanga; the SMS says 2163.16, so 3.00 (the fee) is the adjustment.
+  expect(host.textContent).toContain('3.00 MZN');
+
+  api.post.mockResolvedValueOnce({ data: { id: 100 } });
+  api.put.mockResolvedValueOnce({ data: {} });
+  await act(async () => button('Confirm and Log to Account').click());
+
+  expect(api.post.mock.calls[1][1]).toMatchObject({ account_id: 9, amount: 100, type: 'despesa' });
+  expect(api.put).toHaveBeenCalledWith('/accounts/9/balance', { current_balance: 2163.16 });
+});
+
+it('leaves the balance alone when the box is unticked', async () => {
+  await analyse('Novo saldo: 2,163.16MT', MPESA_AGENT);
+  await act(async () => host.querySelector('#sms-import-sync-balance').click());
+  api.post.mockResolvedValueOnce({ data: { id: 100 } });
+  await act(async () => button('Confirm and Log to Account').click());
+  expect(api.put).not.toHaveBeenCalled();
+});
+
+it('does not suggest a balance from an SMS older than the account movements', () => {
+  const newer = [{ account_id: 9, data: '2026-11-03' }];
+  expect(shouldSyncBalance(MPESA_AGENT, '9', newer)).toBe(false);
+  expect(shouldSyncBalance(MPESA_AGENT, '9', [{ account_id: 9, data: '2026-11-01' }])).toBe(true);
+  expect(shouldSyncBalance({ ...MPESA_AGENT, balance_after: null }, '9', [])).toBe(false);
 });
