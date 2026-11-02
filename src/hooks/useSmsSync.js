@@ -11,7 +11,7 @@ import i18n from '../i18n';
 
 export function useSmsSync(showToast) {
   useUiLanguage();
-  const { state, dispatch } = useFinance();
+  const { state, dispatch, reloadData } = useFinance();
   const { settings, contas, transacoes } = state;
 
   const syncSms = useCallback(async (manual = false) => {
@@ -92,8 +92,8 @@ export function useSmsSync(showToast) {
               };
 
               try {
-                const res = await api.post('/transactions', txData);
-                dispatch({ type: 'ADD_TRANSACTION', payload: res.data });
+                // Already saved here; dispatching ADD_TRANSACTION would post it a second time.
+                await api.post('/transactions', txData);
                 parsedCount++;
               } catch (err) {
                 console.error('Failed to sync individual SMS tx:', err);
@@ -104,9 +104,8 @@ export function useSmsSync(showToast) {
 
       if (parsedCount > 0) {
         showToast?.(ui("Sucesso! {{p0}} transações importadas do SMS.", { p0: parsedCount }), 'success');
-        // Force refresh accounts to get updated balances
-        const accRes = await api.get('/accounts');
-        dispatch({ type: 'SET_CONTAS', payload: accRes.data });
+        // Load the new transactions and updated balances into the app.
+        await reloadData?.();
       } else {
         if (manual) showToast?.(ui("Nenhuma transação nova identificada."), 'info');
       }
@@ -127,7 +126,7 @@ export function useSmsSync(showToast) {
       console.error('SMS Sync Error:', error);
       if (manual) showToast?.(ui("Erro ao tentar sincronizar SMS."), 'error');
     }
-  }, [settings, contas, transacoes, dispatch, showToast]);
+  }, [settings, contas, transacoes, dispatch, reloadData, showToast]);
 
   return { syncSms };
 }

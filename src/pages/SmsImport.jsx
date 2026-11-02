@@ -1,6 +1,6 @@
 import { ui, useUiLanguage, uiLocale } from '../utils/uiTranslation';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, Clipboard, MessageSquare, RefreshCw, ShieldCheck, Smartphone, Zap } from 'lucide-react';
 import api from '../utils/api';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +26,9 @@ const TYPE_COLORS = (t) => ({
   transfer_out: { bg: 'bg-gold/10', border: 'border-gold', text: 'text-gold', label: t('sms_import.result.labels.description') },
   transfer_in: { bg: 'bg-sky/10', border: 'border-sky', text: 'text-sky', label: t('sms_import.result.labels.description') },
   withdrawal: { bg: 'bg-purple-500/10', border: 'border-purple-500', text: 'text-purple-400', label: t('sms_import.result.labels.description') },
+  // The server parser names cash withdrawals and deposits in Portuguese.
+  levantamento: { bg: 'bg-purple-500/10', border: 'border-purple-500', text: 'text-purple-400', label: t('sms_import.result.labels.description') },
+  deposito: { bg: 'bg-emerald-500/10', border: 'border-emerald-500', text: 'text-emerald-400', label: t('sms_import.result.labels.description') },
   deposit: { bg: 'bg-emerald-500/10', border: 'border-emerald-500', text: 'text-emerald-400', label: t('sms_import.result.labels.description') },
   payment: { bg: 'bg-orange-500/10', border: 'border-orange-500', text: 'text-orange-400', label: t('sms_import.result.labels.description') },
   fee: { bg: 'bg-coral/10', border: 'border-coral', text: 'text-coral', label: t('sms_import.result.labels.description') },
@@ -62,25 +65,72 @@ function DataRow({ label, value, accentClass }) {
   );
 }
 
+const INCOME_TYPES = ['credit', 'deposit', 'deposito', 'transfer_in'];
+
 function inferTransactionType(result) {
-  return ['credit', 'deposit', 'transfer_in'].includes(result.transaction_type) ? 'receita' : 'despesa';
+  return INCOME_TYPES.includes(result.transaction_type) ? 'receita' : 'despesa';
 }
 
 function inferCategory(result) {
   const type = result.transaction_type;
-  if (type === 'withdrawal') return 'other';
-  if (type === 'transfer_out' || type === 'transfer_in') return 'transport';
-  if (type === 'payment' || type === 'debit') return 'other';
-  if (type === 'credit' || type === 'deposit') return 'salary';
-  if (type === 'fee') return 'other';
+  if (type === 'credit') return 'salary';
   return 'other';
 }
 
-function buildDescription(result, t) {
-  const types = TYPE_COLORS(t);
-  const label = types[result.transaction_type]?.label || result.transaction_type || ui("Movimento");
-  const extras = [result.recipient_name, result.agent_code].filter(Boolean).join(' • ');
+// Plain words for the transaction description, e.g. "BCI - Compra - CENTRO MED".
+const TYPE_WORDS = {
+  debit: 'Débito',
+  credit: 'Crédito',
+  transfer_out: 'Transferência enviada',
+  transfer_in: 'Transferência recebida',
+  withdrawal: 'Levantamento',
+  levantamento: 'Levantamento',
+  deposit: 'Depósito',
+  deposito: 'Depósito',
+  payment: 'Compra',
+  fee: 'Taxa',
+};
+
+function buildDescription(result) {
+  const label = ui(TYPE_WORDS[result.transaction_type] || 'Movimento');
+  const extras = [result.recipient_name, result.agent_code ? `${ui('Agente')} ${result.agent_code}` : null].filter(Boolean).join(' • ');
   return [result.bank_name || 'SMS', label, extras].filter(Boolean).join(' - ').slice(0, 255);
+}
+
+// Amounts may come back from the AI fallback as text such as "2,580.00".
+function toAmount(value) {
+  if (typeof value === 'number') return value;
+  const cleaned = String(value ?? '').replace(/[^\d.,]/g, '');
+  const decimalComma = cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.');
+  const normalized = decimalComma ? cleaned.replace(/\./g, '').replace(',', '.') : cleaned.replace(/,/g, '');
+  return Number.parseFloat(normalized);
+}
+
+function toIsoDate(datetime) {
+  const day = String(datetime || '').slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : new Date().toISOString().slice(0, 10);
+}
+
+/** Same rule as the Android inbox sync: an account named after the bank, else the default account. */
+function pickAccountId(result, contas = [], settings = {}) {
+  const bank = String(result.bank_name || '').toLowerCase();
+  const firstWord = bank.split(/[\s-]+/).find((word) => word.length >= 3);
+  const match = bank && contas.find((c) => {
+    const name = String(c.name || '').toLowerCase();
+    return name.includes(bank) || bank.includes(name) || (firstWord && name.includes(firstWord));
+  });
+  if (match) return Number(match.id);
+  const fallback = inferTransactionType(result) === 'receita' ? settings.default_income_account_id : settings.default_expense_account_id;
+  return fallback ? Number(fallback) : undefined;
+}
+
+function saveErrorMessage(error, t) {
+  if (!error?.response) return ui('Sem ligação ao servidor. Verifique a internet e tente novamente.');
+  const data = error.response.data || {};
+  const firstDetail = Array.isArray(data.details) && data.details[0]
+    ? `${data.details[0].path?.join('.') || ''} ${data.details[0].message || ''}`.trim()
+    : null;
+  return [data.error || data.message || t('sms_import.toasts.save_error'), firstDetail].filter(Boolean).join(': ');
 }
 
 function buildNote(result, rawText, t) {
@@ -106,10 +156,16 @@ export default function SmsImport() {
   const [saving, setSaving] = useState(false);
   const [pasteLoading, setPasteLoading] = useState(false);
   const { t } = useTranslation();
-  const { showToast } = useToast();
+  // The layout draws the toast; a local useToast() here was never rendered, so every
+  // message on this page (including save errors) was invisible.
+  const outlet = useOutletContext();
+  const localToast = useToast();
+  const showToast = outlet?.showToast || localToast.showToast;
   const { syncSms } = useSmsSync(showToast);
   const [syncing, setSyncing] = useState(false);
-  const { state } = useFinance();
+  const { state, reloadData } = useFinance();
+  const [saveError, setSaveError] = useState('');
+  const [accountId, setAccountId] = useState('');
   // Saves from this page are not pushed into the store, so count them here too.
   const [savedHere, setSavedHere] = useState(0);
   const quota = getSmsQuota(getEffectiveTier(state.settings), state.transacoes, new Date(), savedHere);
@@ -153,6 +209,8 @@ export default function SmsImport() {
 
       const parsedData = res.data.data.parsed_data;
       setResult(parsedData);
+      setSaveError('');
+      setAccountId(parsedData ? String(pickAccountId(parsedData, state.contas, state.settings) ?? '') : '');
       showToast(ui("SMS analisado com sucesso!"), 'success');
     } catch (error) {
       console.error(error);
@@ -164,7 +222,7 @@ export default function SmsImport() {
     } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, state.contas, state.settings]);
 
   useEffect(() => {
     if (!incomingSharedText) return;
@@ -218,31 +276,44 @@ export default function SmsImport() {
   }
 
   async function saveTransaction() {
-    if (!result || !result.is_financial || !result.amount) return;
+    if (!result || result.is_financial === false) return;
+    setSaveError('');
+    const amount = toAmount(result.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setSaveError(ui('Não encontrámos o valor nesta mensagem.'));
+      return;
+    }
     if (quotaReached) {
-      showToast(t('sms_quota.reached', { limit: quota.limit }), 'error');
+      const message = t('sms_quota.reached', { limit: quota.limit });
+      setSaveError(message);
+      showToast(message, 'error');
       return;
     }
 
     setSaving(true);
     try {
       const payload = {
-        date: result.transaction_datetime ? result.transaction_datetime.split('T')[0] : new Date().toISOString().slice(0, 10),
+        date: toIsoDate(result.transaction_datetime),
         type: inferTransactionType(result),
-        amount: Number(result.amount),
+        amount,
         description: buildDescription(result),
         category: inferCategory(result),
-        note: buildNote(result, smsText),
+        note: buildNote(result, smsText, t),
       };
+      if (accountId) payload.account_id = Number(accountId);
 
       await api.post('/transactions', payload);
       setSavedHere((count) => count + 1);
       showToast(t('sms_import.toasts.save_success'), 'success');
       setResult(null);
       setSmsText('');
+      // Bring the new transaction and account balances into the rest of the app.
+      Promise.resolve(reloadData?.()).catch((error) => console.warn('Reload after SMS save failed:', error));
     } catch (error) {
       console.error(error);
-      showToast(error.response?.data?.error || t('sms_import.toasts.save_error'), 'error');
+      const message = saveErrorMessage(error, t);
+      setSaveError(message);
+      showToast(message, 'error');
     } finally {
       setSaving(false);
     }
@@ -413,13 +484,36 @@ export default function SmsImport() {
                   </div>
 
                   <div className="mt-6 space-y-3">
+                    {state.contas?.length > 0 && (
+                      <label className="block text-xs text-slate-400">
+                        <span className="block mb-1.5 tracking-wider">{ui('Conta')}</span>
+                        <select
+                          id="sms-import-account"
+                          className="form-input w-full"
+                          value={accountId}
+                          onChange={(e) => setAccountId(e.target.value)}
+                        >
+                          <option value="">{ui('Sem conta')}</option>
+                          {state.contas.map((c) => (
+                            <option key={c.id} value={String(c.id)}>{c.name}</option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
+                    {saveError && (
+                      <div role="alert" className="flex items-start gap-2 rounded-xl border border-coral/40 bg-coral/10 p-3 text-xs text-coral leading-5">
+                        <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                        <span>{saveError}</span>
+                      </div>
+                    )}
                     <button
+                      type="button"
                       onClick={saveTransaction}
-                      disabled={saving || !result.amount || quotaReached}
+                      disabled={saving || quotaReached}
                       className="w-full py-3 bg-aurora/20 hover:bg-aurora/30 text-aurora border border-aurora/40 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(46,204,113,0.1)] hover:shadow-[0_0_20px_rgba(46,204,113,0.2)] disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {saving ? <RefreshCw size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
-                      {t('sms_import.result.btn_confirm')}
+                      {saving ? t('common.saving') : t('sms_import.result.btn_confirm')}
                     </button>
                     <p className="text-center text-[10px] text-slate-500 leading-5">
                       {t('sms_import.result.save_hint')}

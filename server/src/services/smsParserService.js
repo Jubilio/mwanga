@@ -84,7 +84,16 @@ function extractDateTime(text) {
     year += year >= 70 ? 1900 : 2000;
   }
 
-  const [hour = '00', minute = '00'] = (timePart || '00:00').split(':');
+  let [hour = '00', minute = '00'] = (timePart || '00:00').split(':');
+  // M-Pesa writes 12-hour times: "as 9:05 PM".
+  if (timePart) {
+    const meridiem = text.match(new RegExp(`${timePart.replace(':', '\\:')}(?::\\d{2})?\\s*(AM|PM)\\b`, 'i'));
+    if (meridiem) {
+      let h = Number.parseInt(hour, 10) % 12;
+      if (meridiem[1].toUpperCase() === 'PM') h += 12;
+      hour = String(h);
+    }
+  }
   return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`;
 }
 
@@ -94,7 +103,7 @@ function detectTransactionType(lowerText) {
   if (/\blevantaste\b|\blevantamento\b/.test(lowerText)) return 'levantamento';
   if (/\bdepositaste\b|\bdeposito\b|\bdepósito\b/.test(lowerText)) return 'deposito';
   if (/\bcreditad[oa]\b/.test(lowerText)) return 'credit';
-  if (/\bpagamento\b|\bpagaste\b|\bcompra\b/.test(lowerText)) return 'payment';
+  if (/\bpagamento\b|\bpagaste\b|\bcompra\b|\bcompraste\b/.test(lowerText)) return 'payment';
   if (/\btaxa\b|\bcobranca\b|\bcobrança\b/.test(lowerText)) return 'fee';
   if (/\bdebitad[oa]\b|\bdebito\b|\bdébito\b/.test(lowerText)) return 'debit';
   return 'unknown';
@@ -145,7 +154,7 @@ const parseWithRegex = (inputText) => {
   result.transaction_type = detectTransactionType(lowerText);
 
   result.amount = extractMoney(text, [
-    /(?:compra\s+de|valor\s+de|creditad[oa]\s+com|debitad[oa](?:\s+no\s+valor\s+de)?|transferiste|transferiu|recebeste|levantaste|depositaste|pagaste)\s*([\d.,\s]+)\s*(?:MT|MZN|USD|EUR|ZAR)\b/i,
+    /(?:compra\s+de|levantamento\s+de|valor\s+de|creditad[oa]\s+com|debitad[oa](?:\s+no\s+valor\s+de)?|transferiste|transferiu|recebeste|levantaste|depositaste|pagaste)\s*([\d.,\s]+)\s*(?:MT|MZN|USD|EUR|ZAR)\b/i,
     /(?:foi\s+debitad[oa]\s+no\s+valor\s+de)\s*([\d.,\s]+)\s*(?:MT|MZN|USD|EUR|ZAR)\b/i,
     /([\d.,\s]+)\s*(?:MT|MZN|USD|EUR|ZAR)\b/i,
   ]);
@@ -158,6 +167,8 @@ const parseWithRegex = (inputText) => {
   result.balance_after = extractMoney(text, [
     /saldo(?:\s+disponivel)?[:\s]+([\d.,\s]+)\s*(?:MT|MZN|USD|EUR|ZAR)?\b/i,
     /saldo\s+apos[:\s]+([\d.,\s]+)\s*(?:MT|MZN|USD|EUR|ZAR)?\b/i,
+    // M-Pesa: "O novo saldo M-Pesa e de 0.28MT"
+    /saldo[A-Za-z\s-]{0,20}?\s(?:e|é)\s+de\s+([\d.,]+)\s*(?:MT|MZN|USD|EUR|ZAR)\b/i,
   ]);
 
   const accountMatch = text.match(/conta\s+([0-9][0-9-]*)/i);
@@ -181,11 +192,17 @@ const parseWithRegex = (inputText) => {
     result.recipient_name = simpleRecipientMatch[1].trim();
   }
 
-  const refMatch = text.match(/(?:ref|referencia|referência)[:\s]+([A-Za-z0-9._/-]+)/i);
+  const refMatch = text.match(/(?:\bref|referencia|referência|ID\s*Trans)[:\s]+([A-Za-z0-9._/-]*[A-Za-z0-9])/i)
+    // M-Pesa starts with the code: "DJV2M5U6H4I confirmado."
+    || text.match(/^([A-Z0-9]{8,14})\s+confirmad[oa]\b/);
   if (refMatch) result.transaction_id = refMatch[1];
 
-  const agentMatch = text.match(/agente\s+([A-Za-z0-9-]+)/i);
-  if (agentMatch) result.agent_code = agentMatch[1];
+  // "no agente A12345 (Maputo Centro)" or "no Agente ID 448365, ANIJA AMIMO as ..."
+  const agentMatch = text.match(/agente\s+(?:ID\s+)?([A-Za-z0-9-]*\d[A-Za-z0-9-]*)(?:,\s*([A-Za-zÀ-ÿ' ]+?)\s+(?:as|às)\b)?/i);
+  if (agentMatch) {
+    result.agent_code = agentMatch[1];
+    if (agentMatch[2] && !result.recipient_name) result.recipient_name = agentMatch[2].trim();
+  }
 
   if (result.transaction_type === 'unknown' && result.fee_amount && !result.amount) {
     result.transaction_type = 'fee';
@@ -287,7 +304,13 @@ const parseSMS = async (text) => {
 
   if (process.env.ANTHROPIC_API_KEY) {
     logger.info('[ParserEngine] Using LLM fallback for SMS');
-    return parseWithLLM(text);
+    try {
+      return await parseWithLLM(text);
+    } catch (error) {
+      // Better a lower-confidence regex reading the user can check than an error.
+      logger.warn('[ParserEngine] LLM fallback failed, returning regex output.');
+      return regexResult;
+    }
   }
 
   logger.warn('[ParserEngine] LLM fallback unavailable. Returning regex output.');
