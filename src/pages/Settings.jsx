@@ -22,7 +22,10 @@ export default function Settings() {
   const { state, dispatch } = useFinance();
   const { showToast } = useOutletContext();
   const pushProps = usePushNotifications();
-  const [activeTab, setActiveTab] = useState('perfil');
+  const [activeTab, setActiveTab] = useState(() => {
+    const requested = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('tab');
+    return ['perfil', 'financas', 'familia', 'pref', 'notifications', 'ai'].includes(requested) ? requested : 'perfil';
+  });
   const [showAvatarGallery, setShowAvatarGallery] = useState(false);
   const [form, setForm] = useState(() => settingsForm(state));
   const [busy, setBusy] = useState(false);

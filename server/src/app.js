@@ -136,7 +136,8 @@ app.use((req, res, next) => {
 
 // 7. Request Logging
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.url}`);
+  // The OpenRouter callback carries a one-time code in the query; keep it out of logs.
+  logger.info(`${req.method} ${req.path.startsWith('/api/ai-connect/') ? req.path : req.url}`);
   next();
 });
 
@@ -170,6 +171,9 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/households', inviteRoutes);
 app.use('/api/behavior', require('./routes/behavior.routes'));
 app.use('/api/whatsapp', whatsappRoutes);
+
+// Public: OpenRouter sends the browser back here; the one-time state is the credential.
+app.get('/api/ai-connect/openrouter/callback', require('./controllers/aiSettings.controller').callbackOpenRouter);
 
 app.use('/api', financeRoutes);
 

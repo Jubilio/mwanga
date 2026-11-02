@@ -888,103 +888,120 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
 }
 
 // ─── Main Caller with Fallback ─────────────────────────────────────────────────
+// Order: the user's own key (stored encrypted in Definições → IA) → Mwanga's
+// keys → local rule engine. When the user's key or Mwanga's keys are out of
+// credits, the response carries data.ai_status so the app can offer
+// "Ligar a minha IA" instead of failing silently.
+function classifyProviderError(status, text = '') {
+  const lower = String(text).toLowerCase();
+  if (status === 402 || /insufficient|credit|quota|resource_exhausted|billing|payment|balance/.test(lower)) return 'no_credits';
+  if (status === 401 || status === 403 || /invalid api key|user not found|api key not valid|unauthorized/.test(lower)) return 'rejected';
+  if (status === 429) return 'rate_limited';
+  return 'unavailable';
+}
+
+function ownerKey(p) {
+  if (p === 'openrouter' || p === 'openrouter_free') return process.env.OPENROUTER_API_KEY;
+  if (p === 'gemini') return process.env.GEMINI_API_KEY;
+  if (p === 'groq') return process.env.GROQ_API_KEY;
+  return null;
+}
+
+async function callProvider(p, activeKey, messages, activeSystem, householdId, summary) {
+  const config = PROVIDERS[p];
+  const hdrs = config.headers(activeKey);
+  const tools = ToolRegistry.getToolsSchema();
+  const payload = config.body(messages, activeSystem, tools);
+  const timeoutMs = p === 'ollama' ? 120000 : 30000;
+  const res = await fetch(config.url(activeKey), { method: 'POST', headers: hdrs, body: JSON.stringify(payload), signal: AbortSignal.timeout(timeoutMs) });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    const error = new Error(`HTTP ${res.status}`);
+    error.kind = classifyProviderError(res.status, errText.slice(0, 500));
+    throw error;
+  }
+  const data = await res.json();
+  const raw = config.extract(data) || '';
+  const toolCall = config.extractToolCall(data);
+  if (toolCall) {
+    logger.info({ tool: toolCall.name }, 'Binth AI requested tool call');
+    const toolResult = await ToolRegistry.executeTool(toolCall.name, { ...toolCall.args, householdId });
+    const nextMessages = [
+      ...messages,
+      { role: 'assistant', content: raw },
+      { role: 'user', content: `RESULTADO DA FERRAMENTA (${toolCall.name}): ${JSON.stringify(toolResult.data)}. Agora responde ao utilizador com base nisto de forma natural.` }
+    ];
+    const res2 = await fetch(config.url(activeKey), { method: 'POST', headers: hdrs, body: JSON.stringify(config.body(nextMessages, activeSystem)), signal: AbortSignal.timeout(10000) });
+    if (res2.ok) {
+      const data2 = await res2.json();
+      return parseBinthResponse(config.extract(data2) || '', summary);
+    }
+  }
+  return parseBinthResponse(raw, summary);
+}
+
 async function callBinth({ messages, apiKey, provider = 'gemini', householdId, userId, language = 'pt' }) {
-  const personal = await aiSettings.credentials(householdId, userId);
-  if (personal) { apiKey = personal.apiKey; provider = personal.provider; }
+  let personal = null;
+  try { personal = await aiSettings.credentials(householdId, userId); }
+  catch { logger.warn('Binth personal AI key could not be read'); }
+  if (!personal && apiKey && PROVIDERS[provider]) personal = { provider, apiKey };
   const userContext = await buildUserContext(householdId, userId);
   const userMessage = messages[messages.length - 1]?.content || '';
-
-
 
   language = resolveLanguage(language);
   const languageInstruction = buildLanguageInstruction(language);
   const system = BINTH_SYSTEM_PROMPT.replace('{user_context}', userContext.text) + languageInstruction;
-  
-  let order = [provider, ...Object.keys(PROVIDERS).filter(p => p !== provider)];
-  const isLocal = process.env.NODE_ENV !== 'production' || process.env.OLLAMA_ENABLED === 'true';
-  if (isLocal) {
-    order = ['ollama', ...order.filter(p => p !== 'ollama')];
-  } else {
-    order = order.filter(p => p !== 'ollama');
+
+  const attempts = [];
+  if (personal) {
+    attempts.push({ p: personal.provider, key: personal.apiKey, personal: true });
+    // An OpenRouter account without credits can still use the free models.
+    if (personal.provider === 'openrouter') attempts.push({ p: 'openrouter_free', key: personal.apiKey, personal: true });
   }
+  const preferred = PROVIDERS[provider] ? provider : 'gemini';
+  let order = [preferred, ...Object.keys(PROVIDERS).filter(p => p !== preferred)];
+  const isLocal = process.env.NODE_ENV !== 'production' || process.env.OLLAMA_ENABLED === 'true';
+  order = isLocal ? ['ollama', ...order.filter(p => p !== 'ollama')] : order.filter(p => p !== 'ollama');
+  for (const p of order) attempts.push({ p, key: p === 'ollama' ? null : ownerKey(p), personal: false });
 
-  for (const p of order) {
-    if (!apiKey && p !== 'ollama' && await isProviderTemporarilyDisabled(p)) continue;
-
-    if (apiKey && p !== provider) continue;
-    let activeKey = apiKey;
-    if (!activeKey && p !== 'ollama') {
-      if (p === 'openrouter')      activeKey = process.env.OPENROUTER_API_KEY;
-      if (p === 'openrouter_free') activeKey = process.env.OPENROUTER_API_KEY; // mesmo token, modelo diferente
-      if (p === 'gemini')          activeKey = process.env.GEMINI_API_KEY;
-      if (p === 'groq')            activeKey = process.env.GROQ_API_KEY;
-    }
-
-    if (!activeKey && p !== 'ollama') continue;
-
-    const config = PROVIDERS[p];
+  let personalIssue = null;
+  let ownerIssue = null;
+  for (const attempt of attempts) {
+    const { p, key } = attempt;
+    if (p !== 'ollama' && !key) continue;
+    if (!attempt.personal && p !== 'ollama' && await isProviderTemporarilyDisabled(p)) continue;
+    const activeSystem = p === 'ollama'
+      ? OLLAMA_SYSTEM_PROMPT.replace('{user_context}', userContext.textMinimized) + languageInstruction
+      : system;
     try {
-      const hdrs = config.headers(activeKey);
-      const tools = ToolRegistry.getToolsSchema();
-      const activeSystem = p === 'ollama'
-        ? OLLAMA_SYSTEM_PROMPT.replace('{user_context}', userContext.textMinimized) + languageInstruction
-        : system;
-      const payload = config.body(messages, activeSystem, tools);
-      
-      const timeoutMs = p === 'ollama' ? 120000 : 30000;
-      const res = await fetch(config.url(activeKey), {
-        method: 'POST',
-        headers: hdrs,
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(timeoutMs)
-      });
-
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(`HTTP ${res.status}: ${errText.slice(0, 100)}`);
-      }
-
-      const data = await res.json();
-      const raw = config.extract(data) || '';
-      
-      const toolCall = config.extractToolCall(data);
-      if (toolCall) {
-        logger.info({ tool: toolCall.name }, 'Binth AI requested tool call');
-        const toolResult = await ToolRegistry.executeTool(toolCall.name, { ...toolCall.args, householdId });
-        
-        const nextMessages = [
-          ...messages,
-          { role: 'assistant', content: raw }, 
-          { role: 'user', content: `RESULTADO DA FERRAMENTA (${toolCall.name}): ${JSON.stringify(toolResult.data)}. Agora responde ao utilizador com base nisto de forma natural.` }
-        ];
-
-        const res2 = await fetch(config.url(activeKey), {
-          method: 'POST',
-          headers: hdrs,
-          body: JSON.stringify(config.body(nextMessages, activeSystem)),
-          signal: AbortSignal.timeout(10000)
-        });
-
-        if (res2.ok) {
-          const data2 = await res2.json();
-          return withFreshness(parseBinthResponse(config.extract(data2) || '', userContext.summary), userContext.summary, language);
-        }
-      }
-      
-      return withFreshness(parseBinthResponse(raw, userContext.summary), userContext.summary, language);
-
+      const response = await callProvider(p, key, messages, activeSystem, householdId, userContext.summary);
+      if (personalIssue && !attempt.personal) response.data = { ...response.data, ai_notice: `personal_${personalIssue}` };
+      return withFreshness(response, userContext.summary, language);
     } catch (err) {
-      if (!apiKey && isAuthFailure(err.message)) {
-        await disableProviderTemporarily(p);
-        logger.warn({ provider: p }, 'Binth provider temporarily disabled after auth failure');
+      const kind = err.kind || 'unavailable';
+      if (attempt.personal) {
+        // Keep the most actionable reason across the paid and free attempts.
+        if (!personalIssue || personalIssue === 'unavailable' || kind === 'no_credits') personalIssue = kind;
+        logger.warn({ provider: p, kind }, 'Binth personal AI key failed');
         continue;
       }
-      logger.warn({ provider: p }, 'Binth provider call failed');
+      if (kind === 'no_credits' || kind === 'rejected') ownerIssue = kind;
+      if (kind === 'no_credits') await disableProviderTemporarily(p, 60);
+      else if (kind === 'rejected' || isAuthFailure(err.message)) await disableProviderTemporarily(p);
+      logger.warn({ provider: p, kind }, 'Binth provider call failed');
     }
   }
 
   logger.warn('All Binth providers failed. Using fallback response.');
   const fallback = language === 'en' ? englishFallback(userMessage, userContext.summary) : getFallbackResponse(userMessage, userContext.summary);
+  fallback.data = {
+    ...fallback.data,
+    ai_status: {
+      state: 'offline',
+      reason: personalIssue ? `personal_${personalIssue}` : (ownerIssue === 'no_credits' ? 'service_no_credits' : 'service_unavailable'),
+      has_personal_key: !!personal,
+    },
+  };
   return withFreshness(fallback, userContext.summary, language);
 }
 
@@ -1049,4 +1066,4 @@ function parseBinthResponse(raw, contextSummary = {}) {
   }, contextSummary);
 }
 
-module.exports = { callBinth, buildUserContext, getFallbackResponse, withFreshness };
+module.exports = { callBinth, buildUserContext, getFallbackResponse, withFreshness, classifyProviderError };
