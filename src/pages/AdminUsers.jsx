@@ -4,7 +4,7 @@ import api from '../utils/api';
 import { openProtectedFile, protectedFilePath } from '../utils/protectedFiles';
 import {
   Users, CheckCircle, XCircle, Clock,
-  Search, RefreshCw, FileCheck
+  Search, RefreshCw, FileCheck, KeyRound, Copy, MessageCircle, X
 } from 'lucide-react';
 
 const G = {
@@ -22,8 +22,40 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [error, setError] = useState('');
+  const [resetInfo, setResetInfo] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => { fetchUsers(); }, []);
+
+  // When a user never gets the recovery email: confirm who they are first, then
+  // send them this link or code yourself (it is valid for 24 hours).
+  async function handlePasswordReset(user) {
+    if (!window.confirm(`Gerar um link de recuperação de senha para ${user.name || user.email}? Envie-o só depois de confirmar que é mesmo a pessoa.`)) return;
+    setError('');
+    try {
+      const token = localStorage.getItem('mwanga-admin-token');
+      const resp = await api.post(`/admin/users/${user.id}/password-reset`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCopied(false);
+      setResetInfo({ ...resp.data, name: user.name, whatsapp: user.whatsapp_number });
+    } catch (err) {
+      setError(err.response?.data?.error || ui("Não foi possível gerar o link de recuperação."));
+    }
+  }
+
+  function resetMessage(info) {
+    return `Olá ${info.name || ''}, aqui está o link para criar uma nova senha no Mwanga: ${info.url}\n\nOu abra "Esqueci a senha", escreva o seu email e este código: ${info.code}\n\nVale durante 24 horas.`;
+  }
+
+  async function copyReset() {
+    try {
+      await navigator.clipboard.writeText(resetMessage(resetInfo));
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }
 
   async function fetchUsers() {
     setLoading(true);
@@ -114,6 +146,34 @@ export default function AdminUsers() {
         </div>
       )}
 
+      {resetInfo && (
+        <div style={{
+          marginBottom: '16px', background: `${G.blue}12`, color: G.text,
+          border: `1px solid ${G.blue}40`, borderRadius: '14px', padding: '16px',
+          fontSize: '13px', position: 'relative',
+        }}>
+          <button onClick={() => setResetInfo(null)} aria-label={ui("Fechar")} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', color: G.muted, cursor: 'pointer' }}>
+            <X size={16} />
+          </button>
+          <div style={{ fontWeight: 800, marginBottom: '6px' }}>{`Recuperação de senha para ${resetInfo.email}`}</div>
+          <div style={{ color: G.muted, marginBottom: '10px' }}>{ui("Válido durante 24 horas. Envie só depois de confirmar que é a pessoa.")}</div>
+          <div style={{ wordBreak: 'break-all', marginBottom: '6px' }}>{resetInfo.url}</div>
+          <div style={{ marginBottom: '12px' }}>{ui("Código")}: <strong style={{ letterSpacing: '0.2em', fontSize: '15px' }}>{resetInfo.code}</strong></div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button onClick={copyReset} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '10px', background: G.card, border: `1px solid ${G.border}`, color: G.text, cursor: 'pointer', fontWeight: 700, fontSize: '12px' }}>
+              <Copy size={14} /> {copied ? ui("Copiado") : ui("Copiar mensagem")}
+            </button>
+            <a
+              href={`https://wa.me/${resetInfo.whatsapp ? String(resetInfo.whatsapp).replace(/\D/g, '') : ''}?text=${encodeURIComponent(resetMessage(resetInfo))}`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '10px', background: `${G.green}20`, border: `1px solid ${G.green}50`, color: G.green, textDecoration: 'none', fontWeight: 700, fontSize: '12px' }}
+            >
+              <MessageCircle size={14} /> {ui("Enviar no WhatsApp")}
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div style={{
         background: G.bg2, borderRadius: '20px',
@@ -192,6 +252,14 @@ export default function AdminUsers() {
                         title={ui("Rejeitar")}
                       >
                         <XCircle size={18} />
+                      </button>
+                      <button
+                        onClick={() => handlePasswordReset(user)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: G.blue }}
+                        title={ui("Gerar link de recuperação de senha")}
+                        aria-label={ui("Gerar link de recuperação de senha")}
+                      >
+                        <KeyRound size={18} />
                       </button>
                     </div>
                   </td>

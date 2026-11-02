@@ -34,6 +34,7 @@ initFeedbackTable();
 initHouseholdExtras();
 initWhatsAppSchema();
 initEmailCampaignSchema();
+require('./services/auth.service').initPasswordResetSchema();
 initSecureFilesSchema();
 initCreditSchema();
 
@@ -100,7 +101,8 @@ const passwordResetLimiter = rateLimit({
   handler: (req, res) => {
     res.status(429).json({
       status: 'error',
-      message: 'Demasiados pedidos de recuperação de password. Tente novamente em uma hora.'
+      error: 'Demasiados pedidos de recuperação de senha. Tente novamente daqui a uma hora.',
+      message: 'Demasiados pedidos de recuperação de senha. Tente novamente daqui a uma hora.'
     });
   }
 });

@@ -1566,14 +1566,37 @@
       "invite_tip": "If someone in your family invited you, enter the code to join the same household."
     },
     "forgot": {
-      "title": "Recover password",
-      "subtitle": "Enter your email to receive a recovery link.",
-      "btn_send": "Send link",
+      "title": "Forgot your password?",
+      "subtitle": "It happens. Pick the easiest way back in.",
+      "google_btn": "Sign in with Google",
+      "google_tip": "If your Mwanga account uses a Gmail address, sign in with Google and skip the password. Your data stays the same.",
+      "or_email": "or get a code by email",
+      "email_label": "Your account email",
+      "email_placeholder": "you@email.com",
+      "btn_send": "Send code",
       "back_link": "Back",
-      "success_title": "Link sent!",
-      "success_desc": "If the email <strong>{{email}}</strong> is registered, you will receive reset instructions shortly.",
+      "code_title": "Check your email",
+      "code_desc_before": "We sent a 6-digit code to",
+      "code_desc_after": "Type it here and choose a new password. You can also tap the button in the email.",
+      "code_label": "Code from the email",
+      "new_password_label": "New password",
+      "new_password_placeholder": "At least 8 characters",
+      "show_password": "Show password",
+      "hide_password": "Hide password",
+      "btn_save": "Save new password",
+      "resend": "Send another code",
+      "resend_wait": "Send another code in {{seconds}}s",
+      "resent": "We sent a new code. Use the latest one.",
+      "help_title": "Didn't get the email?",
+      "help_spam": "Check your Spam and Promotions folders. The sender is Mwanga.",
+      "help_wait": "It can take up to 2 minutes. Make sure the email is spelled right.",
+      "help_google": "If it's a Gmail address, go back and use \"Sign in with Google\".",
+      "whatsapp_cta": "Ask for help on WhatsApp",
+      "whatsapp_message": "Hi, I forgot my Mwanga password and I'm not getting the email. My account email is {{email}}.",
+      "success_title": "Code sent!",
+      "success_desc": "If {{email}} is registered, you'll get the instructions shortly.",
       "btn_to_login": "Go to login",
-      "error_fallback": "Failed to process request"
+      "error_fallback": "Couldn't send right now. Please try again."
     },
     "reset": {
       "title": "New password",
@@ -1585,10 +1608,11 @@
       "errors": {
         "match": "Passwords do not match",
         "length": "Password must be at least 8 characters",
-        "token": "Missing or invalid recovery token.",
+        "token": "This link is incomplete or was cut off.",
         "fallback": "Failed to reset password"
       },
-      "confirm_label": "Confirm password"
+      "confirm_label": "Confirm new password",
+      "request_new": "Request a new code"
     }
   },
   "quick_add": {

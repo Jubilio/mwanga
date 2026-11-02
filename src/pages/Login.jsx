@@ -195,6 +195,14 @@ export default function Login() {
   // picker (handleNativeGoogleLogin), since Google blocks OAuth inside WebViews.
   const showGoogleLogin = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
+  // The recovery page sends people here with ?google=1 to sign in with Google straight away.
+  useEffect(() => {
+    if (!showGoogleLogin || searchParams.get('google') !== '1') return;
+    navigate('/login', { replace: true });
+    if (Capacitor.isNativePlatform()) handleNativeGoogleLogin();
+    else handleManualGoogleLogin();
+  }, []);
+
   // Effect to catch the token from URL after redirect (for manual flow)
   useEffect(() => {
     const hash = window.location.hash;

@@ -1,5 +1,6 @@
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
+const authService = require('../services/auth.service');
 const notificationService = require('../services/notification.service');
 
 /**
@@ -17,6 +18,7 @@ const getUsers = async (req, res) => {
           u.kyc_status,
           u.credit_score,
           u.role,
+          u.whatsapp_number,
           u.created_at,
           d.id as document_id,
           d.document_type,
@@ -40,6 +42,7 @@ const getUsers = async (req, res) => {
           kyc_status: row.kyc_status || 'pending',
           credit_score: row.credit_score || 0,
           role: row.role || 'user',
+          whatsapp_number: row.whatsapp_number || null,
           created_at: row.created_at,
           documents: []
         });
@@ -216,8 +219,24 @@ const broadcastNotification = async (req, res) => {
   }
 };
 
+// Fallback for users whose recovery email never arrives: the admin confirms who
+// they are, then sends them this link or code (for example on WhatsApp).
+const createPasswordResetLink = async (req, res) => {
+  const userId = Number(req.params.id);
+  if (!Number.isInteger(userId) || userId <= 0) return res.status(400).json({ error: 'Utilizador inválido' });
+  try {
+    const result = await authService.createAdminPasswordReset(userId, req.user.id);
+    res.json(result);
+  } catch (error) {
+    if (error.message === 'USER_NOT_FOUND') return res.status(404).json({ error: 'Utilizador não encontrado' });
+    logger.error(`Admin password reset link failed: ${error.message}`);
+    res.status(500).json({ error: 'Não foi possível gerar o link de recuperação' });
+  }
+};
+
 module.exports = {
   getUsers,
+  createPasswordResetLink,
   getCreditApplications,
   getPlatformStats,
   updateKycStatus,

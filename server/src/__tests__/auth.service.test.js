@@ -211,7 +211,37 @@ describe('Auth Service', () => {
       expect(result).toEqual({ success: true });
       expect(db.execute).toHaveBeenCalledTimes(2);
       expect(db.execute.mock.calls[1][0].sql).toContain('UPDATE users SET reset_password_token');
-      expect(emailService.sendPasswordReset).toHaveBeenCalledWith('john@test.com', expect.any(String), 'John');
+      expect(emailService.sendPasswordReset).toHaveBeenCalledWith('john@test.com', expect.any(String), 'John', expect.stringMatching(/^\d{6}$/));
+      // Only hashes are stored, never the token or the code sent by email.
+      const [storedToken, storedCode] = db.execute.mock.calls[1][0].args;
+      const [, sentToken, , sentCode] = emailService.sendPasswordReset.mock.calls[0];
+      expect(storedToken).not.toBe(sentToken);
+      expect(storedCode).not.toContain(sentCode);
+    });
+
+    it('a code from the email resets the password', async () => {
+      db.execute.mockResolvedValueOnce({ rows: [{ id: 42, name: 'John', email: 'john@test.com' }] });
+      db.execute.mockResolvedValueOnce({});
+      await authService.initiatePasswordReset('john@test.com');
+      const [, , , sentCode] = emailService.sendPasswordReset.mock.calls.at(-1);
+      const [, storedCode] = db.execute.mock.calls[1][0].args;
+
+      db.execute.mockResolvedValueOnce({ rows: [{ id: 42, reset_password_code_hash: storedCode, reset_password_attempts: 0 }] });
+      db.execute.mockResolvedValueOnce({});
+      await expect(authService.completePasswordResetWithCode('John@Test.com', sentCode, 'newpass12')).resolves.toEqual({ success: true });
+      expect(db.execute.mock.calls[3][0].sql).toContain('UPDATE users SET password_hash');
+    });
+
+    it('a wrong code counts an attempt and is refused', async () => {
+      db.execute.mockResolvedValueOnce({ rows: [{ id: 42, reset_password_code_hash: 'abc', reset_password_attempts: 1 }] });
+      db.execute.mockResolvedValueOnce({});
+      await expect(authService.completePasswordResetWithCode('john@test.com', '123456', 'newpass12')).rejects.toThrow('INVALID_CODE');
+      expect(db.execute.mock.calls[1][0].sql).toContain('reset_password_attempts + 1');
+    });
+
+    it('a code is burned after 5 wrong tries', async () => {
+      db.execute.mockResolvedValueOnce({ rows: [{ id: 42, reset_password_code_hash: 'abc', reset_password_attempts: 5 }] });
+      await expect(authService.completePasswordResetWithCode('john@test.com', '123456', 'newpass12')).rejects.toThrow('TOO_MANY_ATTEMPTS');
     });
 
     it('completePasswordReset should throw INVALID_TOKEN if not found', async () => {

@@ -108,6 +108,9 @@ function RequireAuth({ children }) {
     </div>
   );
   // Web visitors without a session see the public page first; the native app goes straight to login.
+  // Google's web sign-in comes back to the site root with #access_token; only /login reads it,
+  // so keep the hash instead of losing it on the redirect to the public page.
+  if (!token && loc.hash.includes('access_token=')) return <Navigate to={{ pathname: '/login', hash: loc.hash }} replace />;
   if (!token) return <Navigate to={Capacitor.isNativePlatform() ? '/login' : '/bem-vindo'} replace />;
 
   return (

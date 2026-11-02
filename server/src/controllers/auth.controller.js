@@ -211,7 +211,7 @@ const forgotPassword = async (req, res, next) => {
   try {
     const { email } = forgotPasswordSchema.parse(req.body);
     await authService.initiatePasswordReset(email);
-    res.json({ message: 'Link de recuperacao enviado com sucesso.' });
+    res.json({ message: 'Se existir uma conta com este email, enviámos um link e um código de recuperação.' });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json(getValidationErrorPayload(error));
     next(error);
@@ -220,12 +220,15 @@ const forgotPassword = async (req, res, next) => {
 
 const resetPassword = async (req, res, next) => {
   try {
-    const { token, password } = resetPasswordSchema.parse(req.body);
-    await authService.completePasswordReset(token, password);
+    const { token, email, code, password } = resetPasswordSchema.parse(req.body);
+    if (token) await authService.completePasswordReset(token, password);
+    else await authService.completePasswordResetWithCode(email, code, password);
     res.json({ message: 'Senha redefinida com sucesso. Ja podes fazer login!' });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json(getValidationErrorPayload(error));
-    if (error.message === 'INVALID_TOKEN') return res.status(400).json({ error: 'Token invalido ou expirado' });
+    if (error.message === 'INVALID_TOKEN') return res.status(400).json({ error: 'Este link já foi usado ou expirou. Peça um novo.' });
+    if (error.message === 'INVALID_CODE') return res.status(400).json({ error: 'Código errado ou expirado. Confira o email ou peça um novo código.' });
+    if (error.message === 'TOO_MANY_ATTEMPTS') return res.status(429).json({ error: 'Demasiadas tentativas com este código. Peça um novo código.' });
     next(error);
   }
 };
