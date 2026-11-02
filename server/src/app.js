@@ -23,6 +23,8 @@ const { initFeedbackTable } = require('./services/feedback.service');
 const { initHouseholdExtras } = require('./services/household.service');
 const { initWhatsAppSchema } = require('./services/whatsappMigration.service');
 const { initEmailCampaignSchema } = require('./services/emailCampaign.service');
+const { initSecureFilesSchema } = require('./services/secureFiles.service');
+const { initCreditSchema } = require('./services/credit.service');
 const logger = require('./utils/logger');
 
 const app = express();
@@ -32,6 +34,8 @@ initFeedbackTable();
 initHouseholdExtras();
 initWhatsAppSchema();
 initEmailCampaignSchema();
+initSecureFilesSchema();
+initCreditSchema();
 
 app.set('trust proxy', 1);
 
@@ -86,6 +90,7 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/account', authLimiter);
 app.use('/api/auth/webauthn/verify-authentication', authLimiter);
 
 // Recuperação de password: cada pedido envia um email, por isso o limite é baixo.

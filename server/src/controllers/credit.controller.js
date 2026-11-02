@@ -2,7 +2,8 @@ const logger = require('../utils/logger');
 const { createUploader, handleUploadErrors, DOCUMENT_TYPES } = require('../utils/uploads');
 const { z } = require('zod');
 const creditService = require('../services/credit.service');
-const { submitApplicationSchema, disburseLoanSchema } = require('../schemas/credit.schema');
+const secureFiles = require('../services/secureFiles.service');
+const { submitApplicationSchema, partnerDisbursementSchema } = require('../schemas/credit.schema');
 
 const upload = createUploader('credit', DOCUMENT_TYPES);
 
@@ -23,7 +24,12 @@ const submitApplication = async (req, res, next) => {
       ...result
     });
   } catch (error) {
+    // Pedido recusado: não guardar BI, selfie e comprovativos sem motivo.
+    await secureFiles.deleteFiles(secureFiles.uploadedFilenames(req));
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error.message === 'CONSENT_REQUIRED') {
+      return res.status(400).json({ error: 'Consentimento necessário', message: 'Para pedir crédito, autorize o cálculo do score com as suas transacções.' });
+    }
     if (error.message === 'AFFORDABILITY_EXCEEDED') {
       return res.status(400).json({ 
         error: 'Capacidade de pagamento excedida', 
@@ -55,19 +61,19 @@ const getLoans = async (req, res) => {
   }
 };
 
-const disburseLoan = async (req, res, next) => {
+const recordPartnerDisbursement = async (req, res, next) => {
   try {
     const { applicationId } = req.params;
-    const { rate } = disburseLoanSchema.parse(req.body);
-    
-    const loanId = await creditService.disburseLoan(applicationId, rate);
-    res.json({ message: 'Crédito desembolsado com sucesso', loanId });
+    const data = partnerDisbursementSchema.parse(req.body || {});
+
+    const loanId = await creditService.recordPartnerDisbursement(applicationId, data);
+    res.json({ message: 'Desembolso do parceiro registado', loanId });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     if (error.message === 'NOT_FOUND') return res.status(404).json({ error: 'Pedido não encontrado' });
     if (error.message === 'INVALID_STATUS') return res.status(400).json({ error: 'Pedido já processado ou em estado inválido' });
     
-    logger.error('Error disbursing loan:', error);
+    logger.error('Error recording partner disbursement:', error);
     next(error);
   }
 };
@@ -77,5 +83,5 @@ module.exports = {
   submitApplication,
   getApplications,
   getLoans,
-  disburseLoan
+  recordPartnerDisbursement
 };

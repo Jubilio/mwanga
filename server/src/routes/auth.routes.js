@@ -11,6 +11,8 @@ router.post('/google-access-token', googleAccessTokenLogin);
 router.get('/me', authenticate, getMe);
 router.post('/refresh', authenticate, refresh);
 router.put('/profile', authenticate, updateProfile);
+// Apagar conta e dados pessoais (Google Play + protecção de dados).
+router.delete('/account', authenticate, require('../controllers/accountDeletion.controller').deleteMyAccount);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 

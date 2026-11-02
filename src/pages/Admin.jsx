@@ -1,5 +1,6 @@
 import { ui, useUiLanguage } from '../utils/uiTranslation';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../utils/api';
 import { openProtectedFile, protectedFilePath } from '../utils/protectedFiles';
 import {
@@ -32,6 +33,7 @@ function getAdminHeaders() {
 }
 
 export default function Admin() {
+  const { t } = useTranslation();
   useUiLanguage();
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(EMPTY_STATS);
@@ -86,16 +88,20 @@ export default function Admin() {
     }
   };
 
+  // O Mwanga não empresta: o parceiro licenciado entrega o dinheiro e o admin
+  // só regista a referência do contrato para criar o plano de prestações.
   const handleDisburse = async (application) => {
     const label = `${application.user_name || application.user_email || `#${application.household_id}`} · MT ${Number(application.amount).toLocaleString()}`;
-    if (!window.confirm(`${ui("Desembolsar este crédito?")}\n${label}`)) return;
+    if (!window.confirm(`${t('credit.partner_disbursement.confirm')}\n${label}`)) return;
+    const partnerReference = (window.prompt(t('credit.partner_disbursement.prompt')) || '').trim();
+    if (partnerReference.length < 2) return;
     setDisbursingId(application.id);
     try {
-      await api.post(`/credit/disburse/${application.id}`, {}, { headers: getAdminHeaders() });
-      showToast(ui("Crédito desembolsado com sucesso"), 'success');
+      await api.post(`/credit/applications/${application.id}/partner-disbursement`, { partnerReference }, { headers: getAdminHeaders() });
+      showToast(t('credit.partner_disbursement.success'), 'success');
       fetchData();
     } catch (err) {
-      showToast(err.response?.data?.error || ui("Falha ao desembolsar o crédito."), 'error');
+      showToast(err.response?.data?.error || t('credit.partner_disbursement.error'), 'error');
     } finally {
       setDisbursingId(null);
     }
@@ -222,7 +228,7 @@ export default function Admin() {
                       disabled={disbursingId === application.id}
                       style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '10px', padding: '8px 12px', border: 'none', background: G.green, color: '#000', fontWeight: 700, fontSize: '12px', cursor: disbursingId === application.id ? 'wait' : 'pointer' }}
                     >
-                      <Send size={14} /> {ui("Desembolsar")}
+                      <Send size={14} /> {t('credit.partner_disbursement.button')}
                     </button>
                   </td>
                 </tr>

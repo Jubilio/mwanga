@@ -54,7 +54,8 @@ const PRIVACY = {
       h: 'Quanto tempo guardamos',
       items: [
         'Guardamos os dados enquanto a sua conta existir.',
-        `Pode pedir para apagar a conta e todos os dados associados escrevendo para ${CONTACT}. Apagamos no prazo de 30 dias, exceto o que a lei nos obrigue a guardar.`,
+        `Pode apagar a conta e os dados associados a qualquer momento em Definições > Perfil > Apagar conta. A eliminação é imediata. Também pode pedir por escrito para ${CONTACT}; nesse caso apagamos no prazo de 30 dias, exceto o que a lei nos obrigue a guardar.`,
+        'Os documentos de identificação e de crédito são guardados cifrados. Cada abertura por um membro da equipa fica registada.',
       ],
     },
     {
@@ -97,7 +98,8 @@ const TERMS = {
       items: [
         'Tem de ter pelo menos 18 anos e dar informação verdadeira.',
         'É responsável por manter a sua senha segura e por tudo o que é feito na sua conta.',
-        `Pode deixar de usar o Mwanga a qualquer momento e pedir para apagar a conta escrevendo para ${CONTACT}.`,
+        `Pode deixar de usar o Mwanga a qualquer momento e apagar a conta em Definições > Perfil > Apagar conta, ou pedir por escrito para ${CONTACT}.`,
+        'O Mwanga não concede crédito. Os pedidos de crédito são encaminhados para parceiros licenciados, que decidem e entregam o dinheiro.',
       ],
     },
     {
