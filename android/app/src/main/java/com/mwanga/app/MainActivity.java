@@ -8,6 +8,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(MoneySmsPlugin.class);
+        registerPlugin(QuickActionsPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

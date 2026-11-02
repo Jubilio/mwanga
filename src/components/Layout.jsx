@@ -23,6 +23,7 @@ import { useSmsSync } from '../hooks/useSmsSync';
 import { SMS_INBOX_ENABLED } from '../config/features';
 import SmsPermissionSheet from './SmsPermissionSheet';
 import { onSharedText } from '../services/moneySms';
+import { onLauncherShortcut } from '../services/voiceInput';
 import { getToken } from '../utils/authToken';
 import { BOTTOM_ITEMS, pageTitleKey } from '../config/navigation';
 
@@ -64,6 +65,11 @@ export default function Layout() {
   useEffect(() => onSharedText((text) => {
     navigate(`/sms-import?text=${encodeURIComponent(text)}`);
   }), [navigate]);
+
+  // Long-press the app icon (Android): "Registar por voz", "Nova despesa", "Nova receita".
+  useEffect(() => onLauncherShortcut((actionId) => {
+    setQuickAddPayload({ actionId, route: '/quick-add', date: new Date().toISOString().slice(0, 10), nonce: Date.now() });
+  }), []);
 
   // Auto SMS Sync
   useEffect(() => {

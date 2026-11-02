@@ -1,10 +1,12 @@
 import { ui, useUiLanguage } from '../utils/uiTranslation';
-import { useEffect, useState } from 'react';
-import { X, Plus, Wallet, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { X, Plus, Wallet, ArrowDownLeft, ArrowUpRight, Mic } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useFinance } from '../hooks/useFinance';
 import api from '../utils/api';
 import { MAIN_CATEGORIES } from '../utils/categories';
+import { parseVoiceTransaction } from '../utils/voiceParser';
+import { isVoiceInputSupported, listenOnce } from '../services/voiceInput';
 
 const CATEGORIES = MAIN_CATEGORIES;
 
@@ -40,11 +42,25 @@ export default function QuickAddNotificationModal({
     nota: '',
     account_id: '',
   });
+  const [listening, setListening] = useState(false);
+  const [heard, setHeard] = useState('');
+  const voiceSupported = isVoiceInputSupported();
+  const isVoiceShortcut = payload?.actionId === 'VOICE' && voiceSupported;
+  const autoVoiceFor = useRef(null);
+  const listenAbort = useRef(null);
+
+  // Stable while the sheet stays open, so parent re-renders don't wipe what the user typed or said.
+  const payloadKey = isOpen
+    ? [payload?.actionId, payload?.date, payload?.notificationId, payload?.nonce].join('|')
+    : null;
 
   useEffect(() => {
     if (!isOpen) {
+      listenAbort.current?.abort();
+      autoVoiceFor.current = null;
       return;
     }
+    setHeard('');
 
     const initialType = resolveInitialType(payload?.actionId);
     setForm({
@@ -56,7 +72,68 @@ export default function QuickAddNotificationModal({
       nota: '',
       account_id: initialType === 'receita' ? state.settings.default_income_account_id || '' : state.settings.default_expense_account_id || '',
     });
-  }, [isOpen, payload, state.settings]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payloadKey]);
+
+  // Settings often arrive after the sheet opens: fill the default account then, without wiping the form.
+  const defaultIncomeAccount = state.settings.default_income_account_id || '';
+  const defaultExpenseAccount = state.settings.default_expense_account_id || '';
+  useEffect(() => {
+    if (!isOpen) return;
+    setForm((current) => (current.account_id ? current : {
+      ...current,
+      account_id: current.tipo === 'receita' ? defaultIncomeAccount : defaultExpenseAccount,
+    }));
+  }, [isOpen, defaultIncomeAccount, defaultExpenseAccount]);
+
+  async function startVoice() {
+    if (listening) {
+      listenAbort.current?.abort();
+      return;
+    }
+    const controller = new AbortController();
+    listenAbort.current = controller;
+    setListening(true);
+    try {
+      const { text } = await listenOnce({ prompt: t('quick_add.voice.prompt'), signal: controller.signal });
+      const parsed = parseVoiceTransaction(text, { accounts: state.contas || [] });
+      setHeard(text);
+      setForm((current) => {
+        const typeChanged = parsed.tipo !== current.tipo;
+        const defaultAccount = parsed.tipo === 'receita'
+          ? state.settings.default_income_account_id || ''
+          : state.settings.default_expense_account_id || '';
+        return {
+          ...current,
+          tipo: parsed.tipo,
+          valor: parsed.valor != null ? String(parsed.valor) : current.valor,
+          desc: parsed.desc,
+          cat: parsed.cat,
+          data: parsed.data,
+          account_id: parsed.account_id ?? (typeChanged ? defaultAccount : current.account_id),
+        };
+      });
+      showToast(parsed.valor != null ? t('quick_add.voice.check') : t('quick_add.voice.no_amount'), parsed.valor != null ? 'success' : 'warning');
+    } catch (error) {
+      if (error?.code === 'denied') showToast(t('quick_add.voice.denied'), 'warning');
+      else if (error?.code === 'unavailable') showToast(t('quick_add.voice.unavailable'), 'warning');
+      else if (error?.code === 'no-speech' || error?.code === 'failed') showToast(t('quick_add.voice.no_speech'), 'warning');
+    } finally {
+      if (listenAbort.current === controller) listenAbort.current = null;
+      setListening(false);
+    }
+  }
+
+  // Opened from the "Registar por voz" shortcut: start listening straight away.
+  useEffect(() => {
+    if (!isOpen || payload?.actionId !== 'VOICE' || !voiceSupported || autoVoiceFor.current === payloadKey) return;
+    const timer = setTimeout(() => {
+      autoVoiceFor.current = payloadKey;
+      startVoice();
+    }, 350);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, payloadKey, voiceSupported]);
 
   async function registerInteraction(interaction, actionId) {
     if (!payload?.notificationId) {
@@ -117,9 +194,9 @@ export default function QuickAddNotificationModal({
               <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em]">
                 <Wallet size={12} /> {t('quick_add.title')}
               </div>
-              <h2 className="text-2xl font-black tracking-tight">{t('quick_add.header')}</h2>
+              <h2 className="text-2xl font-black tracking-tight">{isVoiceShortcut ? t('quick_add.voice.header') : t('quick_add.header')}</h2>
               <p className="mt-2 max-w-xl text-sm text-white/80">
-                {t('quick_add.desc')}
+                {isVoiceShortcut ? t('quick_add.voice.desc') : t('quick_add.desc')}
               </p>
             </div>
 
@@ -135,6 +212,36 @@ export default function QuickAddNotificationModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 px-6 py-6">
+          {voiceSupported && (
+            <div className="rounded-3xl border border-ocean/15 bg-ocean/5 p-4">
+              <button
+                type="button"
+                onClick={startVoice}
+                aria-pressed={listening}
+                className={`flex w-full items-center gap-4 rounded-2xl px-4 py-4 text-left transition ${
+                  listening ? 'bg-coral text-white shadow-lg' : 'bg-ocean text-white shadow-[0_12px_30px_rgba(10,77,104,0.25)] hover:bg-[#088395]'
+                }`}
+              >
+                <span className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 ${listening ? 'animate-pulse' : ''}`}>
+                  <Mic size={22} />
+                </span>
+                <span>
+                  <span className="block text-sm font-black uppercase tracking-[0.18em]">
+                    {listening ? t('quick_add.voice.listening') : t('quick_add.voice.button')}
+                  </span>
+                  <span className="block text-xs text-white/80">
+                    {listening ? t('quick_add.voice.tap_to_stop') : t('quick_add.voice.example')}
+                  </span>
+                </span>
+              </button>
+              {heard && (
+                <p className="mt-3 text-sm text-slate-600" aria-live="polite">
+                  <span className="font-bold text-slate-800">{t('quick_add.voice.heard')}</span> «{heard}». {t('quick_add.voice.review')}
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="grid gap-3 sm:grid-cols-2">
             {TYPES.map((item) => {
               const Icon = item.icon;
