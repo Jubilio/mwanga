@@ -7,6 +7,7 @@ import { parseMobileMoneySMS } from '../utils/smsParser';
 import api from '../utils/api';
 import { SMS_INBOX_ENABLED, getEffectiveTier } from '../config/features';
 import { getSmsQuota } from '../utils/smsQuota';
+import { planBalanceSyncs } from '../utils/smsBalance';
 import i18n from '../i18n';
 
 export function useSmsSync(showToast) {
@@ -40,6 +41,7 @@ export function useSmsSync(showToast) {
       }
 
       let parsedCount = 0;
+      const balanceImports = [];
       // Sort oldest first to maintain chronological order
       filteredList.sort((a, b) => a.date - b.date);
 
@@ -58,8 +60,10 @@ export function useSmsSync(showToast) {
            let accountId = null;
            const bankNameLow = (result.bank_name || '').toLowerCase();
            
-           // Try to map to an existing account
-           const matchAccount = contas?.find(c => c.name.toLowerCase().includes(bankNameLow) || bankNameLow.includes(c.name.toLowerCase()));
+           // Try to map to an existing account (an unknown bank must not match every account)
+           const matchAccount = bankNameLow
+             ? contas?.find(c => c.name.toLowerCase().includes(bankNameLow) || bankNameLow.includes(c.name.toLowerCase()))
+             : null;
            
            if (matchAccount) {
              accountId = matchAccount.id;
@@ -95,10 +99,23 @@ export function useSmsSync(showToast) {
                 // Already saved here; dispatching ADD_TRANSACTION would post it a second time.
                 await api.post('/transactions', txData);
                 parsedCount++;
+                // Only accounts named after the bank get the SMS balance, never a default account.
+                if (matchAccount) {
+                  balanceImports.push({ accountId: matchAccount.id, balance: result.balanceAfter, date: txData.date, time: sms.date });
+                }
               } catch (err) {
                 console.error('Failed to sync individual SMS tx:', err);
               }
            }
+        }
+      }
+
+      // Set mobile wallet balances to what the newest SMS says is left.
+      for (const { accountId, balance } of planBalanceSyncs(balanceImports, transacoes)) {
+        try {
+          await api.put(`/accounts/${accountId}/balance`, { current_balance: balance });
+        } catch (err) {
+          console.error('Failed to sync account balance from SMS:', err);
         }
       }
 

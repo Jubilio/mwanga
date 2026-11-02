@@ -36,11 +36,70 @@ function parseBciCardPurchase(text) {
   };
 }
 
+const twoDigitYear = (y) => (y.length === 2 ? `20${y}` : y);
+
+// Formats seen on real phones (2026-11-02) that the older patterns below miss.
+const REAL_FORMATS = [
+  {
+    // "DJV2M5U6H4I confirmado. Compraste 3.25GB atraves do M-Pesa no dia 31/10/26 as 9:05 PM no valor de 100.00MT. O novo saldo M-Pesa e de 0.28MT."
+    re: /^\s*([A-Z0-9]{8,14})\s+confirmad[oa]\.\s*Compraste\s+(.+?)\s+atrav[eé]s do M-Pesa.*?dia\s+(\d{1,2})\/(\d{1,2})\/(\d{2,4}).*?valor de\s+([\d.,]+)\s*MT/i,
+    build: (m) => ({ service: 'M-Pesa', type: 'despesa', amount: m[6], entity: `Compra ${m[2]}`, day: m[3], month: m[4], year: m[5], transaction_id: m[1] }),
+  },
+  {
+    // "ID Trans: CO261102.1209.T42855. Efetuou um levantamento de 100.00MT no Agente ID 448365, ANIJA AMIMO as 12:09:38 02/11/2026. Taxa: 3.00MT. Novo saldo: 2,163.16MT."
+    re: /ID Trans:\s*(\S+?)\.\s.*?levantamento de\s+([\d.,]+)\s*MT no Agente(?: ID)?\s+([^,]+?)(?:,\s*([^.]+?))?\s+as\s+[\d:]+\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/i,
+    build: (m) => ({ service: null, type: 'despesa', amount: m[2], entity: `Levantamento no agente ${m[3]}${m[4] ? ` (${m[4].trim()})` : ''}`, day: m[5], month: m[6], year: m[7], transaction_id: m[1] }),
+  },
+  {
+    // "A conta 406659018 foi debitada no valor de 1000.00 MZN as 19:00 do dia 31/10/26. ... Millennium bim"
+    re: /conta\s+(\d+)\s+foi debitada no valor de\s+([\d.,]+)\s*(?:MZN|MT).*?dia\s+(\d{1,2})\/(\d{1,2})\/(\d{2,4}).*millennium\s*bim/i,
+    build: (m) => ({ service: 'Millennium bim', type: 'despesa', amount: m[2], entity: `Débito na conta ${m[1]}`, day: m[3], month: m[4], year: m[5] }),
+  },
+  {
+    // BCI: "registamos um levantamento de 3.000,00 MZN a 29/10/2026 14:51 no ATM com cartao ***5710"
+    re: /levantamento de\s+([\d.,]+)\s*(?:MZN|MT)\s+a\s+(\d{2})\/(\d{2})\/(\d{4})\s+\d{2}:\d{2}\s+n[oa]\s+(.+?)\s+com\s+cart[aã]o/i,
+    build: (m) => ({ service: 'BCI', type: 'despesa', amount: m[1], entity: `Levantamento ${m[5].trim()}`, day: m[2], month: m[3], year: m[4] }),
+  },
+];
+
+// "Novo saldo: 2,163.16MT", "O novo saldo M-Pesa e de 0.28MT", "Saldo actual: 3,000.00MT"
+const BALANCE = /(?:novo\s+saldo(?:\s+M-Pesa)?(?:\s+(?:e|é)\s+de|:)|saldo\s+actual:)\s*([\d.,]+)\s*(?:MT|MZN)/i;
+
+export function parseBalance(text) {
+  const m = String(text || '').match(BALANCE);
+  return m ? parseAmount(m[1]) : null;
+}
+
+function parseRealFormats(text) {
+  for (const f of REAL_FORMATS) {
+    const m = text.match(f.re);
+    if (!m) continue;
+    const r = f.build(m);
+    const formattedDate = `${twoDigitYear(r.year)}-${String(r.month).padStart(2, '0')}-${String(r.day).padStart(2, '0')}`;
+    return {
+      service: r.service || 'Mobile Money',
+      bank_name: r.service,
+      type: r.type,
+      amount: parseAmount(r.amount),
+      description: r.service ? `${r.service}: ${r.entity}` : r.entity,
+      category: 'other',
+      balanceAfter: parseBalance(text),
+      transaction_id: r.transaction_id || null,
+      rawDate: `${r.day}/${r.month}/${r.year}`,
+      formattedDate,
+    };
+  }
+  return null;
+}
+
 export function parseMobileMoneySMS(text) {
   if (!text) return null;
 
   const bci = parseBciCardPurchase(text);
   if (bci) return bci;
+
+  const real = parseRealFormats(text);
+  if (real) return real;
 
   const patterns = [
     // M-Pesa Moçambique: "Recebeu 500.00MT de 84..." ou "Pagamento de 100.00MT a..."
@@ -88,7 +147,7 @@ export function parseMobileMoneySMS(text) {
     }
 
     if (type) {
-      if (balMatch) balance = parseAmount(balMatch[1]);
+      balance = balMatch ? parseAmount(balMatch[1]) : parseBalance(text);
       if (dateMatch) {
         // Tenta formatar a data se possível
         try {
