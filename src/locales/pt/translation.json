@@ -2596,7 +2596,22 @@
     "saved": "Chave guardada. A Binth passa a usar esta configuração.",
     "removed": "Chave removida. A Binth volta à configuração padrão.",
     "rejected": "O fornecedor rejeitou a chave. Verifica a chave e as suas permissões.",
-    "error": "Não foi possível confirmar a operação. Tenta novamente."
+    "error": "Não foi possível confirmar a operação. Tenta novamente.",
+    "easy_title": "Forma mais fácil: ligar a tua conta",
+    "easy_text": "Toca no botão, entra na OpenRouter (podes usar a tua conta Google) e aprova. O Mwanga recebe a ligação sozinho, sem copiares nenhuma chave.",
+    "easy_free": "Mesmo sem saldo na OpenRouter, a Binth pode usar modelos gratuitos (com limite diário). Se carregares saldo, as respostas são cobradas na tua conta OpenRouter.",
+    "connect_openrouter": "Ligar com OpenRouter",
+    "reconnect_openrouter": "Ligar outra vez",
+    "connecting": "A abrir a OpenRouter…",
+    "connect_return": "Depois de aprovares, volta a esta página. A ligação aparece aqui automaticamente.",
+    "connected": "Conta OpenRouter ligada. A Binth passa a responder com a tua conta.",
+    "cancelled": "Ligação cancelada. Nenhuma conta foi ligada.",
+    "expired": "O pedido expirou. Toca outra vez em \"Ligar com OpenRouter\".",
+    "failed": "A OpenRouter não confirmou a ligação. Tenta outra vez dentro de alguns minutos.",
+    "not_possible": "Subscrições como ChatGPT Plus, Gemini Advanced ou Claude Pro não podem ser ligadas a outras apps: essas empresas não o permitem. Funciona apenas com contas de API (OpenRouter, Google AI Studio, Groq).",
+    "manual_title": "Já tenho uma chave de API (avançado)",
+    "manual_help": "Podes criar uma chave gratuita do Google Gemini em aistudio.google.com/apikey e colá-la aqui.",
+    "fallback_note": "Se a tua chave ficar sem créditos, a Binth tenta usar a configuração do Mwanga antes de desistir."
   },
   "reality": {
     "title": "Atualizar a minha realidade",
@@ -2864,5 +2879,18 @@
     ],
     "open_settings": "Abrir definições da app",
     "come_back": "Quando voltares ao Mwanga, a importação continua sozinha."
+  },
+  "ai_status": {
+    "personal_no_credits": "A tua conta de IA ficou sem créditos.",
+    "personal_rejected": "O fornecedor rejeitou a tua chave de IA.",
+    "personal_rate_limited": "A tua conta de IA atingiu o limite de pedidos por agora.",
+    "personal_unavailable": "A tua conta de IA não respondeu.",
+    "service_no_credits": "A IA do Mwanga está temporariamente sem créditos, por isso respondi com a inteligência local.",
+    "service_unavailable": "A IA do Mwanga não está disponível agora, por isso respondi com a inteligência local.",
+    "connect_hint": "Liga a tua própria conta de IA para continuares a conversar sem esperar.",
+    "fix_hint": "Revê a tua ligação de IA nas Definições.",
+    "used_mwanga": "Desta vez usei a IA do Mwanga.",
+    "connect_btn": "Ligar a minha IA",
+    "fix_btn": "Rever ligação de IA"
   }
 }

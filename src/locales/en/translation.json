@@ -2596,7 +2596,22 @@
     "saved": "Key saved. Binth now uses this configuration.",
     "removed": "Key removed. Binth returns to the default configuration.",
     "rejected": "The provider rejected the key. Check the key and its permissions.",
-    "error": "Unable to confirm the operation. Please retry."
+    "error": "Unable to confirm the operation. Please retry.",
+    "easy_title": "Easiest way: connect your account",
+    "easy_text": "Tap the button, sign in to OpenRouter (you can use your Google account) and approve. Mwanga receives the connection by itself, with no key to copy.",
+    "easy_free": "Even with no OpenRouter balance, Binth can use free models (with a daily limit). If you add balance, answers are billed to your OpenRouter account.",
+    "connect_openrouter": "Connect with OpenRouter",
+    "reconnect_openrouter": "Connect again",
+    "connecting": "Opening OpenRouter…",
+    "connect_return": "After you approve, come back to this page. The connection shows up here automatically.",
+    "connected": "OpenRouter account connected. Binth now answers with your account.",
+    "cancelled": "Connection cancelled. No account was connected.",
+    "expired": "The request expired. Tap \"Connect with OpenRouter\" again.",
+    "failed": "OpenRouter did not confirm the connection. Try again in a few minutes.",
+    "not_possible": "Subscriptions such as ChatGPT Plus, Gemini Advanced or Claude Pro cannot be connected to other apps: those companies do not allow it. Only API accounts work (OpenRouter, Google AI Studio, Groq).",
+    "manual_title": "I already have an API key (advanced)",
+    "manual_help": "You can create a free Google Gemini key at aistudio.google.com/apikey and paste it here.",
+    "fallback_note": "If your key runs out of credits, Binth tries Mwanga's setup before giving up."
   },
   "reality": {
     "title": "Update my financial reality",
@@ -2864,5 +2879,18 @@
     ],
     "open_settings": "Open app settings",
     "come_back": "When you come back to Mwanga, the import carries on by itself."
+  },
+  "ai_status": {
+    "personal_no_credits": "Your AI account ran out of credits.",
+    "personal_rejected": "The provider rejected your AI key.",
+    "personal_rate_limited": "Your AI account hit its request limit for now.",
+    "personal_unavailable": "Your AI account did not respond.",
+    "service_no_credits": "Mwanga's AI is temporarily out of credits, so I answered with local intelligence.",
+    "service_unavailable": "Mwanga's AI is not available right now, so I answered with local intelligence.",
+    "connect_hint": "Connect your own AI account to keep chatting without waiting.",
+    "fix_hint": "Check your AI connection in Settings.",
+    "used_mwanga": "This time I used Mwanga's AI.",
+    "connect_btn": "Connect my AI",
+    "fix_btn": "Check AI connection"
   }
 }

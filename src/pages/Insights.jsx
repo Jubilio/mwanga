@@ -432,6 +432,26 @@ export default function Insights() {
                   )}
                 </div>
 
+                {/* AI connection notice (own key out of credits, Mwanga AI offline) */}
+                {!isUser && (msg.data?.ai_status || msg.data?.ai_notice) && (() => {
+                  const reason = msg.data.ai_status?.reason || msg.data.ai_notice;
+                  const personal = String(reason).startsWith('personal_');
+                  return (
+                    <div role="status" style={{
+                      maxWidth: '85%', padding: '10px 12px', borderRadius: 12,
+                      background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.30)',
+                      fontSize: 12, lineHeight: 1.5,
+                    }}>
+                      <div style={{ fontWeight: 700, color: '#F59E0B' }}>{t(`ai_status.${reason}`, { defaultValue: t('ai_status.service_unavailable') })}</div>
+                      <div style={{ marginTop: 2 }}>{msg.data.ai_notice ? t('ai_status.used_mwanga') + ' ' : ''}{t(personal ? 'ai_status.fix_hint' : 'ai_status.connect_hint')}</div>
+                      <button type="button" onClick={() => navigate('/settings?tab=ai')} style={{
+                        marginTop: 8, padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700,
+                        background: '#F59E0B', color: '#1f1300', border: 'none', cursor: 'pointer',
+                      }}>{t(personal ? 'ai_status.fix_btn' : 'ai_status.connect_btn')}</button>
+                    </div>
+                  );
+                })()}
+
                 {/* Quick actions */}
                 {!isUser && msg.quick_actions?.length > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxWidth: '85%' }}>

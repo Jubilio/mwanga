@@ -78,6 +78,7 @@ router.get('/settings/ai', aiSettings.get);
 router.put('/settings/ai', aiSettings.save);
 router.post('/settings/ai/test', aiSettings.test);
 router.delete('/settings/ai', aiSettings.remove);
+router.post('/settings/ai/openrouter/start', aiSettings.startOpenRouter);
 router.get('/settings', getSettings);
 router.post('/settings', upsertSetting);
 router.post('/settings/trial', startTrial);
