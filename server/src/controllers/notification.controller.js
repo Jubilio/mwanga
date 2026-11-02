@@ -72,6 +72,9 @@ const subscribe = async (req, res) => {
     res.status(201).json({ status: 'success', data: result });
   } catch (error) {
     logger.error(`Error in subscribe: ${error.message}`);
+    if (error.statusCode === 400) {
+      return res.status(400).json({ status: 'error', message: error.message });
+    }
     res.status(500).json({ status: 'error', message: 'Failed to save push subscription.' });
   }
 };
