@@ -120,3 +120,16 @@ test('without AI, "gastei 500 no chapa" still gets a confirmation card', async (
   const result = await callBinth({ messages: [{ role: 'user', content: 'gastei 500 no chapa' }], householdId: 7, userId: 3, apiKey: 'test-key', provider: 'gemini' });
   expect(result.pending_action.payload).toMatchObject({ valor: 500, cat: 'transport' });
 });
+test('a personal key whose model rejects tools still answers (retries without tools)', async () => {
+  tools.getToolsSchema.mockReturnValue([{ type: 'function', function: { name: 'calculateLiquidityRisk', description: 'x', parameters: { type: 'object', properties: { periodDays: { type: 'number' } } } } }]);
+  savePersonal('openrouter');
+  fetch.mockResolvedValueOnce(failing(404, '{"error":{"message":"No endpoints found that support tool use"}}'))
+    .mockResolvedValueOnce(groqOk('{"message":"Resposta com a tua chave","quick_actions":[]}'));
+  const result = await callBinth({ messages: [{ role: 'user', content: 'Oi' }], householdId: 7, userId: 3 });
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(fetch.mock.calls[1][1].headers.Authorization).toBe('Bearer personal-secret-key');
+  expect(JSON.parse(fetch.mock.calls[1][1].body).tools).toBeUndefined();
+  expect(result.message).toBe('Resposta com a tua chave');
+  expect(result.data?.ai_notice).toBeUndefined();
+  tools.getToolsSchema.mockReturnValue([]);
+});
