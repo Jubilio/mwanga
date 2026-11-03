@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../utils/api';
 import { clearToken } from '../../utils/authToken';
+import { clearLocalUserData } from '../../utils/localChat';
 
 const CONFIRMATION_WORD = 'APAGAR';
 
@@ -23,6 +24,7 @@ export default function DeleteAccountSettings() {
       await api.delete('/auth/account', { data: { confirmation: confirmation.trim() } });
       setStatus('done');
       clearToken();
+      await clearLocalUserData();
       window.location.assign('/');
     } catch {
       setStatus('error');

@@ -9,6 +9,7 @@ import MwangaLogo from '../MwangaLogo';
 import UserAvatar from '../UserAvatar';
 import { getEffectiveTier, hasFeatureAccess } from '../../config/features';
 import { clearToken } from '../../utils/authToken';
+import { clearLocalUserData } from '../../utils/localChat';
 import { ADMIN_ITEM, SIDEBAR_GROUPS } from '../../config/navigation';
 
 // ─── PRO Badge ───────────────────────────────────────────────────────────────
@@ -111,8 +112,9 @@ export default function Sidebar({ isOpen, onClose }) {
   const tier = getEffectiveTier(state.settings);
   const isFree = tier === 'free';
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     clearToken();
+    await clearLocalUserData();
     window.location.reload();
   };
 
