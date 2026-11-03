@@ -20,7 +20,7 @@ export default function InstallBanner({ installPrompt, onClose }) {
               <Download className="text-white" size={24} />
             </div>
             <div>
-              <h4 className="text-sm font-black uppercase tracking-wider">{ui("Instalar Mwanga")}</h4>
+              <h4 className="text-sm font-bold uppercase tracking-wider">{ui("Instalar Mwanga")}</h4>
               <p className="text-xs text-white/70">{ui("Acesso rápido e offline no teu ecrã.")}</p>
             </div>
           </div>
@@ -32,7 +32,7 @@ export default function InstallBanner({ installPrompt, onClose }) {
                 const { outcome } = await installPrompt.userChoice;
                 if (outcome === 'accepted') onClose();
               }}
-              className="rounded-xl bg-white px-4 py-2 text-xs font-black uppercase tracking-wider text-ocean transition active:scale-95"
+              className="rounded-xl bg-white px-4 py-2 text-xs font-bold uppercase tracking-wider text-ocean transition active:scale-95"
             > {ui("Instalar")} </button>
             <button
               onClick={onClose}

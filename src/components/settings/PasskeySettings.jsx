@@ -33,14 +33,14 @@ export default function PasskeySettings({ showToast }) {
   }
 
   return <section className="glass-card p-6 md:p-10 mt-6 space-y-4">
-    <h2 className="text-xl font-black">{t('settings.passkeys.title')}</h2>
-    <p className="text-sm text-slate-500">{t('settings.passkeys.description')}</p>
+    <h2 className="text-xl font-bold">{t('settings.passkeys.title')}</h2>
+    <p className="text-sm text-slate-600 dark:text-slate-400">{t('settings.passkeys.description')}</p>
     <ul className="space-y-2 text-sm">
       {passkeys.map(passkey => <li key={passkey.id} className="flex items-center justify-between gap-3">
         <span>{t('settings.passkeys.device', { date: new Date(passkey.created_at).toLocaleDateString() })}</span>
         <button type="button" className="btn btn-ghost" disabled={busy} onClick={() => remove(passkey.id)}>{t('settings.passkeys.remove')}</button>
       </li>)}
     </ul>
-    <button type="button" className="btn btn-primary" disabled={busy} onClick={enable}><Fingerprint size={16} />{t('settings.passkeys.add')}</button>
+    <button type="button" className="btn btn-secondary" disabled={busy} onClick={enable}><Fingerprint size={16} />{t('settings.passkeys.add')}</button>
   </section>;
 }

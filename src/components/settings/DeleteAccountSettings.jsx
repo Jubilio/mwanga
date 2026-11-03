@@ -31,9 +31,9 @@ export default function DeleteAccountSettings() {
   }
 
   return <section className="glass-card p-6 md:p-10 mt-6" style={{ borderColor: 'rgba(239,68,68,0.35)' }} aria-labelledby="delete-account-title">
-    <h2 id="delete-account-title" className="text-xl font-black text-red-600 dark:text-red-400">{t('settings.delete_account.title')}</h2>
-    <p className="text-sm text-slate-500 mt-2">{t('settings.delete_account.body')}</p>
-    <p className="text-sm text-slate-500 mt-2 mb-5">{t('settings.delete_account.shared_note')}</p>
+    <h2 id="delete-account-title" className="text-xl font-bold text-red-600 dark:text-red-400">{t('settings.delete_account.title')}</h2>
+    <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">{t('settings.delete_account.body')}</p>
+    <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 mb-6">{t('settings.delete_account.shared_note')}</p>
     <form onSubmit={submit}>
       <fieldset disabled={busy} className="space-y-4 disabled:opacity-60">
         <label className="block text-sm font-bold" htmlFor="delete-account-confirm">

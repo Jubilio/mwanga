@@ -207,12 +207,12 @@ export default function Transactions() {
       {/* ─── 2. SEARCH & FILTERS ─── */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 group">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-ocean transition-colors">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400 group-focus-within:text-ocean transition-colors">
             <Search size={18} />
           </div>
           <input
             type="text"
-            className="form-input pl-11 h-11 bg-white/40 dark:bg-white/5 backdrop-blur-md border-transparent focus:bg-white dark:focus:bg-white/10 transition-all shadow-sm rounded-xl"
+            className="form-input pl-12 h-11 bg-white/40 dark:bg-white/5 backdrop-blur-md border-transparent focus:bg-white dark:focus:bg-white/10 transition-all shadow-sm rounded-xl"
             placeholder={t('transactions.search_placeholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}

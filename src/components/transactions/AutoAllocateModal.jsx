@@ -32,7 +32,7 @@ export default function AutoAllocateModal({
             exit={{ y: '100%', opacity: 0 }}
             className="relative w-full max-w-md bg-cream dark:bg-[#0c1c2e] rounded-t-[32px] sm:rounded-[32px] p-6 shadow-2xl border border-white/10"
           >
-            <button onClick={onClose} className="absolute top-5 right-5 p-2 text-gray-400 hover:text-white transition-colors bg-white/5 rounded-full">
+            <button onClick={onClose} className="absolute top-5 right-5 p-2 text-slate-600 dark:text-slate-400 hover:text-white transition-colors bg-white/5 rounded-full">
               <X size={18} />
             </button>
 
@@ -40,8 +40,8 @@ export default function AutoAllocateModal({
               <div className="w-16 h-16 rounded-full bg-ocean/10 text-ocean flex items-center justify-center mb-4 shadow-lg shadow-ocean/20">
                 <Sparkles size={32} />
               </div>
-              <h3 className="text-xl font-black text-midnight dark:text-white mb-2">{ui("Alocação Inteligente")}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400"> {ui("Detetámos a entrada de um salário de")} <strong className="text-ocean">MT {fmtShort(salaryAmount)}</strong>{ui(". Deseja distribuir automaticamente com a regra 50/30/20?")} </p>
+              <h3 className="text-xl font-bold text-midnight dark:text-white mb-2">{ui("Alocação Inteligente")}</h3>
+              <p className="text-sm text-slate-600 dark:text-gray-400"> {ui("Detetámos a entrada de um salário de")} <strong className="text-ocean">MT {fmtShort(salaryAmount)}</strong>{ui(". Deseja distribuir automaticamente com a regra 50/30/20?")} </p>
             </div>
 
             <div className="flex flex-col gap-3 mb-6">
@@ -50,10 +50,10 @@ export default function AutoAllocateModal({
                   <PiggyBank size={20} className="text-leaf" />
                   <div className="flex flex-col">
                     <span className="text-xs font-bold text-leaf uppercase tracking-wider">{ui("Poupança (20%)")}</span>
-                    <span className="text-[10px] text-gray-500">{ui("Registar como transação de poupança")}</span>
+                    <span className="text-[10px] text-slate-600 dark:text-slate-400">{ui("Registar como transação de poupança")}</span>
                   </div>
                 </div>
-                <span className="font-black text-leaf">MT {fmtShort(savingsAmount)}</span>
+                <span className="font-bold text-leaf">MT {fmtShort(savingsAmount)}</span>
               </div>
               
               <div className="p-4 rounded-2xl bg-midnight/5 dark:bg-white/5 border border-white/10 flex items-center justify-between">
@@ -61,22 +61,22 @@ export default function AutoAllocateModal({
                   <Target size={20} className="text-ocean" />
                   <div className="flex flex-col">
                     <span className="text-xs font-bold text-midnight dark:text-white uppercase tracking-wider">{ui("Essencial (50%)")}</span>
-                    <span className="text-[10px] text-gray-500">{ui("Fica disponível para despesas base")}</span>
+                    <span className="text-[10px] text-slate-600 dark:text-slate-400">{ui("Fica disponível para despesas base")}</span>
                   </div>
                 </div>
-                <span className="font-black text-midnight dark:text-white">MT {fmtShort(essentialsAmount)}</span>
+                <span className="font-bold text-midnight dark:text-white">MT {fmtShort(essentialsAmount)}</span>
               </div>
             </div>
 
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => onAllocate(savingsAmount)}
-                className="w-full h-12 bg-gradient-to-r from-ocean to-sky text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-ocean/30 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+                className="w-full h-12 bg-gradient-to-r from-ocean to-sky text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-ocean/30 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
               > {ui("Sim, Alocar Poupança")} <ArrowRight size={16} />
               </button>
               <button
                 onClick={onClose}
-                className="w-full h-12 bg-white/5 text-gray-500 hover:text-midnight dark:hover:text-white rounded-2xl font-bold text-sm transition-colors"
+                className="w-full h-12 bg-white/5 text-slate-600 dark:text-slate-400 hover:text-midnight dark:hover:text-white rounded-2xl font-bold text-sm transition-colors"
               > {ui("Não, manter tudo disponível")} </button>
             </div>
           </motion.div>

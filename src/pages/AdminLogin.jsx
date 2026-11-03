@@ -98,8 +98,8 @@ export default function AdminLogin() {
             </div>
 
             <h1 style={{
-              fontSize: '1.6rem', fontWeight: 900, color: '#e8f0fe',
-              fontFamily: "'Sora', sans-serif", margin: '0 0 0.3rem',
+              fontSize: '1.6rem', fontWeight: 700, color: '#e8f0fe',
+              fontFamily: "'Sora', sans-serif", margin: '0 0 0.25rem',
               letterSpacing: '-0.02em',
             }}>
               Mwanga <span style={{ color: '#F59E0B' }}>Admin</span>
@@ -113,26 +113,26 @@ export default function AdminLogin() {
           {/* Error */}
           {error && (
             <div style={{
-              display: 'flex', alignItems: 'flex-start', gap: '10px',
+              display: 'flex', alignItems: 'flex-start', gap: '12px',
               background: 'rgba(239,68,68,0.08)',
               border: '1px solid rgba(239,68,68,0.2)',
               borderRadius: '14px',
-              padding: '14px 16px',
+              padding: '16px 16px',
               marginBottom: '1.5rem',
               color: '#fca5a5',
               fontSize: '0.85rem',
               lineHeight: 1.5,
             }}>
-              <AlertTriangle size={16} style={{ marginTop: '2px', flexShrink: 0, color: '#EF4444' }} />
+              <AlertTriangle size={16} style={{ marginTop: '4px', flexShrink: 0, color: '#EF4444' }} />
               <span>{error}</span>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
               <label style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
+                display: 'flex', alignItems: 'center', gap: '8px',
                 fontSize: '0.75rem', fontWeight: 700, color: '#6b7fa3',
                 textTransform: 'uppercase', letterSpacing: '0.08em',
                 marginBottom: '0.5rem',
@@ -150,7 +150,7 @@ export default function AdminLogin() {
                   background: 'rgba(255,255,255,0.04)',
                   border: '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '14px',
-                  padding: '14px 16px',
+                  padding: '16px 16px',
                   color: '#e8f0fe',
                   fontSize: '0.95rem',
                   outline: 'none',
@@ -164,7 +164,7 @@ export default function AdminLogin() {
 
             <div>
               <label style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
+                display: 'flex', alignItems: 'center', gap: '8px',
                 fontSize: '0.75rem', fontWeight: 700, color: '#6b7fa3',
                 textTransform: 'uppercase', letterSpacing: '0.08em',
                 marginBottom: '0.5rem',
@@ -181,7 +181,7 @@ export default function AdminLogin() {
                   background: 'rgba(255,255,255,0.04)',
                   border: '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '14px',
-                  padding: '14px 16px',
+                  padding: '16px 16px',
                   color: '#e8f0fe',
                   fontSize: '0.95rem',
                   outline: 'none',
@@ -198,7 +198,7 @@ export default function AdminLogin() {
               disabled={loading}
               style={{
                 width: '100%',
-                padding: '14px',
+                padding: '16px',
                 marginTop: '0.5rem',
                 background: loading
                   ? 'rgba(245,158,11,0.4)'
@@ -207,7 +207,7 @@ export default function AdminLogin() {
                 borderRadius: '14px',
                 color: '#fff',
                 fontSize: '0.9rem',
-                fontWeight: 800,
+                fontWeight: 700,
                 letterSpacing: '0.06em',
                 cursor: loading ? 'wait' : 'pointer',
                 display: 'flex',

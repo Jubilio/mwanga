@@ -64,7 +64,7 @@ export default function BinthContextual({ page }) {
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-center mb-1">
             <span className="text-[10px] uppercase tracking-widest font-bold text-gold">{t('binth_local.title')}</span>
-            <button onClick={() => fetchInsight()} aria-label={t('binth_local.refresh')} disabled={loading} className="text-gray-400 hover:text-gold transition-colors">
+            <button onClick={() => fetchInsight()} aria-label={t('binth_local.refresh')} disabled={loading} className="text-slate-600 dark:text-slate-400 hover:text-gold transition-colors">
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             </button>
           </div>
@@ -82,7 +82,7 @@ export default function BinthContextual({ page }) {
 
               {/* ─ Biblical Insight ─ */}
               {insight.biblical_insight && (
-                <div className="mt-2 flex items-start gap-1.5 text-[11px] text-amber-600 dark:text-amber-400">
+                <div className="mt-2 flex items-start gap-2 text-[11px] text-amber-600 dark:text-amber-400">
                   <span className="mt-px shrink-0">&#128214;</span>
                   <em className="opacity-90">{insight.biblical_insight}</em>
                 </div>
@@ -90,7 +90,7 @@ export default function BinthContextual({ page }) {
 
               {/* ─ Alert banner ─ */}
               {insight.alerta && (
-                <div className="mt-2 text-[11px] font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 rounded-lg px-2.5 py-1.5">
+                <div className="mt-2 text-[11px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 rounded-lg px-3 py-2">
                   {insight.alerta}
                 </div>
               )}
@@ -98,7 +98,7 @@ export default function BinthContextual({ page }) {
               <div className="mt-3 flex flex-wrap gap-2">
                 {isHighUrgency && (
                   <button 
-                    className="text-[11px] bg-coral/20 hover:bg-coral/30 text-coral dark:text-coral-light px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all border border-coral/20"
+                    className="text-[11px] bg-coral/20 hover:bg-coral/30 text-coral dark:text-coral-light px-3 py-2 rounded-lg font-bold uppercase tracking-widest transition-all border border-coral/20"
                     onClick={() => navigate('/orcamento')}
                   >
                     {t('binth_local.review')}

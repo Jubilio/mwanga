@@ -35,8 +35,8 @@ export default function TabPreferences({
             <Palette size={24} />
           </div>
           <div>
-            <h2 className="text-2xl font-black font-serif text-slate-800 dark:text-slate-100">{t('settings.pref.title')}</h2>
-            <p className="text-sm text-slate-500">{t('settings.pref.subtitle')}</p>
+            <h2 className="text-2xl font-bold font-serif text-slate-800 dark:text-slate-100">{t('settings.pref.title')}</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{t('settings.pref.subtitle')}</p>
           </div>
         </div>
 
@@ -50,11 +50,11 @@ export default function TabPreferences({
             </div>
 
             <div className="group">
-              <label htmlFor="settings-currency" className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t('settings.pref.currency_label')}</label>
+              <label htmlFor="settings-currency" className="block text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-2">{t('settings.pref.currency_label')}</label>
               <select id="settings-currency"
                 value={form.currency}
                 onChange={(e) => setFormDirty(f => ({ ...f, currency: e.target.value }))}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-5 py-4 text-slate-800 dark:text-slate-100 outline-none focus:border-teal-500/40 transition-all appearance-none cursor-pointer font-medium"
+                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-6 py-4 text-slate-800 dark:text-slate-100 outline-none focus:border-teal-500/40 transition-all appearance-none cursor-pointer font-normal"
               >
                 <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="MT">{ui("MT — Metical Moçambicano")}</option>
                 <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="USD">{ui("USD — Dólar Americano")}</option>
@@ -73,11 +73,11 @@ export default function TabPreferences({
             </div>
 
             <div className="group">
-              <label htmlFor="settings-financial_month_start_day" className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t('settings.pref.reset_day_label')}</label>
+              <label htmlFor="settings-financial_month_start_day" className="block text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-2">{t('settings.pref.reset_day_label')}</label>
               <select id="settings-financial_month_start_day"
                 value={form.financial_month_start_day}
                 onChange={(e) => setFormDirty(f => ({ ...f, financial_month_start_day: e.target.value }))}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-5 py-4 text-slate-800 dark:text-slate-100 outline-none focus:border-indigo-500/40 transition-all appearance-none cursor-pointer font-medium"
+                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-6 py-4 text-slate-800 dark:text-slate-100 outline-none focus:border-indigo-500/40 transition-all appearance-none cursor-pointer font-normal"
               >
                 {[...Array(31)].map((_, i) => (
                   <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={i + 1} value={i + 1}>{t('settings.pref.reset_day_option', { day: i + 1 })}</option>
@@ -103,16 +103,16 @@ export default function TabPreferences({
         </div>
 
         <label htmlFor="settings-language" className="block mt-6 text-sm font-bold">{t('settings.reliable.language')}<select id="settings-language" className="form-input block w-full mt-2" value={i18n.resolvedLanguage?.startsWith('en') ? 'en' : 'pt'} onChange={event => i18n.changeLanguage(event.target.value)}><option value="pt">Português</option><option value="en">English</option></select></label>
-        <p className="text-xs text-slate-500 mt-2">{t('settings.reliable.language_note')}</p>
+        <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">{t('settings.reliable.language_note')}</p>
         </> : null}
         {section === 'notifications' ? <div className="mt-2 rounded-3xl border border-slate-200 dark:border-slate-700 bg-[linear-gradient(135deg,#0a4d68,#088395)] p-1 text-white shadow-[0_16px_40px_rgba(10,120,104,0.18)]">
           <div className="bg-white/5 backdrop-blur-3xl rounded-[1.4rem] p-6">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between mb-8">
               <div className="flex-1 min-w-0">
-                <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.11em]">
+                <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.11em]">
                   <Bell size={12} /> {t('settings.pref.push.tag')}
                 </div>
-                <h5 className="text-sm font-black uppercase tracking-[0.11em]">{t('settings.pref.push.title')}</h5>
+                <h5 className="text-sm font-bold uppercase tracking-[0.11em]">{t('settings.pref.push.title')}</h5>
                 <p className="mt-2 text-[12px] text-white/75 leading-relaxed">
                   {t('settings.pref.push.description')}
                 </p>
@@ -133,7 +133,7 @@ export default function TabPreferences({
                       showToast(t(`settings.toasts.push_errors.${reason.key}`, reason.values), 'error');
                     }
                   }}
-                  className="rounded-2xl bg-white px-6 py-3 text-xs font-black uppercase tracking-widest text-ocean hover:bg-slate-50 dark:bg-slate-900 transition-all disabled:opacity-50 shadow-xl"
+                  className="rounded-2xl bg-white px-6 py-3 text-xs font-bold uppercase tracking-widest text-ocean hover:bg-slate-50 dark:bg-slate-900 transition-all disabled:opacity-50 shadow-xl"
                 >
                   {isSubscribed ? t('settings.pref.push.btn_on') : t('settings.pref.push.btn_off')}
                 </button>
@@ -159,15 +159,15 @@ export default function TabPreferences({
             ) : null}
             {!isSupported ? <p role="status" className="mb-4 text-sm">{t('settings.reliable.push_unsupported')}</p> : null}
             {permission === 'denied' && (
-              <div className="mb-8 flex items-start gap-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 p-5 text-white animate-pulse-slow">
+              <div className="mb-8 flex items-start gap-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 p-6 text-white animate-pulse-slow">
                 <div className="shrink-0 p-3 rounded-xl bg-amber-500/20 text-amber-300">
                   <AlertTriangle size={20} />
                 </div>
                 <div>
-                  <h6 className="text-[12px] font-black uppercase tracking-widest text-amber-200 mb-1">
+                  <h6 className="text-[12px] font-bold uppercase tracking-widest text-amber-200 mb-1">
                     {t('settings.pref.push.blocked_title')}
                   </h6>
-                  <p className="text-[11px] text-white/80 leading-relaxed font-medium">
+                  <p className="text-[11px] text-white/80 leading-relaxed font-normal">
                     {t('settings.pref.push.blocked_desc')}
                   </p>
                 </div>
@@ -181,7 +181,7 @@ export default function TabPreferences({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Calendar size={14} className="text-teal-300" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">{t('settings.pref.push.daily_reminder')}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{t('settings.pref.push.daily_reminder')}</span>
                   </div>
                   <input
                     type="checkbox"
@@ -198,7 +198,7 @@ export default function TabPreferences({
                     value={form.daily_entry_reminder_time}
                     onChange={(e) => setFormDirty(f => ({ ...f, daily_entry_reminder_time: e.target.value }))}
                     disabled={!form.daily_entry_reminder_enabled}
-                    className="bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white outline-none focus:border-teal-400 disabled:opacity-30"
+                    className="bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-xs font-normal text-white outline-none focus:border-teal-400 disabled:opacity-30"
                   />
                   <span className="text-[9px] text-white/40 italic">{t('settings.pref.push.daily_reminder_tip')}</span>
                 </div>
@@ -209,7 +209,7 @@ export default function TabPreferences({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Banknote size={14} className="text-amber-300" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">{t('settings.pref.push.commitments')}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{t('settings.pref.push.commitments')}</span>
                   </div>
                   <input
                     type="checkbox"
@@ -226,7 +226,7 @@ export default function TabPreferences({
                     value={form.monthly_due_reminder_time}
                     onChange={(e) => setFormDirty(f => ({ ...f, monthly_due_reminder_time: e.target.value }))}
                     disabled={!form.monthly_due_reminder_enabled}
-                    className="flex-1 bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white outline-none focus:border-teal-400 disabled:opacity-30"
+                    className="flex-1 bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-xs font-normal text-white outline-none focus:border-teal-400 disabled:opacity-30"
                   />
                   <select
                     aria-label={t('settings.pref.push.commitments')}
@@ -246,7 +246,7 @@ export default function TabPreferences({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <ShieldAlert size={14} className="text-rose-400" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">{t('settings.pref.push.debt_reminder')}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{t('settings.pref.push.debt_reminder')}</span>
                   </div>
                   <input
                     type="checkbox"

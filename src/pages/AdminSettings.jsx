@@ -23,15 +23,15 @@ export default function AdminSettings() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
       <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: 900, margin: '0 0 4px', fontFamily: "'Sora', sans-serif" }}>
-          <Settings size={22} style={{ verticalAlign: 'middle', marginRight: '10px', color: G.gold }} /> {ui("Configuração da Plataforma")} </h1>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, margin: '0 0 4px', fontFamily: "'Sora', sans-serif" }}>
+          <Settings size={22} style={{ verticalAlign: 'middle', marginRight: '12px', color: G.gold }} /> {ui("Configuração da Plataforma")} </h1>
         <p style={{ color: G.muted, fontSize: '13px', margin: 0 }}> {ui("Gestão central das definições do Mwanga.")} </p>
       </div>
 
-      <div style={{ display: 'grid', gap: '20px' }}>
+      <div style={{ display: 'grid', gap: '24px' }}>
         {/* System Info */}
         <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '24px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Server size={16} color={G.gold} /> {ui("Informação do Sistema")} </h3>
           <div style={{ display: 'grid', gap: '12px' }}>
             <InfoRow label={ui("Versão")} value="Mwanga 2.0 Intelligence" />
@@ -42,36 +42,36 @@ export default function AdminSettings() {
 
         {/* Security */}
         <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '24px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Shield size={16} color={G.gold} /> {ui("Segurança")} </h3>
-          <div style={{ display: 'grid', gap: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: G.card, borderRadius: '14px', border: `1px solid ${G.border}` }}>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: G.card, borderRadius: '14px', border: `1px solid ${G.border}` }}>
               <div>
                 <div style={{ fontSize: '13px', fontWeight: 700 }}>{ui("Autenticação JWT")}</div>
                 <div style={{ fontSize: '11px', color: G.muted }}>{ui("Token-based com expiração automática")}</div>
               </div>
-              <span style={{ fontSize: '11px', fontWeight: 700, color: G.green, background: `${G.green}15`, padding: '4px 10px', borderRadius: '8px' }}>{ui("Ativo")}</span>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: G.green, background: `${G.green}15`, padding: '4px 12px', borderRadius: '8px' }}>{ui("Ativo")}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: G.card, borderRadius: '14px', border: `1px solid ${G.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: G.card, borderRadius: '14px', border: `1px solid ${G.border}` }}>
               <div>
                 <div style={{ fontSize: '13px', fontWeight: 700 }}>Google OAuth 2.0</div>
                 <div style={{ fontSize: '11px', color: G.muted }}>{ui("Login social para utilizadores finais")}</div>
               </div>
-              <span style={{ fontSize: '11px', fontWeight: 700, color: G.green, background: `${G.green}15`, padding: '4px 10px', borderRadius: '8px' }}>{ui("Configurado")}</span>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: G.green, background: `${G.green}15`, padding: '4px 12px', borderRadius: '8px' }}>{ui("Configurado")}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: G.card, borderRadius: '14px', border: `1px solid ${G.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: G.card, borderRadius: '14px', border: `1px solid ${G.border}` }}>
               <div>
                 <div style={{ fontSize: '13px', fontWeight: 700 }}>VAPID Push Keys</div>
                 <div style={{ fontSize: '11px', color: G.muted }}>Web Push Notifications (FCM)</div>
               </div>
-              <span style={{ fontSize: '11px', fontWeight: 700, color: G.green, background: `${G.green}15`, padding: '4px 10px', borderRadius: '8px' }}>{ui("Ativo")}</span>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: G.green, background: `${G.green}15`, padding: '4px 12px', borderRadius: '8px' }}>{ui("Ativo")}</span>
             </div>
           </div>
         </div>
 
         {/* Database */}
         <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '24px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Database size={16} color={G.gold} /> {ui("Base de Dados")} </h3>
           <div style={{ display: 'grid', gap: '12px' }}>
             <InfoRow label="Provider" value="Supabase (PostgreSQL)" />
@@ -82,7 +82,7 @@ export default function AdminSettings() {
 
         {/* Notifications config */}
         <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '24px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Bell size={16} color={G.gold} /> {ui("Notificações")} </h3>
           <div style={{ display: 'grid', gap: '12px' }}>
             <InfoRow label="Scheduler Interval" value="60s" />
@@ -100,7 +100,7 @@ export default function AdminSettings() {
             display: 'flex', alignItems: 'center', gap: '8px',
             padding: '12px 24px', borderRadius: '14px',
             background: saved ? G.green : `linear-gradient(135deg, ${G.gold}, ${G.gold2})`,
-            border: 'none', color: '#fff', fontSize: '13px', fontWeight: 800,
+            border: 'none', color: '#fff', fontSize: '13px', fontWeight: 700,
             cursor: 'pointer', transition: 'all 0.3s',
             boxShadow: saved ? 'none' : `0 8px 20px rgba(245,158,11,0.25)`,
           }}
@@ -117,10 +117,10 @@ function InfoRow({ label, value, valueColor }) {
   return (
     <div style={{
       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      padding: '10px 14px', background: G.card, borderRadius: '12px',
+      padding: '12px 16px', background: G.card, borderRadius: '12px',
       border: `1px solid ${G.border}`,
     }}>
-      <span style={{ fontSize: '12px', color: G.muted, fontWeight: 600 }}>{ui(label)}</span>
+      <span style={{ fontSize: '12px', color: G.muted, fontWeight: 700 }}>{ui(label)}</span>
       <span style={{ fontSize: '12px', fontWeight: 700, color: valueColor || G.text }}>{value}</span>
     </div>
   );

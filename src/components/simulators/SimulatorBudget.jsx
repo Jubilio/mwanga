@@ -69,22 +69,22 @@ export default function SimulatorBudget({ salary: globalSalary, currency, dispat
           <div className="flex items-start gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-ocean/10 flex items-center justify-center text-ocean"><Banknote size={20} /></div>
             <div className="min-w-0">
-              <h2 className="text-xl font-black text-midnight dark:text-white">{t('simulators.budget.title')}</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('simulators.budget.subtitle')}</p>
+              <h2 className="text-xl font-bold text-midnight dark:text-white">{t('simulators.budget.title')}</h2>
+              <p className="text-sm text-slate-600 dark:text-gray-400">{t('simulators.budget.subtitle')}</p>
             </div>
           </div>
 
           <div>
-            <label className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-2 block">{t('simulators.budget.salary_label')}</label>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2 block">{t('simulators.budget.salary_label')}</label>
             <div className="relative">
-              <input type="number" value={salary} onChange={(e) => setSalary(Number(e.target.value))} className="w-full bg-black/5 dark:bg-white/5 border-none rounded-2xl p-4 pr-4 pl-14 text-lg font-black dark:text-white outline-none focus:ring-2 ring-ocean/50" />
-              <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+              <input type="number" value={salary} onChange={(e) => setSalary(Number(e.target.value))} className="w-full bg-black/5 dark:bg-white/5 border-none rounded-2xl p-4 pr-4 pl-14 text-lg font-bold dark:text-white outline-none focus:ring-2 ring-ocean/50" />
+              <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400 pointer-events-none" size={18} />
             </div>
           </div>
 
           <div className="flex gap-2 flex-wrap min-w-0">
             {['50/30/20', '70/20/10', '60/30/10'].map((preset) => (
-              <button key={preset} onClick={() => setBudgetPreset(preset)} className={`px-4 py-2 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all max-w-full ${activeModel === preset ? 'bg-ocean text-white shadow-lg' : 'bg-black/5 dark:bg-white/5 text-gray-400'}`}>
+              <button key={preset} onClick={() => setBudgetPreset(preset)} className={`px-4 py-2 rounded-xl text-[11px] font-bold tracking-widest uppercase transition-all max-w-full ${activeModel === preset ? 'bg-ocean text-white shadow-lg' : 'bg-black/5 dark:bg-white/5 text-slate-600 dark:text-slate-400'}`}>
                 {preset}
               </button>
             ))}
@@ -103,25 +103,25 @@ export default function SimulatorBudget({ salary: globalSalary, currency, dispat
 
           <div className="grid md:grid-cols-3 gap-4 min-w-0">
             {pieData.map((item) => (
-              <div key={ui(item.name)} className="p-5 rounded-[24px] bg-black/5 dark:bg-white/5 border border-white/5 min-w-0 overflow-hidden">
+              <div key={ui(item.name)} className="p-6 rounded-[24px] bg-black/5 dark:bg-white/5 border border-white/5 min-w-0 overflow-hidden">
                 <div className="flex items-start gap-3 min-w-0">
-                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: item.color, marginTop: 6, flexShrink: 0 }} />
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: item.color, marginTop: 8, flexShrink: 0 }} />
                   <div className="min-w-0">
-                    <div className="text-[10px] font-black uppercase text-gray-400 mb-1 wrap-anywhere">{ui(item.name)}</div>
-                    <div className="text-lg md:text-xl font-black dark:text-white wrap-anywhere leading-tight">{fmt(item.value, currency)}</div>
+                    <div className="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400 mb-1 wrap-anywhere">{ui(item.name)}</div>
+                    <div className="text-lg md:text-xl font-bold dark:text-white wrap-anywhere leading-tight">{fmt(item.value, currency)}</div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          <button onClick={applyBudgetModel} className="btn btn-primary px-5 py-3 text-sm font-black">
+          <button onClick={applyBudgetModel} className="btn btn-primary px-6 py-3 text-sm font-bold">
             {t('simulators.budget.apply_btn')}
           </button>
         </div>
 
-        <div className="rounded-[28px] bg-black/5 dark:bg-white/5 border border-white/5 p-6 md:p-7 min-w-0 h-full flex flex-col gap-4">
-          <div className="text-sm font-black text-midnight dark:text-white wrap-anywhere leading-6">{t('simulators.budget.distribution_title')}</div>
+        <div className="rounded-[28px] bg-black/5 dark:bg-white/5 border border-white/5 p-6 md:p-8 min-w-0 h-full flex flex-col gap-4">
+          <div className="text-sm font-bold text-midnight dark:text-white wrap-anywhere leading-6">{t('simulators.budget.distribution_title')}</div>
           <div className="w-full grow flex items-center justify-center min-w-0 flex-1" style={{ height: 240, minHeight: 240 }}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
@@ -132,7 +132,7 @@ export default function SimulatorBudget({ salary: globalSalary, currency, dispat
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400 leading-6 wrap-anywhere pb-1">
+          <div className="text-xs text-slate-600 dark:text-gray-400 leading-6 wrap-anywhere pb-1">
             <Trans i18nKey="simulators.budget.savings_projection" values={{ pct: savingsPct }} components={{ strong: <strong className="text-leaf" /> }} />
           </div>
         </div>

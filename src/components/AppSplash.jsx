@@ -108,8 +108,8 @@ export default function AppSplash() {
             transition={{ delay: 0.6, duration: 0.5, ease: 'easeOut' }}
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
           >
-            <span style={{ fontSize: 34, fontWeight: 800, letterSpacing: '0.08em', color: '#f1f5f9' }}>MWANGA</span>
-            <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.28em', color: '#7dd3fc' }}>FINANCIAL LIGHT</span>
+            <span style={{ fontSize: 34, fontWeight: 700, letterSpacing: '0.08em', color: '#f1f5f9' }}>MWANGA</span>
+            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.28em', color: '#7dd3fc' }}>FINANCIAL LIGHT</span>
           </MotionDiv>
 
           <MotionDiv
@@ -144,7 +144,7 @@ export default function AppSplash() {
             ))}
           </div>
 
-          <span aria-live="polite" style={{ fontSize: 12, fontWeight: 500, color: 'rgba(125, 211, 252, 0.9)', textAlign: 'center', padding: '0 24px' }}>
+          <span aria-live="polite" style={{ fontSize: 12, fontWeight: 400, color: 'rgba(125, 211, 252, 0.9)', textAlign: 'center', padding: '0 24px' }}>
             {ui(status)}
           </span>
         </MotionDiv>

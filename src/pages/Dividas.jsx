@@ -224,7 +224,7 @@ export default function Dividas() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-display font-bold text-dark dark:text-white">{t('debts.title')}</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">{t('debts.subtitle')}</p>
+          <p className="text-slate-600 dark:text-gray-400 text-sm">{t('debts.subtitle')}</p>
         </div>
         <button className="btn btn-primary flex items-center gap-2 w-full sm:w-auto justify-center" onClick={() => setShowAddForm(!showAddForm)}>
           <Plus size={18} /> {t('debts.new_debt')}
@@ -233,18 +233,18 @@ export default function Dividas() {
 
       {/* Summary Cards */}
       <div className="responsive-grid mb-6">
-        <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-coral group">
+        <div className="glass-card p-6 relative overflow-hidden border-t-4 border-t-coral group">
           <div className="text-xs uppercase tracking-widest text-muted mb-1 relative z-10">{t('debts.total_debt')}</div>
           <div className="text-2xl font-bold text-coral relative z-10">{showBalance ? fmt(totalRemaining, currency) : '••••'}</div>
           <Wallet size={80} className="absolute -right-4 -bottom-4 text-coral opacity-10 transition-transform group-hover:scale-110 group-hover:-rotate-6 duration-500" />
         </div>
-        <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-leaf group">
+        <div className="glass-card p-6 relative overflow-hidden border-t-4 border-t-leaf group">
           <div className="text-xs uppercase tracking-widest text-muted mb-1 relative z-10">{t('debts.total_paid')}</div>
           <div className="text-2xl font-bold text-leaf relative z-10">{showBalance ? fmt(totalPaid, currency) : '••••'}</div>
           <CheckCircle size={80} className="absolute -right-4 -bottom-4 text-leaf opacity-10 transition-transform group-hover:scale-110 group-hover:rotate-6 duration-500" />
         </div>
-        <div className="glass-card p-5 relative overflow-hidden border-t-4 border-t-gold text-white bg-linear-to-br from-gray-900 to-black group">
-          <div className="text-xs uppercase tracking-widest text-gray-400 mb-1 relative z-10">{t('debts.active_debts')}</div>
+        <div className="glass-card p-6 relative overflow-hidden border-t-4 border-t-gold text-white bg-linear-to-br from-gray-900 to-black group">
+          <div className="text-xs uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-1 relative z-10">{t('debts.active_debts')}</div>
           <div className="text-2xl font-bold text-gold relative z-10">{debts.filter(d => d.status !== 'paid').length}</div>
           <AlertTriangle size={80} className="absolute -right-4 -bottom-4 text-gold opacity-10 transition-transform group-hover:scale-110 group-hover:rotate-6 duration-500" />
         </div>
@@ -267,27 +267,27 @@ export default function Dividas() {
       {showAddForm && (
         <div className="glass-card p-6 border border-gold/30 animate-fade-in-up mb-8 shadow-xl">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-lg flex items-center gap-2"><span className="text-gold">✦</span> {t('debts.form.title')}</h3>
-            <span className="text-xs px-2 py-1 bg-gold/10 text-gold rounded-full border border-gold/20 font-medium">BETA Calculator</span>
+            <h3 className="font-bold text-lg flex items-center gap-2"><span className="text-gold">✦</span> {t('debts.form.title')}</h3>
+            <span className="text-xs px-2 py-1 bg-gold/10 text-gold rounded-full font-normal">BETA Calculator</span>
           </div>
           <form onSubmit={handleAddDebt} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 border-l-4 border-l-gold pl-4">
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('debts.form.creditor_label')}</label>
+              <label className="block text-xs font-bold mb-1 uppercase tracking-wide text-slate-600 dark:text-gray-400">{t('debts.form.creditor_label')}</label>
               <input type="text" className="form-input bg-gray-50 dark:bg-[#0c1018]" required value={newDebt.creditor_name} onChange={e => setNewDebt({ ...newDebt, creditor_name: e.target.value })} placeholder={t('debts.form.creditor_placeholder')} />
             </div>
             
             <div>
-              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('debts.form.amount_label')}</label>
+              <label className="block text-xs font-bold mb-1 uppercase tracking-wide text-slate-600 dark:text-gray-400">{t('debts.form.amount_label')}</label>
               <input type="number" className="form-input bg-gray-50 dark:bg-[#0c1018]" required min="1" step="any" value={newDebt.principal_amount} onChange={e => setNewDebt({ ...newDebt, principal_amount: e.target.value })} placeholder={t('debts.form.amount_placeholder')} />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('debts.form.date_label')}</label>
+              <label className="block text-xs font-bold mb-1 uppercase tracking-wide text-slate-600 dark:text-gray-400">{t('debts.form.date_label')}</label>
               <input type="date" className="form-input bg-gray-50 dark:bg-[#0c1018]" value={newDebt.due_date} onChange={e => setNewDebt({ ...newDebt, due_date: e.target.value })} />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('debts.form.rate_label')}</label>
+              <label className="block text-xs font-bold mb-1 uppercase tracking-wide text-slate-600 dark:text-gray-400">{t('debts.form.rate_label')}</label>
               <div className="flex gap-2">
                 <input type="number" className="form-input bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 focus:border-blue-500 min-w-0 flex-1" step="any" min="0" value={newDebt.interest_rate} onChange={e => setNewDebt({ ...newDebt, interest_rate: e.target.value })} placeholder={t('debts.form.rate_placeholder')} />
                 <select 
@@ -303,12 +303,12 @@ export default function Dividas() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('debts.form.months_label')}</label>
+              <label className="block text-xs font-bold mb-1 uppercase tracking-wide text-slate-600 dark:text-gray-400">{t('debts.form.months_label')}</label>
               <input type="number" className="form-input bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 focus:border-blue-500" step="1" min="0" value={newDebt.months} onChange={e => setNewDebt({ ...newDebt, months: e.target.value })} placeholder={t('debts.form.months_placeholder')} />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold mb-1 uppercase tracking-wide text-gray-500 dark:text-gray-400">{ui("Depositar valor pedido na conta (Opcional)")}</label>
+              <label className="block text-xs font-bold mb-1 uppercase tracking-wide text-slate-600 dark:text-gray-400">{ui("Depositar valor pedido na conta (Opcional)")}</label>
               <select 
                 className="form-input bg-green-50/30 dark:bg-green-900/10 border-green-200/50 focus:border-green-500"
                 value={newDebt.account_id}
@@ -320,7 +320,7 @@ export default function Dividas() {
                 ))}
               </select>
               {newDebt.account_id && (
-                <p className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium"> {ui("💳 Apenas o")} <strong>{ui("Valor Pedido")}</strong> {ui("(capital) será depositado nesta conta — os juros não entram.")} </p>
+                <p className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-normal"> {ui("💳 Apenas o")} <strong>{ui("Valor Pedido")}</strong> {ui("(capital) será depositado nesta conta — os juros não entram.")} </p>
               )}
             </div>
 
@@ -345,29 +345,29 @@ export default function Dividas() {
               if (principal <= 0) return null;
               return (
                 <div className="md:col-span-2 rounded-xl border border-gold/30 bg-gradient-to-br from-gold/5 to-yellow-900/10 p-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gold mb-3">{ui("✦ Resumo do Empréstimo")}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gold mb-3">{ui("✦ Resumo do Empréstimo")}</p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="text-center p-2 rounded-lg bg-white/5">
-                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">{ui("Valor Pedido")}</p>
-                      <p className="text-sm font-black text-white">{fmt(principal, currency)}</p>
+                      <p className="text-[9px] uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-1">{ui("Valor Pedido")}</p>
+                      <p className="text-sm font-bold text-white">{fmt(principal, currency)}</p>
                       <p className="text-[9px] text-emerald-400">{ui("entra na conta")}</p>
                     </div>
                     <div className="text-center p-2 rounded-lg bg-white/5">
-                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">{ui("Juros Total")}</p>
-                      <p className="text-sm font-black text-red-400">{fmt(totalJuros, currency)}</p>
-                      <p className="text-[9px] text-gray-500">
+                      <p className="text-[9px] uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-1">{ui("Juros Total")}</p>
+                      <p className="text-sm font-bold text-red-400">{fmt(totalJuros, currency)}</p>
+                      <p className="text-[9px] text-slate-600 dark:text-slate-400">
                         {rawRate > 0 ? `${rawRate}% ${isAnnual ? 'a.a.' : 'a.m.'}` : ui("sem juros")}
                       </p>
                     </div>
                     <div className="text-center p-2 rounded-lg bg-coral/10 border border-coral/20">
-                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">{ui("Valor a Pagar")}</p>
-                      <p className="text-sm font-black text-coral">{fmt(totalPagar, currency)}</p>
-                      <p className="text-[9px] text-gray-500">{months > 0 ? `em ${months} meses` : '—'}</p>
+                      <p className="text-[9px] uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-1">{ui("Valor a Pagar")}</p>
+                      <p className="text-sm font-bold text-coral">{fmt(totalPagar, currency)}</p>
+                      <p className="text-[9px] text-slate-600 dark:text-slate-400">{months > 0 ? `em ${months} meses` : '—'}</p>
                     </div>
                     <div className="text-center p-2 rounded-lg bg-white/5">
-                      <p className="text-[9px] uppercase tracking-widest text-gray-500 mb-1">{ui("Parcela / Mês")}</p>
-                      <p className="text-sm font-black text-sky">{parcela > 0 ? fmt(parcela, currency) : '—'}</p>
-                      <p className="text-[9px] text-gray-500">{months > 0 ? `× ${months}` : ''}</p>
+                      <p className="text-[9px] uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-1">{ui("Parcela / Mês")}</p>
+                      <p className="text-sm font-bold text-sky">{parcela > 0 ? fmt(parcela, currency) : '—'}</p>
+                      <p className="text-[9px] text-slate-600 dark:text-slate-400">{months > 0 ? `× ${months}` : ''}</p>
                     </div>
                   </div>
                 </div>
@@ -385,7 +385,7 @@ export default function Dividas() {
       {/* Debts List */}
       <div className="section-title mt-8">{t('debts.list_title')}</div>
       {debts.length === 0 ? (
-        <div className="glass-card p-10 text-center text-gray-500">
+        <div className="glass-card p-10 text-center text-slate-600 dark:text-slate-400">
           <CheckCircle size={48} className="mx-auto mb-3 text-leaf/50" />
           <p>{t('debts.empty_state')}</p>
         </div>
@@ -411,7 +411,7 @@ export default function Dividas() {
                 <tr className={isToxic ? 'bg-red-50/50 dark:bg-red-900/10' : ''} style={{ opacity: debt.status === 'paid' ? 0.6 : 1 }}>
                   <td>
                     <div className="flex items-center gap-2">
-                      <div className="font-semibold">{debt.creditor_name}</div>
+                      <div className="font-bold">{debt.creditor_name}</div>
                       {isToxic && (
                         <span className="flex h-2 w-2 relative" title={ui("Dívida Tóxica (Juros muito altos)")}>
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -426,7 +426,7 @@ export default function Dividas() {
                       <span className="font-bold text-gray-800 dark:text-gray-200" title={ui("Valor Pedido (Principal)")}>
                         {showBalance ? fmt(debt.principal_amount || debt.total_amount, currency) : '••••'}
                       </span>
-                      <span className="text-[10px] uppercase font-semibold text-gray-500" title={ui("Valor Final com Juros Projetados")}>
+                      <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400" title={ui("Valor Final com Juros Projetados")}>
                         Final: {showBalance ? fmt(debt.total_amount, currency) : '••••'}
                       </span>
                     </div>
@@ -449,7 +449,7 @@ export default function Dividas() {
                     ) : '-'}
                   </td>
                   <td>
-                    <div className="flex items-center gap-0.5 sm:gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
                       {debt.status !== 'paid' && (
                         <button
                           onClick={() => {
@@ -468,7 +468,7 @@ export default function Dividas() {
                             setShowScheduleId(showScheduleId === debt.id ? null : debt.id);
                             setShowPayForm(null);
                           }}
-                          className={`p-1 transition-colors ${showScheduleId === debt.id ? 'text-indigo-400' : 'text-gray-400 hover:text-indigo-400'}`}
+                          className={`p-1 transition-colors ${showScheduleId === debt.id ? 'text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-indigo-400'}`}
                           title={ui("Ver Fluxo da Dívida")}
                         >
                           <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -491,8 +491,8 @@ export default function Dividas() {
                     <td colSpan="5" className="p-4 border-t border-gray-100 dark:border-white/5">
                       <div className="flex flex-col gap-4">
                         {!isToxic && hasToxicDebtsPending && (
-                          <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-700/30 text-orange-700 dark:text-orange-400 shadow-sm">
-                            <span className="text-sm shrink-0 mt-0.5">⚠️</span>
+                          <div className="flex items-start gap-2 px-3 py-3 rounded-lg bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-700/30 text-orange-700 dark:text-orange-400 shadow-sm">
+                            <span className="text-sm shrink-0 mt-1">⚠️</span>
                             <div className="text-[12px] leading-snug">
                               <span className="font-bold">{ui("Intervenção Binth:")} </span> {ui("Estás prestes a pagar uma dívida mais barata enquanto uma")} <strong>{ui("Dívida Tóxica")}</strong> {ui("continua a sugar o teu dinheiro com juros altíssimos. Recomendamos fechar a dívida tóxica primeiro!")} </div>
                           </div>
@@ -517,7 +517,7 @@ export default function Dividas() {
                             ))}
                           </select>
                           <button 
-                            className="btn bg-leaf hover:bg-green-600 border-none text-white font-bold py-2 px-5 text-sm shadow-md shadow-leaf/20"
+                            className="btn bg-leaf hover:bg-green-600 border-none text-white font-bold py-2 px-6 text-sm shadow-md shadow-leaf/20"
                             onClick={() => handlePay(debt.id)}
                           > {ui("Confirmar Pagamento")} </button>
                         </div>
@@ -549,22 +549,22 @@ export default function Dividas() {
                   return (
                     <tr className="bg-gray-50/70 dark:bg-[#0e1420]">
                       <td colSpan="5" className="p-6 border-t border-gray-100 dark:border-white/5">
-                        <div className="space-y-5 animate-fade-in text-slate-800 dark:text-gray-200">
+                        <div className="space-y-6 animate-fade-in text-slate-800 dark:text-gray-200">
                           {/* Header Title */}
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 dark:border-white/5 pb-3">
                             <div>
-                              <h4 className="text-xs font-black uppercase tracking-widest text-indigo-500 dark:text-indigo-400">{ui("Fluxo da Dívida e Cronograma de Amortização")}</h4>
-                              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">{ui("Calculado dinamicamente com base na Tabela Price (Amortização Francesa).")}</p>
+                              <h4 className="text-xs font-bold uppercase tracking-widest text-indigo-500 dark:text-indigo-400">{ui("Fluxo da Dívida e Cronograma de Amortização")}</h4>
+                              <p className="text-[10px] text-slate-600 dark:text-gray-400 mt-1">{ui("Calculado dinamicamente com base na Tabela Price (Amortização Francesa).")}</p>
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"> {ui("Juros:")} {(interest_rate * 100).toFixed(1)}% {debt.interest_period === 'annual' ? ui("ao Ano") : ui("ao Mês")}
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 "> {ui("Juros:")} {(interest_rate * 100).toFixed(1)}% {debt.interest_period === 'annual' ? ui("ao Ano") : ui("ao Mês")}
                             </span>
                           </div>
 
                           {/* Simulador de Taxa de Juro/Dívida Ativa */}
                           {interest_rate === 0 && (
                             <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-xs space-y-3 mb-4">
-                              <div className="font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5"> {ui("💡 Ajustar Taxa de Juros e Data de Início")} </div>
-                              <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-[11px]"> {ui("Esta dívida foi registrada com")} <strong>{ui("0% de juros")}</strong>{ui(". Para simular e acompanhar o acúmulo de juros de mora reais (ex: os 30% contraídos em Março), ajuste os valores abaixo para atualizar o banco de dados:")} </p>
+                              <div className="font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-2"> {ui("💡 Ajustar Taxa de Juros e Data de Início")} </div>
+                              <p className="text-slate-600 dark:text-gray-400 leading-relaxed text-[11px]"> {ui("Esta dívida foi registrada com")} <strong>{ui("0% de juros")}</strong>{ui(". Para simular e acompanhar o acúmulo de juros de mora reais (ex: os 30% contraídos em Março), ajuste os valores abaixo para atualizar o banco de dados:")} </p>
                               <form onSubmit={(e) => {
                                 e.preventDefault();
                                 const rateInput = Number(e.target.rate.value) / 100;
@@ -591,22 +591,22 @@ export default function Dividas() {
                                 });
                               }} className="flex flex-wrap items-end gap-3 pt-1">
                                 <div className="space-y-1">
-                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">{ui("Capital Principal")}</label>
-                                  <input type="number" name="principal" defaultValue={principal} className="form-input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-28 border border-gray-200 dark:border-gray-800" required />
+                                  <label className="text-[9px] uppercase font-bold text-slate-600 dark:text-slate-400 block">{ui("Capital Principal")}</label>
+                                  <input type="number" name="principal" defaultValue={principal} className="form-input py-2 px-3 text-xs bg-white dark:bg-[#0c1018] w-28 border border-gray-200 dark:border-gray-800" required />
                                 </div>
                                 <div className="space-y-1">
-                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">{ui("Taxa de Juro (% ao Mês)")}</label>
-                                  <input type="number" name="rate" defaultValue={30} className="form-input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-24 border border-gray-200 dark:border-gray-800" required />
+                                  <label className="text-[9px] uppercase font-bold text-slate-600 dark:text-slate-400 block">{ui("Taxa de Juro (% ao Mês)")}</label>
+                                  <input type="number" name="rate" defaultValue={30} className="form-input py-2 px-3 text-xs bg-white dark:bg-[#0c1018] w-24 border border-gray-200 dark:border-gray-800" required />
                                 </div>
                                 <div className="space-y-1">
-                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">{ui("Duração (Meses)")}</label>
-                                  <input type="number" name="duration" defaultValue={months_duration} className="form-input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-24 border border-gray-200 dark:border-gray-800" required />
+                                  <label className="text-[9px] uppercase font-bold text-slate-600 dark:text-slate-400 block">{ui("Duração (Meses)")}</label>
+                                  <input type="number" name="duration" defaultValue={months_duration} className="form-input py-2 px-3 text-xs bg-white dark:bg-[#0c1018] w-24 border border-gray-200 dark:border-gray-800" required />
                                 </div>
                                 <div className="space-y-1">
-                                  <label className="text-[9px] uppercase font-bold text-gray-400 block">{ui("Início da Contração")}</label>
-                                  <input type="date" name="due_date" defaultValue={debt.due_date || debt.created_at?.split('T')[0] || '2026-03-01'} className="form-input py-1.5 px-2.5 text-xs bg-white dark:bg-[#0c1018] w-32 border border-gray-200 dark:border-gray-800" required />
+                                  <label className="text-[9px] uppercase font-bold text-slate-600 dark:text-slate-400 block">{ui("Início da Contração")}</label>
+                                  <input type="date" name="due_date" defaultValue={debt.due_date || debt.created_at?.split('T')[0] || '2026-03-01'} className="form-input py-2 px-3 text-xs bg-white dark:bg-[#0c1018] w-32 border border-gray-200 dark:border-gray-800" required />
                                 </div>
-                                <button type="submit" className="btn py-1.5 px-4 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white border-none shrink-0 shadow-md"> {ui("Simular e Salvar")} </button>
+                                <button type="submit" className="btn py-2 px-4 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white border-none shrink-0 shadow-md"> {ui("Simular e Salvar")} </button>
                               </form>
                             </div>
                           )}
@@ -618,16 +618,16 @@ export default function Dividas() {
                                 <span className="animate-pulse flex h-2.5 w-2.5 rounded-full bg-red-500"></span> {ui("ALERTA DE ANÁLISE DE MORA: Dívida Tóxica em Acumulação!")} </div>
                               <p className="leading-relaxed"> {ui("Esta dívida foi contraída em")} <strong className="text-black dark:text-white">{ui("Março/Início")}</strong> {ui("(há")} <strong>{elapsed} {ui("meses decorridos")}</strong>{ui(") e possui uma taxa de juro severa de")} <strong className="text-black dark:text-white">{(mRate * 100).toFixed(0)}{ui("% ao mês")}</strong>{ui(". Como não foram registados pagamentos suficientes, acumulou um montante significativo de juros de mora.")} </p>
                               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                                <div className="p-2.5 rounded-lg bg-black/5 dark:bg-black/35">
-                                  <span className="text-[9px] uppercase text-gray-500 dark:text-gray-400 block font-semibold">{ui("Juros Acumulados")}</span>
+                                <div className="p-3 rounded-lg bg-black/5 dark:bg-black/35">
+                                  <span className="text-[9px] uppercase text-slate-600 dark:text-gray-400 block font-bold">{ui("Juros Acumulados")}</span>
                                   <span className="text-sm font-bold text-red-600 dark:text-red-400">{showBalance ? fmt(accumInt, currency) : '••••'}</span>
                                 </div>
-                                <div className="p-2.5 rounded-lg bg-black/5 dark:bg-black/35">
-                                  <span className="text-[9px] uppercase text-gray-500 dark:text-gray-400 block font-semibold">{ui("Total Amortizado")}</span>
+                                <div className="p-3 rounded-lg bg-black/5 dark:bg-black/35">
+                                  <span className="text-[9px] uppercase text-slate-600 dark:text-gray-400 block font-bold">{ui("Total Amortizado")}</span>
                                   <span className="text-sm font-bold text-leaf">{showBalance ? fmt(realPaid, currency) : '••••'}</span>
                                 </div>
-                                <div className="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-500/30">
-                                  <span className="text-[9px] uppercase text-red-600 dark:text-red-300 block font-semibold">{ui("Saldo Atualizado Real")}</span>
+                                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-500/30">
+                                  <span className="text-[9px] uppercase text-red-600 dark:text-red-300 block font-bold">{ui("Saldo Atualizado Real")}</span>
                                   <span className="text-sm font-bold text-gray-900 dark:text-white">{showBalance ? fmt(updRemaining, currency) : '••••'}</span>
                                 </div>
                               </div>
@@ -638,26 +638,26 @@ export default function Dividas() {
                           {/* Dynamic Cards Grid */}
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             <div className="p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                              <span className="text-[9px] font-black uppercase text-gray-400">{ui("Valor Inicial (Principal)")}</span>
-                              <div className="text-sm font-bold text-gray-900 dark:text-white mt-0.5">
+                              <span className="text-[9px] font-bold uppercase text-slate-600 dark:text-slate-400">{ui("Valor Inicial (Principal)")}</span>
+                              <div className="text-sm font-bold text-gray-900 dark:text-white mt-1">
                                 {showBalance ? fmt(principal, currency) : '••••'}
                               </div>
                             </div>
                             <div className="p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                              <span className="text-[9px] font-black uppercase text-gray-400">{ui("Total de Juros Projetados")}</span>
-                              <div className="text-sm font-bold text-amber-600 dark:text-amber-500 mt-0.5">
+                              <span className="text-[9px] font-bold uppercase text-slate-600 dark:text-slate-400">{ui("Total de Juros Projetados")}</span>
+                              <div className="text-sm font-bold text-amber-600 dark:text-amber-500 mt-1">
                                 {showBalance ? fmt(projectedInterest, currency) : '••••'}
                               </div>
                             </div>
                             <div className="p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                              <span className="text-[9px] font-black uppercase text-gray-400">{ui("Parcela Mensal Projetada")}</span>
-                              <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">
+                              <span className="text-[9px] font-bold uppercase text-slate-600 dark:text-slate-400">{ui("Parcela Mensal Projetada")}</span>
+                              <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-1">
                                 {showBalance ? fmt(finalMonthlyPayment, currency) : '••••'}
                               </div>
                             </div>
                             <div className="p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                              <span className="text-[9px] font-black uppercase text-gray-400">{ui("Total Pago Acumulado")}</span>
-                              <div className="text-sm font-bold text-leaf mt-0.5">
+                              <span className="text-[9px] font-bold uppercase text-slate-600 dark:text-slate-400">{ui("Total Pago Acumulado")}</span>
+                              <div className="text-sm font-bold text-leaf mt-1">
                                 {showBalance ? fmt(realPaid, currency) : '••••'}
                               </div>
                             </div>
@@ -667,32 +667,32 @@ export default function Dividas() {
                         <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-white/5">
                           <table className="w-full text-left text-xs bg-gray-50/50 dark:bg-black/15">
                             <thead>
-                              <tr className="border-b border-gray-100 dark:border-white/5 bg-gray-100/55 dark:bg-black/30 text-[10px] font-black uppercase text-gray-400 tracking-wider">
-                                <th className="p-2.5 pl-4">{ui("Período")}</th>
-                                <th className="p-2.5">{ui("Prestação")}</th>
-                                <th className="p-2.5">{ui("Juros Pagos")}</th>
-                                <th className="p-2.5">{ui("Capital Amortizado")}</th>
-                                <th className="p-2.5">{ui("Saldo Devedor Restante")}</th>
-                                <th className="p-2.5 pr-4 text-right">{ui("Estado")}</th>
+                              <tr className="border-b border-gray-100 dark:border-white/5 bg-gray-100/55 dark:bg-black/30 text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400 tracking-wider">
+                                <th className="p-3 pl-4">{ui("Período")}</th>
+                                <th className="p-3">{ui("Prestação")}</th>
+                                <th className="p-3">{ui("Juros Pagos")}</th>
+                                <th className="p-3">{ui("Capital Amortizado")}</th>
+                                <th className="p-3">{ui("Saldo Devedor Restante")}</th>
+                                <th className="p-3 pr-4 text-right">{ui("Estado")}</th>
                               </tr>
                             </thead>
                             <tbody>
                               {generateAmortizationSchedule(debt).map((item) => (
                                 <tr key={item.period} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-100/10 dark:hover:bg-white/5 transition-colors">
-                                  <td className="p-2.5 pl-4 font-bold text-gray-500 dark:text-gray-400">{ui("Parcela")} {item.period}</td>
-                                  <td className="p-2.5 font-semibold text-gray-900 dark:text-white">{showBalance ? fmt(item.payment, currency) : '••••'}</td>
-                                  <td className="p-2.5 text-amber-600 dark:text-amber-500/90">{showBalance ? fmt(item.interest, currency) : '••••'}</td>
-                                  <td className="p-2.5 text-indigo-600 dark:text-indigo-300">{showBalance ? fmt(item.amortization, currency) : '••••'}</td>
-                                  <td className="p-2.5 font-bold text-gray-700 dark:text-gray-300">{showBalance ? fmt(item.balance, currency) : '••••'}</td>
-                                  <td className="p-2.5 pr-4 text-right">
+                                  <td className="p-3 pl-4 font-bold text-slate-600 dark:text-gray-400">{ui("Parcela")} {item.period}</td>
+                                  <td className="p-3 font-bold text-gray-900 dark:text-white">{showBalance ? fmt(item.payment, currency) : '••••'}</td>
+                                  <td className="p-3 text-amber-600 dark:text-amber-500/90">{showBalance ? fmt(item.interest, currency) : '••••'}</td>
+                                  <td className="p-3 text-indigo-600 dark:text-indigo-300">{showBalance ? fmt(item.amortization, currency) : '••••'}</td>
+                                  <td className="p-3 font-bold text-gray-700 dark:text-gray-300">{showBalance ? fmt(item.balance, currency) : '••••'}</td>
+                                  <td className="p-3 pr-4 text-right">
                                     {item.status === 'paid' && (
-                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-leaf/10 text-leaf text-[9px] font-black uppercase tracking-wider border border-leaf/20"> {ui("✓ Pago")} </span>
+                                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-leaf/10 text-leaf text-[9px] font-bold uppercase tracking-wider "> {ui("✓ Pago")} </span>
                                     )}
                                     {item.status === 'partial' && (
-                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500 text-[9px] font-black uppercase tracking-wider border border-amber-500/20"> {ui("• Parcial")} </span>
+                                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500 text-[9px] font-bold uppercase tracking-wider "> {ui("• Parcial")} </span>
                                     )}
                                     {item.status === 'pending' && (
-                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-[9px] font-black uppercase tracking-wider border border-gray-200 dark:border-white/5"> {ui("A Vencer")} </span>
+                                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 text-[9px] font-bold uppercase tracking-wider "> {ui("A Vencer")} </span>
                                     )}
                                   </td>
                                 </tr>
@@ -703,7 +703,7 @@ export default function Dividas() {
 
                         {/* CFO Insight Banner */}
                         <div className="flex gap-3 p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-indigo-600 dark:text-indigo-300 text-[11px] leading-relaxed">
-                          <span className="text-lg shrink-0 mt-0.5">💡</span>
+                          <span className="text-lg shrink-0 mt-1">💡</span>
                           <div className="space-y-1 text-left">
                             <span className="font-bold text-indigo-700 dark:text-white uppercase tracking-wider text-[9px] block">{ui("Conselho Estratégico do CFO Binth")}</span>
                             <span> {ui("Ao amortizares mais do que a prestação mensal, reduzes diretamente o")} <strong>{ui("Saldo Devedor Restante")}</strong>{ui(". Como os juros são calculados sobre este saldo, qualquer pagamento extra diminui significativamente os juros totais que irás pagar nos próximos meses!")} </span>

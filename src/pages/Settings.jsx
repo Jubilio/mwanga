@@ -109,7 +109,7 @@ export default function Settings() {
     </nav>
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <div className="lg:col-span-8">
-        <p className="text-xs text-slate-500 mb-4">{t(['perfil', 'ai'].includes(activeTab) ? 'settings.reliable.account_scope' : activeTab === 'notifications' ? 'settings.reliable.device_scope' : 'settings.reliable.household_scope')}</p>
+        <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">{t(['perfil', 'ai'].includes(activeTab) ? 'settings.reliable.account_scope' : activeTab === 'notifications' ? 'settings.reliable.device_scope' : 'settings.reliable.household_scope')}</p>
         {activeTab === 'ai' ? <AiSettings /> : null}
         {activeTab === 'familia' ? <HouseholdSettings showToast={showToast} /> : null}
         <fieldset disabled={busy} className="min-w-0 disabled:opacity-60">
@@ -118,7 +118,7 @@ export default function Settings() {
           {['pref', 'notifications'].includes(activeTab) ? <TabPreferences section={activeTab} form={form} setFormDirty={setFormDirty} state={state} dispatch={dispatch} pushProps={pushProps} showToast={showToast} /> : null}
         </fieldset>
         {activeTab === 'perfil' ? <><PasswordSettings dispatch={dispatch} /><PasskeySettings showToast={showToast} /><IdentitySettings showToast={showToast} /><DeleteAccountSettings /></> : null}
-        <section className="glass-card p-5 mt-6" aria-live="polite">
+        <section className="glass-card p-6 mt-6" aria-live="polite">
           <p className="text-sm font-bold">{t(`settings.reliable.status.${status}`)}</p>
           {error ? <p role="alert" className="text-sm text-red-600 dark:text-red-400 mt-2">{t(`settings.reliable.${error}`)}</p> : null}
           <div className="flex flex-wrap gap-3 mt-4"><button disabled={busy || !pending} onClick={save} className="btn btn-primary disabled:opacity-50">{t('settings.reliable.save')}</button><button disabled={busy || !pending} onClick={discard} className="btn btn-ghost disabled:opacity-50">{t('settings.reliable.discard')}</button></div>

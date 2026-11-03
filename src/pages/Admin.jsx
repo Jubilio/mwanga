@@ -160,7 +160,7 @@ export default function Admin() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
               <Shield size={24} color={G.gold} />
-              <h1 style={{ fontSize: '24px', fontWeight: 900, fontFamily: 'Sora, sans-serif' }}>{ui("Administração Mwanga")}</h1>
+              <h1 style={{ fontSize: '24px', fontWeight: 700, fontFamily: 'Sora, sans-serif' }}>{ui("Administração Mwanga")}</h1>
             </div>
             <p style={{ color: G.muted, fontSize: '14px' }}>{ui("Monitoramento global da plataforma e gestão operacional com foco em KYC e risco.")}</p>
           </div>
@@ -172,7 +172,7 @@ export default function Admin() {
               alignItems: 'center',
               gap: '8px',
               borderRadius: '12px',
-              padding: '10px 14px',
+              padding: '12px 16px',
               border: `1px solid ${G.border}`,
               background: G.card,
               color: G.text,
@@ -186,12 +186,12 @@ export default function Admin() {
       </header>
 
       {error && (
-        <div style={{ marginBottom: '24px', background: `${G.red}14`, color: G.text, border: `1px solid ${G.red}40`, borderRadius: '16px', padding: '16px 18px' }}>
+        <div style={{ marginBottom: '24px', background: `${G.red}14`, color: G.text, border: `1px solid ${G.red}40`, borderRadius: '16px', padding: '16px 16px' }}>
           {error}
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         <StatCard label={ui("Utilizadores Ativos (24h)")} value={stats.activeUsers || 0} icon={<Shield />} color={G.gold} />
         <StatCard label={ui("Total de Utilizadores")} value={stats.totalUsers} icon={<Users />} color={G.blue} />
         <StatCard label={ui("Volume Desembolsado")} value={`MT ${stats.loans.totalDisbursed.toLocaleString()}`} icon={<TrendingUp />} color={G.green} />
@@ -215,18 +215,18 @@ export default function Admin() {
             <tbody>
               {applications.map((application) => (
                 <tr key={application.id} style={{ borderBottom: `1px solid ${G.border}`, fontSize: '14px' }}>
-                  <td style={{ padding: '14px 12px' }}>
-                    <div style={{ fontWeight: 600 }}>{application.user_name || `#${application.household_id}`}</div>
+                  <td style={{ padding: '16px 12px' }}>
+                    <div style={{ fontWeight: 700 }}>{application.user_name || `#${application.household_id}`}</div>
                     <div style={{ fontSize: '11px', color: G.muted }}>{application.purpose || application.user_email}</div>
                   </td>
-                  <td style={{ padding: '14px 12px', fontWeight: 700 }}>MT {Number(application.amount).toLocaleString()}</td>
-                  <td style={{ padding: '14px 12px' }}>{application.months} {ui("meses")}</td>
-                  <td style={{ padding: '14px 12px', color: G.muted }}>{application.partner || '—'}</td>
-                  <td style={{ padding: '14px 12px' }}>
+                  <td style={{ padding: '16px 12px', fontWeight: 700 }}>MT {Number(application.amount).toLocaleString()}</td>
+                  <td style={{ padding: '16px 12px' }}>{application.months} {ui("meses")}</td>
+                  <td style={{ padding: '16px 12px', color: G.muted }}>{application.partner || '—'}</td>
+                  <td style={{ padding: '16px 12px' }}>
                     <button
                       onClick={() => handleDisburse(application)}
                       disabled={disbursingId === application.id}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '10px', padding: '8px 12px', border: 'none', background: G.green, color: '#000', fontWeight: 700, fontSize: '12px', cursor: disbursingId === application.id ? 'wait' : 'pointer' }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', borderRadius: '10px', padding: '8px 12px', border: 'none', background: G.green, color: '#000', fontWeight: 700, fontSize: '12px', cursor: disbursingId === application.id ? 'wait' : 'pointer' }}
                     >
                       <Send size={14} /> {t('credit.partner_disbursement.button')}
                     </button>
@@ -245,7 +245,7 @@ export default function Admin() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', alignItems: 'start' }}>
         <div style={{ background: G.bg2, borderRadius: '20px', border: `1px solid ${G.border}`, padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap' }}>
             <h2 style={{ fontSize: '18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}> {ui("Utilizadores Recentes")} </h2>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', color: G.muted, fontSize: '12px' }}>
               <span>{ui("Pendentes:")} <strong style={{ color: G.gold }}>{stats.kycSummary.pending}</strong></span>
@@ -267,7 +267,7 @@ export default function Admin() {
                 {users.map((user) => (
                   <tr key={user.id} style={{ borderBottom: `1px solid ${G.border}`, fontSize: '14px' }}>
                     <td style={{ padding: '16px 12px' }}>
-                      <div style={{ fontWeight: 600 }}>{user.name}</div>
+                      <div style={{ fontWeight: 700 }}>{user.name}</div>
                       <div style={{ fontSize: '11px', color: G.muted }}>{user.email}</div>
                       <div style={{ fontSize: '10px', color: G.muted, marginTop: '4px' }}>{user.role === 'admin' ? ui("Administrador") : ui("Utilizador")}</div>
                     </td>
@@ -275,7 +275,7 @@ export default function Admin() {
                       <KycBadge status={user.kyc_status} />
                     </td>
                     <td style={{ padding: '16px 12px' }}>
-                      <span style={{ fontWeight: 800, color: user.credit_score > 600 ? G.green : G.gold }}>{user.credit_score}</span>
+                      <span style={{ fontWeight: 700, color: user.credit_score > 600 ? G.green : G.gold }}>{user.credit_score}</span>
                     </td>
                     <td style={{ padding: '16px 12px' }}>
                       <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
@@ -285,7 +285,7 @@ export default function Admin() {
                             type="button"
                             onClick={() => openProtectedFile(protectedFilePath('kyc', doc.document_url)).catch(() => {})}
                             style={{
-                              fontSize: '10px', padding: '2px 6px', borderRadius: '4px',
+                              fontSize: '10px', padding: '4px 8px', borderRadius: '4px',
                               background: G.card, border: `1px solid ${G.border}`, color: G.muted,
                               textDecoration: 'none', cursor: 'pointer'
                             }}
@@ -367,11 +367,11 @@ export default function Admin() {
           </div>
 
           <div style={{ background: `linear-gradient(135deg, ${G.gold}20, transparent)`, borderRadius: '20px', border: `1px solid ${G.gold}30`, padding: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: G.gold, marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: G.gold, marginBottom: '12px' }}>
               <AlertCircle size={20} />
               <div style={{ fontWeight: 700 }}>{ui("Risco da Plataforma")}</div>
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 900, marginBottom: '4px' }}>{riskLevel}</div>
+            <div style={{ fontSize: '24px', fontWeight: 700, marginBottom: '4px' }}>{riskLevel}</div>
             <div style={{ fontSize: '12px', color: G.muted }}>{riskCopy}</div>
           </div>
 
@@ -394,13 +394,13 @@ export default function Admin() {
                 placeholder={ui("Título da Mensagem")}
                 value={ui(broadcast.title)}
                 onChange={e => setBroadcast({ ...broadcast, title: e.target.value })}
-                style={{ background: G.card, border: `1px solid ${G.border}`, borderRadius: '12px', padding: '10px 14px', color: G.text, fontSize: '13px', outline: 'none' }}
+                style={{ background: G.card, border: `1px solid ${G.border}`, borderRadius: '12px', padding: '12px 16px', color: G.text, fontSize: '13px', outline: 'none' }}
               />
               <textarea
                 placeholder={ui("Conteúdo da mensagem...")}
                 value={broadcast.body}
                 onChange={e => setBroadcast({ ...broadcast, body: e.target.value })}
-                style={{ background: G.card, border: `1px solid ${G.border}`, borderRadius: '12px', padding: '10px 14px', color: G.text, fontSize: '13px', outline: 'none', minHeight: '80px', resize: 'vertical' }}
+                style={{ background: G.card, border: `1px solid ${G.border}`, borderRadius: '12px', padding: '12px 16px', color: G.text, fontSize: '13px', outline: 'none', minHeight: '80px', resize: 'vertical' }}
               />
               <button
                 type="submit"
@@ -447,7 +447,7 @@ function StatCard({ label, value, icon, color }) {
         {icon}
       </div>
       <div style={{ color: G.muted, fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '8px', textTransform: 'uppercase' }}>{ui(label)}</div>
-      <div style={{ fontSize: '24px', fontWeight: 900, fontFamily: 'Sora, sans-serif' }}>{value}</div>
+      <div style={{ fontSize: '24px', fontWeight: 700, fontFamily: 'Sora, sans-serif' }}>{value}</div>
     </div>
   );
 }
@@ -463,7 +463,7 @@ function KycBadge({ status }) {
   return (
     <span
       style={{
-        fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '99px',
+        fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '99px',
         background: styles.bg, color: styles.color, border: `1px solid ${styles.color}30`
       }}
     >
@@ -488,8 +488,8 @@ function LegendRow({ label, value, color }) {
 function PriorityRow({ icon, label, value }) {
   useUiLanguage();
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px 14px', background: G.card, borderRadius: '14px', border: `1px solid ${G.border}` }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px 16px', background: G.card, borderRadius: '14px', border: `1px solid ${G.border}` }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
         {icon}
         <span style={{ fontSize: '13px', color: G.text }}>{ui(label)}</span>
       </div>

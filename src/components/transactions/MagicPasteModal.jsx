@@ -21,9 +21,9 @@ export default function MagicPasteModal({
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-lg bg-gold text-midnight"><Sparkles size={18} /></div>
-                <h2 className="text-lg font-black text-white">Magic Paste</h2>
+                <h2 className="text-lg font-bold text-white">Magic Paste</h2>
               </div>
-              <button onClick={() => setIsOpen(false)} className="p-3 -mr-3 text-gray-500 hover:text-white"><X size={24} /></button>
+              <button onClick={() => setIsOpen(false)} className="p-3 -mr-3 text-slate-600 dark:text-slate-400 hover:text-white"><X size={24} /></button>
             </div>
             <textarea autoFocus className="form-input w-full h-32 bg-white/5 border-white/10 rounded-2xl p-4 text-xs text-gray-200 mb-6" placeholder={ui("Cola aqui o SMS do M-Pesa ou e-Mola...")} value={magicText} onChange={e => setMagicText(e.target.value)} />
             <button onClick={() => {
@@ -36,7 +36,7 @@ export default function MagicPasteModal({
               } else {
                 showToast(ui("Não conseguimos ler este SMS."), 'warning');
               }
-            }} className="w-full h-12 rounded-2xl bg-gold text-midnight font-black uppercase tracking-widest text-xs">{ui("Processar SMS")}</button>
+            }} className="w-full h-12 rounded-2xl bg-gold text-midnight font-bold uppercase tracking-widest text-xs">{ui("Processar SMS")}</button>
           </motion.div>
         </div>
       )}

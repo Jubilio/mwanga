@@ -10,7 +10,7 @@ export default function LanguageSwitcher() {
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 6,
+      display: 'flex', alignItems: 'center', gap: 8,
       padding: '4px 8px', borderRadius: 8,
       border: '1px solid rgba(255,255,255,0.1)',
       background: 'rgba(0,0,0,0.15)'
@@ -28,7 +28,7 @@ export default function LanguageSwitcher() {
           outline: 'none',
           cursor: 'pointer',
           textTransform: 'uppercase',
-          fontWeight: 600
+          fontWeight: 700
         }}
       >
         <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="pt">PT</option>

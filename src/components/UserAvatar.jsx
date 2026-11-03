@@ -16,7 +16,7 @@ export default function UserAvatar({ name, photo, className = '', textClassName 
     return <img src={photo} alt={alt} onError={() => setFailed(photo)} className={`object-cover ${className}`} />;
   }
   return (
-    <div role={alt ? 'img' : undefined} aria-label={alt || undefined} className={`flex items-center justify-center bg-linear-to-br from-ocean to-sky font-black text-white ${textClassName} ${className}`}>
+    <div role={alt ? 'img' : undefined} aria-label={alt || undefined} className={`flex items-center justify-center bg-linear-to-br from-ocean to-sky font-bold text-white ${textClassName} ${className}`}>
       {initials || <User size={iconSize} strokeWidth={2.5} aria-hidden="true" />}
     </div>
   );

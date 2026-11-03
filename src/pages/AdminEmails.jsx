@@ -27,14 +27,14 @@ function headers() {
 const inputStyle = {
   width: '100%', boxSizing: 'border-box',
   background: G.card, border: `1px solid ${G.border}`, borderRadius: '12px',
-  padding: '12px 14px', color: G.text, fontSize: '14px', outline: 'none',
+  padding: '12px 16px', color: G.text, fontSize: '14px', outline: 'none',
   fontFamily: 'inherit',
 };
 
 function buttonStyle(color, disabled) {
   return {
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-    padding: '12px 18px', borderRadius: '12px',
+    padding: '12px 16px', borderRadius: '12px',
     background: color, border: color === G.card ? `1px solid ${G.border}` : 'none',
     color: color === G.card ? G.text : '#fff',
     fontSize: '13px', fontWeight: 700,
@@ -140,8 +140,8 @@ export default function AdminEmails() {
     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 900, margin: 0, fontFamily: "'Sora', sans-serif" }}>
-            <Mail size={22} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '10px', color: G.gold }} /> {ui('Emails aos utilizadores')}
+          <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0, fontFamily: "'Sora', sans-serif" }}>
+            <Mail size={22} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '12px', color: G.gold }} /> {ui('Emails aos utilizadores')}
           </h1>
           <p style={{ color: G.muted, fontSize: '13px', margin: '4px 0 0' }}>
             {status?.from ? <>{ui('Enviados de')} <strong style={{ color: G.text }}>{status.from}</strong></> : ui('Escreva uma mensagem e envie a todos os utilizadores com email.')}
@@ -153,20 +153,20 @@ export default function AdminEmails() {
       </div>
 
       {status && !status.configured && (
-        <div style={{ marginBottom: '16px', background: `${G.gold}14`, border: `1px solid ${G.gold}40`, borderRadius: '14px', padding: '14px 16px', fontSize: '13px', display: 'flex', gap: '10px' }}>
+        <div style={{ marginBottom: '16px', background: `${G.gold}14`, border: `1px solid ${G.gold}40`, borderRadius: '14px', padding: '16px 16px', fontSize: '13px', display: 'flex', gap: '12px' }}>
           <AlertCircle size={18} color={G.gold} style={{ flexShrink: 0 }} />
           <span>{ui('O envio de email ainda não está configurado no servidor. Defina GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN e EMAIL_FROM no Render (o plano gratuito do Render bloqueia SMTP).')}</span>
         </div>
       )}
 
       {error && (
-        <div style={{ marginBottom: '16px', background: `${G.red}14`, border: `1px solid ${G.red}40`, borderRadius: '14px', padding: '14px 16px', fontSize: '13px' }}>
+        <div style={{ marginBottom: '16px', background: `${G.red}14`, border: `1px solid ${G.red}40`, borderRadius: '14px', padding: '16px 16px', fontSize: '13px' }}>
           {error}
         </div>
       )}
 
       {status && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '24px' }}>
           {[
             { label: ui('Vão receber'), value: status.audience, hint: ui('utilizadores com email e subscritos') },
             { label: ui('Enviados nas últimas 24h'), value: `${status.sentToday} / ${status.dailyLimit}`, hint: ui('limite diário') },
@@ -174,26 +174,26 @@ export default function AdminEmails() {
           ].map((item) => (
             <div key={item.label} style={{ background: G.bg2, border: `1px solid ${G.border}`, borderRadius: '16px', padding: '16px' }}>
               <div style={{ fontSize: '11px', color: G.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{item.label}</div>
-              <div style={{ fontSize: '22px', fontWeight: 900, margin: '6px 0 2px' }}>{item.value}</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, margin: '8px 0 4px' }}>{item.value}</div>
               <div style={{ fontSize: '11px', color: G.muted }}>{item.hint}</div>
             </div>
           ))}
         </div>
       )}
 
-      <div style={{ background: G.bg2, border: `1px solid ${G.border}`, borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '28px' }}>
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', fontWeight: 700, color: G.muted }}>
+      <div style={{ background: G.bg2, border: `1px solid ${G.border}`, borderRadius: '20px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', fontWeight: 700, color: G.muted }}>
           {ui('Assunto')}
           <input value={subject} maxLength={150} onChange={(e) => setSubject(e.target.value)} placeholder={ui('Ex.: Novidades do Mwanga em novembro')} style={inputStyle} />
         </label>
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', fontWeight: 700, color: G.muted }}>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', fontWeight: 700, color: G.muted }}>
           {ui('Mensagem')}
           <textarea value={body} maxLength={20000} onChange={(e) => setBody(e.target.value)} placeholder={ui('Olá {nome},\n\nEscreva aqui a sua mensagem. Deixe uma linha em branco entre parágrafos.')} style={{ ...inputStyle, minHeight: '220px', resize: 'vertical', lineHeight: 1.6 }} />
         </label>
         <p style={{ fontSize: '12px', color: G.muted, margin: 0, lineHeight: 1.6 }}>
           {ui('Escreva {nome} para usar o primeiro nome de cada pessoa. Os links (https://...) ficam clicáveis. Cada email leva no fim um link para cancelar a subscrição.')}
         </p>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <button onClick={sendTest} disabled={!hasContent || busy !== ''} style={buttonStyle(G.card, !hasContent || busy !== '')}>
             {busy === 'test' ? <RefreshCw size={14} className="animate-spin" /> : <FlaskConical size={14} />}
             {ui('Enviar teste para mim')}
@@ -216,13 +216,13 @@ export default function AdminEmails() {
         )}
       </div>
 
-      <h2 style={{ fontSize: '15px', fontWeight: 800, margin: '0 0 12px' }}>{ui('Campanhas recentes')}</h2>
+      <h2 style={{ fontSize: '15px', fontWeight: 700, margin: '0 0 12px' }}>{ui('Campanhas recentes')}</h2>
       {campaigns.length === 0 && (
-        <div style={{ color: G.muted, fontSize: '13px', padding: '20px', textAlign: 'center', background: G.bg2, borderRadius: '16px', border: `1px solid ${G.border}` }}>
+        <div style={{ color: G.muted, fontSize: '13px', padding: '24px', textAlign: 'center', background: G.bg2, borderRadius: '16px', border: `1px solid ${G.border}` }}>
           {ui('Ainda não enviou nenhuma campanha.')}
         </div>
       )}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {campaigns.map((c) => {
           const meta = STATUS_LABEL[c.status] || { label: c.status, color: G.muted };
           const done = c.sent + c.failed + c.skipped;
@@ -237,9 +237,9 @@ export default function AdminEmails() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 800, color: meta.color, background: `${meta.color}1f`, padding: '4px 10px', borderRadius: '999px' }}>{ui(meta.label)}</span>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: meta.color, background: `${meta.color}1f`, padding: '4px 12px', borderRadius: '999px' }}>{ui(meta.label)}</span>
                   {c.status === 'sending' && (
-                    <button onClick={() => cancel(c.id)} style={{ ...buttonStyle(G.card, false), padding: '6px 10px', fontSize: '11px' }}>
+                    <button onClick={() => cancel(c.id)} style={{ ...buttonStyle(G.card, false), padding: '8px 12px', fontSize: '11px' }}>
                       <XCircle size={12} /> {ui('Cancelar')}
                     </button>
                   )}
@@ -248,7 +248,7 @@ export default function AdminEmails() {
               <div style={{ height: '6px', background: G.card, borderRadius: '999px', margin: '12px 0 8px', overflow: 'hidden' }}>
                 <div style={{ width: `${pct}%`, height: '100%', background: meta.color }} />
               </div>
-              <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', fontSize: '12px', color: G.muted }}>
+              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', fontSize: '12px', color: G.muted }}>
                 <span style={{ whiteSpace: 'nowrap' }}><Users size={12} style={{ display: 'inline', verticalAlign: 'middle' }} /> {c.total}</span>
                 <span style={{ color: G.green }}>{ui('Enviados')}: {c.sent}</span>
                 {c.pending > 0 && <span>{ui('Por enviar')}: {c.pending}</span>}

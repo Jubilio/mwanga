@@ -44,16 +44,16 @@ export default function IdentitySettings({ showToast }) {
 
   const sent = new Set(documents.map(document => document.document_type));
 
-  return <section className="glass-card p-6 md:p-10 mt-6 space-y-5">
+  return <section className="glass-card p-6 md:p-10 mt-6 space-y-6">
     <div>
-      <h2 className="text-xl font-black">{t('settings.identity.title')}</h2>
-      <p className="text-sm text-slate-500 mt-2">{t('settings.identity.description')}</p>
+      <h2 className="text-xl font-bold">{t('settings.identity.title')}</h2>
+      <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">{t('settings.identity.description')}</p>
     </div>
     {status ? <p className="text-sm font-bold">{t(`settings.identity.status.${status}`, { defaultValue: status })}</p> : null}
     <ul className="space-y-1 text-sm">
       {DOCUMENT_TYPES.map(type => <li key={type} className="flex justify-between gap-3">
         <span>{t(`settings.identity.types.${type}`)}</span>
-        <span className="text-slate-500">{sent.has(type) ? t('settings.identity.sent') : t('settings.identity.missing')}</span>
+        <span className="text-slate-600 dark:text-slate-400">{sent.has(type) ? t('settings.identity.sent') : t('settings.identity.missing')}</span>
       </li>)}
     </ul>
     {status !== 'approved' ? <div className="flex flex-wrap items-end gap-3">
@@ -63,8 +63,8 @@ export default function IdentitySettings({ showToast }) {
         </select>
       </label>
       <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={event => upload(event.target.files?.[0])} />
-      <button type="button" className="btn btn-primary" disabled={busy} onClick={() => fileRef.current?.click()}><Upload size={16} />{t(busy ? 'settings.identity.uploading' : 'settings.identity.upload')}</button>
+      <button type="button" className="btn btn-secondary" disabled={busy} onClick={() => fileRef.current?.click()}><Upload size={16} />{t(busy ? 'settings.identity.uploading' : 'settings.identity.upload')}</button>
     </div> : null}
-    <p className="text-xs text-slate-500">{t('settings.identity.privacy')}</p>
+    <p className="text-xs text-slate-600 dark:text-slate-400">{t('settings.identity.privacy')}</p>
   </section>;
 }

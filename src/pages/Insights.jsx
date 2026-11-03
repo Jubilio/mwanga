@@ -13,19 +13,19 @@ import { parseMobileMoneySMS } from '../utils/smsParser';
 // Providers are now managed by backend .env variables
 
 const INSIGHT_COLORS = {
-  warning:     { bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.3)',  dot: '#F59E0B' },
-  opportunity: { bg: 'rgba(0,214,143,0.08)',   border: 'rgba(0,214,143,0.3)',   dot: '#00D68F' },
-  celebration: { bg: 'rgba(0,214,143,0.1)',    border: 'rgba(0,214,143,0.4)',   dot: '#00D68F' },
-  action:      { bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.3)', dot: '#6366F1' },
-  info:        { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)', dot: '#8a9ab8' },
-  wisdom:      { bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.4)',  dot: '#D4AF37' },
+  warning:     { bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.3)',  dot: 'var(--ins-amber)' },
+  opportunity: { bg: 'rgba(0,214,143,0.08)',   border: 'rgba(0,214,143,0.3)',   dot: 'var(--ins-green)' },
+  celebration: { bg: 'rgba(0,214,143,0.1)',    border: 'rgba(0,214,143,0.4)',   dot: 'var(--ins-green)' },
+  action:      { bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.3)', dot: 'var(--ins-violet)' },
+  info:        { bg: 'var(--ins-surface)', border: 'var(--ins-border)', dot: 'var(--ins-soft)' },
+  wisdom:      { bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.4)',  dot: 'var(--ins-gold)' },
 };
 
 function renderBold(text) {
   // Support **bold** markdown
   return text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
     part.startsWith('**') && part.endsWith('**')
-      ? <strong key={i} style={{ color: '#F59E0B' }}>{part.slice(2, -2)}</strong>
+      ? <strong key={i} style={{ color: 'var(--ins-amber)' }}>{part.slice(2, -2)}</strong>
       : part
   );
 }
@@ -34,7 +34,7 @@ function renderBold(text) {
 function TypingDots() {
   useUiLanguage();
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '12px 16px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '12px 16px' }}>
       {[0, 1, 2].map(i => (
         <div key={i} style={{
           width: 7, height: 7, borderRadius: '50%',
@@ -50,7 +50,7 @@ function TypingDots() {
 function ScoreRing({ score, label, biblicalLabel }) {
   useUiLanguage();
   const pct = score || 0;
-  const color = pct >= 75 ? '#00D68F' : pct >= 50 ? '#F59E0B' : '#FF4C4C';
+  const color = pct >= 75 ? 'var(--ins-green)' : pct >= 50 ? 'var(--ins-amber)' : 'var(--ins-red)';
   const r = 28, circ = 2 * Math.PI * r;
   const dash = (pct / 100) * circ;
 
@@ -64,10 +64,10 @@ function ScoreRing({ score, label, biblicalLabel }) {
         />
       </svg>
       <div>
-        <div style={{ fontSize: 26, fontWeight: 900, color, lineHeight: 1 }}>{pct}</div>
-        <div style={{ fontSize: 11, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{ui(label)}</div>
+        <div style={{ fontSize: 26, fontWeight: 700, color, lineHeight: 1 }}>{pct}</div>
+        <div style={{ fontSize: 11, color: 'var(--ins-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 4 }}>{ui(label)}</div>
         {biblicalLabel && (
-          <div style={{ fontSize: 11, color, fontWeight: 700, marginTop: 3 }}>{ui(biblicalLabel)}</div>
+          <div style={{ fontSize: 11, color, fontWeight: 700, marginTop: 4 }}>{ui(biblicalLabel)}</div>
         )}
       </div>
     </div>
@@ -340,7 +340,7 @@ export default function Insights() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         marginBottom: 24, flexWrap: 'wrap', gap: 16,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {/* Binth Avatar */}
           <div style={{
             width: 52, height: 52, borderRadius: 16, flexShrink: 0,
@@ -351,10 +351,10 @@ export default function Insights() {
             <Brain size={26} color="#fff" />
           </div>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em', margin: 0 }}>
               Binth <span style={{ color: '#7C3AED' }}>{t('insights.title').split(' ')[1]}</span>
             </h1>
-            <p style={{ fontSize: 12, color: '#5a7a9a', margin: '2px 0 0', letterSpacing: '0.04em' }}>
+            <p style={{ fontSize: 12, color: 'var(--ins-muted)', margin: '4px 0 0', letterSpacing: '0.04em' }}>
               {t('insights.subtitle')}
             </p>
           </div>
@@ -366,11 +366,11 @@ export default function Insights() {
 
       {/* ─── Chat Window ─────────────────────────────────────────────────── */}
       <div style={{
-        background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)',
+        background: 'var(--ins-surface)', border: '1px solid var(--ins-border)',
         borderRadius: 20, overflow: 'hidden',
       }}>
         {/* Messages */}
-        <div style={{ height: 480, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ height: 480, overflowY: 'auto', padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {messages.map((msg, i) => {
             const isUser = msg.role === 'user';
             const colors = INSIGHT_COLORS[msg.insight_type] || INSIGHT_COLORS.info;
@@ -391,13 +391,13 @@ export default function Insights() {
                   border: isUser ? 'none' : `1px solid ${colors.border}`,
                   borderRadius: isUser ? '18px 18px 4px 18px' : '4px 18px 18px 18px',
                   padding: '12px 16px',
-                  color: '#e2eaf4',
+                  color: 'var(--color-text)',
                   fontSize: 14,
                   lineHeight: 1.65,
                   boxShadow: isUser ? '0 4px 20px rgba(124,58,237,0.3)' : 'none',
                 }}>
                   {!isUser && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, opacity: 0.7 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                       <div style={{ width: 6, height: 6, borderRadius: '50%', background: colors.dot }} />
                       <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: colors.dot, fontWeight: 700 }}>Binth</span>
                     </div>
@@ -409,10 +409,10 @@ export default function Insights() {
                   {/* ─ Biblical Insight ─ */}
                   {!isUser && msg.biblical_insight && (
                     <div style={{
-                      marginTop: 10, paddingTop: 8,
-                      borderTop: '1px solid rgba(255,255,255,0.08)',
-                      display: 'flex', gap: 6, alignItems: 'flex-start',
-                      fontSize: 11, color: '#c8a84b', lineHeight: 1.5,
+                      marginTop: 12, paddingTop: 8,
+                      borderTop: '1px solid var(--ins-border)',
+                      display: 'flex', gap: 8, alignItems: 'flex-start',
+                      fontSize: 11, color: 'var(--ins-gold)', lineHeight: 1.5,
                     }}>
                       <span style={{ flexShrink: 0 }}>&#128214;</span>
                       <em>{msg.biblical_insight}</em>
@@ -422,10 +422,10 @@ export default function Insights() {
                   {/* ─ Alerta ─ */}
                   {!isUser && msg.alerta && (
                     <div style={{
-                      marginTop: 8, padding: '6px 10px', borderRadius: 8,
+                      marginTop: 8, padding: '8px 12px', borderRadius: 8,
                       background: 'rgba(245,158,11,0.12)',
                       border: '1px solid rgba(245,158,11,0.25)',
-                      fontSize: 11, fontWeight: 600, color: '#F59E0B',
+                      fontSize: 11, fontWeight: 700, color: 'var(--ins-amber)',
                     }}>
                       {msg.alerta}
                     </div>
@@ -438,14 +438,14 @@ export default function Insights() {
                   const personal = String(reason).startsWith('personal_');
                   return (
                     <div role="status" style={{
-                      maxWidth: '85%', padding: '10px 12px', borderRadius: 12,
+                      maxWidth: '85%', padding: '12px 12px', borderRadius: 12,
                       background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.30)',
                       fontSize: 12, lineHeight: 1.5,
                     }}>
-                      <div style={{ fontWeight: 700, color: '#F59E0B' }}>{t(`ai_status.${reason}`, { defaultValue: t('ai_status.service_unavailable') })}</div>
-                      <div style={{ marginTop: 2 }}>{msg.data.ai_notice ? t('ai_status.used_mwanga') + ' ' : ''}{t(personal ? 'ai_status.fix_hint' : 'ai_status.connect_hint')}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--ins-amber)' }}>{t(`ai_status.${reason}`, { defaultValue: t('ai_status.service_unavailable') })}</div>
+                      <div style={{ marginTop: 4 }}>{msg.data.ai_notice ? t('ai_status.used_mwanga') + ' ' : ''}{t(personal ? 'ai_status.fix_hint' : 'ai_status.connect_hint')}</div>
                       <button type="button" onClick={() => navigate('/settings?tab=ai')} style={{
-                        marginTop: 8, padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700,
+                        marginTop: 8, padding: '8px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700,
                         background: '#F59E0B', color: '#1f1300', border: 'none', cursor: 'pointer',
                       }}>{t(personal ? 'ai_status.fix_btn' : 'ai_status.connect_btn')}</button>
                     </div>
@@ -454,7 +454,7 @@ export default function Insights() {
 
                 {/* Quick actions */}
                 {!isUser && msg.quick_actions?.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxWidth: '85%' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, maxWidth: '85%' }}>
                     {msg.quick_actions.map((qa, qi) => (
                       <button
                         key={qi}
@@ -462,10 +462,10 @@ export default function Insights() {
                         onClick={() => sendMessage(qa)}
                         disabled={loading}
                         style={{
-                          padding: '5px 12px', borderRadius: 20, fontSize: 12,
+                          padding: '4px 12px', borderRadius: 20, fontSize: 12,
                           background: 'rgba(124,58,237,0.08)',
                           border: '1px solid rgba(124,58,237,0.25)',
-                          color: '#a78bfa', cursor: 'pointer',
+                          color: 'var(--ins-violet)', cursor: 'pointer',
                           transition: 'all 0.15s', fontFamily: "'DM Sans', sans-serif",
                         }}
                       >{ui(qa)}</button>
@@ -492,10 +492,10 @@ export default function Insights() {
         </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.05)' }} />
+        <div style={{ height: 1, background: 'var(--ins-surface-2)' }} />
 
         {/* Input bar */}
-        <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'center' }}>
           {/* Mic button — only shown when browser supports Web Speech API */}
           {micSupportedRef.current && (
             <button
@@ -504,7 +504,7 @@ export default function Insights() {
               className={isListening ? 'animate-pulse' : ''}
               style={{
                 width: 44, height: 44, borderRadius: 12, border: 'none',
-                background: isListening ? '#EF4444' : 'rgba(255,255,255,0.05)',
+                background: isListening ? '#EF4444' : 'var(--ins-surface-2)',
                 color: isListening ? '#fff' : '#5a7a9a',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.2s', flexShrink: 0,
@@ -515,7 +515,7 @@ export default function Insights() {
             </button>
           )}
           <div style={{ flex: 1, position: 'relative' }}>
-            <Sparkles size={14} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#5a7a9a', pointerEvents: 'none' }} />
+            <Sparkles size={14} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--ins-muted)', pointerEvents: 'none' }} />
             <input
               ref={inputRef}
               className="binth-input"
@@ -525,10 +525,10 @@ export default function Insights() {
               placeholder={t('insights.placeholder')}
               disabled={loading}
               style={{
-                width: '100%', background: 'rgba(0,0,0,0.3)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 12, padding: '11px 14px 11px 36px',
-                color: '#e2eaf4', fontSize: 14,
+                width: '100%', background: 'var(--ins-surface-2)',
+                border: '1px solid var(--ins-border)',
+                borderRadius: 12, padding: '12px 16px 12px 40px',
+                color: 'var(--color-text)', fontSize: 14,
                 fontFamily: "'DM Sans', sans-serif",
                 boxSizing: 'border-box', transition: 'border-color 0.2s, box-shadow 0.2s',
               }}
@@ -553,15 +553,15 @@ export default function Insights() {
       {/* ─── Painel de Aprendizado & Inteligência ─── */}
       <div style={{
         marginTop: 24,
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.07)',
+        background: 'var(--ins-surface)',
+        border: '1px solid var(--ins-border)',
         borderRadius: 20,
-        padding: '24px 20px',
+        padding: '24px 24px',
         fontFamily: "'DM Sans', sans-serif"
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: 36, height: 36, borderRadius: 10,
               background: 'rgba(124,58,237,0.1)',
@@ -571,17 +571,16 @@ export default function Insights() {
               <Database size={18} color="#a78bfa" />
             </div>
             <div>
-              <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff', margin: 0 }}> {ui("Como a Binth Aprende dos Teus Dados")} </h3>
-              <p style={{ fontSize: 11, color: '#5a7a9a', margin: '2px 0 0' }}> {ui("IA ativa a mapear o teu ecossistema financeiro real")} </p>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text)', margin: 0 }}> {ui("Como a Binth Aprende dos Teus Dados")} </h3>
+              <p style={{ fontSize: 11, color: 'var(--ins-muted)', margin: '4px 0 0' }}> {ui("IA ativa a mapear o teu ecossistema financeiro real")} </p>
             </div>
           </div>
           
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            background: 'rgba(0,214,143,0.08)',
-            border: '1px solid rgba(0,214,143,0.2)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'rgba(0,214,143,0.12)',
             borderRadius: 20, padding: '4px 12px',
-            fontSize: 11, fontWeight: 700, color: '#00D68F'
+            fontSize: 11, fontWeight: 700, color: 'var(--ins-green)'
           }}>
             <span style={{
               width: 6, height: 6, borderRadius: '50%',
@@ -595,49 +594,49 @@ export default function Insights() {
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
           gap: 12,
-          marginBottom: 20
+          marginBottom: 24
         }}>
           {/* 1. Transactions Synced */}
-          <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 14 }}>
-            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{ui("Dados Mapeados")}</span>
-            <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
+          <div style={{ background: 'var(--ins-surface)', border: '1px solid var(--ins-border)', borderRadius: 14, padding: 16 }}>
+            <span style={{ fontSize: 10, color: 'var(--ins-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{ui("Dados Mapeados")}</span>
+            <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text)', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
               {state.transacoes?.length || 0}
-              <span style={{ fontSize: 11, color: '#5a7a9a', fontWeight: 500 }}>{ui("itens")}</span>
+              <span style={{ fontSize: 11, color: 'var(--ins-muted)', fontWeight: 400 }}>{ui("itens")}</span>
             </div>
-            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}> {ui("Padrões de gastos e receitas analisados automaticamente.")} </p>
+            <p style={{ fontSize: 10, color: 'var(--ins-soft)', margin: '8px 0 0', lineHeight: 1.4 }}> {ui("Padrões de gastos e receitas analisados automaticamente.")} </p>
           </div>
 
           {/* 2. Savings Rate */}
-          <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 14 }}>
-            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{ui("Taxa de Poupança")}</span>
+          <div style={{ background: 'var(--ins-surface)', border: '1px solid var(--ins-border)', borderRadius: 14, padding: 16 }}>
+            <span style={{ fontSize: 10, color: 'var(--ins-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{ui("Taxa de Poupança")}</span>
             <div style={{
-              fontSize: 20, fontWeight: 900,
-              color: stats.savingsRate > 20 ? '#00D68F' : stats.savingsRate > 0 ? '#F59E0B' : '#FF4C4C',
+              fontSize: 20, fontWeight: 700,
+              color: stats.savingsRate > 20 ? 'var(--ins-green)' : stats.savingsRate > 0 ? 'var(--ins-amber)' : 'var(--ins-red)',
               marginTop: 4
             }}>
               {stats.savingsRate ? `${Math.round(stats.savingsRate)}%` : '0%'}
             </div>
-            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}> {ui("Margem livre detetada após subtrair despesas de receitas.")} </p>
+            <p style={{ fontSize: 10, color: 'var(--ins-soft)', margin: '8px 0 0', lineHeight: 1.4 }}> {ui("Margem livre detetada após subtrair despesas de receitas.")} </p>
           </div>
 
           {/* 3. Cash Runway */}
-          <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 14 }}>
-            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{ui("Reserva de Emergência")}</span>
-            <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
+          <div style={{ background: 'var(--ins-surface)', border: '1px solid var(--ins-border)', borderRadius: 14, padding: 16 }}>
+            <span style={{ fontSize: 10, color: 'var(--ins-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{ui("Reserva de Emergência")}</span>
+            <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text)', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
               {stats.runwayMonths || 0}
-              <span style={{ fontSize: 11, color: '#5a7a9a', fontWeight: 500 }}>{ui("meses")}</span>
+              <span style={{ fontSize: 11, color: 'var(--ins-muted)', fontWeight: 400 }}>{ui("meses")}</span>
             </div>
-            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}> {ui("Tempo que sobreviverias com os saldos líquidos atuais.")} </p>
+            <p style={{ fontSize: 10, color: 'var(--ins-soft)', margin: '8px 0 0', lineHeight: 1.4 }}> {ui("Tempo que sobreviverias com os saldos líquidos atuais.")} </p>
           </div>
 
           {/* 4. Active Accounts */}
-          <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 14 }}>
-            <span style={{ fontSize: 10, color: '#5a7a9a', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{ui("Canais Conectados")}</span>
-            <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
+          <div style={{ background: 'var(--ins-surface)', border: '1px solid var(--ins-border)', borderRadius: 14, padding: 16 }}>
+            <span style={{ fontSize: 10, color: 'var(--ins-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>{ui("Canais Conectados")}</span>
+            <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text)', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
               {state.contas?.length || 0}
-              <span style={{ fontSize: 11, color: '#5a7a9a', fontWeight: 500 }}>{ui("contas")}</span>
+              <span style={{ fontSize: 11, color: 'var(--ins-muted)', fontWeight: 400 }}>{ui("contas")}</span>
             </div>
-            <p style={{ fontSize: 10, color: '#8a9ab8', margin: '6px 0 0', lineHeight: 1.4 }}> {ui("M-Pesa, e-mola, carteira física e contas sincronizadas.")} </p>
+            <p style={{ fontSize: 10, color: 'var(--ins-soft)', margin: '8px 0 0', lineHeight: 1.4 }}> {ui("M-Pesa, e-mola, carteira física e contas sincronizadas.")} </p>
           </div>
         </div>
 
@@ -646,59 +645,59 @@ export default function Insights() {
           background: 'rgba(124,58,237,0.04)',
           border: '1px solid rgba(124,58,237,0.12)',
           borderRadius: 16,
-          padding: '16px 18px'
+          padding: '16px 16px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <Sparkles size={14} color="#a78bfa" />
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em' }}> {ui("Intervenções Inteligentes Recomendadas")} </span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--ins-violet)', textTransform: 'uppercase', letterSpacing: '0.05em' }}> {ui("Intervenções Inteligentes Recomendadas")} </span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {/* 1. Liquidity Recommendation */}
             {state.contas?.reduce((acc, c) => acc + Number(c.current_balance || 0), 0) < 1000 ? (
-              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <AlertTriangle size={14} color="#FF4C4C" style={{ marginTop: 2, flexShrink: 0 }} />
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <AlertTriangle size={14} color="#FF4C4C" style={{ marginTop: 4, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{ui("Alerta de Liquidez Crítica")}</div>
-                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}> {ui("O teu caixa disponível é muito baixo.")} <strong>{ui("Evita qualquer despesa supérflua")}</strong> {ui("nas próximas 72 horas para proteger a tua estabilidade básica.")} </p>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text)' }}>{ui("Alerta de Liquidez Crítica")}</div>
+                  <p style={{ fontSize: 11, color: 'var(--ins-soft)', margin: '4px 0 0', lineHeight: 1.4 }}> {ui("O teu caixa disponível é muito baixo.")} <strong>{ui("Evita qualquer despesa supérflua")}</strong> {ui("nas próximas 72 horas para proteger a tua estabilidade básica.")} </p>
                 </div>
               </div>
             ) : null}
 
             {/* 2. Budget Recommendation */}
             {state.budgets?.length > 0 ? (
-              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <Layers size={14} color="#F59E0B" style={{ marginTop: 2, flexShrink: 0 }} />
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <Layers size={14} color="#F59E0B" style={{ marginTop: 4, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{ui("Mapeamento Orçamental Ativo")}</div>
-                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}> {ui("A Binth detetou que os teus limites de orçamentos cobrem todas as categorias essenciais. Rever orçamentos pode liberar até 15% de margem no teu mês.")} </p>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text)' }}>{ui("Mapeamento Orçamental Ativo")}</div>
+                  <p style={{ fontSize: 11, color: 'var(--ins-soft)', margin: '4px 0 0', lineHeight: 1.4 }}> {ui("A Binth detetou que os teus limites de orçamentos cobrem todas as categorias essenciais. Rever orçamentos pode liberar até 15% de margem no teu mês.")} </p>
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <Layers size={14} color="#F59E0B" style={{ marginTop: 2, flexShrink: 0 }} />
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <Layers size={14} color="#F59E0B" style={{ marginTop: 4, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{ui("Criar Limites de Orçamento")}</div>
-                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}> {ui("Sem limites definidos, o teu dinheiro flui sem direção. Cria o teu primeiro orçamento para ensinar a IA a proteger o teu consumo.")} </p>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text)' }}>{ui("Criar Limites de Orçamento")}</div>
+                  <p style={{ fontSize: 11, color: 'var(--ins-soft)', margin: '4px 0 0', lineHeight: 1.4 }}> {ui("Sem limites definidos, o teu dinheiro flui sem direção. Cria o teu primeiro orçamento para ensinar a IA a proteger o teu consumo.")} </p>
                 </div>
               </div>
             )}
 
             {/* 3. Goal Recommendation */}
             {state.metas?.length > 0 ? (
-              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <Compass size={14} color="#00D68F" style={{ marginTop: 2, flexShrink: 0 }} />
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <Compass size={14} color="#00D68F" style={{ marginTop: 4, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{ui("Reforçar a meta \"")}{state.metas[0].name}"</div>
-                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}> {ui("Aproveita as entradas livres para aproximar-te do teu sonho. Que tal alocar um aporte extra de 10% do teu caixa nesta meta?")} </p>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text)' }}>{ui("Reforçar a meta \"")}{state.metas[0].name}"</div>
+                  <p style={{ fontSize: 11, color: 'var(--ins-soft)', margin: '4px 0 0', lineHeight: 1.4 }}> {ui("Aproveita as entradas livres para aproximar-te do teu sonho. Que tal alocar um aporte extra de 10% do teu caixa nesta meta?")} </p>
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <Compass size={14} color="#00D68F" style={{ marginTop: 2, flexShrink: 0 }} />
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <Compass size={14} color="#00D68F" style={{ marginTop: 4, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{ui("Criar uma Meta de Poupança (Pé de Meia)")}</div>
-                  <p style={{ fontSize: 11, color: '#8a9ab8', margin: '2px 0 0', lineHeight: 1.4 }}> {ui("O sábio guarda para o amanhã. Inicia uma meta de poupança comunitária (como Xitique) ou uma meta individual no Mwanga hoje.")} </p>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text)' }}>{ui("Criar uma Meta de Poupança (Pé de Meia)")}</div>
+                  <p style={{ fontSize: 11, color: 'var(--ins-soft)', margin: '4px 0 0', lineHeight: 1.4 }}> {ui("O sábio guarda para o amanhã. Inicia uma meta de poupança comunitária (como Xitique) ou uma meta individual no Mwanga hoje.")} </p>
                 </div>
               </div>
             )}
@@ -708,17 +707,17 @@ export default function Insights() {
 
       {/* ─── Score breakdown (if loaded) ──────────────────────────────────── */}
       {score?.factors?.length > 0 && (
-        <div style={{ marginTop: 20, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '18px 20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#4a5568', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+        <div style={{ marginTop: 24, background: 'var(--ins-surface)', border: '1px solid var(--ins-border)', borderRadius: 16, padding: '16px 24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--ins-muted)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {t('insights.score_section.title')}
             </div>
             {score.biblical_label && (
               <div style={{
                 fontSize: 11, fontWeight: 700,
-                color: score.score >= 75 ? '#00D68F' : score.score >= 50 ? '#F59E0B' : '#FF4C4C',
-                background: 'rgba(255,255,255,0.05)', borderRadius: 20,
-                padding: '3px 10px', border: '1px solid rgba(255,255,255,0.1)'
+                color: score.score >= 75 ? 'var(--ins-green)' : score.score >= 50 ? 'var(--ins-amber)' : 'var(--ins-red)',
+                background: 'var(--ins-surface-2)', borderRadius: 20,
+                padding: '4px 12px', border: '1px solid var(--ins-border)'
               }}>
                 {score.biblical_label}
               </div>
@@ -732,14 +731,14 @@ export default function Insights() {
                 <div key={i}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                     <div>
-                      <span style={{ fontSize: 12, color: '#8a9ab8' }}>{ui(f.name)}</span>
+                      <span style={{ fontSize: 12, color: 'var(--ins-soft)' }}>{ui(f.name)}</span>
                       {f.biblical_principle && (
-                        <span style={{ fontSize: 10, color: '#c8a84b', marginLeft: 8, opacity: 0.8 }}>&#128214; {f.biblical_principle}</span>
+                        <span style={{ fontSize: 10, color: 'var(--ins-gold)', marginLeft: 8, opacity: 0.8 }}>&#128214; {f.biblical_principle}</span>
                       )}
                     </div>
-                    <span style={{ fontSize: 12, color: col, fontWeight: 600 }}>{f.pts}/{f.max} · {f.value}</span>
+                    <span style={{ fontSize: 12, color: col, fontWeight: 700 }}>{f.pts}/{f.max} · {f.value}</span>
                   </div>
-                  <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 999, overflow: 'hidden' }}>
+                  <div style={{ height: 4, background: 'var(--ins-surface-2)', borderRadius: 999, overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${pct}%`, background: col, borderRadius: 999, transition: 'width 1s ease' }} />
                   </div>
                 </div>

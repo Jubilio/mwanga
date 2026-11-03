@@ -248,7 +248,7 @@ export default function Login() {
         </div>
 
         {showGoogleLogin && (
-        <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+        <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <button
             type="button"
             onClick={Capacitor.isNativePlatform() ? handleNativeGoogleLogin : handleManualGoogleLogin}
@@ -287,7 +287,7 @@ export default function Login() {
           <div
             role="alert"
             style={{
-              marginBottom: '1.2rem',
+              marginBottom: '1rem',
               padding: '0.75rem 1rem',
               borderRadius: '12px',
               border: '1px solid rgba(248, 113, 113, 0.4)',
@@ -301,7 +301,7 @@ export default function Login() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {!isLogin && (
             <div>
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -334,7 +334,7 @@ export default function Login() {
                 value={form.inviteCode}
                 onChange={(e) => setForm({ ...form, inviteCode: e.target.value })}
               />
-              <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--color-muted)' }}>
+              <p style={{ margin: '0.5rem 0 0', fontSize: '0.78rem', color: 'var(--color-muted)' }}>
                 {t('auth.register.invite_tip')}
               </p>
             </div>
@@ -370,19 +370,19 @@ export default function Login() {
               onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
             {!isLogin && (
-              <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--color-muted)' }}>
+              <p style={{ margin: '0.5rem 0 0', fontSize: '0.78rem', color: 'var(--color-muted)' }}>
                 {t('auth.register.password_tip')}
               </p>
             )}
             {isLogin && (
-              <div style={{ textAlign: 'right', marginTop: '0.4rem' }}>
+              <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
                 <button
                   type="button"
                   onClick={() => navigate('/forgot-password')}
                   style={{
                     color: 'var(--color-ocean)',
                     fontSize: '0.85rem',
-                    fontWeight: 600,
+                    fontWeight: 700,
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer'
@@ -431,7 +431,7 @@ export default function Login() {
               {t('auth.login.no_account')}{' '}
               <button
                 onClick={() => setIsLogin(false)}
-                style={{ color: 'var(--color-ocean)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{ color: 'var(--color-ocean)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 {t('auth.login.register_link')}
               </button>
@@ -441,7 +441,7 @@ export default function Login() {
               {t('auth.register.already_have')}{' '}
               <button
                 onClick={() => setIsLogin(true)}
-                style={{ color: 'var(--color-ocean)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{ color: 'var(--color-ocean)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 {t('auth.register.login_link')}
               </button>

@@ -72,12 +72,12 @@ export default function SimulatorQuality() {
       <div className="glass-card p-8 bg-linear-to-br from-ocean/20 to-midnight">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex-1">
-            <h2 className="text-xl font-black text-white mb-2">{ui("Simulador de Qualidade Buffett")}</h2>
-            <p className="text-sm text-gray-400"> {ui("Avalie qualquer negócio, imóvel ou oportunidade de investimento usando os 5 critérios rigorosos de aquisição do Warren Buffett.")} </p>
+            <h2 className="text-xl font-bold text-white mb-2">{ui("Simulador de Qualidade Buffett")}</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400"> {ui("Avalie qualquer negócio, imóvel ou oportunidade de investimento usando os 5 critérios rigorosos de aquisição do Warren Buffett.")} </p>
           </div>
           <div className="w-full md:w-auto p-6 rounded-[24px] bg-black/40 border border-white/5 flex flex-col items-center justify-center min-w-[200px]">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">Buffett Score</span>
-            <div className={`text-5xl font-black ${getScoreColor()}`}>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400 mb-2">Buffett Score</span>
+            <div className={`text-5xl font-bold ${getScoreColor()}`}>
               {score}<span className="text-2xl text-gray-600">%</span>
             </div>
           </div>
@@ -91,26 +91,26 @@ export default function SimulatorQuality() {
           return (
             <div key={q.id} className="glass-card p-6 border-white/5 transition-all hover:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0">
                   <Icon size={20} />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white mb-1">{ui(q.label)}</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">{ui(q.desc)}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{ui(q.desc)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                 <button
                   onClick={() => handleToggle(q.id, true)}
-                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
-                    val === true ? 'bg-leaf text-midnight' : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${
+                    val === true ? 'bg-leaf text-midnight' : 'bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/10'
                   }`}
                 >
                   <CheckCircle size={14} /> {ui("Sim")} </button>
                 <button
                   onClick={() => handleToggle(q.id, false)}
-                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
-                    val === false ? 'bg-coral text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${
+                    val === false ? 'bg-coral text-white' : 'bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/10'
                   }`}
                 >
                   <XCircle size={14} /> {ui("Não")} </button>
@@ -122,7 +122,7 @@ export default function SimulatorQuality() {
 
       {isComplete && (
         <div className={`p-6 rounded-[24px] border ${score >= 80 ? 'bg-leaf/10 border-leaf/20' : score >= 60 ? 'bg-gold/10 border-gold/20' : 'bg-coral/10 border-coral/20'} animate-scale-in`}>
-          <h4 className={`text-sm font-black uppercase tracking-widest mb-2 ${getScoreColor()}`}>{ui("Veredicto")}</h4>
+          <h4 className={`text-sm font-bold uppercase tracking-widest mb-2 ${getScoreColor()}`}>{ui("Veredicto")}</h4>
           <p className="text-sm text-gray-300 leading-relaxed">{getScoreMessage()}</p>
         </div>
       )}

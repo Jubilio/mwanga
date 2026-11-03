@@ -22,11 +22,11 @@ export default function TabCompare({ userData }) {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <Card>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'flex-end', marginBottom: 24 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'flex-end', marginBottom: 24 }}>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <label style={{ fontSize: 13, color: G.text, fontWeight: 600, display: 'block', marginBottom: 8 }}>{t('credit.compare.target_value')}</label>
+            <label style={{ fontSize: 13, color: G.text, fontWeight: 700, display: 'block', marginBottom: 8 }}>{t('credit.compare.target_value')}</label>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 11, color: G.muted }}>MT</span>
@@ -36,7 +36,7 @@ export default function TabCompare({ userData }) {
                     onChange={e => setAmount(+e.target.value)}
                     style={{ 
                       width: 100, background: G.muted3, border: `1px solid ${G.border}`, 
-                      borderRadius: 8, padding: '4px 8px', color: G.credit, fontWeight: 900, fontSize: 14, outline: 'none' 
+                      borderRadius: 8, padding: '4px 8px', color: G.credit, fontWeight: 700, fontSize: 14, outline: 'none' 
                     }}
                   />
                 </div>
@@ -47,7 +47,7 @@ export default function TabCompare({ userData }) {
               style={{ width: '100%', accentColor: G.credit, cursor: 'pointer' }} />
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <label style={{ fontSize: 13, color: G.text, fontWeight: 600, display: 'block', marginBottom: 8 }}>{t('credit.compare.term')}</label>
+            <label style={{ fontSize: 13, color: G.text, fontWeight: 700, display: 'block', marginBottom: 8 }}>{t('credit.compare.term')}</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                <input 
                 type="number" 
@@ -55,15 +55,15 @@ export default function TabCompare({ userData }) {
                 onChange={e => setMonths(+e.target.value)}
                 style={{ 
                   width: 60, background: G.muted3, border: `1px solid ${G.border}`, 
-                  borderRadius: 8, padding: '4px 8px', color: G.gold, fontWeight: 900, fontSize: 14, outline: 'none', textAlign: 'center' 
+                  borderRadius: 8, padding: '4px 8px', color: G.gold, fontWeight: 700, fontSize: 14, outline: 'none', textAlign: 'center' 
                 }}
               />
               <span style={{ fontSize: 12, fontWeight: 700, color: G.gold }}>{months === 1 ? t('credit.simulator.month_single') : t('credit.simulator.months')}</span>
             </div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {[3, 6, 12, 24, 36].map(m => (
                 <button key={m} onClick={() => setMonths(m)} style={{
-                  flex: "1 0 40px", padding: '9px 4px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                  flex: "1 0 40px", padding: '8px 4px', borderRadius: 10, border: 'none', cursor: 'pointer',
                   background: months === m ? `linear-gradient(135deg,${G.credit},${G.credit2})` : G.muted3,
                   color: months === m ? '#000' : G.muted, fontWeight: 700, fontSize: 13, fontFamily: 'inherit',
                 }}>{m}m</button>
@@ -87,12 +87,12 @@ export default function TabCompare({ userData }) {
                   <div style={{ fontWeight: 700, color: opt.color }}>{ui(opt.name)}</div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
                     <Badge label={isAnnual ? `${(opt.rate * 100).toFixed(1)}% AA` : `${(opt.rate * 100).toFixed(0)}%/mês`} color={opt.color} />
-                    {!isAffordable && <span style={{ fontSize: 9, fontWeight: 900, color: G.red, textTransform: 'uppercase' }}>{t('credit.compare.exceeds')}</span>}
+                    {!isAffordable && <span style={{ fontSize: 9, fontWeight: 700, color: G.red, textTransform: 'uppercase' }}>{t('credit.compare.exceeds')}</span>}
                   </div>
                 </div>
                 <div style={{ marginBottom: 12 }}>
                   <div style={{ fontSize: 11, color: G.muted }}>{t('credit.compare.cost_month')}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: G.text, fontFamily: 'Sora,sans-serif' }}>{fmt(parcela)}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: G.text, fontFamily: 'Sora,sans-serif' }}>{fmt(parcela)}</div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: `1px solid ${opt.color}20`, paddingTop: 12 }}>
                   <div>
@@ -109,8 +109,8 @@ export default function TabCompare({ userData }) {
           })}
         </div>
 
-        <div style={{ marginTop: 20, padding: 16, borderRadius: 12, background: 'rgba(16,185,129,0.1)', border: `1px solid ${G.credit}30` }}>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        <div style={{ marginTop: 24, padding: 16, borderRadius: 12, background: 'rgba(16,185,129,0.1)', border: `1px solid ${G.credit}30` }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
             <span style={{ fontSize: 20 }}>💡</span>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: G.credit, marginBottom: 4 }}>{t('credit.compare.verdict_title')}</div>

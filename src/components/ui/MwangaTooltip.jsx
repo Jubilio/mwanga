@@ -35,10 +35,10 @@ export function MwangaTooltip({ children, content, side = 'top', align = 'center
           sideOffset={8}
           style={{
             zIndex: 9999,
-            padding: '6px 12px',
+            padding: '8px 12px',
             borderRadius: '10px',
             fontSize: '12px',
-            fontWeight: 500,
+            fontWeight: 400,
             lineHeight: '1.4',
             maxWidth: '220px',
             textAlign: 'center',

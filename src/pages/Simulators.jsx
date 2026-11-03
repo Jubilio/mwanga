@@ -36,13 +36,13 @@ function TabButton({ active, icon, label, onClick }) {
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
-        padding: '12px 18px',
+        padding: '12px 16px',
         borderRadius: 16,
         border: 'none',
         cursor: 'pointer',
         whiteSpace: 'nowrap',
         fontSize: 13,
-        fontWeight: 800,
+        fontWeight: 700,
         background: active ? 'var(--color-ocean)' : 'transparent',
         color: active ? '#fff' : 'var(--color-muted)',
         boxShadow: active ? '0 8px 20px rgba(10, 77, 104, 0.35)' : 'none',
@@ -78,12 +78,12 @@ export default function Simulators() {
   return (
     <div className="w-full flex-1 flex flex-col pb-20">
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-midnight dark:text-white mb-2 font-display">{t('simulators.title')}</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{t('simulators.description')}</p>
+        <h1 className="text-3xl font-bold text-midnight dark:text-white mb-2 font-display">{t('simulators.title')}</h1>
+        <p className="text-sm text-slate-600 dark:text-gray-400">{t('simulators.description')}</p>
       </div>
 
       {/* Tab navigation */}
-      <div className="flex gap-2 mb-8 overflow-x-auto p-1.5 rounded-[20px] bg-white/5 border border-white/5">
+      <div className="flex gap-2 mb-8 overflow-x-auto p-2 rounded-[20px] bg-white/5 border border-white/5">
         <TabButton active={activeTab === 'budget'}  icon={Banknote}   label={t('simulators.tabs.budget')}  onClick={() => setActiveTab('budget')}  />
         <TabButton active={activeTab === 'estrutura'} icon={Layers} label={ui("Estrutura do Salário")} onClick={() => setActiveTab('estrutura')} />
         <TabButton active={activeTab === 'invest'}  icon={TrendingUp} label={t('simulators.tabs.invest')}  onClick={() => setActiveTab('invest')}  />
@@ -125,8 +125,8 @@ export default function Simulators() {
       {/* Disclaimer */}
       <div className="mt-8 p-6 rounded-[28px] bg-amber-500/5 border border-amber-500/10 flex gap-4">
         <Info className="text-amber-500 shrink-0" size={24} />
-        <div className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-          <Trans i18nKey="simulators.disclaimer" components={{ strong: <strong className="text-amber-500/80" /> }} />
+        <div className="text-xs text-slate-600 dark:text-gray-400 leading-relaxed">
+          <Trans i18nKey="simulators.disclaimer" components={{ strong: <strong className="text-amber-800 dark:text-amber-400" /> }} />
         </div>
       </div>
     </div>

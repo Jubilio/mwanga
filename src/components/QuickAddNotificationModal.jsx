@@ -191,10 +191,10 @@ export default function QuickAddNotificationModal({
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_42%)]" />
           <div className="relative flex items-start justify-between gap-4">
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em]">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em]">
                 <Wallet size={12} /> {t('quick_add.title')}
               </div>
-              <h2 className="text-2xl font-black tracking-tight">{isVoiceShortcut ? t('quick_add.voice.header') : t('quick_add.header')}</h2>
+              <h2 className="text-2xl font-bold tracking-tight">{isVoiceShortcut ? t('quick_add.voice.header') : t('quick_add.header')}</h2>
               <p className="mt-2 max-w-xl text-sm text-white/80">
                 {isVoiceShortcut ? t('quick_add.voice.desc') : t('quick_add.desc')}
               </p>
@@ -226,7 +226,7 @@ export default function QuickAddNotificationModal({
                   <Mic size={22} />
                 </span>
                 <span>
-                  <span className="block text-sm font-black uppercase tracking-[0.18em]">
+                  <span className="block text-sm font-bold uppercase tracking-[0.18em]">
                     {listening ? t('quick_add.voice.listening') : t('quick_add.voice.button')}
                   </span>
                   <span className="block text-xs text-white/80">
@@ -267,10 +267,10 @@ export default function QuickAddNotificationModal({
                     <Icon size={18} />
                   </div>
                   <div>
-                    <div className="text-sm font-black uppercase tracking-[0.2em]">
+                    <div className="text-sm font-bold uppercase tracking-[0.2em]">
                       {item.value === 'receita' ? t('dashboard.quick_actions.income') : t('dashboard.quick_actions.expense')}
                     </div>
-                    <div className={`text-xs ${active ? 'text-white/75' : 'text-slate-500'}`}>
+                    <div className={`text-xs ${active ? 'text-white/75' : 'text-slate-600 dark:text-slate-400'}`}>
                       {item.value === 'receita' ? t('quick_add.entry_fast') : t('quick_add.exit_fast')}
                     </div>
                   </div>
@@ -281,7 +281,7 @@ export default function QuickAddNotificationModal({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.22em] text-slate-600 dark:text-slate-400">
                 {t('quick_add.fields.date')}
               </label>
               <input
@@ -293,7 +293,7 @@ export default function QuickAddNotificationModal({
             </div>
 
             <div>
-              <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.22em] text-slate-600 dark:text-slate-400">
                 {t('quick_add.fields.value')}
               </label>
               <input
@@ -308,7 +308,7 @@ export default function QuickAddNotificationModal({
             </div>
 
             <div className="sm:col-span-2">
-              <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.22em] text-slate-600 dark:text-slate-400">
                 {t('quick_add.fields.description')}
               </label>
               <input
@@ -321,7 +321,7 @@ export default function QuickAddNotificationModal({
             </div>
 
             <div>
-              <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.22em] text-slate-600 dark:text-slate-400">
                 {t('quick_add.fields.category')}
               </label>
               <select
@@ -338,7 +338,7 @@ export default function QuickAddNotificationModal({
             </div>
 
             <div>
-              <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.22em] text-slate-600 dark:text-slate-400">
                 {t('quick_add.fields.account')}
               </label>
               <select
@@ -356,7 +356,7 @@ export default function QuickAddNotificationModal({
             </div>
 
             <div className="sm:col-span-2">
-              <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.22em] text-slate-600 dark:text-slate-400">
                 {t('quick_add.fields.note')}
               </label>
               <input
@@ -369,15 +369,15 @@ export default function QuickAddNotificationModal({
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-500">
+          <div className="flex flex-col gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               {t('quick_add.habit_hint')}
             </p>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-ocean px-5 py-4 text-sm font-black uppercase tracking-[0.18em] text-white shadow-[0_12px_30px_rgba(10,77,104,0.25)] transition hover:bg-[#088395] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-ocean px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_12px_30px_rgba(10,77,104,0.25)] transition hover:bg-[#088395] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Plus size={16} />
               {isSubmitting ? t('quick_add.saving') : t('quick_add.save')}

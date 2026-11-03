@@ -16,9 +16,9 @@ function ProBadge({ label = 'PRO' }) {
   useUiLanguage();
   return (
     <span style={{
-      fontSize: 9, fontWeight: 800, letterSpacing: '0.08em',
+      fontSize: 9, fontWeight: 700, letterSpacing: '0.08em',
       background: 'linear-gradient(135deg, #F59E0B, #F97316)',
-      color: '#000', borderRadius: 4, padding: '2px 6px',
+      color: '#000', borderRadius: 4, padding: '4px 8px',
       flexShrink: 0,
     }}>{label}</span>
   );
@@ -41,7 +41,7 @@ function ProLockedPanel({ item, onClose, onUpgrade }) {
         onClick={e => e.stopPropagation()}
         style={{
           background: '#111827', border: '1px solid rgba(245,158,11,0.25)',
-          borderRadius: 20, padding: '36px 32px', width: 360, maxWidth: '90vw',
+          borderRadius: 20, padding: '40px 32px', width: 360, maxWidth: '90vw',
           boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(245,158,11,0.08)',
           animation: 'sidebarPopIn 0.22s cubic-bezier(0.34,1.56,0.64,1)',
         }}
@@ -66,23 +66,23 @@ function ProLockedPanel({ item, onClose, onUpgrade }) {
         </div>
 
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20,
-          padding: '10px 14px', background: 'rgba(245,158,11,0.07)',
+          display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24,
+          padding: '12px 16px', background: 'rgba(245,158,11,0.07)',
           borderRadius: 10, border: '1px solid rgba(245,158,11,0.15)',
         }}>
           <span style={{ fontSize: 14 }}>👑</span>
-          <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600 }}>{t('sidebar.pro_locked.exclusive')}</span>
-          <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 800, background: 'linear-gradient(135deg,#F59E0B,#F97316)', color: '#000', borderRadius: 4, padding: '2px 7px' }}>PRO</span>
+          <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 700 }}>{t('sidebar.pro_locked.exclusive')}</span>
+          <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, background: 'linear-gradient(135deg,#F59E0B,#F97316)', color: '#000', borderRadius: 4, padding: '4px 8px' }}>PRO</span>
         </div>
 
         <button
           onClick={onUpgrade}
           style={{
-            width: '100%', padding: 14, borderRadius: 12, border: 'none',
+            width: '100%', padding: 16, borderRadius: 12, border: 'none',
             background: 'linear-gradient(135deg, #F59E0B, #F97316)',
             color: '#000', fontSize: 14, fontWeight: 700, cursor: 'pointer',
             letterSpacing: '0.01em', boxShadow: '0 4px 20px rgba(245,158,11,0.35)',
-            marginBottom: 10, transition: 'opacity 0.2s',
+            marginBottom: 12, transition: 'opacity 0.2s',
           }}
         >{t('sidebar.pro_locked.upgrade_btn')}</button>
         <button
@@ -90,7 +90,7 @@ function ProLockedPanel({ item, onClose, onUpgrade }) {
           style={{
             width: '100%', padding: 12, borderRadius: 12,
             background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
-            color: '#5a7a9a', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+            color: '#5a7a9a', fontSize: 13, fontWeight: 400, cursor: 'pointer',
           }}
         >{t('sidebar.pro_locked.later_btn')}</button>
       </div>
@@ -188,7 +188,7 @@ export default function Sidebar({ isOpen, onClose }) {
           overflowY: 'auto', flexShrink: 0,
         }}
       >
-        <div style={{ padding: '28px 24px 20px' }}>
+        <div style={{ padding: '32px 24px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <MwangaLogo variant="sidebar" />
@@ -197,18 +197,18 @@ export default function Sidebar({ isOpen, onClose }) {
           </div>
         </div>
 
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 20px 8px' }} />
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 24px 8px' }} />
 
-        <nav style={{ flex: 1, padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <nav style={{ flex: 1, padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 4 }}>
           {NAV.map((group, gi) => (
             <div key={gi}>
               <div style={{
                 fontSize: 10, fontWeight: 700, letterSpacing: '0.14em',
-                color: '#4a5568', padding: '14px 6px 8px', textTransform: 'uppercase',
+                color: '#4a5568', padding: '16px 8px 8px', textTransform: 'uppercase',
               }}>
                 {group.section}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {group.items.map(item => ({ ...item, pro: Boolean(item.feature) && !hasFeatureAccess('free', item.feature) })).map(item =>
                   item.pro ? (
                     <NavLink
@@ -234,7 +234,7 @@ export default function Sidebar({ isOpen, onClose }) {
                           <span style={{
                             fontSize: 14.5, flex: 1,
                             color: isActive ? '#F59E0B' : item.highlight ? '#e0a840' : '#4a5568',
-                            fontWeight: isActive ? 600 : item.highlight ? 500 : 400,
+                            fontWeight: isActive ? 700 : 400,
                           }}>{ui(item.label)}</span>
                           {!hasFeatureAccess(tier, item.feature) && (
                             <ProBadge label={hasFeatureAccess('growth', item.feature) ? t('pricing.plans.growth.name').toUpperCase() : 'PRO'} />
@@ -268,7 +268,7 @@ export default function Sidebar({ isOpen, onClose }) {
                           <span style={{
                             fontSize: 14.5, flex: 1,
                             color: isActive ? '#F59E0B' : '#c8d6e8',
-                            fontWeight: isActive ? 600 : 400,
+                            fontWeight: isActive ? 700 : 400,
                             transition: 'color 0.18s',
                           }}>{ui(item.label)}</span>
                         </>
@@ -284,9 +284,9 @@ export default function Sidebar({ isOpen, onClose }) {
             <div key={gi}>
               <div style={{
                 fontSize: 10, fontWeight: 700, letterSpacing: '0.14em',
-                color: '#4a5568', padding: '14px 6px 8px', textTransform: 'uppercase',
+                color: '#4a5568', padding: '16px 8px 8px', textTransform: 'uppercase',
               }}>{group.section}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {group.items.map(item => (
                   <NavLink
                     key={item.to}
@@ -297,7 +297,7 @@ export default function Sidebar({ isOpen, onClose }) {
                     {({ isActive }) => (
                       <>
                         <span style={{ fontSize: 17, width: 22, textAlign: 'center', flexShrink: 0, color: isActive ? '#F59E0B' : '#8a9ab8' }}><item.icon size={17} /></span>
-                        <span style={{ fontSize: 14.5, flex: 1, color: isActive ? '#F59E0B' : '#c8d6e8', fontWeight: isActive ? 600 : 400 }}>{ui(item.label)}</span>
+                        <span style={{ fontSize: 14.5, flex: 1, color: isActive ? '#F59E0B' : '#c8d6e8', fontWeight: isActive ? 700 : 400 }}>{ui(item.label)}</span>
                       </>
                     )}
                   </NavLink>
@@ -308,10 +308,10 @@ export default function Sidebar({ isOpen, onClose }) {
         </nav>
 
         {isFree && (
-          <div style={{ padding: '0 16px 20px' }}>
+          <div style={{ padding: '0 16px 24px' }}>
             <div style={{
               background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(249,115,22,0.08))',
-              border: '1px solid rgba(245,158,11,0.2)', borderRadius: 16, padding: '18px 18px 16px',
+              border: '1px solid rgba(245,158,11,0.2)', borderRadius: 16, padding: '16px 16px 16px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <span style={{ fontSize: 15 }}>👑</span>
@@ -319,7 +319,7 @@ export default function Sidebar({ isOpen, onClose }) {
                   {t('sidebar.premium_cta.title')}
                 </span>
               </div>
-              <p style={{ fontSize: 12.5, color: '#7a8fa8', lineHeight: 1.6, marginBottom: 14 }}>
+              <p style={{ fontSize: 12.5, color: '#7a8fa8', lineHeight: 1.6, marginBottom: 16 }}>
                 {t('sidebar.premium_cta.desc')}
               </p>
               <button className="sb-upgrade-btn" onClick={() => navigate('/pricing')}>
@@ -329,9 +329,9 @@ export default function Sidebar({ isOpen, onClose }) {
           </div>
         )}
 
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 20px' }} />
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 24px' }} />
 
-        <div style={{ padding: '16px 20px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ padding: '16px 24px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
           <UserAvatar
             name={state.user?.name}
             photo={state.settings?.profile_pic}
@@ -340,7 +340,7 @@ export default function Sidebar({ isOpen, onClose }) {
             iconSize={16}
           />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13.5, fontWeight: 600, color: '#e2eaf4', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: '#e2eaf4', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {userName}
             </div>
             <div style={{ fontSize: 11, color: '#4a5568', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 1 }}>

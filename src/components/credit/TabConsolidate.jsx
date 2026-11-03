@@ -29,11 +29,11 @@ export default function TabConsolidate({ debts, userData }) {
   const savingsTotal = oldTotalCost - newTotalCost;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {activeDebts.length === 0 ? (
         <Card style={{ textAlign: 'center', padding: 40 }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>🎉</div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: G.credit, marginBottom: 10 }}>{t('credit.consolidate.no_debts')}</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: G.credit, marginBottom: 12 }}>{t('credit.consolidate.no_debts')}</div>
         </Card>
       ) : (
         <Card>
@@ -41,22 +41,22 @@ export default function TabConsolidate({ debts, userData }) {
           <div style={{ display: 'grid', gridTemplateColumns: autoGrid(220), gap: 12, marginBottom: 24 }}>
             <div style={{ background: G.muted3, padding: 16, borderRadius: 16 }}>
               <div style={{ fontSize: 12, color: G.muted, marginBottom: 4 }}>{t('credit.consolidate.current_debt')}</div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: G.red, fontFamily: 'Sora,sans-serif' }}>{fmtShort(currentTotal)}</div>
+              <div style={{ fontSize: 24, fontWeight: 700, color: G.red, fontFamily: 'Sora,sans-serif' }}>{fmtShort(currentTotal)}</div>
               <div style={{ fontSize: 12, color: G.muted, marginTop: 8 }}>{t('credit.consolidate.current_pay')} <strong style={{ color: G.text }}>{fmtShort(currentMonthly)}{t('credit.consolidate.per_month_in')}</strong> {activeDebts.length} {t('credit.consolidate.debts')}</div>
             </div>
             <div style={{ background: 'rgba(16,185,129,0.1)', border: `1px solid ${G.credit}30`, padding: 16, borderRadius: 16 }}>
               <div style={{ fontSize: 12, color: G.muted, marginBottom: 4 }}>{t('credit.consolidate.new_pay')}</div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: G.credit, fontFamily: 'Sora,sans-serif' }}>{fmtShort(newInstallment)}</div>
+              <div style={{ fontSize: 24, fontWeight: 700, color: G.credit, fontFamily: 'Sora,sans-serif' }}>{fmtShort(newInstallment)}</div>
               <div style={{ fontSize: 12, color: G.muted, marginTop: 8 }}>{t('credit.consolidate.savings')} <strong style={{ color: G.green }}>{fmtShort(savingsMonthly)}{t('credit.consolidate.per_month')}</strong></div>
             </div>
           </div>
 
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ fontSize: 13, color: G.text, fontWeight: 600, display: 'block', marginBottom: 12 }}>{t('credit.consolidate.config_term')}</label>
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ fontSize: 13, color: G.text, fontWeight: 700, display: 'block', marginBottom: 12 }}>{t('credit.consolidate.config_term')}</label>
             <div style={{ display: 'flex', gap: 8 }}>
               {[12, 24, 36, 48, 60].map(m => (
                 <button key={m} onClick={() => setMonths(m)} style={{
-                  flex: 1, minWidth: 0, padding: '10px 4px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                  flex: 1, minWidth: 0, padding: '12px 4px', borderRadius: 12, border: 'none', cursor: 'pointer',
                   background: months === m ? `linear-gradient(135deg,${G.credit},${G.credit2})` : G.muted3,
                   color: months === m ? '#000' : G.muted, fontWeight: 700, fontSize: 13,
                 }}>{m}m</button>
@@ -66,7 +66,7 @@ export default function TabConsolidate({ debts, userData }) {
 
           <div style={{ padding: 16, background: 'rgba(139,92,246,0.06)', borderRadius: 16, border: `1px solid ${G.purple}20` }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: G.purple, marginBottom: 12 }}>{t('credit.consolidate.benefits_title')}</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, fontSize: 13 }}>
                 <span style={{ color: G.muted }}>{t('credit.consolidate.complexity_reduction')}</span>
                 <span style={{ color: G.text, fontWeight: 700, whiteSpace: 'nowrap' }}>{activeDebts.length} ➔ 1</span>

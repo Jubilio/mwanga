@@ -94,7 +94,7 @@ export default function MwangaCredito() {
             <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
               <div style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 14, background: `linear-gradient(135deg,${G.credit},${G.credit2})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, boxShadow: `0 4px 16px ${G.credit}40` }}>💸</div>
               <div>
-                <div style={{ fontSize: 20, fontWeight: 900, fontFamily: "Sora,sans-serif", color: G.text, letterSpacing: "-0.01em" }}>
+                <div style={{ fontSize: 20, fontWeight: 700, fontFamily: "Sora,sans-serif", color: G.text, letterSpacing: "-0.01em" }}>
                   Mwanga <span style={{ color: G.credit }}>{ui("Credit")}</span>
                 </div>
                 <div style={{ fontSize: 12, color: G.muted, display: "flex", alignItems: "center", gap: 8 }}>
@@ -118,27 +118,27 @@ export default function MwangaCredito() {
             </div>
             <div style={{ textAlign: "right", marginLeft: "auto" }}>
               <div style={{ fontSize: 11, color: G.muted }}>{t('credit.header.score_label')}</div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6 }}>
-                <span style={{ fontSize: 22, fontWeight: 900, color: scoreData.color, fontFamily: "Sora,sans-serif" }}>{scoreData.score}</span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
+                <span style={{ fontSize: 22, fontWeight: 700, color: scoreData.color, fontFamily: "Sora,sans-serif" }}>{scoreData.score}</span>
                 <Badge label={ui(scoreData.label)} color={scoreData.color} />
               </div>
-              <div style={{ marginTop: 6 }}>
+              <div style={{ marginTop: 8 }}>
                 {isPro
-                  ? <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: `${G.gold}20`, color: G.gold, border: `1px solid ${G.gold}40` }}>👑 PRO</span>
-                  : <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: `color-mix(in srgb, ${G.muted2} 25%, transparent)`, color: G.muted, border: `1px solid ${G.muted2}` }}>BASIC</span>
+                  ? <span style={{ fontSize: 10, fontWeight: 700, padding: "4px 8px", borderRadius: 99, background: `${G.gold}20`, color: G.gold, border: `1px solid ${G.gold}40` }}>👑 PRO</span>
+                  : <span style={{ fontSize: 10, fontWeight: 700, padding: "4px 8px", borderRadius: 99, background: `color-mix(in srgb, ${G.muted2} 25%, transparent)`, color: G.muted, border: `1px solid ${G.muted2}` }}>BASIC</span>
                 }
               </div>
             </div>
           </div>
           {/* Tab nav */}
-          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.03)", borderRadius: 14, padding: 5, overflowX: "auto", scrollbarWidth: "none" }}>
+          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.03)", borderRadius: 14, padding: 4, overflowX: "auto", scrollbarWidth: "none" }}>
             {TABS.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)} style={{
-                flex: "1 0 auto", padding: "9px 12px", borderRadius: 10, border: "none", cursor: "pointer",
+                flex: "1 0 auto", padding: "8px 12px", borderRadius: 10, border: "none", cursor: "pointer",
                 background: tab === t.id ? `linear-gradient(135deg,${G.credit},${G.credit2})` : "transparent",
                 color: tab === t.id ? "#000" : G.muted,
                 fontWeight: 700, fontSize: 12, fontFamily: "inherit", transition: "all 0.18s",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 5, whiteSpace: "nowrap"
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 4, whiteSpace: "nowrap"
               }}>
                 <span>{t.icon}</span> <span>{ui(t.label)}</span>
               </button>

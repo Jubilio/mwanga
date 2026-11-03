@@ -50,17 +50,17 @@ export default function PlanEditor({ journey, goals, busy, onSave, onCancel, rel
   }
 
   return (
-    <section className="glass-card p-5 sm:p-7">
-      <h2 className="text-xl font-black mb-5">{t('journey.plan.title')}</h2>
-      <form onSubmit={savePlan} className="space-y-5">
-        <fieldset disabled={busy || goalBusy} className="space-y-5 disabled:opacity-60">
+    <section className="glass-card p-6 sm:p-8">
+      <h2 className="text-xl font-bold mb-6">{t('journey.plan.title')}</h2>
+      <form onSubmit={savePlan} className="space-y-6">
+        <fieldset disabled={busy || goalBusy} className="space-y-6 disabled:opacity-60">
           <label className="block text-sm font-bold" htmlFor="journey-purpose">
             {t('journey.plan.purpose')}
             <textarea id="journey-purpose" required maxLength={200} rows={3} className={inputClass}
               value={draft.purpose} placeholder={t('journey.plan.purpose_placeholder')}
               onChange={event => change('purpose', event.target.value)} />
           </label>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             <label className="block text-sm font-bold" htmlFor="journey-priority">
               {t('journey.plan.priority')}
               <select id="journey-priority" className={inputClass} value={draft.priority} onChange={event => change('priority', event.target.value)}>
@@ -83,7 +83,7 @@ export default function PlanEditor({ journey, goals, busy, onSave, onCancel, rel
           <button type="button" onClick={() => setCreating(!creating)} aria-expanded={creating} className="text-sm font-bold text-ocean dark:text-sky underline underline-offset-4">
             {t('journey.plan.new_goal')}
           </button>
-          <p className="text-xs text-gray-500 dark:text-gray-400">{t('journey.plan.plan_not_transfer')}</p>
+          <p className="text-xs text-slate-600 dark:text-gray-400">{t('journey.plan.plan_not_transfer')}</p>
           {error ? <p role="alert" className="text-sm text-coral">{error}</p> : null}
           <div className="flex flex-wrap gap-3">
             <button type="submit" disabled={creating} className="btn btn-primary disabled:opacity-60">{busy ? t('journey.saving') : t('journey.save')}</button>
@@ -94,7 +94,7 @@ export default function PlanEditor({ journey, goals, busy, onSave, onCancel, rel
       {creating ? (
         <form onSubmit={createGoal} className="mt-6 border-t border-black/10 dark:border-white/10 pt-6 space-y-4">
           <fieldset disabled={busy || goalBusy} className="space-y-4 disabled:opacity-60">
-            <h3 className="font-black">{t('journey.plan.new_goal')}</h3>
+            <h3 className="font-bold">{t('journey.plan.new_goal')}</h3>
             <label className="block text-sm font-bold" htmlFor="journey-goal-name">{t('journey.plan.name')}
               <input id="journey-goal-name" required maxLength={100} className={inputClass} value={newGoal.name} onChange={event => setNewGoal({ ...newGoal, name: event.target.value })} />
             </label>

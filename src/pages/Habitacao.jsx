@@ -156,9 +156,9 @@ export default function Habitacao() {
         <div className="relative flex flex-col gap-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
-              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{t('housing.title')}</div>
+              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{t('housing.title')}</div>
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white md:text-3xl">{t('housing.main_title')}</h2>
-              <p className="mt-2 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+              <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-gray-400">
                 {t('housing.description')}
               </p>
             </div>
@@ -166,20 +166,20 @@ export default function Habitacao() {
             <div className="self-start rounded-xl border border-black/5 bg-black/5 p-1 shadow-inner dark:border-white/5 dark:bg-white/5">
               <button
                 onClick={() => toggleType('renda')}
-                className={`flex items-center justify-center gap-2 rounded-lg px-6 py-2 text-sm font-semibold transition-all duration-300 ${
+                className={`flex items-center justify-center gap-2 rounded-lg px-6 py-2 text-sm font-bold transition-all duration-300 ${
                   type === 'renda'
                     ? 'border border-black/5 bg-white text-ocean shadow-sm dark:border-white/10 dark:bg-[#2a2a2a]'
-                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
                 <Key size={16} /> {t('housing.types.rent')}
               </button>
               <button
                 onClick={() => toggleType('propria')}
-                className={`flex items-center justify-center gap-2 rounded-lg px-6 py-2 text-sm font-semibold transition-all duration-300 ${
+                className={`flex items-center justify-center gap-2 rounded-lg px-6 py-2 text-sm font-bold transition-all duration-300 ${
                   type === 'propria'
                     ? 'border border-black/5 bg-white text-ocean shadow-sm dark:border-white/10 dark:bg-[#2a2a2a]'
-                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
                 <Home size={16} /> {t('housing.types.own')}
@@ -227,11 +227,11 @@ function MiniStat({ icon, label, value, tone }) {
 
   return (
     <div className="rounded-2xl border border-black/5 bg-white/70 p-4 backdrop-blur-sm dark:border-white/10 dark:bg-white/5">
-      <div className={`inline-flex items-center justify-center rounded-xl border px-2.5 py-2 ${tones[tone] || tones.slate}`}>
+      <div className={`inline-flex items-center justify-center rounded-xl border px-3 py-2 ${tones[tone] || tones.slate}`}>
         {icon}
       </div>
-      <div className="mt-3 text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{ui(label)}</div>
-      <div className="mt-1 text-lg font-semibold text-gray-800 dark:text-white">{value}</div>
+      <div className="mt-3 text-[11px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{ui(label)}</div>
+      <div className="mt-1 text-lg font-bold text-gray-800 dark:text-white">{value}</div>
     </div>
   );
 }

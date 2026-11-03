@@ -84,25 +84,25 @@ export default function ForgotPassword() {
 
   const errorBox = error && (
     <div role="alert" style={{
-      padding: '10px 12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)',
+      padding: '12px 12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)',
       borderRadius: '10px', color: 'var(--color-red)', fontSize: '0.85rem'
     }}>{error}</div>
   );
 
   const helpBox = (
     <div style={{
-      marginTop: '1.4rem', padding: '0.9rem 1rem', borderRadius: '12px',
+      marginTop: '1.5rem', padding: '1rem 1rem', borderRadius: '12px',
       background: 'var(--color-surface-2, rgba(148,163,184,0.08))', border: '1px solid var(--color-border)'
     }}>
       <p style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem', color: 'var(--color-text)' }}>{t('auth.forgot.help_title')}</p>
-      <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.1rem', color: 'var(--color-muted)', fontSize: '0.83rem', lineHeight: 1.55 }}>
+      <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1rem', color: 'var(--color-muted)', fontSize: '0.83rem', lineHeight: 1.55 }}>
         <li>{t('auth.forgot.help_spam')}</li>
         <li>{t('auth.forgot.help_wait')}</li>
         {googleEnabled && <li>{t('auth.forgot.help_google')}</li>}
       </ul>
       {whatsappUrl && (
         <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" style={{
-          marginTop: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+          marginTop: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
           color: '#16a34a', fontWeight: 700, fontSize: '0.86rem', textDecoration: 'none'
         }}>
           <MessageCircle size={16} /> {t('auth.forgot.whatsapp_cta')}
@@ -119,7 +119,7 @@ export default function ForgotPassword() {
             type="button"
             onClick={() => (step === 'code' ? (setStep('email'), setError(''), setNotice('')) : navigate('/login'))}
             style={{
-              background: 'none', border: 'none', color: 'var(--color-muted)', marginBottom: '1.2rem', padding: 0,
+              background: 'none', border: 'none', color: 'var(--color-muted)', marginBottom: '1rem', padding: 0,
               display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem'
             }}
           >
@@ -129,10 +129,10 @@ export default function ForgotPassword() {
 
         {step === 'email' && (
           <>
-            <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-text)', margin: '0 0 0.5rem' }}>
+            <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 0.5rem' }}>
               {t('auth.forgot.title')}
             </h1>
-            <p style={{ color: 'var(--color-muted)', fontSize: '0.92rem', margin: '0 0 1.4rem', lineHeight: 1.5 }}>
+            <p style={{ color: 'var(--color-muted)', fontSize: '0.92rem', margin: '0 0 1.5rem', lineHeight: 1.5 }}>
               {t('auth.forgot.subtitle')}
             </p>
 
@@ -146,10 +146,10 @@ export default function ForgotPassword() {
                   <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" className="w-5 h-5" />
                   <span>{t('auth.forgot.google_btn')}</span>
                 </button>
-                <p style={{ margin: '0.55rem 0 0', fontSize: '0.78rem', color: 'var(--color-muted)', textAlign: 'center', lineHeight: 1.5 }}>
+                <p style={{ margin: '0.5rem 0 0', fontSize: '0.78rem', color: 'var(--color-muted)', textAlign: 'center', lineHeight: 1.5 }}>
                   {t('auth.forgot.google_tip')}
                 </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '1.2rem 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '1rem 0' }}>
                   <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
                   <span style={{ fontSize: '0.8rem', color: 'var(--color-muted)' }}>{t('auth.forgot.or_email')}</span>
                   <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
@@ -181,10 +181,10 @@ export default function ForgotPassword() {
 
         {step === 'code' && (
           <>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-text)', margin: '0 0 0.5rem' }}>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 0.5rem' }}>
               {t('auth.forgot.code_title')}
             </h1>
-            <p style={{ color: 'var(--color-muted)', fontSize: '0.92rem', margin: '0 0 1.3rem', lineHeight: 1.5 }}>
+            <p style={{ color: 'var(--color-muted)', fontSize: '0.92rem', margin: '0 0 1.5rem', lineHeight: 1.5 }}>
               {t('auth.forgot.code_desc_before')} <strong style={{ color: 'var(--color-text)' }}>{email}</strong>. {t('auth.forgot.code_desc_after')}
             </p>
 
@@ -196,7 +196,7 @@ export default function ForgotPassword() {
                 <input
                   id="forgot-code" required inputMode="numeric" autoComplete="one-time-code" pattern="\d{6}" maxLength={6}
                   className="form-input" placeholder="000000"
-                  style={{ fontSize: '1.5rem', letterSpacing: '0.5em', textAlign: 'center', fontWeight: 800 }}
+                  style={{ fontSize: '1.5rem', letterSpacing: '0.5em', textAlign: 'center', fontWeight: 700 }}
                   value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 />
               </div>
@@ -205,14 +205,14 @@ export default function ForgotPassword() {
                 <div style={{ position: 'relative' }}>
                   <input
                     id="forgot-password" type={showPassword ? 'text' : 'password'} required minLength={8} maxLength={100}
-                    autoComplete="new-password" className="form-input" style={{ paddingRight: '2.8rem' }}
+                    autoComplete="new-password" className="form-input" style={{ paddingRight: '3rem' }}
                     placeholder={t('auth.forgot.new_password_placeholder')}
                     value={password} onChange={(e) => setPassword(e.target.value)}
                   />
                   <button
                     type="button" onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? t('auth.forgot.hide_password') : t('auth.forgot.show_password')}
-                    style={{ position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-muted)', cursor: 'pointer', padding: '0.3rem' }}
+                    style={{ position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-muted)', cursor: 'pointer', padding: '0.25rem' }}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -230,8 +230,8 @@ export default function ForgotPassword() {
                 type="button" onClick={() => requestEmail()} disabled={loading || cooldown > 0}
                 style={{
                   background: 'none', border: 'none', cursor: cooldown > 0 ? 'default' : 'pointer',
-                  color: cooldown > 0 ? 'var(--color-muted)' : 'var(--color-ocean)', fontWeight: 600, fontSize: '0.86rem',
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem'
+                  color: cooldown > 0 ? 'var(--color-muted)' : 'var(--color-ocean)', fontWeight: 700, fontSize: '0.86rem',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
                 }}
               >
                 <RotateCw size={14} /> {cooldown > 0 ? t('auth.forgot.resend_wait', { seconds: cooldown }) : t('auth.forgot.resend')}
@@ -244,7 +244,7 @@ export default function ForgotPassword() {
         {step === 'done' && (
           <div style={{ textAlign: 'center', padding: '1rem 0' }}>
             <CheckCircle2 size={60} strokeWidth={1.5} style={{ margin: '0 auto 1rem', color: 'var(--color-green)' }} />
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '0.8rem' }}>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '0.75rem' }}>
               {t('auth.reset.success_title')}
             </h2>
             <p style={{ color: 'var(--color-muted)', fontSize: '0.95rem', lineHeight: 1.5, marginBottom: '2rem' }}>

@@ -26,8 +26,8 @@ export default function SimulatorInvest({ currency }) {
       <div className="flex items-center gap-3 mb-8">
         <div className="w-10 h-10 rounded-xl bg-leaf/10 flex items-center justify-center text-leaf"><TrendingUp size={20} /></div>
         <div>
-          <h2 className="text-xl font-black text-midnight dark:text-white">{t('simulators.invest.title')}</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{t('simulators.invest.subtitle')}</p>
+          <h2 className="text-xl font-bold text-midnight dark:text-white">{t('simulators.invest.title')}</h2>
+          <p className="text-sm text-slate-600 dark:text-gray-400">{t('simulators.invest.subtitle')}</p>
         </div>
       </div>
 
@@ -39,17 +39,17 @@ export default function SimulatorInvest({ currency }) {
       </div>
 
       <div className="grid md:grid-cols-3 gap-4 mb-8">
-        <div className="rounded-2xl bg-ocean/5 border border-ocean/10 p-5 text-center">
-          <div className="text-[11px] font-black uppercase text-ocean mb-1">{t('simulators.invest.summary.final_balance')}</div>
-          <div className="text-2xl font-black dark:text-white">{fmt(summary.balance, currency)}</div>
+        <div className="rounded-2xl bg-ocean/5 border border-ocean/10 p-6 text-center">
+          <div className="text-[11px] font-bold uppercase text-ocean mb-1">{t('simulators.invest.summary.final_balance')}</div>
+          <div className="text-2xl font-bold dark:text-white">{fmt(summary.balance, currency)}</div>
         </div>
-        <div className="rounded-2xl bg-leaf/5 border border-leaf/10 p-5 text-center">
-          <div className="text-[11px] font-black uppercase text-leaf mb-1">{t('simulators.invest.summary.total_invested')}</div>
-          <div className="text-2xl font-black dark:text-white">{fmt(summary.invested, currency)}</div>
+        <div className="rounded-2xl bg-leaf/5 border border-leaf/10 p-6 text-center">
+          <div className="text-[11px] font-bold uppercase text-leaf mb-1">{t('simulators.invest.summary.total_invested')}</div>
+          <div className="text-2xl font-bold dark:text-white">{fmt(summary.invested, currency)}</div>
         </div>
-        <div className="rounded-2xl bg-gold/5 border border-gold/10 p-5 text-center">
-          <div className="text-[11px] font-black uppercase text-gold mb-1">{t('simulators.invest.summary.gains')}</div>
-          <div className="text-2xl font-black dark:text-white">{fmt(summary.balance - summary.invested, currency)}</div>
+        <div className="rounded-2xl bg-gold/5 border border-gold/10 p-6 text-center">
+          <div className="text-[11px] font-bold uppercase text-gold mb-1">{t('simulators.invest.summary.gains')}</div>
+          <div className="text-2xl font-bold dark:text-white">{fmt(summary.balance - summary.invested, currency)}</div>
         </div>
       </div>
 

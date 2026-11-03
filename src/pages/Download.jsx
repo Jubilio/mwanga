@@ -38,19 +38,19 @@ export default function Download() {
     <div className="min-h-screen w-full" style={{ background: 'var(--color-cream)', color: 'var(--color-text)', padding: '1.5rem 1rem' }}>
       <div className="flex w-full max-w-3xl flex-col gap-10" style={{ margin: '0 auto' }}>
         <header className="flex items-center justify-between gap-4">
-          <MwangaLogo variant="sidebar" />
-          <Link to="/bem-vindo" className="inline-flex items-center gap-1 text-sm font-semibold" style={muted}>
+          <MwangaLogo variant="sidebar" adaptive />
+          <Link to="/bem-vindo" className="inline-flex items-center gap-1 text-sm font-bold" style={muted}>
             <ArrowLeft size={16} /> {t('download.back')}
           </Link>
         </header>
 
         {platform.ios && <IosInstallGuide platform={platform} primary />}
 
-        <section className="flex flex-col gap-5" style={platform.ios ? { borderTop: '1px solid var(--color-border, rgba(0,0,0,0.08))', paddingTop: '2rem' } : undefined}>
-          <HeroTitle className="font-display text-3xl font-black leading-tight sm:text-4xl">{t('download.title')}</HeroTitle>
+        <section className="flex flex-col gap-6" style={platform.ios ? { borderTop: '1px solid var(--color-border, rgba(0,0,0,0.08))', paddingTop: '2rem' } : undefined}>
+          <HeroTitle className="font-display text-3xl font-bold leading-tight sm:text-4xl">{t('download.title')}</HeroTitle>
           <p className="max-w-xl text-base" style={muted}>{t('download.subtitle')}</p>
           <div className="flex flex-col items-start gap-2">
-            <a href={downloadUrl} className="btn btn-primary inline-flex items-center gap-2" style={{ padding: '1rem 1.75rem', fontSize: '1rem' }}>
+            <a href={downloadUrl} className="btn btn-primary inline-flex items-center gap-2" style={{ padding: '1rem 2rem', fontSize: '1rem' }}>
               <DownloadIcon size={18} /> {t('download.cta')}
             </a>
             <p className="text-xs" style={muted} aria-live="polite">
@@ -65,12 +65,12 @@ export default function Download() {
           </div>
         </section>
 
-        <section className="glass-card flex flex-col gap-4" style={{ padding: '1.25rem' }}>
-          <h2 className="inline-flex items-center gap-2 text-xl font-black"><Smartphone size={20} /> {t('download.steps_title')}</h2>
+        <section className="glass-card flex flex-col gap-4" style={{ padding: '1.5rem' }}>
+          <h2 className="inline-flex items-center gap-2 text-xl font-bold"><Smartphone size={20} /> {t('download.steps_title')}</h2>
           <ol className="flex flex-col gap-3">
             {steps.map((step, index) => (
               <li key={step} className="flex gap-3 text-sm">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black" style={{ background: 'var(--color-gold)', color: 'var(--color-midnight)' }}>
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold" style={{ background: 'var(--color-gold)', color: 'var(--color-midnight)' }}>
                   {index + 1}
                 </span>
                 <span>{step}</span>
@@ -81,8 +81,8 @@ export default function Download() {
           <p className="text-xs" style={muted}>{t('download.sms_note')}</p>
         </section>
 
-        <section className="glass-card flex flex-col gap-3" style={{ padding: '1.25rem' }}>
-          <h2 className="inline-flex items-center gap-2 text-xl font-black"><ShieldCheck size={20} /> {t('download.verify_title')}</h2>
+        <section className="glass-card flex flex-col gap-3" style={{ padding: '1.5rem' }}>
+          <h2 className="inline-flex items-center gap-2 text-xl font-bold"><ShieldCheck size={20} /> {t('download.verify_title')}</h2>
           <p className="text-sm" style={muted}>{t('download.verify_body')}</p>
           <dl className="flex flex-col gap-3 text-sm">
             <div>
@@ -103,7 +103,7 @@ export default function Download() {
             )}
           </dl>
           <p className="text-xs" style={muted}>{t('download.not_play')}</p>
-          <a href={release?.pageUrl || RELEASES_PAGE} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm font-semibold underline">
+          <a href={release?.pageUrl || RELEASES_PAGE} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm font-bold underline">
             {t('download.history')} <ExternalLink size={14} />
           </a>
         </section>

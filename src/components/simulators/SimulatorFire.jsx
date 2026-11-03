@@ -42,8 +42,8 @@ export default function SimulatorFire({ currency, isPro }) {
       <div className="flex items-center gap-3 mb-8">
         <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-gold"><Flame size={20} /></div>
         <div>
-          <h2 className="text-xl font-black text-midnight dark:text-white">{t('simulators.fire.title')}</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{t('simulators.fire.subtitle')}</p>
+          <h2 className="text-xl font-bold text-midnight dark:text-white">{t('simulators.fire.title')}</h2>
+          <p className="text-sm text-slate-600 dark:text-gray-400">{t('simulators.fire.subtitle')}</p>
         </div>
       </div>
 
@@ -54,10 +54,10 @@ export default function SimulatorFire({ currency, isPro }) {
           <input type="number" value={yearsToGoal}     onChange={(e) => setYearsToGoal(Number(e.target.value))}     className="w-full bg-white/5 p-4 rounded-2xl dark:text-white font-bold border-none" placeholder={t('simulators.fire.placeholders.years_to_goal')} />
           <input type="number" value={returnRate}      onChange={(e) => setReturnRate(Number(e.target.value))}      className="w-full bg-white/5 p-4 rounded-2xl dark:text-white font-bold border-none" placeholder={t('simulators.fire.placeholders.return_rate')} />
 
-          <div className="rounded-[24px] bg-gold/5 border border-gold/10 p-5">
-            <div className="text-[10px] font-black uppercase tracking-widest text-gold mb-1">{t('simulators.fire.summary.fire_number')}</div>
-            <div className="text-3xl font-black dark:text-white font-display">{fmt(fireTarget, currency)}</div>
-            <p className="text-xs text-gray-500 mt-3">{t('simulators.fire.summary.fire_explainer', { amount: fmt(monthlyNeed, currency) })}</p>
+          <div className="rounded-[24px] bg-gold/5 border border-gold/10 p-6">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-gold mb-1">{t('simulators.fire.summary.fire_number')}</div>
+            <div className="text-3xl font-bold dark:text-white font-display">{fmt(fireTarget, currency)}</div>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-3">{t('simulators.fire.summary.fire_explainer', { amount: fmt(monthlyNeed, currency) })}</p>
           </div>
         </div>
 
@@ -65,12 +65,12 @@ export default function SimulatorFire({ currency, isPro }) {
           <div className="flex items-center gap-3 mb-6">
             <Sparkles className="text-gold" size={20} />
             <div>
-              <div className="text-lg font-black dark:text-white">{t('simulators.fire.insight.title')}</div>
-              <div className="text-xs text-gray-400">{t('simulators.fire.insight.subtitle')}</div>
+              <div className="text-lg font-bold dark:text-white">{t('simulators.fire.insight.title')}</div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">{t('simulators.fire.insight.subtitle')}</div>
             </div>
           </div>
 
-          <div className="space-y-5 mb-6">
+          <div className="space-y-6 mb-6">
             <div>
               <div className="flex justify-between mb-2 text-sm font-bold text-gray-300">
                 <span>{t('simulators.fire.insight.progress')}</span>
@@ -83,16 +83,16 @@ export default function SimulatorFire({ currency, isPro }) {
 
             <div className="grid md:grid-cols-2 gap-4 min-w-0">
               <div className="rounded-2xl bg-white/5 border border-white/5 p-4">
-                <div className="text-[10px] font-black uppercase text-gray-400 mb-1">{t('simulators.fire.insight.suggested_monthly')}</div>
-                <div className="text-2xl font-black text-white">{fmt(fireMonthlyNeeded, currency)}</div>
+                <div className="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">{t('simulators.fire.insight.suggested_monthly')}</div>
+                <div className="text-2xl font-bold text-white">{fmt(fireMonthlyNeeded, currency)}</div>
               </div>
               <div className="rounded-2xl bg-white/5 border border-white/5 p-4">
-                <div className="text-[10px] font-black uppercase text-gray-400 mb-1">{t('simulators.fire.insight.projected_balance')}</div>
-                <div className="text-2xl font-black text-white">{fmt(fireProjectedBalance, currency)}</div>
+                <div className="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">{t('simulators.fire.insight.projected_balance')}</div>
+                <div className="text-2xl font-bold text-white">{fmt(fireProjectedBalance, currency)}</div>
               </div>
             </div>
 
-            <div className="text-sm text-gray-400 leading-7">
+            <div className="text-sm text-slate-600 dark:text-slate-400 leading-7">
               <Trans
                 i18nKey="simulators.fire.insight.explainer"
                 values={{ target: fmt(fireTarget, currency), years: yearsToGoal, monthly: fmt(fireMonthlyNeeded, currency), rate: returnRate }}
@@ -129,15 +129,15 @@ export default function SimulatorFire({ currency, isPro }) {
         <div style={{ filter: 'blur(10px)', opacity: 0.2, pointerEvents: 'none' }}>{content}</div>
         <div style={{
           position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-          justifyContent: 'center', alignItems: 'center', gap: 14, padding: 32,
+          justifyContent: 'center', alignItems: 'center', gap: 16, padding: 32,
           background: 'rgba(7, 20, 31, 0.72)', backdropFilter: 'blur(6px)',
           border: '1px solid rgba(201, 150, 58, 0.28)',
         }}>
           <div style={{ fontSize: 42 }}>🔒</div>
-          <div className="text-center text-xl font-black text-gold font-display">{t('simulators.pro_gate.title')}</div>
+          <div className="text-center text-xl font-bold text-gold font-display">{t('simulators.pro_gate.title')}</div>
           <p className="max-w-[320px] text-center text-sm text-white/70 leading-6">{t('simulators.pro_gate.description')}</p>
           <a href="/pricing" style={{
-            padding: '12px 28px', borderRadius: 16, textDecoration: 'none', fontWeight: 900,
+            padding: '12px 32px', borderRadius: 16, textDecoration: 'none', fontWeight: 700,
             fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em',
             background: 'linear-gradient(135deg, var(--color-gold), var(--color-gold-light))', color: '#08111a',
           }}>

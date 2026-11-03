@@ -31,13 +31,13 @@ export default function BottomNavigation({ items, currentPath, onAddClick }) {
             className={`relative flex flex-1 flex-col items-center justify-center gap-1 py-1 transition-colors duration-300 ${
               active
                 ? 'text-ocean dark:text-sky-light'
-                : 'text-slate-400 hover:text-ocean dark:text-slate-500 dark:hover:text-sky-light'
+                : 'text-slate-600 hover:text-ocean dark:text-slate-400 dark:hover:text-sky-light'
             }`}
           >
             <div className={`relative flex items-center justify-center rounded-xl px-3 py-1 transition-all duration-300 ${active ? 'bg-ocean/10 dark:bg-sky/15' : ''}`}>
               <item.icon size={22} strokeWidth={active ? 2.5 : 2} />
             </div>
-            <span className={`text-[10px] ${active ? 'font-black' : 'font-semibold'}`}>{t(item.label)}</span>
+            <span className={`text-[10px] font-bold`}>{t(item.label)}</span>
           </NavLink>
         );
       })}

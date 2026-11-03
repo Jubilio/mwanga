@@ -16,8 +16,8 @@ export default function TabPerfil({ form, setFormDirty, state }) {
               <Sparkles size={20} />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{t('settings.reliable.subscription')}</p>
-              <p className="text-lg font-black text-gold capitalize">{t(`settings.reliable.tiers.${state.settings?.subscription_tier || 'free'}`, { defaultValue: t('settings.reliable.tiers.free') })}</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{t('settings.reliable.subscription')}</p>
+              <p className="text-lg font-bold text-gold capitalize">{t(`settings.reliable.tiers.${state.settings?.subscription_tier || 'free'}`, { defaultValue: t('settings.reliable.tiers.free') })}</p>
             </div>
           </div>
           <div className="text-right">
@@ -38,8 +38,8 @@ export default function TabPerfil({ form, setFormDirty, state }) {
             <User size={24} />
           </div>
           <div>
-            <h2 className="text-2xl font-black font-serif text-slate-800 dark:text-slate-100">{t('settings.perfil.title')}</h2>
-            <p className="text-sm text-slate-500">{t('settings.perfil.subtitle')}</p>
+            <h2 className="text-2xl font-bold font-serif text-slate-800 dark:text-slate-100">{t('settings.perfil.title')}</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{t('settings.perfil.subtitle')}</p>
           </div>
         </div>
 
@@ -53,7 +53,7 @@ export default function TabPerfil({ form, setFormDirty, state }) {
             </div>
 
             <div className="group transition-all">
-              <label htmlFor="settings-user_name" className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">{t('settings.perfil.user_name_label')}</label>
+              <label htmlFor="settings-user_name" className="block text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-2 ml-1">{t('settings.perfil.user_name_label')}</label>
               <div className="relative">
                 <input id="settings-user_name"
                   type="text"
@@ -68,7 +68,7 @@ export default function TabPerfil({ form, setFormDirty, state }) {
               </div>
             </div>
             <div className="group transition-all mt-6">
-              <label htmlFor="settings-whatsapp_number" className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">{ui("Número de WhatsApp")}</label>
+              <label htmlFor="settings-whatsapp_number" className="block text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-2 ml-1">{ui("Número de WhatsApp")}</label>
               <div className="relative">
                 <input
                   id="settings-whatsapp_number" type="tel" autoComplete="tel"
@@ -81,7 +81,7 @@ export default function TabPerfil({ form, setFormDirty, state }) {
                   <MessageSquare size={18} className="text-teal-400" />
                 </div>
               </div>
-              <p className="mt-2 text-[10px] text-slate-500 italic"> {ui("Usado para falar com a Binth via WhatsApp e receber alertas críticos.")} </p>
+              <p className="mt-2 text-[10px] text-slate-600 dark:text-slate-400 italic"> {ui("Usado para falar com a Binth via WhatsApp e receber alertas críticos.")} </p>
             </div>
 
 
@@ -96,7 +96,7 @@ export default function TabPerfil({ form, setFormDirty, state }) {
             </div>
 
             <div className="group transition-all">
-              <label htmlFor="settings-household_name" className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">{t('settings.perfil.household_name_label')}</label>
+              <label htmlFor="settings-household_name" className="block text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-2 ml-1">{t('settings.perfil.household_name_label')}</label>
               <div className="relative">
                 <input id="settings-household_name"
                   type="text"

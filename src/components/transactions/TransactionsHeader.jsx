@@ -28,8 +28,8 @@ export default function TransactionsHeader({
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between px-1">
         <div>
-          <h1 className="text-2xl font-black dark:text-white leading-tight">{t('nav.moves')}</h1>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">
+          <h1 className="text-2xl font-bold dark:text-white leading-tight">{t('nav.moves')}</h1>
+          <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-1">
             {filteredCount} {t('transactions.records')}
           </p>
         </div>
@@ -49,25 +49,25 @@ export default function TransactionsHeader({
         </button>
       </div>
 
-      <div className="glass-card p-5 flex flex-col gap-6">
+      <div className="glass-card p-6 flex flex-col gap-6">
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 flex-col">
-              <span className="text-[8px] uppercase font-black tracking-[0.2em] text-gray-500">{ui("Entradas")}</span>
-              <span className="text-xs xs:text-sm font-black tabular-nums text-leaf-light">
+              <span className="text-[8px] uppercase font-bold tracking-[0.2em] text-slate-600 dark:text-slate-400">{ui("Entradas")}</span>
+              <span className="text-xs xs:text-sm font-bold tabular-nums text-leaf-light">
                 {showBalance ? fmt(totals.in, currency) : '••••'}
               </span>
             </div>
             <div className="h-8 w-px shrink-0 bg-white/5" />
             <div className="flex min-w-0 flex-col">
-              <span className="text-[8px] uppercase font-black tracking-[0.2em] text-gray-500">{ui("Saídas")}</span>
-              <span className="text-xs xs:text-sm font-black tabular-nums text-coral-light">
+              <span className="text-[8px] uppercase font-bold tracking-[0.2em] text-slate-600 dark:text-slate-400">{ui("Saídas")}</span>
+              <span className="text-xs xs:text-sm font-bold tabular-nums text-coral-light">
                 {showBalance ? fmt(totals.out, currency) : '••••'}
               </span>
             </div>
             <div className="h-8 w-px shrink-0 bg-white/5" />
             <div className="flex min-w-0 flex-col">
-              <span className="text-[8px] uppercase font-black tracking-[0.2em] text-gray-500">{ui("Balanço")}</span>
-              <span className={`text-xs xs:text-sm font-black tabular-nums ${balance >= 0 ? 'text-midnight dark:text-white' : 'text-coral'}`}>
+              <span className="text-[8px] uppercase font-bold tracking-[0.2em] text-slate-600 dark:text-slate-400">{ui("Balanço")}</span>
+              <span className={`text-xs xs:text-sm font-bold tabular-nums ${balance >= 0 ? 'text-midnight dark:text-white' : 'text-coral'}`}>
                 {showBalance ? `${balance >= 0 ? '+' : ''}${fmt(balance, currency)}` : '••••'}
               </span>
             </div>
@@ -76,7 +76,7 @@ export default function TransactionsHeader({
           <div className="flex items-center gap-2 border-t border-white/5 pt-4">
              <Link
                to="/sms-import"
-               className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-ocean/10 text-ocean dark:text-sky-light hover:bg-ocean/20 transition-all text-[10px] font-black uppercase tracking-widest border border-ocean/20"
+               className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-ocean/10 text-ocean dark:text-sky-light hover:bg-ocean/20 transition-all text-[10px] font-bold uppercase tracking-widest border border-ocean/20"
              >
                <MessageSquare size={14} /> {t('nav.sms_button')}
              </Link>
@@ -84,7 +84,7 @@ export default function TransactionsHeader({
                  (mostra "12 transações" sem ler o ficheiro). Volta quando for real. */}
              <Link
                to="/relatorio"
-               className="p-3 rounded-2xl bg-white/5 text-gray-400 hover:text-ocean transition-all shrink-0"
+               className="p-3 rounded-2xl bg-white/5 text-slate-600 dark:text-slate-400 hover:text-ocean transition-all shrink-0"
                title={t('nav.report')}
                aria-label={t('nav.report')}
              >
@@ -92,7 +92,7 @@ export default function TransactionsHeader({
              </Link>
              <button
                onClick={() => generateTransactionsPDF(filtered, state)} // Wait, state/filtered are not here. I should pass them.
-               className="p-3 rounded-2xl bg-white/5 text-gray-400 hover:text-indigo-400 transition-all shrink-0"
+               className="p-3 rounded-2xl bg-white/5 text-slate-600 dark:text-slate-400 hover:text-indigo-400 transition-all shrink-0"
                title={ui("Exportar PDF")}
              >
                <FileText size={20} />
@@ -102,7 +102,7 @@ export default function TransactionsHeader({
                   exportToCSV();
                   showToast(t('transactions.toast_exported'));
                 }}
-                className="p-3 rounded-2xl bg-white/5 text-gray-400 hover:text-ocean transition-all shrink-0"
+                className="p-3 rounded-2xl bg-white/5 text-slate-600 dark:text-slate-400 hover:text-ocean transition-all shrink-0"
                 title={ui("Exportar CSV")}
              >
                <Download size={20} />

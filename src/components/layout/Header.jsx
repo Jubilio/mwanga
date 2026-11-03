@@ -27,15 +27,15 @@ export default function Header({
         {/* Mobile trigger is now the user initial/photo but on the right by default, 
             let's keep the left side clean for mobile as requested previously, or put a small logo here */}
         <div className="md:hidden">
-          <span className="text-xs font-black uppercase tracking-[0.2em] text-ocean dark:text-sky/60">Mwanga</span>
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-ocean dark:text-sky/60">Mwanga</span>
         </div>
       </div>
 
       {/* Right Side: Actions & Profile */}
-      <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+      <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
         {/* Quick Info / Options Button - Mobile Only */}
         <button
-          className="md:hidden rounded-2xl p-2.5 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5 flex items-center gap-1.5"
+          className="md:hidden rounded-2xl p-3 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5 flex items-center gap-2"
           onClick={() => onMenuClick(true)}
           title={ui("Abrir Menu Principal")}
         >
@@ -45,7 +45,7 @@ export default function Header({
         </button>
 
         <button
-          className="relative rounded-2xl p-2.5 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5"
+          className="relative rounded-2xl p-3 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5"
           onClick={onNotificationClick}
         >
           <Bell size={20} strokeWidth={2} />
@@ -58,7 +58,7 @@ export default function Header({
         </button>
 
         <button
-          className="hidden sm:block rounded-2xl p-2.5 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5"
+          className="hidden sm:block rounded-2xl p-3 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5"
           onClick={onToggleDarkMode}
         >
           {darkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -76,7 +76,7 @@ export default function Header({
             <span className="text-[12px] font-bold text-midnight dark:text-white leading-tight">
               {user?.name?.split(' ')[0] || ui("Explorador")}
             </span>
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500/80">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500/80">
               {settings?.household_name?.slice(0, 15) || 'Mwanga'}
             </span>
           </div>
@@ -90,7 +90,7 @@ export default function Header({
               className="h-10 w-10 rounded-xl shadow-lg shadow-ocean/30 border border-white/20 transition-transform group-hover:scale-105"
             />
             <div className="absolute -bottom-1 -right-1 hidden md:flex h-4 w-4 items-center justify-center rounded-full bg-white dark:bg-midnight shadow-sm border border-slate-100 dark:border-slate-800">
-              <ChevronDown size={10} className="text-slate-400" />
+              <ChevronDown size={10} className="text-slate-600 dark:text-slate-400" />
             </div>
           </div>
         </button>

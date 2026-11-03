@@ -39,30 +39,30 @@ export default function TabSimulator({ eligData, userData, isPro }) {
   const newComprometimento = salary > 0 ? ((userData.dividas_parcelas + parcela) / salary) * 100 : 0;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
       {/* Alerta Inteligente se exceder 1/3 */}
       {!isAffordable && salary > 0 && (
         <div style={{ 
-          padding: "16px 20px", 
+          padding: "16px 24px", 
           background: "rgba(239, 68, 68, 0.12)", 
           border: "1px solid rgba(239, 68, 68, 0.3)", 
           borderRadius: 20,
           display: 'flex',
-          gap: 14,
+          gap: 16,
           alignItems: 'center',
           animation: 'fadeIn 0.4s ease'
         }}>
           <div style={{ fontSize: 24 }}>🛑</div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: G.red, marginBottom: 2 }}>{t('credit.simulator.alert_exceeded_title')}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: G.red, marginBottom: 4 }}>{t('credit.simulator.alert_exceeded_title')}</div>
             <div style={{ fontSize: 12, color: G.muted, lineHeight: 1.5 }}>
               {t('credit.simulator.alert_exceeded_desc_1')} <strong>{fmt(parcela)}</strong> {t('credit.simulator.alert_exceeded_desc_2')} ({fmt(salary)}){t('credit.simulator.alert_exceeded_desc_3')} <strong>{fmt(amount)}</strong>{t('credit.simulator.alert_exceeded_desc_4')} <strong>{suggestedMonths} {t('credit.simulator.months')}</strong> {t('credit.simulator.alert_exceeded_desc_5')}
             </div>
           </div>
           <button 
             onClick={() => setMonths(suggestedMonths)}
-            style={{ padding: '8px 16px', background: G.red, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}
+            style={{ padding: '8px 16px', background: G.red, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 11, cursor: 'pointer' }}
           >
             {t('credit.simulator.alert_adjust_btn')} {suggestedMonths}m
           </button>
@@ -71,7 +71,7 @@ export default function TabSimulator({ eligData, userData, isPro }) {
 
       {/* Alerta Se inatingível (Salário zero) */}
       {!isAffordable && salary <= 0 && (
-        <div style={{ padding: "16px 20px", background: "rgba(201, 150, 58, 0.1)", border: `1px solid ${G.gold}30`, borderRadius: 16 }}>
+        <div style={{ padding: "16px 24px", background: "rgba(201, 150, 58, 0.1)", border: `1px solid ${G.gold}30`, borderRadius: 16 }}>
            <div style={{ fontSize: 13, color: G.gold, fontWeight: 700 }}>{t('credit.simulator.alert_tip_title')}</div>
            <div style={{ fontSize: 12, color: G.muted }}>{t('credit.simulator.alert_tip_desc')}</div>
         </div>
@@ -79,12 +79,12 @@ export default function TabSimulator({ eligData, userData, isPro }) {
 
       {/* Inputs */}
       <Card>
-        <div style={{ fontSize: 12, fontWeight: 700, color: G.muted, letterSpacing: "0.12em", marginBottom: 18 }}>{t('credit.simulator.config_title')}</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: G.muted, letterSpacing: "0.12em", marginBottom: 16 }}>{t('credit.simulator.config_title')}</div>
 
         {/* Valor */}
-        <div style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 24 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <span style={{ fontSize: 13, color: G.text, fontWeight: 600 }}>{t('credit.simulator.amount_req')}</span>
+            <span style={{ fontSize: 13, color: G.text, fontWeight: 700 }}>{t('credit.simulator.amount_req')}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 11, color: G.muted }}>MT</span>
               <input 
@@ -93,7 +93,7 @@ export default function TabSimulator({ eligData, userData, isPro }) {
                 onChange={e => setAmount(+e.target.value)}
                 style={{ 
                   width: 100, background: G.muted3, border: `1px solid ${G.border}`, 
-                  borderRadius: 8, padding: '4px 8px', color: G.credit, fontWeight: 900, fontSize: 14, outline: 'none' 
+                  borderRadius: 8, padding: '4px 8px', color: G.credit, fontWeight: 700, fontSize: 14, outline: 'none' 
                 }}
               />
             </div>
@@ -108,9 +108,9 @@ export default function TabSimulator({ eligData, userData, isPro }) {
         </div>
 
         {/* Prazo */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <span style={{ fontSize: 13, color: G.text, fontWeight: 600 }}>{t('credit.simulator.term')}</span>
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <span style={{ fontSize: 13, color: G.text, fontWeight: 700 }}>{t('credit.simulator.term')}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                <input 
                 type="number" 
@@ -118,13 +118,13 @@ export default function TabSimulator({ eligData, userData, isPro }) {
                 onChange={e => setMonths(+e.target.value)}
                 style={{ 
                   width: 60, background: G.muted3, border: `1px solid ${G.border}`, 
-                  borderRadius: 8, padding: '4px 8px', color: G.gold, fontWeight: 900, fontSize: 14, outline: 'none', textAlign: 'center' 
+                  borderRadius: 8, padding: '4px 8px', color: G.gold, fontWeight: 700, fontSize: 14, outline: 'none', textAlign: 'center' 
                 }}
               />
               <span style={{ fontSize: 12, fontWeight: 700, color: G.gold }}>{months === 1 ? t('credit.simulator.month_single') : t('credit.simulator.months')}</span>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {[3, 6, 12, 24, 36, 48, 60].map(m => (
               <button key={m} onClick={() => setMonths(m)} style={{
                 flex: "1 0 50px", padding: "8px 4px", borderRadius: 10, border: "none", cursor: "pointer",
@@ -137,25 +137,25 @@ export default function TabSimulator({ eligData, userData, isPro }) {
 
         {/* Taxa */}
         <div>
-          <div style={{ fontSize: 13, color: G.text, fontWeight: 600, marginBottom: 10 }}>{t('credit.simulator.partner_rate')}</div>
+          <div style={{ fontSize: 13, color: G.text, fontWeight: 700, marginBottom: 12 }}>{t('credit.simulator.partner_rate')}</div>
           <ProGate isPro={isPro} title={t('credit.simulator.compare_title')} description={t('credit.simulator.compare_desc')}>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {BANKS.map((b, i) => (
                 <div key={i} onClick={() => setRate(b.rate)} style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "11px 14px", borderRadius: 12, cursor: "pointer",
+                  padding: "12px 16px", borderRadius: 12, cursor: "pointer",
                   background: rate === b.rate ? `${b.color}15` : G.muted3,
                   border: `1px solid ${rate === b.rate ? b.color : "transparent"}`,
                   transition: "all 0.18s",
                 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${rate === b.rate ? b.color : G.muted2}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {rate === b.rate && <div style={{ width: 8, height: 8, borderRadius: "50%", background: b.color }} />}
                     </div>
                     <span style={{ fontSize: 13, color: rate === b.rate ? G.text : G.muted }}>{ui(b.name)}</span>
                   </div>
                   <span style={{
-                    fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 6,
+                    fontSize: 12, fontWeight: 700, padding: "4px 8px", borderRadius: 6,
                     background: `${b.color}15`,
                     color: b.color,
                   }}>{b.tag}</span>
@@ -179,16 +179,16 @@ export default function TabSimulator({ eligData, userData, isPro }) {
             { l: t('credit.simulator.effective_rate'), v: `${cet.toFixed(1)}%`, c: cet >= 50 ? G.red : G.gold },
             { l: t('credit.simulator.commitment'), v: `${newComprometimento.toFixed(1)}%`, c: newComprometimento > 40 ? G.danger : G.green },
           ].map((r, i) => (
-            <div key={i} style={{ background: G.muted3, borderRadius: 14, padding: "12px 14px" }}>
+            <div key={i} style={{ background: G.muted3, borderRadius: 14, padding: "12px 16px" }}>
               <div style={{ fontSize: 11, color: G.muted, marginBottom: 4 }}>{r.l}</div>
-              <div style={{ fontSize: r.big ? 18 : 15, fontWeight: 800, color: r.c, fontFamily: "Sora,sans-serif" }}>{r.v}</div>
+              <div style={{ fontSize: r.big ? 18 : 15, fontWeight: 700, color: r.c, fontFamily: "Sora,sans-serif" }}>{r.v}</div>
             </div>
           ))}
         </div>
 
         {/* Impacto no orçamento */}
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "4px 12px", marginBottom: 6 }}>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "4px 12px", marginBottom: 8 }}>
             <span style={{ fontSize: 12, color: G.muted }}>{t('credit.simulator.impact_title')}</span>
             <span style={{ fontSize: 12, fontWeight: 700, color: newComprometimento > 40 ? G.red : G.green }}>
               {newComprometimento.toFixed(1)}% {t('credit.simulator.impact_max')}
@@ -199,8 +199,8 @@ export default function TabSimulator({ eligData, userData, isPro }) {
 
         {/* Alerta */}
         {rate >= 0.20 && (
-          <div style={{ padding: "12px 16px", background: "rgba(255,76,76,0.08)", border: "1px solid rgba(255,76,76,0.25)", borderRadius: 12, marginTop: 10 }}>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          <div style={{ padding: "12px 16px", background: "rgba(255,76,76,0.08)", border: "1px solid rgba(255,76,76,0.25)", borderRadius: 12, marginTop: 12 }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
               <span style={{ fontSize: 18 }}>📖</span>
               <div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: G.red, marginBottom: 4 }}>{t('credit.simulator.debt_warning_title')}</div>
@@ -213,7 +213,7 @@ export default function TabSimulator({ eligData, userData, isPro }) {
         )}
 
         {!isAffordable && (
-          <div style={{ padding: "10px 14px", background: "rgba(255,76,76,0.1)", border: "1px solid rgba(255,76,76,0.25)", borderRadius: 12, fontSize: 12, color: G.red, marginTop: 10 }}>
+          <div style={{ padding: "12px 16px", background: "rgba(255,76,76,0.1)", border: "1px solid rgba(255,76,76,0.25)", borderRadius: 12, fontSize: 12, color: G.red, marginTop: 12 }}>
             {t('credit.simulator.capacity_block')} {fmt(parcela)} {t('credit.simulator.capacity_block_2')} {fmt(eligData.maxParcela)}.
           </div>
         )}
@@ -233,18 +233,18 @@ export default function TabSimulator({ eligData, userData, isPro }) {
                   <thead>
                     <tr style={{ background: G.muted3 }}>
                       {Object.values(t('credit.simulator.amort_headers', { returnObjects: true })).map(h => (
-                        <th key={h} style={{ padding: "10px 14px", textAlign: "right", color: G.muted, fontWeight: 700, letterSpacing: "0.06em" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 16px", textAlign: "right", color: G.muted, fontWeight: 700, letterSpacing: "0.06em" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {table.map((row, i) => (
                       <tr key={i} style={{ borderBottom: `1px solid ${G.border}` }}>
-                        <td style={{ padding: "10px 14px", textAlign: "right", color: G.muted, fontWeight: 700 }}>{row.n}</td>
-                        <td style={{ padding: "10px 14px", textAlign: "right", color: G.text, fontWeight: 600 }}>{fmt(row.parcela)}</td>
-                        <td style={{ padding: "10px 14px", textAlign: "right", color: G.red }}>{fmt(row.juros)}</td>
-                        <td style={{ padding: "10px 14px", textAlign: "right", color: G.green }}>{fmt(row.amortizacao)}</td>
-                        <td style={{ padding: "10px 14px", textAlign: "right", color: row.saldo < 100 ? G.green : G.text }}>{fmt(row.saldo)}</td>
+                        <td style={{ padding: "12px 16px", textAlign: "right", color: G.muted, fontWeight: 700 }}>{row.n}</td>
+                        <td style={{ padding: "12px 16px", textAlign: "right", color: G.text, fontWeight: 700 }}>{fmt(row.parcela)}</td>
+                        <td style={{ padding: "12px 16px", textAlign: "right", color: G.red }}>{fmt(row.juros)}</td>
+                        <td style={{ padding: "12px 16px", textAlign: "right", color: G.green }}>{fmt(row.amortizacao)}</td>
+                        <td style={{ padding: "12px 16px", textAlign: "right", color: row.saldo < 100 ? G.green : G.text }}>{fmt(row.saldo)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -260,7 +260,7 @@ export default function TabSimulator({ eligData, userData, isPro }) {
         <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
           <span style={{ fontSize: 24 }}>🧠</span>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: G.purple, marginBottom: 4 }}>{t('credit.simulator.edu_label')}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: G.purple, marginBottom: 4 }}>{t('credit.simulator.edu_label')}</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: G.text, marginBottom: 12 }}>{t('credit.simulator.edu_vs')}</div>
             
             <div style={{ display: "grid", gridTemplateColumns: autoGrid(120), gap: 12, marginBottom: 16 }}>
@@ -276,7 +276,7 @@ export default function TabSimulator({ eligData, userData, isPro }) {
               </div>
             </div>
             
-            <div style={{ fontSize: 12, color: G.muted, lineHeight: 1.6, padding: "10px 14px", background: "rgba(0,0,0,0.2)", borderRadius: 10 }}>
+            <div style={{ fontSize: 12, color: G.muted, lineHeight: 1.6, padding: "12px 16px", background: "rgba(0,0,0,0.2)", borderRadius: 10 }}>
               {t('credit.simulator.edu_tip')}
             </div>
           </div>
