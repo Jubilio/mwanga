@@ -398,8 +398,10 @@ EMAIL_PASS=...
 GEMINI_API_KEY=...                     # Provider principal (gemini-2.0-flash)
 GROQ_API_KEY=...                       # Provider secundário (llama-3.1-8b-instant)
 OPENROUTER_API_KEY=...                 # Provider openrouter + openrouter_free (fallback)
-OPENROUTER_MODEL=...                   # Modelo OpenRouter pago (default: meta-llama/llama-3.1-8b-instruct)
-OPENROUTER_FREE_MODEL=...              # Modelo OpenRouter gratuito (default: qwen/qwen-2-vl-7b-instruct:free)
+OPENROUTER_MODEL=...                   # Modelo OpenRouter pago (default: google/gemini-2.5-flash)
+OPENROUTER_FREE_MODEL=...              # Modelo OpenRouter gratuito (default: meta-llama/llama-3.3-70b-instruct:free)
+GEMINI_MODEL=...                       # Modelo Gemini directo (default: gemini-2.5-flash)
+GROQ_MODEL=...                         # Modelo Groq (default: llama-3.3-70b-versatile)
 
 # Local Ollama (offline / on-premise)
 OLLAMA_ENABLED=true                    # Habilita o uso de Ollama local como primeira opção em desenvolvimento
