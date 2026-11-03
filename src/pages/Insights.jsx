@@ -5,6 +5,7 @@ import { useOutletContext, useLocation, useNavigate } from 'react-router-dom';
 import { Send, Sparkles, Brain, Mic, MicOff, Database, Layers, Compass, AlertTriangle } from 'lucide-react';
 import api from '../utils/api';
 import { db } from '../db/db';
+import { ensureChatOwner } from '../utils/localChat';
 import { useFinance } from '../hooks/useFinance';
 import { useStewardship } from '../hooks/useStewardship';
 import { parseMobileMoneySMS } from '../utils/smsParser';
@@ -116,7 +117,8 @@ export default function Insights() {
   // Load messages from Dexie + score on mount
   useEffect(() => {
     const loadData = async () => {
-      // 1. Load History from Dexie
+      // 1. Load History from Dexie (only if it belongs to whoever is signed in)
+      await ensureChatOwner();
       const history = await db.mensagens.orderBy('timestamp').toArray();
       if (history.length > 0) {
         setMessages(history);

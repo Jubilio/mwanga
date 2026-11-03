@@ -2,6 +2,7 @@ const { localizeScore } = require('../services/scoreLanguage');
 const { resolveLanguage } = require('../services/binthLanguage');
 const { callBinth, buildUserContext } = require('../services/binthService');
 const { db } = require('../config/db');
+const { cacheKey, getCachedInsight, setCachedInsight } = require('../services/binthInsightCache');
 const { z } = require('zod');
 
 const chatSchema = z.object({
@@ -197,51 +198,51 @@ const getPageInsight = async (req, res, next) => {
     const { page } = insightSchema.parse(req.params);
     const { householdId } = req.user;
 
-    // Comprehensive prompts for all pages
+    // One short question per page. Only ask about data the Binth actually receives.
     const pagePrompts = {
-      // CORE PAGES
-      dashboard: "Dá-me um resumo executivo rápido da minha saúde financeira hoje (máx 2 frases). Inclui o que está bem e o que precisa atenção.",
-
-      // TRANSACTIONS & BUDGET
-      transacoes: "Analisa os meus padrões de gasto do mês. Qual é a categoria com mais despesa? Há alguma tendência preocupante? Dá uma dica de otimização.",
-      orcamento: "Vê como está o meu orçamento. Há categorias que estão sempre acima do limite? Ajuda-me a reajustar os limites de forma realista.",
-
-      // DEBT & FINANCING
-      dividas: "Analisa as minhas dívidas e sugere qual amortizar primeiro ou como negociar. Sê muito encorajadora e prático.",
-      credito: "Avalia o meu histórico de crédito e simula como um novo empréstimo afetaria a minha situação. Dá conselhos sobre o timing ideal.",
-      habitacao: "Analisa os meus gastos com habitação (renda/hipoteca). Está dentro de parâmetros saudáveis? Há espaço para renegociar?",
-
-      // SAVINGS & GOALS
-      metas: "Vê o progresso das minhas metas de poupança. Qual está mais perto? Como posso acelerar o alcance de uma delas?",
-      xitique: "Dá-me um conselho estratégico sobre como usar melhor o meu grupo de Xitique. Quando devo receber? Como gerir o fundo?",
-      patrimonio: "Analisa o crescimento do meu património. Quais são os meus maiores ativos? Para onde devo focar para crescer mais rápido?",
-
-      // PLANNING & ANALYSIS
-      simuladores: "Com base nos meus dados, que simulação seria mais útil para você agora? Empréstimo? Investimento? Reformulação orçamental?",
-      relatorio: "Gera insights chave para o meu relatório mensal. Destaques, desafios e oportunidades em 3 pontos principais.",
-
-      // DATA & INSIGHTS
-      intentos: "Dá-me os principais insights financeiros derivados do meu SMS Import. Há padrões interessantes nas transações detectadas?",
-      'sms-import': "Analisa as transações que importei via SMS. A IA detectou corretamente? Há gastos inesperados para investigar?",
-      nexovibe: "O que está a acontecer na comunidade NEXO? Há tendências financeiras que toda a gente está a fazer que tu sugerias?",
-      insights: "Dá-me um resumo das análises que já fiz. Qual foi o insight mais impactante? No que devo focar a seguir?",
-
-      // SETTINGS & ACCOUNT
-      settings: "Baseado no teu perfil, há configurações que eu sugeriria mudar para melhor acompanhar os teus objetivos?",
-      pricing: "Qual seria o melhor plano para você? Startup, Crescimento ou Premium? Vou calcular o ROI de cada um.",
-
-      // ADMIN & SYSTEM
-      admin: "Relatório de saúde do sistema. Quantos utilizadores? Transações? Há Data Integrity issues a considerar?"
+      dashboard: "Dá-me um resumo rápido da minha saúde financeira hoje (máx 2 frases): o que está bem e o que precisa de atenção.",
+      transacoes: "Olha para os meus gastos deste mês. Há alguma tendência preocupante? Dá uma dica concreta para poupar.",
+      orcamento: "Como está o meu orçamento este mês? Que categorias passaram do limite e como posso ajustar de forma realista?",
+      dividas: "Analisa as minhas dívidas e diz qual devo pagar primeiro e porquê. Sê encorajadora e prática.",
+      credito: "Antes de pedir um novo crédito, o que devo verificar na minha situação actual? Dá um conselho sobre o momento certo.",
+      habitacao: "Os meus custos de habitação estão em dia e dentro de um valor saudável para o que ganho?",
+      metas: "Como estão as minhas metas de poupança? Qual está mais perto e como posso acelerar uma delas?",
+      xitique: "Dá-me um conselho prático para gerir bem os meus compromissos de xitique este mês.",
+      patrimonio: "Olha para os meus activos e dívidas. Onde devo focar para fazer crescer o meu património?",
+      simuladores: "Com base nos meus dados, que simulação me seria mais útil agora: crédito, poupança ou xitique? Porquê?",
+      relatorio: "Resume o meu mês em 3 pontos: um destaque, um desafio e uma oportunidade.",
+      'sms-import': "Olhando para as minhas transações recentes, há algum gasto inesperado que valha a pena confirmar?",
+      insights: "Qual é a coisa mais importante em que devo focar nas minhas finanças esta semana?",
+      settings: "Que hábito simples no Mwanga me ajudaria a acompanhar melhor os meus objetivos?",
+      pricing: "Com base no uso que faço do Mwanga, que funcionalidades me ajudariam mais? Os planos são Starter (grátis), Crescimento e Património. Não inventes preços.",
+      nexovibe: "Dá-me uma dica financeira prática para esta semana com base nos meus dados.",
+      admin: "Dá-me uma dica financeira prática para esta semana com base nos meus dados.",
     };
 
-    const prompt = pagePrompts[page] || "Dá-me um conselho financeiro valioso baseado nos meus dados pessoais.";
+    const prompt = pagePrompts[page] || "Dá-me um conselho financeiro útil baseado nos meus dados.";
+    const language = resolveLanguage(req.body?.language || req.query?.language || req.get('Accept-Language'));
+
+    // Cache per page; the version changes whenever transactions change, so new
+    // records still produce a fresh insight. ?refresh=1 skips the cache.
+    const versionRes = await db.execute({
+      sql: 'SELECT COUNT(*) as n, MAX(id) as last FROM transactions WHERE household_id = ?',
+      args: [householdId]
+    }).catch(() => null);
+    const version = versionRes?.rows?.[0] ? `${versionRes.rows[0].n || 0}-${versionRes.rows[0].last || 0}` : 'v0';
+    const key = cacheKey({ householdId, userId: req.user.id, page, language, version });
+    const refresh = String(req.query?.refresh || '') === '1';
+    if (!refresh) {
+      const cached = await getCachedInsight(key);
+      if (cached) return res.json(cached);
+    }
 
     const response = await callBinth({
       messages: [{ role: 'user', content: prompt }],
       householdId,
       userId: req.user.id,
-      language: resolveLanguage(req.body?.language || req.query?.language || req.get('Accept-Language'))
+      language
     });
+    await setCachedInsight(key, response);
 
     res.json(response);
   } catch (err) {

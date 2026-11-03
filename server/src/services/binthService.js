@@ -323,7 +323,7 @@ async function buildUserContext(householdId, userId) {
         args: [householdId]
       }),
       db.execute({
-        sql: `SELECT name, type, current_balance FROM accounts WHERE household_id = ? ORDER BY current_balance DESC LIMIT 5`,
+        sql: `SELECT name, type, current_balance FROM accounts WHERE household_id = ? ORDER BY current_balance DESC`,
         args: [householdId]
       }),
       db.execute({
@@ -476,6 +476,18 @@ async function buildUserContext(householdId, userId) {
 }
 
 // ─── Multi-Provider Configuration ─────────────────────────────────────────────
+// Gemini rejects an OBJECT schema without properties, so tools that take no
+// arguments are declared without `parameters`.
+function geminiDeclaration(fn) {
+  const props = fn.parameters?.properties || {};
+  if (Object.keys(props).length > 0) return fn;
+  return { name: fn.name, description: fn.description };
+}
+
+// Time limits: one provider call, and the whole chain before the local answer.
+const PROVIDER_TIMEOUT_MS = 20000;
+const TOTAL_BUDGET_MS = 25000;
+
 const PROVIDERS = {
   gemini: {
     url: () => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
@@ -486,7 +498,7 @@ const PROVIDERS = {
         role: m.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: m.content }]
       })),
-      tools: tools.length > 0 ? [{ functionDeclarations: tools.map(t => t.function) }] : undefined,
+      tools: tools.length > 0 ? [{ functionDeclarations: tools.map(t => geminiDeclaration(t.function)) }] : undefined,
       generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
     }),
     extract: (data) => data.candidates?.[0]?.content?.parts?.[0]?.text,
@@ -762,7 +774,7 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
       }, contextSummary);
     } else {
       return personalizeBinthPayload({
-        message: `Olá ${name}! De momento não tens nenhuma dívida ativa registrada com taxa de juros superior a 0%. Se tens alguma dívida contratada com juros (como a dívida de 30.000 MT com 30% de juros contraída em Março), podes clicar em "Ver Fluxo da Dívida" na aba de Dívidas e usar o simulador para configurar os juros e acompanhar a evolução em tempo real!`,
+        message: `Olá ${name}! De momento não tens nenhuma dívida ativa registada com juros. Se tens uma dívida com juros, regista a taxa na aba de Dívidas e abre "Ver Fluxo da Dívida" para acompanhares a evolução.`,
         insight_type: "info",
         biblical_insight: "Evitar Dívidas: Quem aceita juros pesados torna-se escravo do credor. Planeia para viver livre de obrigações.",
         quick_actions: ["Ver Dívidas", "Simular Crédito"],
@@ -907,36 +919,52 @@ function ownerKey(p) {
   return null;
 }
 
-async function callProvider(p, activeKey, messages, activeSystem, householdId, summary) {
-  const config = PROVIDERS[p];
-  const hdrs = config.headers(activeKey);
-  const tools = ToolRegistry.getToolsSchema();
-  const payload = config.body(messages, activeSystem, tools);
-  const timeoutMs = p === 'ollama' ? 120000 : 30000;
-  const res = await fetch(config.url(activeKey), { method: 'POST', headers: hdrs, body: JSON.stringify(payload), signal: AbortSignal.timeout(timeoutMs) });
+function providerError(status, text, kind) {
+  const error = new Error(status ? `HTTP ${status}` : 'empty response');
+  error.kind = kind || classifyProviderError(status, text);
+  return error;
+}
+
+async function postProvider(config, activeKey, payload, timeoutMs) {
+  const res = await fetch(config.url(activeKey), {
+    method: 'POST',
+    headers: config.headers(activeKey),
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(timeoutMs),
+  });
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
-    const error = new Error(`HTTP ${res.status}`);
-    error.kind = classifyProviderError(res.status, errText.slice(0, 500));
-    throw error;
+    throw providerError(res.status, errText.slice(0, 500));
   }
-  const data = await res.json();
+  return res.json();
+}
+
+async function callProvider(p, activeKey, messages, activeSystem, householdId, summary, timeoutMs = PROVIDER_TIMEOUT_MS) {
+  const config = PROVIDERS[p];
+  const tools = ToolRegistry.getToolsSchema();
+  const data = await postProvider(config, activeKey, config.body(messages, activeSystem, tools), timeoutMs);
   const raw = config.extract(data) || '';
   const toolCall = config.extractToolCall(data);
   if (toolCall) {
     logger.info({ tool: toolCall.name }, 'Binth AI requested tool call');
+    // The household always comes from the session, never from the model.
     const toolResult = await ToolRegistry.executeTool(toolCall.name, { ...toolCall.args, householdId });
+    // Hand the result back inside the last user turn: this works the same way on
+    // every provider, without provider-specific tool-result message formats.
+    const last = messages[messages.length - 1];
     const nextMessages = [
-      ...messages,
-      { role: 'assistant', content: raw },
-      { role: 'user', content: `RESULTADO DA FERRAMENTA (${toolCall.name}): ${JSON.stringify(toolResult.data)}. Agora responde ao utilizador com base nisto de forma natural.` }
+      ...messages.slice(0, -1),
+      {
+        role: 'user',
+        content: `${last?.content || ''}\n\n[Dados calculados pelo Mwanga (${toolCall.name}): ${JSON.stringify(toolResult.data)}]\nResponde à pergunta acima com base nestes dados, no formato JSON pedido.`,
+      },
     ];
-    const res2 = await fetch(config.url(activeKey), { method: 'POST', headers: hdrs, body: JSON.stringify(config.body(nextMessages, activeSystem)), signal: AbortSignal.timeout(10000) });
-    if (res2.ok) {
-      const data2 = await res2.json();
-      return parseBinthResponse(config.extract(data2) || '', summary);
-    }
+    const data2 = await postProvider(config, activeKey, config.body(nextMessages, activeSystem), timeoutMs);
+    const raw2 = config.extract(data2) || '';
+    if (!raw2.trim()) throw providerError(0, '', 'unavailable');
+    return parseBinthResponse(raw2, summary);
   }
+  if (!raw.trim()) throw providerError(0, '', 'unavailable');
   return parseBinthResponse(raw, summary);
 }
 
@@ -966,15 +994,21 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
 
   let personalIssue = null;
   let ownerIssue = null;
+  const startedAt = Date.now();
   for (const attempt of attempts) {
     const { p, key } = attempt;
     if (p !== 'ollama' && !key) continue;
+    // Never keep the person waiting for minutes: once the budget is spent,
+    // answer with the local rules instead of trying the next provider.
+    const remaining = TOTAL_BUDGET_MS - (Date.now() - startedAt);
+    if (p !== 'ollama' && remaining < 3000) break;
     if (!attempt.personal && p !== 'ollama' && await isProviderTemporarilyDisabled(p)) continue;
     const activeSystem = p === 'ollama'
       ? OLLAMA_SYSTEM_PROMPT.replace('{user_context}', userContext.textMinimized) + languageInstruction
       : system;
     try {
-      const response = await callProvider(p, key, messages, activeSystem, householdId, userContext.summary);
+      const timeoutMs = p === 'ollama' ? 120000 : Math.min(PROVIDER_TIMEOUT_MS, remaining);
+      const response = await callProvider(p, key, messages, activeSystem, householdId, userContext.summary, timeoutMs);
       if (personalIssue && !attempt.personal) response.data = { ...response.data, ai_notice: `personal_${personalIssue}` };
       return withFreshness(response, userContext.summary, language);
     } catch (err) {

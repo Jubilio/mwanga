@@ -1,5 +1,5 @@
 import { ui, useUiLanguage } from '../utils/uiTranslation';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../utils/api';
 import { useNavigate } from 'react-router-dom';
@@ -15,18 +15,23 @@ export default function BinthContextual({ page }) {
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  // Read the latest data for the offline fallback without refetching the AI
+  // insight every time any financial record changes.
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
-  const fetchInsight = useCallback(async (signal) => {
+  const fetchInsight = useCallback(async (signal, refresh = false) => {
     setLoading(true);
     try {
-      const { data } = await api.get(`/binth/insights/${page}`, { signal, params: { language } });
+      const params = refresh ? { language, refresh: 1 } : { language };
+      const { data } = await api.get(`/binth/insights/${page}`, { signal, params });
       if (!signal?.aborted) setInsight(data);
     } catch {
-      if (!signal?.aborted) setInsight(generateLocalBinthInsight(state, page, language));
+      if (!signal?.aborted) setInsight(generateLocalBinthInsight(stateRef.current, page, language));
     } finally {
       if (!signal?.aborted) setLoading(false);
     }
-  }, [page, language, state]);
+  }, [page, language]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -64,7 +69,7 @@ export default function BinthContextual({ page }) {
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-center mb-1">
             <span className="text-[10px] uppercase tracking-widest font-bold text-gold">{t('binth_local.title')}</span>
-            <button onClick={() => fetchInsight()} aria-label={t('binth_local.refresh')} disabled={loading} className="text-slate-600 dark:text-slate-400 hover:text-gold transition-colors">
+            <button onClick={() => fetchInsight(undefined, true)} aria-label={t('binth_local.refresh')} disabled={loading} className="text-slate-600 dark:text-slate-400 hover:text-gold transition-colors">
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             </button>
           </div>

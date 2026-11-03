@@ -88,3 +88,22 @@ test('classifies provider errors', () => {
   expect(classifyProviderError(429, 'slow down')).toBe('rate_limited');
   expect(classifyProviderError(500, 'boom')).toBe('unavailable');
 });
+test('sends the tool result back inside the user turn and returns the final answer', async () => {
+  fetch.mockResolvedValueOnce(response([{ functionCall: { name: 'calculateLiquidityRisk', args: {} } }]))
+    .mockResolvedValueOnce(response([{ text: '{"message":"Tens 2 meses de folga.","quick_actions":[]}' }]));
+  const result = await callBinth({ messages: [{ role: 'user', content: 'Estou bem?' }], householdId: 7, userId: 3, apiKey: 'test-key', provider: 'gemini' });
+  const second = JSON.parse(fetch.mock.calls[1][1].body);
+  const last = second.contents[second.contents.length - 1];
+  expect(last.role).toBe('user');
+  expect(last.parts[0].text).toContain('Estou bem?');
+  expect(last.parts[0].text).toContain('"balance":100');
+  expect(second.contents.some(c => c.role === 'model' && !c.parts[0].text)).toBe(false);
+  expect(result.message).toBe('Tens 2 meses de folga.');
+});
+test('an empty AI answer moves on instead of showing a placeholder', async () => {
+  fetch.mockResolvedValueOnce(response([{ text: '' }]));
+  fetch.mockRejectedValue(new Error('Unavailable'));
+  const result = await callBinth({ messages: [{ role: 'user', content: 'Oi' }], householdId: 7, userId: 3, apiKey: 'test-key', provider: 'gemini' });
+  expect(result.message).not.toContain('Estou a processar');
+  expect(result.data.local_intelligence).toBe(true);
+});
