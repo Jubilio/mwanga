@@ -2980,6 +2980,15 @@
     "fix_hint": "Revê a tua ligação de IA nas Definições.",
     "used_mwanga": "Desta vez usei a IA do Mwanga.",
     "connect_btn": "Ligar a minha IA",
-    "fix_btn": "Rever ligação de IA"
+    "fix_btn": "Rever ligação de IA",
+    "daily_limit": "Chegaste ao limite diário de respostas da IA do Mwanga no plano Starter, por isso respondi com a inteligência local."
+  },
+  "binth_actions": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "saving": "A registar...",
+    "done": "Feito. Registei no Mwanga.",
+    "cancelled": "Cancelado. Não registei nada.",
+    "failed": "Não consegui registar. Tenta de novo."
   }
 }

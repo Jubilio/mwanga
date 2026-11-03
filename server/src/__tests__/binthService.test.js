@@ -107,3 +107,16 @@ test('an empty AI answer moves on instead of showing a placeholder', async () =>
   expect(result.message).not.toContain('Estou a processar');
   expect(result.data.local_intelligence).toBe(true);
 });
+test('a proposal tool goes straight to a confirmation card without a second AI call', async () => {
+  tools.executeTool.mockResolvedValueOnce({ success: true, proposal: { action: 'add_transaction', payload: { tipo: 'despesa', valor: 500, desc: 'Chapa', cat: 'transport', data: '2026-11-03' } } });
+  fetch.mockResolvedValueOnce(response([{ functionCall: { name: 'proposeTransaction', args: { type: 'despesa', amount: 500, description: 'Chapa' } } }]));
+  const result = await callBinth({ messages: [{ role: 'user', content: 'gastei 500 no chapa' }], householdId: 7, userId: 3, apiKey: 'test-key', provider: 'gemini' });
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(result.pending_action.action).toBe('add_transaction');
+  expect(result.message).toContain('Chapa');
+});
+test('without AI, "gastei 500 no chapa" still gets a confirmation card', async () => {
+  fetch.mockRejectedValue(new Error('Unavailable'));
+  const result = await callBinth({ messages: [{ role: 'user', content: 'gastei 500 no chapa' }], householdId: 7, userId: 3, apiKey: 'test-key', provider: 'gemini' });
+  expect(result.pending_action.payload).toMatchObject({ valor: 500, cat: 'transport' });
+});

@@ -1,5 +1,6 @@
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
+const actions = require('./binthActions');
 
 /**
  * Tool Registry: O Moat Defensável do Mwanga.
@@ -97,6 +98,53 @@ const tools = [
     }
   }
 ];
+
+// Proposal tools: they never write. The app asks the person to confirm first.
+tools.push(
+  {
+    name: 'proposeTransaction',
+    description: 'Usa quando o utilizador diz que gastou, pagou, comprou, recebeu ou ganhou dinheiro (ex: "gastei 500 no chapa"). Prepara a transação para o utilizador confirmar; não regista nada sozinha.',
+    parameters: {
+      type: 'object',
+      properties: {
+        type: { type: 'string', enum: ['despesa', 'receita'], description: 'despesa para saídas, receita para entradas' },
+        amount: { type: 'number', description: 'Valor em meticais (MT)' },
+        description: { type: 'string', description: 'Descrição curta, ex: "Chapa para o trabalho"' },
+        category: { type: 'string', enum: actions.CATEGORIES, description: 'Categoria mais provável' },
+        date: { type: 'string', description: 'Data AAAA-MM-DD, só se o utilizador indicar outro dia' }
+      },
+      required: ['type', 'amount', 'description']
+    },
+    proposal: true,
+    execute: async (args) => actions.proposeTransaction(args)
+  },
+  {
+    name: 'proposeDebtPayment',
+    description: 'Usa quando o utilizador diz que pagou (ou quer pagar) uma dívida registada. Prepara o pagamento para o utilizador confirmar.',
+    parameters: {
+      type: 'object',
+      properties: {
+        creditor: { type: 'string', description: 'Nome do credor tal como aparece em DÍVIDAS PENDENTES' },
+        amount: { type: 'number', description: 'Valor pago em MT; omite para usar a prestação' }
+      },
+      required: ['creditor']
+    },
+    proposal: true,
+    execute: async (args) => actions.proposeDebtPayment(args)
+  },
+  {
+    name: 'proposeXitiquePayment',
+    description: 'Usa quando o utilizador diz que pagou a sua contribuição de xitique. Prepara a próxima contribuição por pagar para o utilizador confirmar.',
+    parameters: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Nome do grupo de xitique, se o utilizador o disser' }
+      }
+    },
+    proposal: true,
+    execute: async (args) => actions.proposeXitiquePayment(args)
+  }
+);
 
 class ToolRegistry {
   /**
