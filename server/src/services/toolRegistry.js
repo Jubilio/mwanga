@@ -10,8 +10,13 @@ const tools = [
   {
     name: 'calculateLiquidityRisk',
     description: 'Compara o que entrou e saiu nos últimos 30 dias com o saldo actual das contas e diz quantos meses o saldo cobre.',
-    // No arguments: the household always comes from the signed-in session.
-    parameters: { type: 'object', properties: {} },
+    // The household always comes from the signed-in session, never from the model.
+    // Gemini (also when reached through OpenRouter) rejects an object schema with
+    // no properties, so each tool declares at least one optional argument.
+    parameters: {
+      type: 'object',
+      properties: { periodDays: { type: 'number', description: 'Dias a analisar (por omissão 30)' } }
+    },
     // Execução determinística controlada
     execute: async ({ householdId }) => {
       // Last 30 days of income and spending, against the money in the accounts now.
@@ -65,8 +70,11 @@ const tools = [
   {
     name: 'getSavingsRecommendations',
     description: 'Analisa o orçamento actual e propõe cortes específicos em categorias excedidas ou despesas recorrentes.',
-    // No arguments: the household always comes from the signed-in session.
-    parameters: { type: 'object', properties: {} },
+    // See calculateLiquidityRisk: at least one optional argument for Gemini.
+    parameters: {
+      type: 'object',
+      properties: { focusCategory: { type: 'string', description: 'Categoria a analisar primeiro (opcional)' } }
+    },
     execute: async ({ householdId }) => {
       const now = new Date();
       const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;

@@ -1016,15 +1016,30 @@ async function postProvider(config, activeKey, payload, timeoutMs) {
   });
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
-    throw providerError(res.status, errText.slice(0, 500));
+    const error = providerError(res.status, errText.slice(0, 500));
+    error.status = res.status;
+    // Provider's own error text (never contains our key) so failures can be diagnosed.
+    error.detail = errText.slice(0, 300);
+    throw error;
   }
   return res.json();
 }
 
+// 400/404/422 on a request with tools usually means the model or route does not
+// support function calling (or rejects a schema). Answer without tools instead.
+const TOOL_REJECTION_STATUSES = new Set([400, 404, 422]);
+
 async function callProvider(p, activeKey, messages, activeSystem, householdId, summary, timeoutMs = PROVIDER_TIMEOUT_MS, language = 'pt') {
   const config = PROVIDERS[p];
   const tools = ToolRegistry.getToolsSchema();
-  const data = await postProvider(config, activeKey, config.body(messages, activeSystem, tools), timeoutMs);
+  let data;
+  try {
+    data = await postProvider(config, activeKey, config.body(messages, activeSystem, tools), timeoutMs);
+  } catch (err) {
+    if (!(tools.length > 0 && TOOL_REJECTION_STATUSES.has(err.status))) throw err;
+    logger.warn({ provider: p, status: err.status, detail: err.detail }, 'Binth provider rejected tools; retrying without tools');
+    data = await postProvider(config, activeKey, config.body(messages, activeSystem), timeoutMs);
+  }
   const raw = config.extract(data) || '';
   const toolCall = config.extractToolCall(data);
   if (toolCall) {
@@ -1111,13 +1126,13 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
       if (attempt.personal) {
         // Keep the most actionable reason across the paid and free attempts.
         if (!personalIssue || personalIssue === 'unavailable' || kind === 'no_credits') personalIssue = kind;
-        logger.warn({ provider: p, kind }, 'Binth personal AI key failed');
+        logger.warn({ provider: p, kind, status: err.status, detail: err.detail }, 'Binth personal AI key failed');
         continue;
       }
       if (kind === 'no_credits' || kind === 'rejected') ownerIssue = kind;
       if (kind === 'no_credits') await disableProviderTemporarily(p, 60);
       else if (kind === 'rejected' || isAuthFailure(err.message)) await disableProviderTemporarily(p);
-      logger.warn({ provider: p, kind }, 'Binth provider call failed');
+      logger.warn({ provider: p, kind, status: err.status, detail: err.detail }, 'Binth provider call failed');
     }
   }
 
