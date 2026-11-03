@@ -2981,7 +2981,8 @@
     "used_mwanga": "Desta vez usei a IA do Mwanga.",
     "connect_btn": "Ligar a minha IA",
     "fix_btn": "Rever ligação de IA",
-    "daily_limit": "Chegaste ao limite diário de respostas da IA do Mwanga no plano Starter, por isso respondi com a inteligência local."
+    "daily_limit": "Chegaste ao limite diário de respostas da IA do Mwanga no plano Starter, por isso respondi com a inteligência local.",
+    "detail_label": "Resposta do fornecedor:"
   },
   "binth_actions": {
     "confirm": "Confirmar",
