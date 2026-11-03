@@ -25,7 +25,25 @@ test('rejects zero, negative or absurd amounts and future dates', () => {
   expect(actions.proposeTransaction({ type: 'despesa', amount: -5, description: 'x' }).success).toBe(false);
   expect(actions.proposeTransaction({ type: 'despesa', amount: 1e12, description: 'x' }).success).toBe(false);
   const ok = actions.proposeTransaction({ type: 'despesa', amount: 100, description: 'Pão', date: '2099-01-01' });
-  expect(ok.proposal.payload.data).toBe(new Date().toISOString().slice(0, 10));
+  expect(ok.proposal.payload.data).toBe(actions.today());
+});
+
+test('tomorrow is never accepted, even late at night', () => {
+  // 23:30 in Maputo on 3 Nov is 21:30 UTC: the old "+24 h" rule let 4 Nov through.
+  const lateNight = new Date('2026-11-03T21:30:00Z');
+  expect(actions.today(lateNight)).toBe('2026-11-03');
+  expect(actions.cleanDate('2026-11-04', lateNight)).toBe('2026-11-03');
+  expect(actions.cleanDate('2026-11-03', lateNight)).toBe('2026-11-03');
+  expect(actions.cleanDate('2026-11-01', lateNight)).toBe('2026-11-01');
+  // After midnight in Maputo (22:30 UTC) it is already the 4th there.
+  expect(actions.cleanDate('2026-11-04', new Date('2026-11-03T22:30:00Z'))).toBe('2026-11-04');
+  expect(actions.cleanDate('2024-01-01', lateNight)).toBe('2026-11-03');
+});
+
+test('a proposal for tomorrow is moved to today', () => {
+  const tomorrow = new Date(Date.now() + 24 * 3600 * 1000).toISOString().slice(0, 10);
+  const p = actions.proposeTransaction({ type: 'despesa', amount: 100, description: 'Pão', date: tomorrow });
+  expect(p.proposal.payload.data <= actions.today()).toBe(true);
 });
 
 test('a debt payment never exceeds what is left and only matches one creditor', async () => {

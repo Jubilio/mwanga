@@ -26,6 +26,7 @@ const { initEmailCampaignSchema } = require('./services/emailCampaign.service');
 const { initSecureFilesSchema } = require('./services/secureFiles.service');
 const { initCreditSchema } = require('./services/credit.service');
 const { initIdempotencySchema } = require('./middleware/idempotency.middleware');
+const { initBinthQuotaSchema } = require('./services/binthQuota');
 const logger = require('./utils/logger');
 
 const app = express();
@@ -39,6 +40,7 @@ require('./services/auth.service').initPasswordResetSchema();
 initSecureFilesSchema();
 initCreditSchema();
 initIdempotencySchema();
+initBinthQuotaSchema();
 
 app.set('trust proxy', 1);
 

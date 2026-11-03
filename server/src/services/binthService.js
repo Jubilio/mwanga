@@ -7,6 +7,7 @@ const { getNotificationReadValue } = require('./notificationRead.service');
 const logger = require('../utils/logger');
 const { proposalResponse, detectQuickTransaction } = require('./binthActions');
 const { checkDailyAiQuota } = require('./binthQuota');
+const { maskFreeText, maskLabel, maskDeep } = require('../utils/privacyMask');
 
 // ─── System Prompt ─────────────────────────────────────────────────────────────
 const BINTH_SYSTEM_PROMPT = `
@@ -227,15 +228,11 @@ PORQUÊ: ${context.priority.reason}
   `.trim();
 }
 
-// Phone numbers, card or account numbers and long references in SMS-imported
-// descriptions are not needed for advice, so they never leave the server.
-function maskSensitive(text) {
-  return String(text || '')
-    .replace(/\+?258[\s-]?\d{2}[\s-]?\d{3}[\s-]?\d{4}/g, '[telefone]')
-    .replace(/\b8[2-7]\d{7}\b/g, '[telefone]')
-    .replace(/\b\d{6,}\b/g, '[número]')
-    .slice(0, 80);
-}
+// Masking (utils/privacyMask): phone numbers, e-mails, card/account numbers and
+// long references are removed from what goes to AI providers (context labels,
+// chat history, tool results) and from logged provider errors. Free text the
+// person types is otherwise sent as written.
+const maskSensitive = (text) => maskLabel(text, 80);
 
 function firstName(name) {
   return String(name || '').trim().split(/\s+/)[0] || '';
@@ -279,7 +276,7 @@ PRÓXIMA AÇÃO: ${context.priority.nextAction}
 PRINCÍPIO BÍBLICO APLICADO: ${biblicalPrinciple}
 
 GASTOS DO MÊS POR CATEGORIA (maiores primeiro):
-${context.categoryTotals.length > 0 ? context.categoryTotals.map(c => `- ${c.category || 'Sem categoria'}: MT ${context.format(c.total)}`).join('\n') : '- Sem despesas este mês.'}
+${context.categoryTotals.length > 0 ? context.categoryTotals.map(c => `- ${maskLabel(c.category || 'Sem categoria', 40)}: MT ${context.format(c.total)}`).join('\n') : '- Sem despesas este mês.'}
 COMPARAÇÃO: até hoje gastaste MT ${context.format(context.monthlyExpenses)} este mês; no mesmo período do mês passado foram MT ${context.format(context.prevSamePeriodExpenses)}.
 
 COMPROMISSOS DESTE MÊS:
@@ -288,19 +285,19 @@ COMPROMISSOS DESTE MÊS:
 - Dívidas com vencimento este mês: MT ${context.format(context.debtMonthlyTotal)}
 
 DÍVIDAS PENDENTES:
-${context.debts.length > 0 ? context.debts.map(d => `- ${d.creditor_name || 'Credor'}: falta MT ${context.format(d.remaining_amount)}${Number(d.interest_rate) > 0 ? `, juro ${formatRate(d)}` : ', sem juro registado'}${d.monthly_payment ? `, prestação MT ${context.format(d.monthly_payment)}` : ''}${d.due_date ? `, vence ${String(d.due_date).slice(0, 10)}` : ''}`).join('\n') : '- Nenhuma dívida pendente.'}
+${context.debts.length > 0 ? context.debts.map(d => `- ${maskLabel(d.creditor_name || 'Credor', 40)}: falta MT ${context.format(d.remaining_amount)}${Number(d.interest_rate) > 0 ? `, juro ${formatRate(d)}` : ', sem juro registado'}${d.monthly_payment ? `, prestação MT ${context.format(d.monthly_payment)}` : ''}${d.due_date ? `, vence ${String(d.due_date).slice(0, 10)}` : ''}`).join('\n') : '- Nenhuma dívida pendente.'}
 
 ÚLTIMAS TRANSAÇÕES:
-${context.recentTx.map(t => `- [${String(t.date).slice(0, 10)}] ${maskSensitive(t.description)}: MT ${context.format(t.amount)} (${t.type === 'receita' ? '+' : '-'}) [${t.category}]`).join('\n') || '- Nenhuma transação recente.'}
+${context.recentTx.map(t => `- [${String(t.date).slice(0, 10)}] ${maskSensitive(t.description)}: MT ${context.format(t.amount)} (${t.type === 'receita' ? '+' : '-'}) [${maskLabel(t.category, 30)}]`).join('\n') || '- Nenhuma transação recente.'}
 
 ORÇAMENTOS ACTIVOS:
-${context.budgets.length > 0 ? context.budgets.map(b => `- ${b.category}: MT ${context.format(b.spent)} / MT ${context.format(b.limit_amount)}`).join('\n') : '- Nenhum orçamento.'}
+${context.budgets.length > 0 ? context.budgets.map(b => `- ${maskLabel(b.category, 40)}: MT ${context.format(b.spent)} / MT ${context.format(b.limit_amount)}`).join('\n') : '- Nenhum orçamento.'}
 
 CATEGORIAS ACIMA DO ORÇAMENTO:
-${context.overdueBudgets.length > 0 ? context.overdueBudgets.map(b => `- ${b.category}: excesso de MT ${context.format(b.spent - b.limit_amount)}`).join('\n') : '- Nenhuma categoria acima do limite.'}
+${context.overdueBudgets.length > 0 ? context.overdueBudgets.map(b => `- ${maskLabel(b.category, 40)}: excesso de MT ${context.format(b.spent - b.limit_amount)}`).join('\n') : '- Nenhuma categoria acima do limite.'}
 
 METAS DE POUPANÇA:
-${context.goals.length > 0 ? context.goals.map(g => `- ${g.name}: ${g.progress}% concluída (MT ${context.format(g.saved_amount)} de MT ${context.format(g.target_amount)})`).join('\n') : '- Nenhuma meta activa.'}
+${context.goals.length > 0 ? context.goals.map(g => `- ${maskLabel(g.name, 40)}: ${g.progress}% concluída (MT ${context.format(g.saved_amount)} de MT ${context.format(g.target_amount)})`).join('\n') : '- Nenhuma meta activa.'}
   `.trim();
 }
 
@@ -555,12 +552,16 @@ function geminiDeclaration(fn) {
   return { name: fn.name, description: fn.description };
 }
 
-// Time limits: one provider call, and the whole chain before the local answer.
-const PROVIDER_TIMEOUT_MS = 20000;
-// The person's own key gets up to 14 s (all its attempts together); Mwanga's keys
-// then get their own 20 s, so a slow personal key never starves the fallback.
-const PERSONAL_BUDGET_MS = 14000;
-const OWNER_BUDGET_MS = 20000;
+// Time limits. One absolute deadline covers the whole answer (context, every
+// provider attempt, retries, tool call and second call): 25 s after the request
+// arrives, the local answer is sent. The person's own key may use at most the
+// first 12 s, so Mwanga's keys always keep time to try.
+const TOTAL_BUDGET_MS = 25000;
+const PERSONAL_BUDGET_MS = 12000;
+// Below this, starting another provider call is pointless.
+const MIN_CALL_MS = 2500;
+// Local Ollama (development only) is slow and has its own limit.
+const OLLAMA_TIMEOUT_MS = 120000;
 
 function geminiModel(opts = {}) {
   return opts.model || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
@@ -1042,7 +1043,7 @@ function describeProviderError(p, err) {
     const e = Array.isArray(parsed) ? parsed[0]?.error : parsed?.error;
     message = (typeof e === 'string' ? e : e?.message) || parsed?.message || '';
   } catch { message = String(err?.detail || ''); }
-  message = message
+  message = maskFreeText(message)
     .replace(/(sk-[\w-]{6,}|AIza[\w-]{10,}|gsk_[\w]{6,}|Bearer\s+\S+)/g, '[chave]')
     .replace(/\s+/g, ' ')
     .trim()
@@ -1084,15 +1085,27 @@ function rejectsTools(err) {
   return /tool|function/i.test(String(err.detail || ''));
 }
 
-async function callProvider(p, activeKey, messages, activeSystem, householdId, summary, timeoutMs = PROVIDER_TIMEOUT_MS, language = 'pt') {
+// Time left before `deadline`. Throws when there is not enough for another call,
+// so retries and the second call after a tool never run past the deadline.
+function timeLeft(deadline) {
+  const left = deadline - Date.now();
+  if (left < MIN_CALL_MS) {
+    const error = providerError(0, '', 'unavailable');
+    error.detail = 'deadline reached';
+    error.deadline = true;
+    throw error;
+  }
+  return left;
+}
+
+async function callProvider(p, activeKey, messages, activeSystem, householdId, summary, deadline = Date.now() + TOTAL_BUDGET_MS, language = 'pt') {
   const config = PROVIDERS[p];
   const tools = ToolRegistry.getToolsSchema();
-  const started = Date.now();
-  const left = () => Math.max(3000, timeoutMs - (Date.now() - started));
+  const left = () => timeLeft(deadline);
   let data;
   let opts = {};
   try {
-    data = await postProvider(config, activeKey, config.body(messages, activeSystem, tools, opts), timeoutMs, opts);
+    data = await postProvider(config, activeKey, config.body(messages, activeSystem, tools, opts), left(), opts);
   } catch (err) {
     if (p === 'gemini' && [429, 500, 503].includes(err.status) && err.kind !== 'no_credits' && geminiModel() !== GEMINI_FALLBACK_MODEL) {
       // Gemini "high demand": try the lighter model once.
@@ -1100,7 +1113,7 @@ async function callProvider(p, activeKey, messages, activeSystem, householdId, s
       opts = { model: GEMINI_FALLBACK_MODEL };
       data = await postProvider(config, activeKey, config.body(messages, activeSystem, tools, opts), left(), opts);
     } else if (tools.length > 0 && rejectsTools(err)) {
-      logger.warn({ provider: p, status: err.status, detail: err.detail }, 'Binth provider rejected tools; retrying without tools');
+      logger.warn({ provider: p, status: err.status, detail: maskFreeText(err.detail) }, 'Binth provider rejected tools; retrying without tools');
       data = await postProvider(config, activeKey, config.body(messages, activeSystem, [], opts), left(), opts);
     } else {
       throw err;
@@ -1121,7 +1134,7 @@ async function callProvider(p, activeKey, messages, activeSystem, householdId, s
       ...messages.slice(0, -1),
       {
         role: 'user',
-        content: `${last?.content || ''}\n\n[Dados calculados pelo Mwanga (${toolCall.name}): ${JSON.stringify(toolResult.data)}]\nResponde à pergunta acima com base nestes dados, no formato JSON pedido.`,
+        content: `${last?.content || ''}\n\n[Dados calculados pelo Mwanga (${toolCall.name}): ${JSON.stringify(maskDeep(toolResult.data))}]\nResponde à pergunta acima com base nestes dados, no formato JSON pedido.`,
       },
     ];
     const data2 = await postProvider(config, activeKey, config.body(nextMessages, activeSystem, [], opts), left(), opts);
@@ -1134,12 +1147,16 @@ async function callProvider(p, activeKey, messages, activeSystem, householdId, s
 }
 
 async function callBinth({ messages, apiKey, provider = 'gemini', householdId, userId, language = 'pt', countTowardsQuota = false }) {
+  const startedAt = Date.now();
+  const deadline = startedAt + TOTAL_BUDGET_MS;
   let personal = null;
   try { personal = await aiSettings.credentials(householdId, userId); }
   catch { logger.warn('Binth personal AI key could not be read'); }
   if (!personal && apiKey && PROVIDERS[provider]) personal = { provider, apiKey };
   const userContext = await buildUserContext(householdId, userId);
+  // The local rules read the original text; providers only ever get the masked copy.
   const userMessage = messages[messages.length - 1]?.content || '';
+  const providerMessages = messages.map(m => ({ ...m, content: maskFreeText(m.content) }));
 
   language = resolveLanguage(language);
   const languageInstruction = buildLanguageInstruction(language);
@@ -1162,8 +1179,6 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
   let personalIssue = null;
   let personalDetail = null;
   let ownerIssue = null;
-  const startedAt = Date.now();
-  let ownerStartedAt = null;
   // Free plan: a daily number of answers from Mwanga's own AI keys. Personal keys
   // and paid plans are not limited. Page insights are cached and not counted.
   // Counted only when the answer would come from Mwanga's keys.
@@ -1173,17 +1188,16 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
     if (p !== 'ollama' && !key) continue;
     // Never keep the person waiting for minutes: once the budget is spent,
     // answer with the local rules instead of trying the next provider.
-    if (!attempt.personal && ownerStartedAt === null) ownerStartedAt = Date.now();
-    const remaining = attempt.personal
-      ? PERSONAL_BUDGET_MS - (Date.now() - startedAt)
-      : OWNER_BUDGET_MS - (Date.now() - ownerStartedAt);
-    if (p !== 'ollama' && remaining < 3000) {
+    const attemptDeadline = p === 'ollama'
+      ? Date.now() + OLLAMA_TIMEOUT_MS
+      : (attempt.personal ? Math.min(startedAt + PERSONAL_BUDGET_MS, deadline) : deadline);
+    if (p !== 'ollama' && attemptDeadline - Date.now() < MIN_CALL_MS) {
       if (attempt.personal) continue; // personal time is up: go to Mwanga's keys
       break;
     }
     if (!attempt.personal && countTowardsQuota && quota === null) {
-      try { quota = await checkDailyAiQuota(householdId, userId); }
-      catch { quota = { allowed: true }; }
+      // checkDailyAiQuota never throws; when it cannot count it says "not allowed".
+      quota = await checkDailyAiQuota(householdId, userId);
     }
     if (!attempt.personal && quota && !quota.allowed) continue;
     if (!attempt.personal && p !== 'ollama' && await isProviderTemporarilyDisabled(p)) continue;
@@ -1191,8 +1205,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
       ? OLLAMA_SYSTEM_PROMPT.replace('{user_context}', userContext.textMinimized) + languageInstruction
       : system;
     try {
-      const timeoutMs = p === 'ollama' ? 120000 : Math.min(PROVIDER_TIMEOUT_MS, remaining);
-      const response = await callProvider(p, key, messages, activeSystem, householdId, userContext.summary, timeoutMs, language);
+      const response = await callProvider(p, key, providerMessages, activeSystem, householdId, userContext.summary, attemptDeadline, language);
       if (personalIssue && !attempt.personal) response.data = { ...response.data, ai_notice: `personal_${personalIssue}`, ai_detail: personalDetail };
       return withFreshness(response, userContext.summary, language, isFirstTurn);
     } catch (err) {
@@ -1202,13 +1215,13 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
         if (!personalIssue || personalIssue === 'unavailable' || kind === 'no_credits') personalIssue = kind;
         // Shown to the person (it is their own account), so they can fix it.
         if (!personalDetail || attempt.p === personal.provider) personalDetail = describeProviderError(p, err);
-        logger.warn({ provider: p, kind, status: err.status, detail: err.detail }, 'Binth personal AI key failed');
+        logger.warn({ provider: p, kind, status: err.status, detail: maskFreeText(err.detail) }, 'Binth personal AI key failed');
         continue;
       }
       if (kind === 'no_credits' || kind === 'rejected') ownerIssue = kind;
       if (kind === 'no_credits') await disableProviderTemporarily(p, 60);
       else if (kind === 'rejected' || isAuthFailure(err.message)) await disableProviderTemporarily(p);
-      logger.warn({ provider: p, kind, status: err.status, detail: err.detail }, 'Binth provider call failed');
+      logger.warn({ provider: p, kind, status: err.status, detail: maskFreeText(err.detail) }, 'Binth provider call failed');
     }
   }
 
@@ -1220,7 +1233,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
     : (language === 'en' ? englishFallback(userMessage, userContext.summary) : getFallbackResponse(userMessage, userContext.summary));
   const reason = personalIssue
     ? `personal_${personalIssue}`
-    : (quota && !quota.allowed ? 'daily_limit' : (ownerIssue === 'no_credits' ? 'service_no_credits' : 'service_unavailable'));
+    : (quota && !quota.allowed && !quota.unavailable ? 'daily_limit' : (ownerIssue === 'no_credits' ? 'service_no_credits' : 'service_unavailable'));
   fallback.data = {
     ...fallback.data,
     ai_status: {
@@ -1228,7 +1241,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
       reason,
       has_personal_key: !!personal,
       ...(personalDetail ? { detail: personalDetail } : {}),
-      ...(quota && !quota.allowed ? { daily_limit: quota.limit } : {}),
+      ...(quota && !quota.allowed && !quota.unavailable ? { daily_limit: quota.limit } : {}),
     },
   };
   return withFreshness(fallback, userContext.summary, language, isFirstTurn);

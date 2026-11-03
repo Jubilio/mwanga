@@ -173,3 +173,47 @@ test('Gemini "high demand" retries once with the fallback model', async () => {
   expect(JSON.parse(fetch.mock.calls[1][1].body).generationConfig.thinkingConfig).toBeUndefined();
   expect(result.message).toBe('Ok 2.0');
 });
+
+describe('absolute deadline', () => {
+  let now;
+  beforeEach(() => { now = 1_800_000_000_000; jest.spyOn(Date, 'now').mockImplementation(() => now); });
+  afterEach(() => { Date.now.mockRestore(); });
+
+  test('the second call after a tool never runs past the 25 s deadline', async () => {
+    process.env.NODE_ENV = 'production'; process.env.GEMINI_API_KEY = 'owner-gemini';
+    delete process.env.GROQ_API_KEY; delete process.env.OPENROUTER_API_KEY;
+    fetch.mockImplementationOnce(async () => { now += 23_500; return response([{ functionCall: { name: 'calculateLiquidityRisk', args: {} } }]); });
+    const result = await callBinth({ messages: [{ role: 'user', content: 'Oi' }], householdId: 7, userId: 3 });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(result.data.ai_status.state).toBe('offline');
+  });
+
+  test('a slow personal key leaves time for Mwanga keys, and the total stays within 25 s', async () => {
+    process.env.NODE_ENV = 'production'; process.env.GROQ_API_KEY = 'owner-groq';
+    delete process.env.GEMINI_API_KEY; delete process.env.OPENROUTER_API_KEY;
+    savePersonal('gemini');
+    const timeouts = [];
+    const realTimeout = AbortSignal.timeout;
+    AbortSignal.timeout = (ms) => { timeouts.push(ms); return realTimeout.call(AbortSignal, 60_000); };
+    try {
+      fetch.mockImplementationOnce(async () => { now += 12_000; throw new Error('timeout'); })
+        .mockImplementationOnce(async () => groqOk('{"message":"Mwanga","quick_actions":[]}'));
+      const result = await callBinth({ messages: [{ role: 'user', content: 'Oi' }], householdId: 7, userId: 3 });
+      expect(result.message).toBe('Mwanga');
+      expect(timeouts[0]).toBeLessThanOrEqual(12_000);
+      expect(timeouts[1]).toBeLessThanOrEqual(13_000);
+    } finally {
+      AbortSignal.timeout = realTimeout;
+    }
+  });
+});
+
+test('chat history and tool results sent to the provider are masked', async () => {
+  tools.executeTool.mockResolvedValueOnce({ data: { creditor: 'Ana 841234567' } });
+  fetch.mockResolvedValueOnce(response([{ functionCall: { name: 'calculateLiquidityRisk', args: {} } }]))
+    .mockResolvedValueOnce(response([{ text: '{"message":"Ok","quick_actions":[]}' }]));
+  await callBinth({ messages: [{ role: 'user', content: 'paguei a ana 845556677 ana@mail.com' }], householdId: 7, userId: 3, apiKey: 'test-key', provider: 'gemini', language: 'en' });
+  const sent = fetch.mock.calls.map(c => c[1].body).join('\n');
+  expect(sent).not.toMatch(/845556677|841234567|ana@mail\.com/);
+  expect(sent).toContain('[telefone]');
+});
