@@ -41,7 +41,8 @@ const chat = async (req, res, next) => {
       provider,
       householdId: req.user.householdId,
       userId: req.user.id,
-      language: resolveLanguage(language || req.get('Accept-Language'))
+      language: resolveLanguage(language || req.get('Accept-Language')),
+      countTowardsQuota: true
     });
 
     res.json(response);

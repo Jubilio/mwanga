@@ -5,6 +5,8 @@ const { db } = require('../config/db');
 const ToolRegistry = require('./toolRegistry');
 const { getNotificationReadValue } = require('./notificationRead.service');
 const logger = require('../utils/logger');
+const { proposalResponse, detectQuickTransaction } = require('./binthActions');
+const { checkDailyAiQuota } = require('./binthQuota');
 
 // ─── System Prompt ─────────────────────────────────────────────────────────────
 const BINTH_SYSTEM_PROMPT = `
@@ -44,7 +46,8 @@ INSTRUÇÕES DE RACIOCÍNIO:
 5. Quando houver pressão financeira, identifica claramente a prioridade número um e uma ação prática para as próximas 24-72 horas.
 6. Quando estiver tudo estável, reconhece o progresso com números reais e sugere o próximo avanço realista.
 7. Princípio bíblico: só quando acrescenta algo à situação (no máximo uma vez a cada poucas mensagens). Caso contrário, "biblical_insight" é null. Nunca religioso ou pregador.
-8. Responde SEMPRE em JSON puro.
+8. Quando o utilizador disser que gastou, recebeu, pagou uma dívida ou um xitique, usa a ferramenta propose* correspondente. Nunca digas que já registaste algo: o utilizador confirma no ecrã.
+9. Responde SEMPRE em JSON puro.
 
 FORMATO DE RESPOSTA (JSON obrigatório):
 {
@@ -1018,7 +1021,7 @@ async function postProvider(config, activeKey, payload, timeoutMs) {
   return res.json();
 }
 
-async function callProvider(p, activeKey, messages, activeSystem, householdId, summary, timeoutMs = PROVIDER_TIMEOUT_MS) {
+async function callProvider(p, activeKey, messages, activeSystem, householdId, summary, timeoutMs = PROVIDER_TIMEOUT_MS, language = 'pt') {
   const config = PROVIDERS[p];
   const tools = ToolRegistry.getToolsSchema();
   const data = await postProvider(config, activeKey, config.body(messages, activeSystem, tools), timeoutMs);
@@ -1028,6 +1031,8 @@ async function callProvider(p, activeKey, messages, activeSystem, householdId, s
     logger.info({ tool: toolCall.name }, 'Binth AI requested tool call');
     // The household always comes from the session, never from the model.
     const toolResult = await ToolRegistry.executeTool(toolCall.name, { ...toolCall.args, householdId });
+    // A ready proposal goes straight to the confirmation card: no second AI call.
+    if (toolResult?.proposal) return proposalResponse(toolResult.proposal, language);
     // Hand the result back inside the last user turn: this works the same way on
     // every provider, without provider-specific tool-result message formats.
     const last = messages[messages.length - 1];
@@ -1047,7 +1052,7 @@ async function callProvider(p, activeKey, messages, activeSystem, householdId, s
   return parseBinthResponse(raw, summary);
 }
 
-async function callBinth({ messages, apiKey, provider = 'gemini', householdId, userId, language = 'pt' }) {
+async function callBinth({ messages, apiKey, provider = 'gemini', householdId, userId, language = 'pt', countTowardsQuota = false }) {
   let personal = null;
   try { personal = await aiSettings.credentials(householdId, userId); }
   catch { logger.warn('Binth personal AI key could not be read'); }
@@ -1076,6 +1081,10 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
   let personalIssue = null;
   let ownerIssue = null;
   const startedAt = Date.now();
+  // Free plan: a daily number of answers from Mwanga's own AI keys. Personal keys
+  // and paid plans are not limited. Page insights are cached and not counted.
+  // Counted only when the answer would come from Mwanga's keys.
+  let quota = null;
   for (const attempt of attempts) {
     const { p, key } = attempt;
     if (p !== 'ollama' && !key) continue;
@@ -1083,13 +1092,18 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
     // answer with the local rules instead of trying the next provider.
     const remaining = TOTAL_BUDGET_MS - (Date.now() - startedAt);
     if (p !== 'ollama' && remaining < 3000) break;
+    if (!attempt.personal && countTowardsQuota && quota === null) {
+      try { quota = await checkDailyAiQuota(householdId, userId); }
+      catch { quota = { allowed: true }; }
+    }
+    if (!attempt.personal && quota && !quota.allowed) continue;
     if (!attempt.personal && p !== 'ollama' && await isProviderTemporarilyDisabled(p)) continue;
     const activeSystem = p === 'ollama'
       ? OLLAMA_SYSTEM_PROMPT.replace('{user_context}', userContext.textMinimized) + languageInstruction
       : system;
     try {
       const timeoutMs = p === 'ollama' ? 120000 : Math.min(PROVIDER_TIMEOUT_MS, remaining);
-      const response = await callProvider(p, key, messages, activeSystem, householdId, userContext.summary, timeoutMs);
+      const response = await callProvider(p, key, messages, activeSystem, householdId, userContext.summary, timeoutMs, language);
       if (personalIssue && !attempt.personal) response.data = { ...response.data, ai_notice: `personal_${personalIssue}` };
       return withFreshness(response, userContext.summary, language, isFirstTurn);
     } catch (err) {
@@ -1108,13 +1122,21 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
   }
 
   logger.warn('All Binth providers failed. Using fallback response.');
-  const fallback = language === 'en' ? englishFallback(userMessage, userContext.summary) : getFallbackResponse(userMessage, userContext.summary);
+  // "gastei 500 no chapa" still works without AI.
+  const quick = detectQuickTransaction(userMessage);
+  const fallback = quick
+    ? proposalResponse(quick, language)
+    : (language === 'en' ? englishFallback(userMessage, userContext.summary) : getFallbackResponse(userMessage, userContext.summary));
+  const reason = personalIssue
+    ? `personal_${personalIssue}`
+    : (quota && !quota.allowed ? 'daily_limit' : (ownerIssue === 'no_credits' ? 'service_no_credits' : 'service_unavailable'));
   fallback.data = {
     ...fallback.data,
     ai_status: {
       state: 'offline',
-      reason: personalIssue ? `personal_${personalIssue}` : (ownerIssue === 'no_credits' ? 'service_no_credits' : 'service_unavailable'),
+      reason,
       has_personal_key: !!personal,
+      ...(quota && !quota.allowed ? { daily_limit: quota.limit } : {}),
     },
   };
   return withFreshness(fallback, userContext.summary, language, isFirstTurn);

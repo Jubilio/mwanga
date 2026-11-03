@@ -80,9 +80,44 @@ export default function Insights() {
   useUiLanguage();
   const { t, i18n } = useTranslation();
   const { showToast } = useOutletContext();
-  const { state } = useFinance();
+  const { state, dispatch } = useFinance();
   const navigate = useNavigate();
   const { stats } = useStewardship();
+  const [actionBusy, setActionBusy] = useState(null);
+
+  // A Binth proposal (expense, debt payment, xitique) is only written when the
+  // person taps "Confirmar"; it goes through the same actions as the rest of the app.
+  async function resolveProposal(msg, confirmed) {
+    if (actionBusy !== null) return;
+    const action = msg.pending_action;
+    let status = 'cancelled';
+    if (confirmed) {
+      setActionBusy(msg.timestamp);
+      try {
+        if (action.action === 'add_transaction') {
+          const p = action.payload;
+          const account = p.tipo === 'receita'
+            ? state.settings?.default_income_account_id
+            : state.settings?.default_expense_account_id;
+          await dispatch({ type: 'ADD_TRANSACTION', payload: { ...p, account_id: account || null } });
+        } else if (action.action === 'pay_debt') {
+          await dispatch({ type: 'PAY_DEBT', payload: { debtId: action.payload.debtId, amount: action.payload.amount, account_id: state.settings?.default_expense_account_id || null, payment_date: new Date().toISOString() } });
+        } else if (action.action === 'pay_xitique') {
+          await dispatch({ type: 'PAY_XITIQUE', payload: { contributionId: action.payload.contributionId, date: new Date().toISOString().slice(0, 10), account_id: state.settings?.default_expense_account_id || null } });
+        }
+        status = 'done';
+        showToast(t('binth_actions.done'), 'success');
+      } catch {
+        status = null;
+        showToast(t('binth_actions.failed'), 'error');
+      } finally {
+        setActionBusy(null);
+      }
+    }
+    if (!status) return;
+    setMessages(prev => prev.map(m => (m === msg ? { ...m, action_status: status } : m)));
+    if (msg.timestamp) db.mensagens.where('timestamp').equals(msg.timestamp).modify({ action_status: status }).catch(() => {});
+  }
 
   // Chat state
   const [messages, setMessages] = useState([]);
@@ -433,6 +468,26 @@ export default function Insights() {
                     </div>
                   )}
                 </div>
+
+                {/* Proposal waiting for confirmation */}
+                {!isUser && msg.pending_action && (
+                  msg.action_status ? (
+                    <div role="status" style={{ fontSize: 12, fontWeight: 700, color: msg.action_status === 'done' ? 'var(--ins-green)' : 'var(--ins-soft)' }}>
+                      {t(msg.action_status === 'done' ? 'binth_actions.done' : 'binth_actions.cancelled')}
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button type="button" onClick={() => resolveProposal(msg, true)} disabled={actionBusy !== null} style={{
+                        minHeight: 44, padding: '8px 20px', borderRadius: 22, fontSize: 13, fontWeight: 700,
+                        background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer',
+                      }}>{actionBusy === msg.timestamp ? t('binth_actions.saving') : t('binth_actions.confirm')}</button>
+                      <button type="button" onClick={() => resolveProposal(msg, false)} disabled={actionBusy !== null} style={{
+                        minHeight: 44, padding: '8px 20px', borderRadius: 22, fontSize: 13, fontWeight: 700,
+                        background: 'transparent', color: 'var(--color-text)', border: '1px solid var(--ins-border)', cursor: 'pointer',
+                      }}>{t('binth_actions.cancel')}</button>
+                    </div>
+                  )
+                )}
 
                 {/* AI connection notice (own key out of credits, Mwanga AI offline) */}
                 {!isUser && (msg.data?.ai_status || msg.data?.ai_notice) && (() => {
