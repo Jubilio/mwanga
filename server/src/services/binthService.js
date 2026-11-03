@@ -557,13 +557,33 @@ function geminiDeclaration(fn) {
 
 // Time limits: one provider call, and the whole chain before the local answer.
 const PROVIDER_TIMEOUT_MS = 20000;
-const TOTAL_BUDGET_MS = 25000;
+// The person's own key gets up to 14 s (all its attempts together); Mwanga's keys
+// then get their own 20 s, so a slow personal key never starves the fallback.
+const PERSONAL_BUDGET_MS = 14000;
+const OWNER_BUDGET_MS = 20000;
+
+function geminiModel(opts = {}) {
+  return opts.model || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+}
+// Used when Gemini is overloaded (503) or rate limited (429).
+const GEMINI_FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.0-flash';
+
+// Paid OpenRouter model. A ":free" slug here is ignored: free variants are often
+// withdrawn ("unavailable for free"), which made every personal-key call fail.
+function openRouterPaidModel() {
+  const configured = String(process.env.OPENROUTER_MODEL || '').trim();
+  return configured && !configured.endsWith(':free') ? configured : 'google/gemini-2.5-flash';
+}
+function openRouterFreeModels() {
+  const configured = String(process.env.OPENROUTER_FREE_MODEL || '').trim();
+  return [...new Set([configured, 'openrouter/free'].filter(Boolean))];
+}
 
 const PROVIDERS = {
   gemini: {
-    url: () => `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || 'gemini-2.5-flash'}:generateContent`,
+    url: (key, opts = {}) => `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel(opts)}:generateContent`,
     headers: key => ({ 'Content-Type': 'application/json', 'x-goog-api-key': key }),
-    body: (messages, system, tools = []) => ({
+    body: (messages, system, tools = [], opts = {}) => ({
       system_instruction: { parts: [{ text: system }] },
       contents: messages.map(m => ({
         role: m.role === 'assistant' ? 'model' : 'user',
@@ -577,7 +597,7 @@ const PROVIDERS = {
         // only requested on calls without tools (e.g. the answer after a tool).
         ...(tools.length === 0 ? { responseMimeType: 'application/json' } : {}),
         // No hidden "thinking" tokens: they would eat the output budget.
-        ...(/2\.5-flash/.test(process.env.GEMINI_MODEL || 'gemini-2.5-flash') ? { thinkingConfig: { thinkingBudget: 0 } } : {})
+        ...(/2\.5-flash/.test(geminiModel(opts)) ? { thinkingConfig: { thinkingBudget: 0 } } : {})
       }
     }),
     extract: (data) => data.candidates?.[0]?.content?.parts?.[0]?.text,
@@ -591,7 +611,7 @@ const PROVIDERS = {
     url: () => 'https://api.groq.com/openai/v1/chat/completions',
     headers: (key) => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${key}` }),
     body: (messages, system, tools = []) => ({
-      model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+      model: process.env.GROQ_MODEL || 'llama-3.1-8b-instant',
       temperature: 0.6,
       response_format: tools.length === 0 ? { type: 'json_object' } : undefined,
       messages: [{ role: 'system', content: system }, ...messages],
@@ -614,10 +634,9 @@ const PROVIDERS = {
       'X-Title': 'Mwanga Binth'
     }),
     body: (messages, system, tools = []) => ({
-      model: process.env.OPENROUTER_MODEL || 'google/gemini-2.5-flash',
+      model: openRouterPaidModel(),
       temperature: 0.6,
       max_tokens: 1024,
-      response_format: tools.length === 0 ? { type: 'json_object' } : undefined,
       messages: [{ role: 'system', content: system }, ...messages],
       tools: tools.length > 0 ? tools : undefined
     }),
@@ -640,7 +659,9 @@ const PROVIDERS = {
       'X-Title': 'Mwanga Binth (Free Fallback)'
     }),
     body: (messages, system, tools = []) => ({
-      model: process.env.OPENROUTER_FREE_MODEL || 'meta-llama/llama-3.3-70b-instruct:free',
+      // OpenRouter tries these in order; "openrouter/free" picks whichever free
+      // model is available, since individual ":free" slugs come and go.
+      models: openRouterFreeModels(),
       temperature: 0.6,
       max_tokens: 1024,
       messages: [{ role: 'system', content: system }, ...messages],
@@ -736,13 +757,19 @@ function isAuthFailure(errorMessage) {
 
 // ─── Expert Rule Engine (Local Intelligence Fallback) ───────────────────────────
 const BINTH_INTENT_RULES = {
+  giving: {
+    keywords: ['dízimo', 'dizimo', 'dízimos', 'oferta', 'ofertas', 'doação', 'doacao', 'doar', 'igreja', 'contribuir', 'generosidade'],
+    message: "{name}, muitas pessoas usam como referência o dízimo de 10% do que recebem. Com as entradas deste mês (MT {income}), 10% seriam cerca de **MT {tithe}**. A decisão é tua e de consciência: dá com alegria e dentro do que consegues, sem deixar de cobrir o essencial (casa, comida, dívidas). Podes registar como despesa na categoria Igreja/Doações para acompanhar.",
+    biblical_insight: "Generosidade: Cada um dê conforme decidiu no coração, não com tristeza nem por obrigação.",
+    actions: ["Registar Dízimo", "Ver Orçamento", "Resumo do Mês"]
+  },
   greetings: {
     keywords: ['olá', 'oi', 'bom dia', 'boa tarde', 'boa noite', 'binth', 'ajuda'],
     message: "Olá {name}! Como posso ajudar-te hoje? Posso analisar os teus gastos, metas ou dívidas para te dar um ponto de situação moçambicano real.",
     actions: ["Analisar Gastos", "Ver Metas", "Estado das Dívidas"]
   },
   expenses: {
-    keywords: ['gasto', 'despesa', 'pagamento', 'comprei', 'custou', 'saída', 'perdi', 'dinheiro', 'registo', 'registar'],
+    keywords: ['gasto', 'gastos', 'gastei', 'despesa', 'despesas', 'pagamento', 'comprei', 'custou', 'saída', 'perdi', 'dinheiro', 'registo', 'registar'],
     message: "Até agora este mês, já gastaste MT {expenses}. {extra_msg} O que queres detalhar mais?",
     actions: ["Categorias Maiores", "Ver Orçamentos", "Últimas Saídas"]
   },
@@ -752,12 +779,12 @@ const BINTH_INTENT_RULES = {
     actions: ["Ver Receitas", "Relatório Mensal", "Prever Próximo Mês"]
   },
   debt: {
-    keywords: ['dívida', 'devo', 'emprestimo', 'crédito', 'banco', 'pagar', 'juros', 'amortização', 'amortizar', 'plano de amortização'],
+    keywords: ['dívida', 'dívidas', 'divida', 'dividas', 'empréstimo', 'emprestimo', 'crédito', 'credito', 'juros', 'amortização', 'amortizar', 'credor'],
     message: "Atualmente tens MT {debts} em dívidas pendentes. {debt_msg}",
     actions: ["Plano de Amortização", "Ver Dívidas", "Simular Crédito"]
   },
   goals: {
-    keywords: ['meta', 'poup', 'objetivo', 'xitique', 'guardar', 'metas'],
+    keywords: ['meta', 'metas', 'poupar', 'poupança', 'poupanca', 'poupo', 'objetivo', 'objetivos', 'xitique', 'guardar'],
     message: "O teu progresso nas metas está em {goal_count} objetivos ativos. A meta '{top_goal}' já vai em {top_goal_pct}%.",
     actions: ["Reforçar {top_goal}", "Novas Metas", "Ver Poupança"]
   },
@@ -772,7 +799,7 @@ const BINTH_INTENT_RULES = {
     actions: ["Simular Crédito", "Simular Poupança", "Simular Xitique"]
   },
   learning: {
-    keywords: ['aprende', 'aprendizado', 'inteligência', 'como funciona', 'gerir', 'ajuda-me', 'me ajuda', 'gerir finanças', 'analisa os meus dados', 'dados financeiros'],
+    keywords: ['aprende', 'aprendes', 'aprender', 'aprendizado', 'inteligência', 'como funciona', 'gerir', 'ajuda-me', 'me ajuda', 'gerir finanças', 'analisa os meus dados', 'dados financeiros'],
     message: "Olá {name}! Eu aprendo diretamente com o teu histórico real de transações, contas, orçamentos, dívidas e metas no Mwanga. Ao analisar o teu ecossistema financeiro atual, detetei:\n\n📊 **Score de Mordomia:** A tua nota geral é **{score}/100**.\n💰 **Caixa Disponível:** Tens **MT {cash}** de saldo líquido nas tuas contas.\n📉 **Pista de Caixa (Runway):** Os teus saldos cobrem **{runway_months} meses** de gastos.\n📈 **Desvios:** {overdue_msg}\n\nCom base nestes padrões reais, a tua prioridade número um hoje é **{priority}** porque *{priority_reason}*.\n\nA minha próxima recomendação de ação para ti é: **{priority_next}**.",
     actions: ["Ver Diagnóstico", "Analisar Gastos", "Rever Orçamentos"]
   }
@@ -889,8 +916,10 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
   let selectedRule = null;
   let intentMatched = false;
 
-  for (const [intentId, rule] of Object.entries(BINTH_INTENT_RULES)) {
-    if (rule.keywords.some(k => msg.includes(k))) {
+  // Whole words only: "oi" must not match "dois", nor "renda" match "rendas" etc.
+  const hasWord = (k) => new RegExp(`(^|[^a-zà-ÿ])${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^a-zà-ÿ])`, 'i').test(msg);
+  for (const rule of Object.values(BINTH_INTENT_RULES)) {
+    if (rule.keywords.some(hasWord)) {
       selectedRule = rule;
       intentMatched = true;
       break;
@@ -936,6 +965,7 @@ function getFallbackResponse(userMessage, contextSummary = {}) {
     .replace(/{name}/g, name)
     .replace(/{cash}/g, cashAvailable.toLocaleString('pt-MZ'))
     .replace(/{income}/g, income.toLocaleString('pt-MZ'))
+    .replace(/{tithe}/g, Math.round(income * 0.1).toLocaleString('pt-MZ'))
     .replace(/{expenses}/g, expenses.toLocaleString('pt-MZ'))
     .replace(/{net_month}/g, (income - expenses).toLocaleString('pt-MZ'))
     .replace(/{debts}/g, debts.toLocaleString('pt-MZ'))
@@ -1001,14 +1031,34 @@ function ownerKey(p) {
   return null;
 }
 
+// A short, key-free description of why a provider call failed, e.g.
+// "openrouter · HTTP 400 · Model not found". Never includes request data or keys.
+function describeProviderError(p, err) {
+  const label = p === 'openrouter_free' ? 'openrouter (grátis)' : p;
+  if (err?.name === 'TimeoutError' || err?.name === 'AbortError') return `${label} · sem resposta a tempo`;
+  let message = '';
+  try {
+    const parsed = JSON.parse(err?.detail || '');
+    const e = Array.isArray(parsed) ? parsed[0]?.error : parsed?.error;
+    message = (typeof e === 'string' ? e : e?.message) || parsed?.message || '';
+  } catch { message = String(err?.detail || ''); }
+  message = message
+    .replace(/(sk-[\w-]{6,}|AIza[\w-]{10,}|gsk_[\w]{6,}|Bearer\s+\S+)/g, '[chave]')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 160);
+  const status = err?.status ? `HTTP ${err.status}` : (err?.message || 'erro');
+  return [label, status, message].filter(Boolean).join(' · ');
+}
+
 function providerError(status, text, kind) {
   const error = new Error(status ? `HTTP ${status}` : 'empty response');
   error.kind = kind || classifyProviderError(status, text);
   return error;
 }
 
-async function postProvider(config, activeKey, payload, timeoutMs) {
-  const res = await fetch(config.url(activeKey), {
+async function postProvider(config, activeKey, payload, timeoutMs, opts = {}) {
+  const res = await fetch(config.url(activeKey, opts), {
     method: 'POST',
     headers: config.headers(activeKey),
     body: JSON.stringify(payload),
@@ -1028,17 +1078,33 @@ async function postProvider(config, activeKey, payload, timeoutMs) {
 // 400/404/422 on a request with tools usually means the model or route does not
 // support function calling (or rejects a schema). Answer without tools instead.
 const TOOL_REJECTION_STATUSES = new Set([400, 404, 422]);
+function rejectsTools(err) {
+  if (!TOOL_REJECTION_STATUSES.has(err.status)) return false;
+  // A missing or withdrawn model is not a tools problem: retrying would fail again.
+  return /tool|function/i.test(String(err.detail || ''));
+}
 
 async function callProvider(p, activeKey, messages, activeSystem, householdId, summary, timeoutMs = PROVIDER_TIMEOUT_MS, language = 'pt') {
   const config = PROVIDERS[p];
   const tools = ToolRegistry.getToolsSchema();
+  const started = Date.now();
+  const left = () => Math.max(3000, timeoutMs - (Date.now() - started));
   let data;
+  let opts = {};
   try {
-    data = await postProvider(config, activeKey, config.body(messages, activeSystem, tools), timeoutMs);
+    data = await postProvider(config, activeKey, config.body(messages, activeSystem, tools, opts), timeoutMs, opts);
   } catch (err) {
-    if (!(tools.length > 0 && TOOL_REJECTION_STATUSES.has(err.status))) throw err;
-    logger.warn({ provider: p, status: err.status, detail: err.detail }, 'Binth provider rejected tools; retrying without tools');
-    data = await postProvider(config, activeKey, config.body(messages, activeSystem), timeoutMs);
+    if (p === 'gemini' && [429, 500, 503].includes(err.status) && err.kind !== 'no_credits' && geminiModel() !== GEMINI_FALLBACK_MODEL) {
+      // Gemini "high demand": try the lighter model once.
+      logger.warn({ provider: p, status: err.status, fallback: GEMINI_FALLBACK_MODEL }, 'Binth Gemini busy; retrying with fallback model');
+      opts = { model: GEMINI_FALLBACK_MODEL };
+      data = await postProvider(config, activeKey, config.body(messages, activeSystem, tools, opts), left(), opts);
+    } else if (tools.length > 0 && rejectsTools(err)) {
+      logger.warn({ provider: p, status: err.status, detail: err.detail }, 'Binth provider rejected tools; retrying without tools');
+      data = await postProvider(config, activeKey, config.body(messages, activeSystem, [], opts), left(), opts);
+    } else {
+      throw err;
+    }
   }
   const raw = config.extract(data) || '';
   const toolCall = config.extractToolCall(data);
@@ -1058,7 +1124,7 @@ async function callProvider(p, activeKey, messages, activeSystem, householdId, s
         content: `${last?.content || ''}\n\n[Dados calculados pelo Mwanga (${toolCall.name}): ${JSON.stringify(toolResult.data)}]\nResponde à pergunta acima com base nestes dados, no formato JSON pedido.`,
       },
     ];
-    const data2 = await postProvider(config, activeKey, config.body(nextMessages, activeSystem), timeoutMs);
+    const data2 = await postProvider(config, activeKey, config.body(nextMessages, activeSystem, [], opts), left(), opts);
     const raw2 = config.extract(data2) || '';
     if (!raw2.trim()) throw providerError(0, '', 'unavailable');
     return parseBinthResponse(raw2, summary);
@@ -1094,8 +1160,10 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
   for (const p of order) attempts.push({ p, key: p === 'ollama' ? null : ownerKey(p), personal: false });
 
   let personalIssue = null;
+  let personalDetail = null;
   let ownerIssue = null;
   const startedAt = Date.now();
+  let ownerStartedAt = null;
   // Free plan: a daily number of answers from Mwanga's own AI keys. Personal keys
   // and paid plans are not limited. Page insights are cached and not counted.
   // Counted only when the answer would come from Mwanga's keys.
@@ -1105,8 +1173,14 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
     if (p !== 'ollama' && !key) continue;
     // Never keep the person waiting for minutes: once the budget is spent,
     // answer with the local rules instead of trying the next provider.
-    const remaining = TOTAL_BUDGET_MS - (Date.now() - startedAt);
-    if (p !== 'ollama' && remaining < 3000) break;
+    if (!attempt.personal && ownerStartedAt === null) ownerStartedAt = Date.now();
+    const remaining = attempt.personal
+      ? PERSONAL_BUDGET_MS - (Date.now() - startedAt)
+      : OWNER_BUDGET_MS - (Date.now() - ownerStartedAt);
+    if (p !== 'ollama' && remaining < 3000) {
+      if (attempt.personal) continue; // personal time is up: go to Mwanga's keys
+      break;
+    }
     if (!attempt.personal && countTowardsQuota && quota === null) {
       try { quota = await checkDailyAiQuota(householdId, userId); }
       catch { quota = { allowed: true }; }
@@ -1119,13 +1193,15 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
     try {
       const timeoutMs = p === 'ollama' ? 120000 : Math.min(PROVIDER_TIMEOUT_MS, remaining);
       const response = await callProvider(p, key, messages, activeSystem, householdId, userContext.summary, timeoutMs, language);
-      if (personalIssue && !attempt.personal) response.data = { ...response.data, ai_notice: `personal_${personalIssue}` };
+      if (personalIssue && !attempt.personal) response.data = { ...response.data, ai_notice: `personal_${personalIssue}`, ai_detail: personalDetail };
       return withFreshness(response, userContext.summary, language, isFirstTurn);
     } catch (err) {
       const kind = err.kind || 'unavailable';
       if (attempt.personal) {
         // Keep the most actionable reason across the paid and free attempts.
         if (!personalIssue || personalIssue === 'unavailable' || kind === 'no_credits') personalIssue = kind;
+        // Shown to the person (it is their own account), so they can fix it.
+        if (!personalDetail || attempt.p === personal.provider) personalDetail = describeProviderError(p, err);
         logger.warn({ provider: p, kind, status: err.status, detail: err.detail }, 'Binth personal AI key failed');
         continue;
       }
@@ -1151,6 +1227,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
       state: 'offline',
       reason,
       has_personal_key: !!personal,
+      ...(personalDetail ? { detail: personalDetail } : {}),
       ...(quota && !quota.allowed ? { daily_limit: quota.limit } : {}),
     },
   };

@@ -68,7 +68,7 @@ test('an OpenRouter personal key without credits retries the free model with the
     .mockResolvedValueOnce(groqOk('{"message":"Free!","quick_actions":[]}'));
   const result = await callBinth({ messages: [{ role: 'user', content: 'Oi' }], householdId: 7, userId: 3 });
   expect(fetch).toHaveBeenCalledTimes(2);
-  expect(JSON.parse(fetch.mock.calls[1][1].body).model).toMatch(/:free$/);
+  expect(JSON.parse(fetch.mock.calls[1][1].body).models).toContain('openrouter/free');
   expect(fetch.mock.calls[1][1].headers.Authorization).toBe('Bearer personal-secret-key');
   expect(result.message).toBe('Free!');
   expect(result.data.ai_notice).toBeUndefined();
@@ -132,4 +132,44 @@ test('a personal key whose model rejects tools still answers (retries without to
   expect(result.message).toBe('Resposta com a tua chave');
   expect(result.data?.ai_notice).toBeUndefined();
   tools.getToolsSchema.mockReturnValue([]);
+});
+test('when the personal key fails, the reason from the provider is shown and Mwanga still answers', async () => {
+  process.env.NODE_ENV = 'production'; process.env.GROQ_API_KEY = 'owner-groq';
+  delete process.env.GEMINI_API_KEY; delete process.env.OPENROUTER_API_KEY;
+  savePersonal('openrouter', 'sk-or-v1-secretsecret');
+  fetch.mockResolvedValueOnce(failing(400, '{"error":{"message":"google/gemini-2.5-flash is not a valid model ID"}}'))
+    .mockResolvedValueOnce(failing(404, '{"error":{"message":"No endpoints found for meta-llama/llama-3.3-70b-instruct:free"}}'))
+    .mockResolvedValueOnce(groqOk('{"message":"Resposta","quick_actions":[]}'));
+  const result = await callBinth({ messages: [{ role: 'user', content: 'Oi' }], householdId: 7, userId: 3 });
+  expect(result.message).toBe('Resposta');
+  expect(result.data.ai_notice).toBe('personal_unavailable');
+  expect(result.data.ai_detail).toContain('not a valid model ID');
+  expect(result.data.ai_detail).not.toContain('secret');
+});
+test('a withdrawn ":free" slug in OPENROUTER_MODEL is ignored for the paid attempt', async () => {
+  process.env.OPENROUTER_MODEL = 'qwen/qwen-2.5-7b-instruct:free';
+  savePersonal('openrouter');
+  fetch.mockResolvedValueOnce(groqOk('{"message":"Ok","quick_actions":[]}'));
+  await callBinth({ messages: [{ role: 'user', content: 'Oi' }], householdId: 7, userId: 3 });
+  expect(JSON.parse(fetch.mock.calls[0][1].body).model).toBe('google/gemini-2.5-flash');
+  delete process.env.OPENROUTER_MODEL;
+});
+test('a missing model is not retried as a tools problem', async () => {
+  tools.getToolsSchema.mockReturnValue([{ type: 'function', function: { name: 'x', description: 'x', parameters: { type: 'object', properties: { a: { type: 'string' } } } } }]);
+  process.env.NODE_ENV = 'production';
+  delete process.env.GEMINI_API_KEY; delete process.env.GROQ_API_KEY; delete process.env.OPENROUTER_API_KEY;
+  savePersonal('groq');
+  fetch.mockResolvedValueOnce(failing(404, '{"error":{"message":"The model llama-x does not exist"}}'));
+  const result = await callBinth({ messages: [{ role: 'user', content: 'Oi' }], householdId: 7, userId: 3 });
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(result.data.ai_status.detail).toContain('does not exist');
+  tools.getToolsSchema.mockReturnValue([]);
+});
+test('Gemini "high demand" retries once with the fallback model', async () => {
+  fetch.mockResolvedValueOnce(failing(503, '{"error":{"message":"The model is overloaded"}}'))
+    .mockResolvedValueOnce(response([{ text: '{"message":"Ok 2.0","quick_actions":[]}' }]));
+  const result = await callBinth({ messages: [{ role: 'user', content: 'Oi' }], householdId: 7, userId: 3, apiKey: 'test-key', provider: 'gemini' });
+  expect(fetch.mock.calls[1][0]).toContain('gemini-2.0-flash');
+  expect(JSON.parse(fetch.mock.calls[1][1].body).generationConfig.thinkingConfig).toBeUndefined();
+  expect(result.message).toBe('Ok 2.0');
 });

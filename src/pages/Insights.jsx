@@ -501,6 +501,11 @@ export default function Insights() {
                     }}>
                       <div style={{ fontWeight: 700, color: 'var(--ins-amber)' }}>{t(`ai_status.${reason}`, { defaultValue: t('ai_status.service_unavailable') })}</div>
                       <div style={{ marginTop: 4 }}>{msg.data.ai_notice ? t('ai_status.used_mwanga') + ' ' : ''}{t(personal ? 'ai_status.fix_hint' : 'ai_status.connect_hint')}</div>
+                      {(msg.data.ai_status?.detail || msg.data.ai_detail) && (
+                        <div style={{ marginTop: 4, fontSize: 11, opacity: 0.8, wordBreak: 'break-word' }}>
+                          {t('ai_status.detail_label')} {msg.data.ai_status?.detail || msg.data.ai_detail}
+                        </div>
+                      )}
                       <button type="button" onClick={() => navigate('/settings?tab=ai')} style={{
                         marginTop: 8, padding: '8px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700,
                         background: '#F59E0B', color: '#1f1300', border: 'none', cursor: 'pointer',

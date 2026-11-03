@@ -2981,7 +2981,8 @@
     "used_mwanga": "This time I used Mwanga's AI.",
     "connect_btn": "Connect my AI",
     "fix_btn": "Check AI connection",
-    "daily_limit": "You reached today's limit of Mwanga AI answers on the Starter plan, so I answered with local intelligence."
+    "daily_limit": "You reached today's limit of Mwanga AI answers on the Starter plan, so I answered with local intelligence.",
+    "detail_label": "Provider said:"
   },
   "binth_actions": {
     "confirm": "Confirm",
