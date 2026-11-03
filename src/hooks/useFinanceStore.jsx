@@ -20,6 +20,7 @@ import {
   apiCall
 } from '../services/finance.service';
 import { getToken, tokenUserId } from '../utils/authToken';
+import { saveWrite } from '../utils/offlineQueue';
 
 const defaultState = {
   transacoes: [],
@@ -253,6 +254,30 @@ export function FinanceProvider({ children }) {
   const apiDispatch = async (action) => {
     const { payload, type } = action;
 
+    const refreshDebts = async () => {
+      const [d, t, a] = await Promise.all([apiCall('debts'), apiCall('transactions'), apiCall('accounts')]);
+      dispatch({ type: 'SET_DATA', payload: { dividas: d, transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
+    };
+    const refreshXitiques = async () => {
+      const [x, t, a] = await Promise.all([apiCall('xitiques'), apiCall('transactions'), apiCall('accounts')]);
+      dispatch({ type: 'SET_DATA', payload: { xitiques: x.map(mapXitique), transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
+    };
+
+    // Saves one write; see saveWrite for the outcomes ('saved', 'queued', 'already_done').
+    const persistWrite = (queuePayload, { refresh, offline, optimistic = true }) => saveWrite({
+      type,
+      payload: queuePayload,
+      requestId: action.requestId || undefined,
+      apiCall,
+      refresh,
+      onQueued: async () => {
+        if (offline) { try { await offline(); } catch { /* local cache only */ } }
+        if (optimistic) dispatch({ type, payload });
+      },
+      // Saved on the server; show it now and let the next reload bring the rest.
+      onRefreshFailed: () => { if (optimistic) dispatch({ type, payload }); },
+    });
+
     // Budget keeps its existing optimistic flow. Profile and settings are committed
     // locally only after the server confirms success. Passwords never enter state.
     if (['SET_BUDGET'].includes(type)) {
@@ -278,51 +303,42 @@ export function FinanceProvider({ children }) {
       }
       case 'ADD_TRANSACTION': {
         const body = { date: payload.data, type: payload.tipo, description: payload.desc, amount: payload.valor, category: normalizeCategory(payload.cat), note: payload.nota, account_id: payload.account_id };
-        try {
-          await apiCall('transactions', 'POST', body);
-          const [t, a] = await Promise.all([apiCall('transactions'), apiCall('accounts')]);
-          dispatch({ type: 'SET_DATA', payload: { transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
-        } catch {
-          await db.transacoes.add(mapTransaction({ ...body, id: `offline-${Date.now()}` }));
-          await db.pendingActions.add({ type, payload: body, timestamp: Date.now() });
-          dispatch({ type, payload });
-        }
-        return;
+        return persistWrite(body, {
+          refresh: async () => {
+            const [t, a] = await Promise.all([apiCall('transactions'), apiCall('accounts')]);
+            dispatch({ type: 'SET_DATA', payload: { transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
+          },
+          offline: () => db.transacoes.add(mapTransaction({ ...body, id: `offline-${Date.now()}` })),
+        });
       }
       case 'DELETE_TRANSACTION': {
-        try {
-          await apiCall(`transactions/${payload}`, 'DELETE');
-          const a = await apiCall('accounts');
-          dispatch({ type: 'SET_DATA', payload: { contas: a.map(mapAccount) } });
-        } catch {
-          await db.pendingActions.add({ type, payload, timestamp: Date.now() });
-        }
+        const result = await persistWrite(payload, {
+          refresh: async () => {
+            const a = await apiCall('accounts');
+            dispatch({ type: 'SET_DATA', payload: { contas: a.map(mapAccount) } });
+          },
+          optimistic: false,
+        });
         dispatch({ type, payload });
-        return;
+        return result;
       }
       case 'ADD_RENDA': {
         const body = { month: payload.mes, landlord: payload.proprietario, amount: payload.valor, status: payload.estado, notes: payload.obs };
-        try {
-          await apiCall('rentals', 'POST', body);
-          const r = await apiCall('rentals');
-          dispatch({ type: 'SET_DATA', payload: { rendas: r.map(mapRental) } });
-        } catch {
-          await db.pendingActions.add({ type, payload: body, timestamp: Date.now() });
-          dispatch({ type, payload });
-        }
-        return;
+        return persistWrite(body, {
+          refresh: async () => {
+            const r = await apiCall('rentals');
+            dispatch({ type: 'SET_DATA', payload: { rendas: r.map(mapRental) } });
+          },
+        });
       }
       case 'UPDATE_META': {
         const body = { savedAmount: payload.poupado, account_id: payload.account_id, increment: payload.increment };
-        try {
-          await apiCall(`goals/${payload.id}`, 'PUT', body);
-          const [g, a, t] = await Promise.all([apiCall('goals'), apiCall('accounts'), apiCall('transactions')]);
-          dispatch({ type: 'SET_DATA', payload: { metas: g.map(mapGoal), contas: a.map(mapAccount), transacoes: t.map(mapTransaction) } });
-        } catch {
-          await db.pendingActions.add({ type, payload: { id: payload.id, ...body }, timestamp: Date.now() });
-          dispatch({ type, payload });
-        }
-        return;
+        return persistWrite({ id: payload.id, ...body }, {
+          refresh: async () => {
+            const [g, a, t] = await Promise.all([apiCall('goals'), apiCall('accounts'), apiCall('transactions')]);
+            dispatch({ type: 'SET_DATA', payload: { metas: g.map(mapGoal), contas: a.map(mapAccount), transacoes: t.map(mapTransaction) } });
+          },
+        });
       }
       case 'ADD_DEBT': {
         const body = {
@@ -336,16 +352,10 @@ export function FinanceProvider({ children }) {
           monthly_payment: payload.monthly_payment || 0,
           principal_amount: payload.principal_amount || payload.total_amount
         };
-        try {
-          await apiCall('debts', 'POST', body);
-          const [d, t, a] = await Promise.all([apiCall('debts'), apiCall('transactions'), apiCall('accounts')]);
-          dispatch({ type: 'SET_DATA', payload: { dividas: d, transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
-        } catch {
-          await db.dividas.add({ ...body, id: `offline-${Date.now()}`, remaining_amount: body.total_amount, status: 'pending' });
-          await db.pendingActions.add({ type, payload: body, timestamp: Date.now() });
-          dispatch({ type, payload });
-        }
-        return;
+        return persistWrite(body, {
+          refresh: refreshDebts,
+          offline: () => db.dividas.add({ ...body, id: `offline-${Date.now()}`, remaining_amount: body.total_amount, status: 'pending' }),
+        });
       }
       case 'UPDATE_DEBT': {
         const body = {
@@ -358,27 +368,11 @@ export function FinanceProvider({ children }) {
           monthly_payment: Number(payload.monthly_payment),
           principal_amount: Number(payload.principal_amount)
         };
-        try {
-          await apiCall(`debts/${payload.id}`, 'PUT', body);
-          const [d, t, a] = await Promise.all([apiCall('debts'), apiCall('transactions'), apiCall('accounts')]);
-          dispatch({ type: 'SET_DATA', payload: { dividas: d, transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
-        } catch {
-          await db.pendingActions.add({ type, payload: { id: payload.id, ...body }, timestamp: Date.now() });
-          dispatch({ type, payload });
-        }
-        return;
+        return persistWrite({ id: payload.id, ...body }, { refresh: refreshDebts });
       }
       case 'PAY_DEBT': {
         const body = { debtId: payload.debtId, amount: payload.amount, payment_date: payload.payment_date, account_id: payload.account_id };
-        try {
-          await apiCall(`debts/${payload.debtId}/pay`, 'POST', body);
-          const [d, t, a] = await Promise.all([apiCall('debts'), apiCall('transactions'), apiCall('accounts')]);
-          dispatch({ type: 'SET_DATA', payload: { dividas: d, transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
-        } catch {
-          await db.pendingActions.add({ type, payload: body, timestamp: Date.now() });
-          dispatch({ type, payload });
-        }
-        return;
+        return persistWrite(body, { refresh: refreshDebts });
       }
       case 'ADD_XITIQUE': {
         const body = { 
@@ -388,50 +382,31 @@ export function FinanceProvider({ children }) {
           startDate: payload.start_date, 
           yourPosition: payload.your_position 
         };
-        try {
-          await apiCall('xitiques', 'POST', body);
-          const x = await apiCall('xitiques');
-          dispatch({ type: 'SET_DATA', payload: { xitiques: x.map(mapXitique) } });
-        } catch {
-          await db.pendingActions.add({ type, payload: body, timestamp: Date.now() });
-          dispatch({ type, payload });
-        }
-        return;
+        return persistWrite(body, {
+          refresh: async () => {
+            const x = await apiCall('xitiques');
+            dispatch({ type: 'SET_DATA', payload: { xitiques: x.map(mapXitique) } });
+          },
+        });
       }
       case 'DELETE_XITIQUE': {
-        try {
-          await apiCall(`xitiques/${payload}`, 'DELETE');
-          const x = await apiCall('xitiques');
-          dispatch({ type: 'SET_DATA', payload: { xitiques: x.map(mapXitique) } });
-        } catch {
-          await db.pendingActions.add({ type, payload, timestamp: Date.now() });
-        }
+        const result = await persistWrite(payload, {
+          refresh: async () => {
+            const x = await apiCall('xitiques');
+            dispatch({ type: 'SET_DATA', payload: { xitiques: x.map(mapXitique) } });
+          },
+          optimistic: false,
+        });
         dispatch({ type, payload });
-        return;
+        return result;
       }
       case 'PAY_XITIQUE': {
-        const body = { date: payload.date, account_id: payload.account_id };
-        try {
-          await apiCall(`xitiques/pay/${payload.contributionId}`, 'POST', body);
-          const [x, t, a] = await Promise.all([apiCall('xitiques'), apiCall('transactions'), apiCall('accounts')]);
-          dispatch({ type: 'SET_DATA', payload: { xitiques: x.map(mapXitique), transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
-        } catch {
-          await db.pendingActions.add({ type, payload, timestamp: Date.now() });
-          dispatch({ type, payload });
-        }
-        return;
+        const body = { contributionId: payload.contributionId, date: payload.date, account_id: payload.account_id };
+        return persistWrite(body, { refresh: refreshXitiques });
       }
       case 'RECEIVE_XITIQUE': {
-        const body = { date: payload.date, account_id: payload.account_id };
-        try {
-          await apiCall(`xitiques/receive/${payload.receiptId}`, 'POST', body);
-          const [x, t, a] = await Promise.all([apiCall('xitiques'), apiCall('transactions'), apiCall('accounts')]);
-          dispatch({ type: 'SET_DATA', payload: { xitiques: x.map(mapXitique), transacoes: t.map(mapTransaction), contas: a.map(mapAccount) } });
-        } catch {
-          await db.pendingActions.add({ type, payload, timestamp: Date.now() });
-          dispatch({ type, payload });
-        }
-        return;
+        const body = { receiptId: payload.receiptId, date: payload.date, account_id: payload.account_id };
+        return persistWrite(body, { refresh: refreshXitiques });
       }
       case 'ADD_ACCOUNT': {
         const body = { name: payload.name.trim(), type: payload.type, initial_balance: Number(payload.initial_balance || 0) };

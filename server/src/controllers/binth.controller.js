@@ -223,13 +223,10 @@ const getPageInsight = async (req, res, next) => {
     const prompt = pagePrompts[page] || "Dá-me um conselho financeiro útil baseado nos meus dados.";
     const language = resolveLanguage(req.body?.language || req.query?.language || req.get('Accept-Language'));
 
-    // Cache per page; the version changes whenever transactions change, so new
-    // records still produce a fresh insight. ?refresh=1 skips the cache.
-    const versionRes = await db.execute({
-      sql: 'SELECT COUNT(*) as n, MAX(id) as last FROM transactions WHERE household_id = ?',
-      args: [householdId]
-    }).catch(() => null);
-    const version = versionRes?.rows?.[0] ? `${versionRes.rows[0].n || 0}-${versionRes.rows[0].last || 0}` : 'v0';
+    // Cache per page. The version is a fingerprint of the data the insight reads
+    // (transactions, accounts, debts, budgets, goals) plus today's date, so any
+    // add, edit or delete gives a fresh insight. ?refresh=1 skips the cache.
+    const version = await dataVersion(householdId);
     const key = cacheKey({ householdId, userId: req.user.id, page, language, version });
     const refresh = String(req.query?.refresh || '') === '1';
     if (!refresh) {
@@ -243,7 +240,7 @@ const getPageInsight = async (req, res, next) => {
       userId: req.user.id,
       language
     });
-    await setCachedInsight(key, response);
+    if (!version.startsWith('nocache-')) await setCachedInsight(key, response);
 
     res.json(response);
   } catch (err) {
@@ -256,6 +253,28 @@ const getPageInsight = async (req, res, next) => {
     });
   }
 };
+
+// Fingerprint of everything a page insight depends on. If it cannot be computed,
+// a unique value is returned so a stale insight is never served.
+const VERSION_TABLES = ['accounts', 'debts', 'budgets', 'goals'];
+async function dataVersion(householdId) {
+  const today = new Date().toISOString().slice(0, 10);
+  const rowsHash = (table) => `(SELECT md5(COALESCE(string_agg(r::text, ',' ORDER BY r.id), '')) FROM ${table} r WHERE r.household_id = ?)`;
+  try {
+    const res = await db.execute({
+      sql: `SELECT md5(concat_ws('|',
+              (SELECT COUNT(*) FROM transactions WHERE household_id = ?),
+              (SELECT md5(COALESCE(string_agg(t::text, ',' ORDER BY t.id), ''))
+                 FROM (SELECT * FROM transactions WHERE household_id = ? ORDER BY id DESC LIMIT 300) t),
+              ${VERSION_TABLES.map(rowsHash).join(',\n              ')}
+            )) AS version`,
+      args: [householdId, householdId, ...VERSION_TABLES.map(() => householdId)],
+    });
+    const version = res?.rows?.[0]?.version;
+    if (version) return `${today}-${version}`;
+  } catch { /* fall through */ }
+  return `nocache-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 const getPriority = async (req, res) => {
   try {
@@ -283,4 +302,4 @@ const getPriority = async (req, res) => {
   }
 };
 
-module.exports = { chat, getScore, getPageInsight, getPriority };
+module.exports = { chat, getScore, getPageInsight, getPriority, dataVersion };

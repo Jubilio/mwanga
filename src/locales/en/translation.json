@@ -2990,6 +2990,8 @@
     "saving": "Saving...",
     "done": "Done. Saved in Mwanga.",
     "cancelled": "Cancelled. Nothing was saved.",
-    "failed": "I could not save it. Please try again."
+    "failed": "I could not save it. Please try again.",
+    "queued": "Saved on this phone. It will be sent when you are back online.",
+    "already_done": "This was already recorded. I did not record it again."
   }
 }

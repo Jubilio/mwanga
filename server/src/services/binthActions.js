@@ -25,14 +25,19 @@ function guessCategory(text, type) {
   return type === 'receita' ? 'other' : 'other';
 }
 
-function today() { return new Date().toISOString().slice(0, 10); }
+// Dates are compared as calendar days in Mozambique (UTC+2), not as instants:
+// "tomorrow" is refused even late at night when UTC is still on the previous day.
+const MZ_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Maputo', year: 'numeric', month: '2-digit', day: '2-digit' });
+function today(now = new Date()) { return MZ_DAY.format(now); }
 
-function cleanDate(value) {
+function cleanDate(value, now = new Date()) {
   const s = String(value || '').slice(0, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(s) || Number.isNaN(new Date(s).getTime())) return today();
+  const todayStr = today(now);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s) || Number.isNaN(new Date(`${s}T00:00:00Z`).getTime())) return todayStr;
   // No future dates, and nothing older than a year from a chat message.
-  const t = new Date(s).getTime();
-  if (t > Date.now() + 24 * 3600 * 1000 || t < Date.now() - 366 * 24 * 3600 * 1000) return today();
+  if (s > todayStr) return todayStr;
+  const oldest = today(new Date(now.getTime() - 366 * 24 * 3600 * 1000));
+  if (s < oldest) return todayStr;
   return s;
 }
 
@@ -141,4 +146,4 @@ function detectQuickTransaction(message) {
   return result.success ? result.proposal : null;
 }
 
-module.exports = { proposeTransaction, proposeDebtPayment, proposeXitiquePayment, proposalResponse, detectQuickTransaction, guessCategory, parseAmount, CATEGORIES };
+module.exports = { cleanDate, today, proposeTransaction, proposeDebtPayment, proposeXitiquePayment, proposalResponse, detectQuickTransaction, guessCategory, parseAmount, CATEGORIES };

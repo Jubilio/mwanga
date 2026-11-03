@@ -20,7 +20,7 @@ const corsOptions = {
   origin: allowedOrigins,
   credentials: true,
   methods: allowedMethods,
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key']
 };
 
 module.exports = { corsOptions, allowedOrigins, allowedMethods };

@@ -318,7 +318,10 @@ export async function apiCall(endpoint, method = 'GET', body = null, headers = {
 
   if (response.status < 200 || response.status >= 300) {
     const errorData = response.data && typeof response.data === 'object' ? response.data : {};
-    throw new Error(errorData.message || errorData.error || `API Error: ${response.status}`);
+    const error = new Error(errorData.message || errorData.error || `API Error: ${response.status}`);
+    error.status = response.status;
+    if (errorData.code) error.code = errorData.code;
+    throw error;
   }
 
   return response.status === 204 ? null : response.data;

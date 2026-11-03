@@ -91,6 +91,9 @@ const addPayment = async (householdId, debtId, paymentData) => {
   });
   const debt = result.rows[0];
   if (!debt) throw new Error('NOT_FOUND');
+  // A settled debt takes no more payments (a repeated tap or old proposal would
+  // otherwise record a second expense).
+  if (debt.status === 'paid' || Number(debt.remaining_amount) <= 0) throw new Error('ALREADY_PAID');
 
   const newRemaining = Math.max(0, Number(debt.remaining_amount) - numAmount);
   const newStatus = newRemaining === 0 ? 'paid' : 'pending';

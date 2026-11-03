@@ -403,6 +403,10 @@ OPENROUTER_FREE_MODEL=...              # Modelo gratuito preferido (tenta-se dep
 GEMINI_MODEL=...                       # Modelo Gemini directo (default: gemini-2.5-flash)
 GROQ_MODEL=...                         # Modelo Groq (default: llama-3.1-8b-instant)
 GEMINI_FALLBACK_MODEL=...              # Modelo Gemini se o principal estiver sobrecarregado (default: gemini-2.0-flash)
+BINTH_FREE_DAILY_LIMIT=20              # Respostas/dia com as chaves do Mwanga no plano grátis (contador no Redis, senão na tabela binth_daily_usage; se não contar, recusa)
+# Binth: prazo absoluto de 25 s por resposta (a chave pessoal usa no máximo os primeiros 12 s).
+# Escritas financeiras: o app envia Idempotency-Key; o servidor guarda em idempotency_keys (14 dias)
+# e responde igual a um pedido repetido, sem gravar duas vezes.
 
 # Local Ollama (offline / on-premise)
 OLLAMA_ENABLED=true                    # Habilita o uso de Ollama local como primeira opção em desenvolvimento

@@ -87,92 +87,96 @@ const deleteXitique = async (householdId, xitiqueId) => {
   return { success: true };
 };
 
+// Marks the contribution as paid and records the expense in one transaction. The
+// UPDATE only matches an unpaid contribution, so a second call (double tap, retry,
+// replayed offline queue) finds nothing to change and creates no second expense.
 const payContribution = async (householdId, contributionId, paymentData) => {
   const { date, account_id } = paymentData;
-  const result = await db.execute({
-    sql: `
-      SELECT c.*, x.name as xitique_name
-      FROM xitique_contributions c 
-      JOIN xitiques x ON c.xitique_id = x.id 
-      WHERE c.id = ? AND x.household_id = ?
-    `,
-    args: [contributionId, householdId]
-  });
-  const contribution = result.rows[0];
+  const outcome = await db.withTransaction(async (tx) => {
+    const result = await tx.execute({
+      sql: `
+        SELECT c.id, c.amount, c.paid, x.name AS xitique_name
+        FROM xitique_contributions c
+        JOIN xitiques x ON c.xitique_id = x.id
+        WHERE c.id = ? AND x.household_id = ?
+        FOR UPDATE OF c
+      `,
+      args: [contributionId, householdId]
+    });
+    const contribution = result.rows[0];
+    if (!contribution) throw new Error('NOT_FOUND');
 
-  if (!contribution) throw new Error('NOT_FOUND');
+    const marked = await tx.execute({
+      sql: 'UPDATE xitique_contributions SET paid = 1, payment_date = ? WHERE id = ? AND COALESCE(paid, 0) = 0 RETURNING id',
+      args: [date, contributionId]
+    });
+    if (marked.rowCount === 0) return { success: true, alreadyPaid: true };
 
-  const queries = [
-    { sql: 'UPDATE xitique_contributions SET paid = 1, payment_date = ? WHERE id = ?', args: [date, contributionId] },
-    {
+    const amount = Number(contribution.amount);
+    await tx.execute({
       sql: `INSERT INTO transactions (date, type, description, amount, category, note, household_id, account_id)
             VALUES (?, 'despesa', ?, ?, 'Xitique', ?, ?, ?)`,
-      args: [
-        date, 
-        `Contribuição Xitique: ${contribution.xitique_name}`, 
-        Number(contribution.amount), 
-        'Pagamento automático via módulo Xitique', 
-        householdId,
-        account_id || null
-      ]
-    }
-  ];
-
-  if (account_id) {
-    queries.push({
-      sql: 'UPDATE accounts SET current_balance = current_balance - ? WHERE id = ? AND household_id = ?',
-      args: [Number(contribution.amount), account_id, householdId]
+      args: [date, `Contribuição Xitique: ${contribution.xitique_name}`, amount,
+        'Pagamento automático via módulo Xitique', householdId, account_id || null]
     });
-  }
+    if (account_id) {
+      await tx.execute({
+        sql: 'UPDATE accounts SET current_balance = current_balance - ? WHERE id = ? AND household_id = ?',
+        args: [amount, account_id, householdId]
+      });
+    }
+    return { success: true, name: contribution.xitique_name };
+  });
 
-  await db.batch(queries, "write");
-  await createNotification(householdId, 'info', `Pagamento de Xitique (${contribution.xitique_name}) realizado com sucesso. ✅`);
-  
-  return { success: true };
+  if (!outcome.alreadyPaid) {
+    await createNotification(householdId, 'info', `Pagamento de Xitique (${outcome.name}) realizado com sucesso. ✅`);
+  }
+  return { success: true, alreadyPaid: Boolean(outcome.alreadyPaid) };
 };
 
+// Same rule as payContribution: a receipt is recorded once.
 const receiveFunds = async (householdId, receiptId, paymentData) => {
   const { date, account_id } = paymentData;
-  const result = await db.execute({
-    sql: `
-      SELECT r.*, x.name as xitique_name
-      FROM xitique_receipts r 
-      JOIN xitiques x ON r.xitique_id = x.id 
-      WHERE r.id = ? AND x.household_id = ?
-    `,
-    args: [receiptId, householdId]
-  });
-  const receipt = result.rows[0];
+  const outcome = await db.withTransaction(async (tx) => {
+    const result = await tx.execute({
+      sql: `
+        SELECT r.id, r.total_received, x.name AS xitique_name
+        FROM xitique_receipts r
+        JOIN xitiques x ON r.xitique_id = x.id
+        WHERE r.id = ? AND x.household_id = ?
+        FOR UPDATE OF r
+      `,
+      args: [receiptId, householdId]
+    });
+    const receipt = result.rows[0];
+    if (!receipt) throw new Error('NOT_FOUND');
 
-  if (!receipt) throw new Error('NOT_FOUND');
+    const marked = await tx.execute({
+      sql: 'UPDATE xitique_receipts SET received_date = ? WHERE id = ? AND received_date IS NULL RETURNING id',
+      args: [date, receiptId]
+    });
+    if (marked.rowCount === 0) return { success: true, alreadyReceived: true };
 
-  const queries = [
-    { sql: 'UPDATE xitique_receipts SET received_date = ? WHERE id = ?', args: [date, receiptId] },
-    {
+    const amount = Number(receipt.total_received);
+    await tx.execute({
       sql: `INSERT INTO transactions (date, type, description, amount, category, note, household_id, account_id)
             VALUES (?, 'receita', ?, ?, 'Xitique', ?, ?, ?)`,
-      args: [
-        date, 
-        `Recebimento Xitique: ${receipt.xitique_name}`, 
-        Number(receipt.total_received), 
-        'Recebimento automático via módulo Xitique', 
-        householdId,
-        account_id || null
-      ]
-    }
-  ];
-
-  if (account_id) {
-    queries.push({
-      sql: 'UPDATE accounts SET current_balance = current_balance + ? WHERE id = ? AND household_id = ?',
-      args: [Number(receipt.total_received), account_id, householdId]
+      args: [date, `Recebimento Xitique: ${receipt.xitique_name}`, amount,
+        'Recebimento automático via módulo Xitique', householdId, account_id || null]
     });
-  }
+    if (account_id) {
+      await tx.execute({
+        sql: 'UPDATE accounts SET current_balance = current_balance + ? WHERE id = ? AND household_id = ?',
+        args: [amount, account_id, householdId]
+      });
+    }
+    return { success: true, name: receipt.xitique_name, amount };
+  });
 
-  await db.batch(queries, "write");
-  await createNotification(householdId, 'success', `Recebeste o fundo do Xitique (${receipt.xitique_name})! MT ${receipt.total_received} disponíveis na tua conta. 💰`);
-  
-  return { success: true };
+  if (!outcome.alreadyReceived) {
+    await createNotification(householdId, 'success', `Recebeste o fundo do Xitique (${outcome.name})! MT ${outcome.amount} disponíveis na tua conta. 💰`);
+  }
+  return { success: true, alreadyReceived: Boolean(outcome.alreadyReceived) };
 };
 
 module.exports = {

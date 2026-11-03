@@ -13,12 +13,15 @@ const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require
 const { chat: binthChat, getScore: binthScore, getPageInsight, getPriority } = require('../controllers/binth.controller');
 const { getDashboardSummary } = require('../controllers/dashboard.controller');
 const auth = require('../middleware/auth.middleware');
+const { idempotency } = require('../middleware/idempotency.middleware');
 const vslaRoutes = require('./vsla.routes');
 
 const realityReview = require('../controllers/realityReview.controller');
 const router = express.Router();
 
 router.use((req, res, next) => auth.authenticate(req, res, next));
+// Writes that carry an Idempotency-Key are saved at most once.
+router.use(idempotency());
 
 router.get('/reality-review', realityReview.get);
 router.post('/reality-review/visit', realityReview.visit);

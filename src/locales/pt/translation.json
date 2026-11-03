@@ -2990,6 +2990,8 @@
     "saving": "A registar...",
     "done": "Feito. Registei no Mwanga.",
     "cancelled": "Cancelado. Não registei nada.",
-    "failed": "Não consegui registar. Tenta de novo."
+    "failed": "Não consegui registar. Tenta de novo.",
+    "queued": "Guardado no telemóvel. Envio quando houver internet.",
+    "already_done": "Isto já estava registado. Não registei de novo."
   }
 }

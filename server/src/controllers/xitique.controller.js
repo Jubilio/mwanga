@@ -36,8 +36,8 @@ const deleteXitique = async (req, res) => {
 const payContribution = async (req, res, next) => {
   try {
     const data = xitiquePaymentSchema.parse(req.body);
-    await xitiqueService.payContribution(req.user.householdId, req.params.contributionId, data);
-    res.json({ success: true });
+    const result = await xitiqueService.payContribution(req.user.householdId, req.params.contributionId, data);
+    res.json(result);
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     if (error.message === 'NOT_FOUND') return res.status(403).json({ error: 'Acesso negado ou contribuição não encontrada' });
@@ -48,8 +48,8 @@ const payContribution = async (req, res, next) => {
 const receiveFunds = async (req, res, next) => {
   try {
     const data = xitiquePaymentSchema.parse(req.body);
-    await xitiqueService.receiveFunds(req.user.householdId, req.params.receiptId, data);
-    res.json({ success: true });
+    const result = await xitiqueService.receiveFunds(req.user.householdId, req.params.receiptId, data);
+    res.json(result);
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     if (error.message === 'NOT_FOUND') return res.status(403).json({ error: 'Acesso negado ou recebimento não encontrado' });

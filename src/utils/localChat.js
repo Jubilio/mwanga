@@ -17,9 +17,14 @@ function writeOwner(id) {
 }
 
 // Removes the conversation and the cached personal records. Unsynced offline
-// actions (pendingActions) are kept so nothing the user typed is lost.
-export async function clearLocalUserData() {
+// actions (pendingActions) are kept so nothing the user typed is lost: each one
+// records its owner and is only sent when that same person signs in again.
+// When the account is deleted, pass { forgetPendingOf: userId } to drop them too.
+export async function clearLocalUserData({ forgetPendingOf } = {}) {
   writeOwner(null);
+  if (forgetPendingOf) {
+    try { await db.pendingActions.where('owner').equals(String(forgetPendingOf)).delete(); } catch { /* ignore */ }
+  }
   try {
     await Promise.all([
       db.mensagens.clear(),

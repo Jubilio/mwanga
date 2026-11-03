@@ -14,7 +14,7 @@ function response() { return { status: jest.fn().mockReturnThis(), json: jest.fn
 beforeEach(() => {
   jest.clearAllMocks(); clearMemoryCache();
   callBinth.mockResolvedValue({ message: 'Insight', data: {} });
-  db.execute.mockResolvedValue({ rows: [{ n: 4, last: 10 }] });
+  db.execute.mockResolvedValue({ rows: [{ version: 'v1' }] });
 });
 
 test('opening the same page twice calls the AI once', async () => {
@@ -23,9 +23,9 @@ test('opening the same page twice calls the AI once', async () => {
   expect(callBinth).toHaveBeenCalledTimes(1);
   expect(res.json).toHaveBeenCalledWith({ message: 'Insight', data: {} });
 });
-test('a new transaction or the refresh button asks the AI again', async () => {
+test('any change to the data (new or edited record) or the refresh button asks the AI again', async () => {
   await getPageInsight(request(), response());
-  db.execute.mockResolvedValue({ rows: [{ n: 5, last: 11 }] });
+  db.execute.mockResolvedValue({ rows: [{ version: 'v2' }] });
   await getPageInsight(request(), response());
   await getPageInsight(request({ refresh: '1' }), response());
   expect(callBinth).toHaveBeenCalledTimes(3);
