@@ -6,6 +6,7 @@ import { Send, Sparkles, Brain, Mic, MicOff, Database, Layers, Compass, AlertTri
 import api from '../utils/api';
 import { db } from '../db/db';
 import { ensureChatOwner } from '../utils/localChat';
+import { toRequestId } from '../utils/offlineQueue';
 import { useFinance } from '../hooks/useFinance';
 import { useStewardship } from '../hooks/useStewardship';
 import { parseMobileMoneySMS } from '../utils/smsParser';
@@ -93,20 +94,23 @@ export default function Insights() {
     let status = 'cancelled';
     if (confirmed) {
       setActionBusy(msg.timestamp);
+      // One key per proposal: confirming the same card again can never record twice.
+      const requestId = toRequestId(`binth-${action.action}-${msg.timestamp}`) || undefined;
       try {
+        let outcome;
         if (action.action === 'add_transaction') {
           const p = action.payload;
           const account = p.tipo === 'receita'
             ? state.settings?.default_income_account_id
             : state.settings?.default_expense_account_id;
-          await dispatch({ type: 'ADD_TRANSACTION', payload: { ...p, account_id: account || null } });
+          outcome = await dispatch({ type: 'ADD_TRANSACTION', requestId, payload: { ...p, account_id: account || null } });
         } else if (action.action === 'pay_debt') {
-          await dispatch({ type: 'PAY_DEBT', payload: { debtId: action.payload.debtId, amount: action.payload.amount, account_id: state.settings?.default_expense_account_id || null, payment_date: new Date().toISOString() } });
+          outcome = await dispatch({ type: 'PAY_DEBT', requestId, payload: { debtId: action.payload.debtId, amount: action.payload.amount, account_id: state.settings?.default_expense_account_id || null, payment_date: new Date().toISOString() } });
         } else if (action.action === 'pay_xitique') {
-          await dispatch({ type: 'PAY_XITIQUE', payload: { contributionId: action.payload.contributionId, date: new Date().toISOString().slice(0, 10), account_id: state.settings?.default_expense_account_id || null } });
+          outcome = await dispatch({ type: 'PAY_XITIQUE', requestId, payload: { contributionId: action.payload.contributionId, date: new Date().toISOString().slice(0, 10), account_id: state.settings?.default_expense_account_id || null } });
         }
-        status = 'done';
-        showToast(t('binth_actions.done'), 'success');
+        status = outcome === 'queued' ? 'queued' : outcome === 'already_done' ? 'already_done' : 'done';
+        showToast(t(`binth_actions.${status}`), status === 'done' ? 'success' : 'info');
       } catch {
         status = null;
         showToast(t('binth_actions.failed'), 'error');
@@ -472,8 +476,8 @@ export default function Insights() {
                 {/* Proposal waiting for confirmation */}
                 {!isUser && msg.pending_action && (
                   msg.action_status ? (
-                    <div role="status" style={{ fontSize: 12, fontWeight: 700, color: msg.action_status === 'done' ? 'var(--ins-green)' : 'var(--ins-soft)' }}>
-                      {t(msg.action_status === 'done' ? 'binth_actions.done' : 'binth_actions.cancelled')}
+                    <div role="status" style={{ fontSize: 12, fontWeight: 700, color: msg.action_status === 'done' ? 'var(--ins-green)' : msg.action_status === 'queued' ? 'var(--ins-amber)' : 'var(--ins-soft)' }}>
+                      {t(['done', 'queued', 'already_done'].includes(msg.action_status) ? `binth_actions.${msg.action_status}` : 'binth_actions.cancelled')}
                     </div>
                   ) : (
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

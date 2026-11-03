@@ -15,6 +15,20 @@ db.version(3).stores({
   pendingActions: '++id, type, timestamp' // Fila de sincronização offline
 });
 
+// v4: each offline action records its owner (user id) and a request id, so the
+// queue is only ever sent with that person's session and saved once.
+db.version(4).stores({
+  pendingActions: '++id, type, timestamp, owner'
+}).upgrade(async (tx) => {
+  let lastOwner = null;
+  try { lastOwner = typeof localStorage !== 'undefined' ? localStorage.getItem('mwanga-chat-owner') : null; } catch { /* ignore */ }
+  await tx.table('pendingActions').toCollection().modify((action) => {
+    // Without a known owner the action stays unowned and is never synced.
+    if (!action.owner && lastOwner) action.owner = String(lastOwner);
+    if (!action.requestId) action.requestId = `legacy-${action.id}-${action.timestamp || 0}`;
+  });
+});
+
 // Lidar com atualizações de versão entre diferentes separadores do browser
 db.on('versionchange', () => {
   db.close();

@@ -1,92 +1,93 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { db } from '../db/db';
-import { getToken } from '../utils/authToken';
+import { getToken, tokenUserId } from '../utils/authToken';
+import { describeRequest, dropUnownedActions, pendingActionsFor, toRequestId } from '../utils/offlineQueue';
 
-export function useOfflineSync(FINANCE_API_URL, dispatch, reloadData) {
-  
-  const processPendingActions = useCallback(async () => {
-    const token = getToken();
-    if (!token) return;
+// Sends the signed-in person's queued actions, oldest first.
+// - Only actions whose owner matches the current session are sent.
+// - Each request carries the action's Idempotency-Key, so a replay is saved once.
+// - An action is removed only after the server confirms it, or refuses it for good.
+export async function syncPendingActions({ apiUrl, token = getToken(), owner = tokenUserId(token), fetchImpl = fetch }) {
+  const result = { sent: 0, dropped: 0, remaining: 0, stopped: null };
+  if (!token || !owner) return result;
 
-    const pending = await db.pendingActions.toArray();
-    if (pending.length === 0) return;
+  await dropUnownedActions();
+  const pending = await pendingActionsFor(owner);
 
-    console.log(`[Sync] A processar ${pending.length} acções pendentes...`);
+  for (let i = 0; i < pending.length; i += 1) {
+    const action = pending[i];
+    // The person may have signed out or switched account mid-sync.
+    if (getToken() !== token) { result.stopped = 'session_changed'; break; }
+
+    const request = describeRequest(action.type, action.payload);
+    if (!request) {
+      console.error(`[Sync] Tipo de acção sem sincronização: ${action.type}. Mantida na fila.`);
+      continue;
+    }
 
     const headers = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
+      'Idempotency-Key': toRequestId(action.requestId) || `legacy-${action.id}-${action.timestamp || 0}`,
     };
 
-    for (const action of pending) {
-      try {
-        let resp;
-        switch (action.type) {
-          case 'ADD_TRANSACTION':
-            resp = await fetch(`${FINANCE_API_URL}/transactions`, {
-              method: 'POST',
-              headers,
-              body: JSON.stringify(action.payload)
-            });
-            break;
-          case 'UPDATE_TRANSACTION':
-            resp = await fetch(`${FINANCE_API_URL}/transactions/${action.payload.id}`, {
-              method: 'PUT',
-              headers,
-              body: JSON.stringify(action.payload)
-            });
-            break;
-          case 'DELETE_TRANSACTION':
-            resp = await fetch(`${FINANCE_API_URL}/transactions/${action.payload}`, {
-              method: 'DELETE',
-              headers
-            });
-            break;
-          case 'ADD_DEBT':
-            resp = await fetch(`${FINANCE_API_URL}/debts`, {
-              method: 'POST',
-              headers,
-              body: JSON.stringify(action.payload)
-            });
-            break;
-          case 'PAY_DEBT':
-            resp = await fetch(`${FINANCE_API_URL}/debts/${action.payload.debtId}/pay`, {
-              method: 'POST',
-              headers,
-              body: JSON.stringify({
-                amount: action.payload.amount,
-                account_id: action.payload.account_id,
-                payment_date: action.payload.payment_date
-              })
-            });
-            break;
-          default:
-            console.warn(`[Sync] Acção desconhecida: ${action.type}`);
-            await db.pendingActions.delete(action.id);
-            continue;
-        }
-
-        if (resp && resp.ok) {
-          await db.pendingActions.delete(action.id);
-          console.log(`[Sync] Sucesso: ${action.type}`);
-        } else if (resp && resp.status === 401) {
-          // Token expirado, parar sincronização
-          return;
-        } else if (resp && resp.status >= 400 && resp.status < 500) {
-          // Erro do cliente (ex: 400 Bad Request) significa que o payload é inválido.
-          // Não adianta tentar de novo. Vamos descartar a acção para evitar loop infinito.
-          console.error(`[Sync] Erro do cliente (${resp.status}) em ${action.type}. Acção descartada.`);
-          await db.pendingActions.delete(action.id);
-        }
-      } catch (err) {
-        console.error(`[Sync] Erro ao processar ${action.type}:`, err.message);
-        break; // Provavelmente ainda sem internet, tentar mais tarde
-      }
+    let resp;
+    try {
+      resp = await fetchImpl(`${apiUrl}/${request.endpoint}`, {
+        method: request.method,
+        headers,
+        body: request.body === undefined ? undefined : JSON.stringify(request.body),
+      });
+    } catch (err) {
+      console.warn(`[Sync] Sem ligação ao enviar ${action.type}:`, err?.message);
+      result.stopped = 'offline';
+      break;
     }
 
-    // Se processamos algo, recarrega os dados globais para garantir consistência
-    if ((await db.pendingActions.count()) < pending.length) {
-      reloadData();
+    if (resp.ok) {
+      await db.pendingActions.delete(action.id);
+      result.sent += 1;
+      continue;
+    }
+    if (resp.status === 401) {
+      result.stopped = 'unauthorized';
+      break;
+    }
+    let code = null;
+    try { code = (await resp.json())?.code || null; } catch { /* no body */ }
+    if (resp.status === 409 && code === 'ALREADY_PAID') {
+      await db.pendingActions.delete(action.id);
+      result.sent += 1;
+      continue;
+    }
+    if (resp.status === 408 || resp.status === 409 || resp.status === 425 || resp.status === 429 || resp.status >= 500) {
+      // Server busy or still finishing the same request: keep it and try later.
+      result.stopped = 'retry_later';
+      break;
+    }
+    // The server refused the data itself (400, 404, 422...). Sending it again cannot work.
+    console.error(`[Sync] O servidor recusou ${action.type} (${resp.status}). Acção descartada.`);
+    await db.pendingActions.delete(action.id);
+    result.dropped += 1;
+  }
+
+  result.remaining = (await pendingActionsFor(owner)).length;
+  return result;
+}
+
+export function useOfflineSync(FINANCE_API_URL, _dispatch, reloadData) {
+  const running = useRef(false);
+
+  const processPendingActions = useCallback(async () => {
+    if (running.current) return;
+    running.current = true;
+    try {
+      const result = await syncPendingActions({ apiUrl: FINANCE_API_URL });
+      if (result.sent || result.dropped) reloadData();
+    } catch (err) {
+      console.error('[Sync] Falha ao sincronizar:', err?.message);
+    } finally {
+      running.current = false;
     }
   }, [FINANCE_API_URL, reloadData]);
 
@@ -96,8 +97,9 @@ export function useOfflineSync(FINANCE_API_URL, dispatch, reloadData) {
     return () => window.removeEventListener('online', processPendingActions);
   }, [processPendingActions]);
 
-  // Tentar sincronizar periodicamente (a cada 1 minuto se estiver online)
+  // Tentar sincronizar ao abrir e periodicamente (a cada 1 minuto se estiver online)
   useEffect(() => {
+    if (navigator.onLine) processPendingActions();
     const interval = setInterval(() => {
       if (navigator.onLine) {
         processPendingActions();

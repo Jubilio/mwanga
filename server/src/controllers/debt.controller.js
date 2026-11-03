@@ -42,6 +42,7 @@ const addPayment = async (req, res, next) => {
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
     if (error.message === 'NOT_FOUND') return res.status(404).json({ error: 'Dívida não encontrada' });
+    if (error.message === 'ALREADY_PAID') return res.status(409).json({ error: 'Esta dívida já está paga', code: 'ALREADY_PAID' });
     next(error);
   }
 };
