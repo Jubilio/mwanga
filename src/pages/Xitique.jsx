@@ -78,11 +78,11 @@ export default function Xitique() {
     const canPay = !contribution.paid && contribution.id;
     const canReceive = isYourTurn && !receipt.received_date && receipt.id;
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {(!contribution.paid || (isYourTurn && !receipt.received_date)) && (
           <select
             className="form-input"
-            style={{ padding: '0.2rem', fontSize: '0.7rem', minWidth: '120px', maxWidth: '100%' }}
+            style={{ padding: '0.25rem', fontSize: '0.7rem', minWidth: '120px', maxWidth: '100%' }}
             value={paymentAccount}
             onChange={e => setPaymentAccount(e.target.value)}
           >
@@ -180,11 +180,11 @@ export default function Xitique() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>{t('xitique.card.total_contributed')}</div>
-                   <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>{fmt(x.contributions.filter(c => c.paid).reduce((s, c) => s + c.amount, 0), currency)}</div>
+                   <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>{fmt(x.contributions.filter(c => c.paid).reduce((s, c) => s + c.amount, 0), currency)}</div>
                 </div>
                 <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>{t('xitique.card.total_to_receive')}</div>
-                   <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-leaf)' }}>{fmt(x.monthly_amount * x.total_participants, currency)}</div>
+                   <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-leaf)' }}>{fmt(x.monthly_amount * x.total_participants, currency)}</div>
                 </div>
               </div>
 

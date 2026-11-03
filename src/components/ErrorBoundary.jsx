@@ -63,9 +63,9 @@ export default class ErrorBoundary extends Component {
 
         {/* Message */}
         <div className="flex flex-col gap-2">
-          <h2 className="text-base font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">
+          <h2 className="text-base font-bold uppercase tracking-widest text-slate-700 dark:text-slate-200">
             {context} {ui("encontrou um erro")} </h2>
-          <p className="text-sm text-slate-400"> {ui("Algo correu mal ao carregar esta secção. Os teus dados estão seguros.")} </p>
+          <p className="text-sm text-slate-600 dark:text-slate-400"> {ui("Algo correu mal ao carregar esta secção. Os teus dados estão seguros.")} </p>
           {isDev && this.state.error && (
             <pre className="mt-3 max-w-md overflow-auto rounded-xl bg-slate-100 p-3 text-left text-[10px] text-coral dark:bg-white/5">
               {ui(this.state.error.message)}
@@ -77,11 +77,11 @@ export default class ErrorBoundary extends Component {
         <div className="flex gap-3">
           <button
             onClick={this.handleReset}
-            className="rounded-xl bg-ocean/10 px-5 py-2.5 text-xs font-black uppercase tracking-widest text-ocean transition-all hover:bg-ocean/20 dark:text-sky"
+            className="rounded-xl bg-ocean/10 px-6 py-3 text-xs font-bold uppercase tracking-widest text-ocean transition-all hover:bg-ocean/20 dark:text-sky"
           > {ui("Tentar Novamente")} </button>
           <button
             onClick={() => window.history.back()}
-            className="rounded-xl bg-slate-100 px-5 py-2.5 text-xs font-black uppercase tracking-widest text-slate-500 transition-all hover:bg-slate-200 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10"
+            className="rounded-xl bg-slate-100 px-6 py-3 text-xs font-bold uppercase tracking-widest text-slate-600 transition-all hover:bg-slate-200 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10"
           > {ui("Voltar")} </button>
         </div>
       </div>

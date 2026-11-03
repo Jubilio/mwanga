@@ -10,26 +10,26 @@ export default function HousingInsights({ committedIncome, momComparison }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Insight 1: % of salary */}
-      <div className="glass-card p-5 group hover:-translate-y-1 transition-transform duration-300">
-        <div className="text-gray-400 dark:text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">{t('housing.insights.committed_income')}</div>
+      <div className="glass-card p-6 group hover:-translate-y-1 transition-transform duration-300">
+        <div className="text-slate-600 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{t('housing.insights.committed_income')}</div>
         <div className="flex items-end gap-3">
           <div className="text-2xl font-bold text-gray-800 dark:text-white group-hover:text-ocean transition-colors">
             {committedIncome}%
           </div>
-          <div className={`text-xs font-medium mb-1 ${isHealthy ? 'text-leaf' : 'text-coral'}`}>
+          <div className={`text-xs font-normal mb-1 ${isHealthy ? 'text-leaf' : 'text-coral'}`}>
             {isHealthy ? t('housing.insights.healthy') : t('housing.insights.attention')}
           </div>
         </div>
       </div>
 
       {/* Insight 2: M-o-M Comparison */}
-      <div className="glass-card p-5 group hover:-translate-y-1 transition-transform duration-300">
-        <div className="text-gray-400 dark:text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">{t('housing.insights.monthly_evolution')}</div>
+      <div className="glass-card p-6 group hover:-translate-y-1 transition-transform duration-300">
+        <div className="text-slate-600 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{t('housing.insights.monthly_evolution')}</div>
         <div className="flex items-end gap-3">
           <div className="text-2xl font-bold text-gray-800 dark:text-white group-hover:text-ocean transition-colors">
             {Math.abs(momComparison)}%
           </div>
-          <div className={`flex items-center text-xs font-medium mb-1 ${isTrendingDown ? 'text-leaf' : 'text-coral'}`}>
+          <div className={`flex items-center text-xs font-normal mb-1 ${isTrendingDown ? 'text-leaf' : 'text-coral'}`}>
             {isTrendingDown ? <TrendingDown size={14} className="mr-1" /> : <ArrowUpRight size={14} className="mr-1" />}
             {isTrendingDown ? t('housing.insights.reduction') : t('housing.insights.increase')}
           </div>
@@ -37,16 +37,16 @@ export default function HousingInsights({ committedIncome, momComparison }) {
       </div>
 
       {/* Insight 3: Auto Recommendation */}
-      <div className="glass-card p-5 group hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden">
+      <div className="glass-card p-6 group hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden">
         <div className="absolute right-0 top-0 w-16 h-16 bg-linear-to-br from-gold/5 to-transparent rounded-bl-full"></div>
-        <div className="text-gray-400 dark:text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">{t('housing.insights.nexo_recommendation')}</div>
+        <div className="text-slate-600 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{t('housing.insights.nexo_recommendation')}</div>
         <div className="flex items-start gap-3 mt-1">
           {isHealthy ? (
-            <CheckCircle className="text-leaf shrink-0 mt-0.5" size={18} />
+            <CheckCircle className="text-leaf shrink-0 mt-1" size={18} />
           ) : (
-            <AlertCircle className="text-coral shrink-0 mt-0.5" size={18} />
+            <AlertCircle className="text-coral shrink-0 mt-1" size={18} />
           )}
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="text-sm font-normal text-gray-700 dark:text-gray-300">
             {isHealthy 
               ? t('housing.insights.optimized_msg')
               : t('housing.insights.review_msg')}

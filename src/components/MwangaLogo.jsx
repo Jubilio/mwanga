@@ -6,8 +6,12 @@ import { TrendingUp } from 'lucide-react';
  *
  * @param {'sidebar' | 'login'} variant
  */
-export default function MwangaLogo({ variant = 'sidebar' }) {
+export default function MwangaLogo({ variant = 'sidebar', adaptive = false }) {
   const isSidebar = variant === 'sidebar';
+  // On surfaces that follow the app theme (not the always-dark sidebar) the wordmark
+  // must switch with it, or it reads 1.1:1 on the light background.
+  const wordClass = adaptive ? 'text-dark dark:text-slate-200' : 'text-slate-200';
+  const tagClass = adaptive ? 'text-ocean dark:text-sky-light' : 'text-sky-400';
 
   return (
     <div style={{
@@ -41,24 +45,20 @@ export default function MwangaLogo({ variant = 'sidebar' }) {
 
       {/* Text */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: isSidebar ? 0 : 2 }}>
-        <span style={{
+        <span className={wordClass} style={{
           fontSize: isSidebar ? 18 : 28,
-          fontWeight: 800,
+          fontWeight: 700,
           letterSpacing: '0.06em',
-          color: '#e2e8f0',
           lineHeight: 1.1,
-          textShadow: '0 0 12px rgba(56, 189, 248, 0.3)',
         }}>
           MWANGA
         </span>
-        <span style={{
-          fontSize: isSidebar ? 8.5 : 11,
-          fontWeight: 600,
+        <span className={tagClass} style={{
+          fontSize: isSidebar ? 10 : 12,
+          fontWeight: 700,
           letterSpacing: '0.22em',
-          color: '#38bdf8',
           textTransform: 'uppercase',
           lineHeight: 1.2,
-          textShadow: '0 0 8px rgba(56, 189, 248, 0.4)',
         }}>
           FINANCIAL LIGHT
         </span>

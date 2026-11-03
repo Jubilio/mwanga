@@ -79,9 +79,9 @@ export default function Pricing() {
           display: 'inline-flex', 
           alignItems: 'center', 
           gap: '0.5rem', 
-          padding: '0.4rem 1rem', 
-          background: 'var(--color-gold)15', 
-          color: 'var(--color-gold)',
+          padding: '0.5rem 1rem', 
+          background: 'rgba(201, 150, 58, 0.14)', 
+          color: 'var(--color-gold-text)',
           borderRadius: '999px',
           fontSize: '0.75rem',
           fontWeight: 700,
@@ -94,11 +94,11 @@ export default function Pricing() {
         <h1 style={{ 
           fontFamily: 'var(--font-display)', 
           fontSize: '2.5rem', 
-          fontWeight: 900, 
+          fontWeight: 700, 
           color: 'var(--color-text)',
           marginBottom: '1rem'
         }}>
-          <Trans i18nKey="pricing.title" components={{ span: <span style={{ color: 'var(--color-gold)' }} /> }} />
+          <Trans i18nKey="pricing.title" components={{ span: <span style={{ color: 'var(--color-gold-text)' }} /> }} />
         </h1>
         <p style={{ color: 'var(--color-muted)', maxWidth: '600px', margin: '0 auto 2rem' }}>
           {t('pricing.description')}
@@ -108,7 +108,7 @@ export default function Pricing() {
         <div style={{ 
           display: 'inline-flex', 
           background: 'var(--color-cream)', 
-          padding: '0.4rem', 
+          padding: '0.5rem', 
           borderRadius: '16px',
           border: '1px solid var(--color-border)',
           marginBottom: '1rem'
@@ -116,11 +116,11 @@ export default function Pricing() {
           <button 
             onClick={() => setBillingCycle('monthly')}
             style={{ 
-              padding: '0.6rem 1.5rem', 
+              padding: '0.5rem 1.5rem', 
               borderRadius: '12px', 
               border: 'none',
               fontSize: '0.85rem',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: 'pointer',
               background: billingCycle === 'monthly' ? 'white' : 'transparent',
               color: billingCycle === 'monthly' ? 'var(--color-dark)' : 'var(--color-muted)',
@@ -133,11 +133,11 @@ export default function Pricing() {
           <button 
             onClick={() => setBillingCycle('annual')}
             style={{ 
-              padding: '0.6rem 1.5rem', 
+              padding: '0.5rem 1.5rem', 
               borderRadius: '12px', 
               border: 'none',
               fontSize: '0.85rem',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: 'pointer',
               background: billingCycle === 'annual' ? 'white' : 'transparent',
               color: billingCycle === 'annual' ? 'var(--color-dark)' : 'var(--color-muted)',
@@ -145,7 +145,7 @@ export default function Pricing() {
               transition: 'all 0.2s'
             }}
           >
-            {t('pricing.billing.annual')} <span style={{ color: 'var(--color-leaf)', fontSize: '0.7rem' }}>{t('pricing.billing.discount')}</span>
+            {t('pricing.billing.annual')} <span className="text-leaf dark:text-leaf-light" style={{ fontSize: '0.75rem' }}>{t('pricing.billing.discount')}</span>
           </button>
         </div>
       </div>
@@ -180,7 +180,7 @@ export default function Pricing() {
                 padding: '0.25rem 1rem',
                 borderRadius: '999px',
                 fontSize: '0.7rem',
-                fontWeight: 800,
+                fontWeight: 700,
                 textTransform: 'uppercase',
                 whiteSpace: 'nowrap',
                 boxShadow: '0 4px 12px rgba(201,150,58,0.3)'
@@ -203,28 +203,28 @@ export default function Pricing() {
               }}>
                 <plan.icon size={26} />
               </div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>{plan.name}</h3>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>{plan.name}</h3>
               <p style={{ fontSize: '0.9rem', opacity: 0.7, marginBottom: '1.5rem' }}>{plan.desc}</p>
               
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                <span style={{ fontSize: '2rem', fontWeight: 900 }}>{plan.price}</span>
-                <span style={{ fontSize: '0.9rem', fontWeight: 600, opacity: 0.7 }}>MT</span>
+                <span style={{ fontSize: '2rem', fontWeight: 700 }}>{plan.price}</span>
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, opacity: 0.7 }}>MT</span>
                 <span style={{ fontSize: '0.85rem', opacity: 0.5 }}>{t('pricing.billing.per_month')}</span>
               </div>
               {plan.price > 0 && (
-                <div style={{ fontSize: '0.8rem', fontWeight: 600, opacity: 0.75, marginTop: '0.2rem' }}>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, opacity: 0.75, marginTop: '0.25rem' }}>
                   {t('pricing.billing.per_day', { amount: Math.round(plan.price / DAYS_PER_MONTH) })}
                 </div>
               )}
               {billingCycle === 'annual' && plan.price > 0 && (
-                <div style={{ fontSize: '0.7rem', color: 'var(--color-leaf)', fontWeight: 600, marginTop: '0.2rem' }}>
+                <div className="text-leaf dark:text-leaf-light" style={{ fontSize: '0.75rem', fontWeight: 700, marginTop: '0.25rem' }}>
                   {t('pricing.billing.annual_total', { total: plan.price * 12 })}
                 </div>
               )}
             </div>
 
             <div style={{ flex: 1, marginBottom: '2.5rem' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, opacity: 0.6, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.6, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem' }}>
                 {t('pricing.includes')}
               </div>
               <ul style={{ listStyle: 'none', display: 'grid', gap: '0.75rem' }}>
@@ -240,7 +240,7 @@ export default function Pricing() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       flexShrink: 0,
-                      marginTop: '0.1rem'
+                      marginTop: '0.25rem'
                     }}>
                       <Check size={12} strokeWidth={3} />
                     </div>
@@ -254,14 +254,14 @@ export default function Pricing() {
               type="button"
               onClick={() => handleChoosePlan(plan)}
               disabled={isCurrent || !plan.premium}
-              className={plan.premium && !isCurrent ? 'btn btn-primary' : 'btn btn-ghost'}
+              className={plan.premium && !isCurrent ? (plan.popular ? 'btn btn-primary' : 'btn btn-secondary') : 'btn btn-ghost'}
               style={{ 
               width: '100%', 
               padding: '1rem', 
               fontSize: '0.95rem',
-              background: plan.premium && !isCurrent ? (plan.dark ? 'var(--color-gold)' : undefined) : 'rgba(0,0,0,0.05)',
+              background: plan.premium && !isCurrent ? (plan.dark ? (plan.popular ? 'var(--color-gold)' : 'rgba(255,255,255,0.1)') : undefined) : 'rgba(0,0,0,0.05)',
               cursor: isCurrent || !plan.premium ? 'default' : 'pointer',
-              color: plan.dark ? 'var(--color-dark)' : undefined
+              color: plan.dark ? (plan.popular ? 'var(--color-dark)' : 'var(--color-gold-light)') : undefined
             }}>
               {isCurrent ? t('pricing.current') : plan.buttonText} {plan.premium && !isCurrent && <ArrowRight size={18} />}
             </button>
@@ -275,7 +275,7 @@ export default function Pricing() {
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flex: '1 1 320px' }}>
           <Smartphone size={32} color="var(--color-leaf)" style={{ flexShrink: 0 }} />
           <div>
-            <h4 style={{ fontSize: '1rem', fontWeight: 800 }}>{t('pricing.payment.title')}</h4>
+            <h4 style={{ fontSize: '1rem', fontWeight: 700 }}>{t('pricing.payment.title')}</h4>
             <p style={{ fontSize: '0.85rem', color: 'var(--color-muted)' }}>{t('pricing.payment.desc')}</p>
           </div>
         </div>

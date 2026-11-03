@@ -61,7 +61,7 @@ export default function Budget() {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ marginBottom: '0.1rem' }}>
+          <button type="submit" className="btn btn-primary" style={{ marginBottom: '0.25rem' }}>
             <Plus size={16} /> {t('budget.set_btn')}
           </button>
         </form>
@@ -97,22 +97,22 @@ export default function Budget() {
             const barColor = isOver ? 'var(--color-coral)' : isWarning ? 'var(--color-gold)' : 'var(--color-leaf)';
 
             return (
-              <div key={budget.id || budget.category} className="glass-card animate-fade-in-up" style={{ padding: '1.25rem' }}>
+              <div key={budget.id || budget.category} className="glass-card animate-fade-in-up" style={{ padding: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <div>
-                    <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>{t(`common.categories.${normalizedKey}`)}</span>
+                    <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{t(`common.categories.${normalizedKey}`)}</span>
                     {isOver && (
-                      <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: 'var(--color-coral)', fontWeight: 600 }}>
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: 'var(--color-coral)', fontWeight: 700 }}>
                         <AlertTriangle size={13} style={{ verticalAlign: 'text-bottom' }} /> {t('budget.status.over')}
                       </span>
                     )}
                     {isWarning && (
-                      <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: 'var(--color-gold)', fontWeight: 600 }}>
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: 'var(--color-gold)', fontWeight: 700 }}>
                         ⚠️ {t('budget.status.warning')}
                       </span>
                     )}
                     {!isOver && !isWarning && pct > 0 && (
-                      <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: 'var(--color-leaf)', fontWeight: 600 }}>
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: 'var(--color-leaf)', fontWeight: 700 }}>
                         <CheckCircle size={13} style={{ verticalAlign: 'text-bottom' }} /> {t('budget.status.ok')}
                       </span>
                     )}
@@ -133,7 +133,7 @@ export default function Budget() {
                   </button>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--color-muted)', marginBottom: '0.4rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--color-muted)', marginBottom: '0.5rem' }}>
                   <span>{t('budget.spent', { amount: fmt(spent, currency) })}</span>
                   <span>{t('budget.goal', { amount: fmt(budget.limit, currency) })}</span>
                 </div>
@@ -142,13 +142,13 @@ export default function Budget() {
                   <div className="progress-bar-fill" style={{ width: `${pct}%`, background: barColor }} />
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem', color: 'var(--color-muted)', marginTop: '0.3rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem', color: 'var(--color-muted)', marginTop: '0.25rem' }}>
                   <span>{t('budget.pct_used', { pct })}</span>
                   <span>{t('budget.remaining', { amount: fmt(Math.max(0, budget.limit - spent), currency) })}</span>
                 </div>
 
                 {isOver && (
-                  <div style={{ marginTop: '0.5rem', fontSize: '0.68rem', color: 'var(--color-coral)', display: 'flex', gap: 5, alignItems: 'flex-start', opacity: 0.9 }}>
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.68rem', color: 'var(--color-coral)', display: 'flex', gap: 4, alignItems: 'flex-start', opacity: 0.9 }}>
                     <span>📖</span>
                     <em>{t('budget.over_principle')}</em>
                   </div>

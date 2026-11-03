@@ -196,30 +196,30 @@ export default function Patrimony() {
     <div className="patrimony-gsap-root pb-20">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tighter">{t('patrimony.title')}</h1>
-          <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{t('patrimony.subtitle')}</p>
+          <h1 className="text-3xl font-bold text-dark dark:text-white tracking-tighter">{t('patrimony.title')}</h1>
+          <p className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">{t('patrimony.subtitle')}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="glass-card p-5 border-l-4 border-l-leaf">
-          <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{t('patrimony.total_assets')}</span>
-          <div className="text-xl font-black text-white mt-1">{showBalance ? fmt(totalAssets, currency) : '••••'}</div>
+        <div className="glass-card p-6 border-l-4 border-l-leaf">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{t('patrimony.total_assets')}</span>
+          <div className="text-xl font-bold text-dark dark:text-white mt-1">{showBalance ? fmt(totalAssets, currency) : '••••'}</div>
         </div>
-        <div className="glass-card p-5 border-l-4 border-l-coral">
-          <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{t('patrimony.total_liabilities')}</span>
-          <div className="text-xl font-black text-white mt-1">{showBalance ? fmt(totalLiabilities, currency) : '••••'}</div>
+        <div className="glass-card p-6 border-l-4 border-l-coral">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{t('patrimony.total_liabilities')}</span>
+          <div className="text-xl font-bold text-dark dark:text-white mt-1">{showBalance ? fmt(totalLiabilities, currency) : '••••'}</div>
         </div>
-        <div className="glass-card p-5 border-l-4 border-l-ocean bg-linear-to-br from-midnight to-black">
+        <div className="glass-card p-6 border-l-4 border-l-ocean bg-linear-to-br from-midnight to-black">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{t('patrimony.net_worth')}</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{t('patrimony.net_worth')}</span>
             {showBalance && (
-               <div className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border" style={{ borderColor: tier.color, color: tier.color }}>
+               <div className="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest" style={{ background: `${tier.color}24`, color: tier.color }}>
                  {ui(tier.label)}
                </div>
             )}
           </div>
-          <div className={`text-2xl font-black mt-1 ${netWorth >= 0 ? 'text-leaf' : 'text-coral'}`}>
+          <div className={`text-2xl font-bold mt-1 ${netWorth >= 0 ? 'text-leaf' : 'text-coral'}`}>
             {showBalance ? fmt(netWorth, currency) : '••••'}
           </div>
         </div>
@@ -229,31 +229,31 @@ export default function Patrimony() {
         {/* ACCOUNTS */}
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-sm font-black uppercase tracking-widest text-white">{t('patrimony.accounts.title')}</h2>
+            <h2 className="text-sm font-bold uppercase tracking-widest text-dark dark:text-white">{t('patrimony.accounts.title')}</h2>
             <button className="p-2 rounded-xl bg-ocean/10 text-ocean" onClick={() => setShowAccountModal(true)}><Plus size={16} /></button>
           </div>
           <div className="flex flex-col gap-4">
              {state.settings.cash_balance !== undefined && Number(state.settings.cash_balance) > 0 && (
-                <div className="glass-card p-5 bg-linear-to-br from-gold to-yellow-700 text-midnight relative overflow-hidden group">
+                <div className="glass-card p-6 bg-linear-to-br from-gold to-yellow-700 text-midnight relative overflow-hidden group">
                   <Wallet size={80} className="absolute -right-4 -bottom-4 opacity-10" />
-                  <span className="text-[10px] font-black uppercase tracking-widest opacity-60">{ui("Dinheiro em Mão")}</span>
-                  <div className="text-2xl font-black mt-2">{showBalance ? fmt(state.settings.cash_balance, currency) : '••••'}</div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">{ui("Dinheiro em Mão")}</span>
+                  <div className="text-2xl font-bold mt-2">{showBalance ? fmt(state.settings.cash_balance, currency) : '••••'}</div>
                 </div>
              )}
              {displayAccounts.map(account => {
                const AccIcon = accountIcons[(account.type || '').toLowerCase()] || Briefcase;
                return (
-               <div key={account.id} className={`glass-card p-5 bg-linear-to-br ${getAccountCardStyle(account.type, account.name)} relative overflow-hidden group`}>
+               <div key={account.id} className={`glass-card p-6 bg-linear-to-br ${getAccountCardStyle(account.type, account.name)} relative overflow-hidden group`}>
                   <AccIcon size={80} className="absolute -right-4 -bottom-4 opacity-10 transition-transform group-hover:scale-110 group-hover:rotate-6 duration-500" />
                   <div className="flex justify-between items-start mb-4 relative z-10">
-                    <span className="px-2 py-1 rounded-lg bg-black/20 text-[8px] font-black uppercase tracking-widest">{getTypeLabel(account.type)}</span>
+                    <span className="px-2 py-1 rounded-lg bg-black/20 text-[8px] font-bold uppercase tracking-widest">{getTypeLabel(account.type)}</span>
                     <div className="flex items-center gap-1">
-                      <button onClick={() => openEditAccount(account)} className="p-1.5 rounded-lg bg-black/10 hover:bg-sky text-white transition-colors" title={ui("Editar saldo")}><Pencil size={12} /></button>
-                      <button onClick={() => dispatch({ type: 'DELETE_ACCOUNT', payload: account.id })} className="p-1.5 rounded-lg bg-black/10 hover:bg-coral text-white transition-colors" title={ui("Eliminar conta")}><Trash2 size={12} /></button>
+                      <button onClick={() => openEditAccount(account)} className="p-2 rounded-lg bg-black/10 hover:bg-sky text-white transition-colors" title={ui("Editar saldo")}><Pencil size={12} /></button>
+                      <button onClick={() => dispatch({ type: 'DELETE_ACCOUNT', payload: account.id })} className="p-2 rounded-lg bg-black/10 hover:bg-coral text-white transition-colors" title={ui("Eliminar conta")}><Trash2 size={12} /></button>
                     </div>
                   </div>
                   <span className="text-xs font-bold opacity-80 relative z-10">{account.name}</span>
-                  <div className={`text-2xl font-black mt-1 relative z-10 ${Number(account.current_balance || 0) < 0 ? 'text-red-300' : ''}`}>{showBalance ? fmt(account.current_balance, currency) : '••••'}</div>
+                  <div className={`text-2xl font-bold mt-1 relative z-10 ${Number(account.current_balance || 0) < 0 ? 'text-red-300' : ''}`}>{showBalance ? fmt(account.current_balance, currency) : '••••'}</div>
                </div>
                );
              })}
@@ -263,23 +263,23 @@ export default function Patrimony() {
         {/* ASSETS */}
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-sm font-black uppercase tracking-widest text-white">{t('patrimony.assets.title')}</h2>
+            <h2 className="text-sm font-bold uppercase tracking-widest text-dark dark:text-white">{t('patrimony.assets.title')}</h2>
             <button className="p-2 rounded-xl bg-leaf/10 text-leaf" onClick={() => setShowAssetModal(true)}><Plus size={16} /></button>
           </div>
           <div className="glass-card divide-y divide-white/5 overflow-hidden">
             {state.activos?.map(asset => (
               <div key={asset.id} className="p-4 flex justify-between items-center group">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-leaf transition-colors">
+                  <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-400 group-hover:text-leaf transition-colors">
                     {React.createElement(assetIcons[asset.type] || Star, { size: 18 })}
                   </div>
                   <div>
-                    <p className="text-xs font-black text-white">{asset.name}</p>
-                    <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{asset.type}</p>
+                    <p className="text-xs font-bold text-dark dark:text-white">{asset.name}</p>
+                    <p className="text-[9px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">{asset.type}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="text-sm font-black text-leaf">{showBalance ? fmt(asset.value, currency) : '••••'}</span>
+                  <span className="text-sm font-bold text-leaf">{showBalance ? fmt(asset.value, currency) : '••••'}</span>
                   <button onClick={() => dispatch({ type: 'DELETE_ASSET', payload: asset.id })} className="text-gray-600 hover:text-coral transition-colors"><Trash2 size={14} /></button>
                 </div>
               </div>
@@ -290,27 +290,27 @@ export default function Patrimony() {
         {/* LIABILITIES */}
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-sm font-black uppercase tracking-widest text-white">{t('patrimony.liabilities.title')}</h2>
-            <Link to="/dividas" className="p-2 rounded-xl bg-coral/10 text-coral"><ArrowRight size={16} /></Link>
+            <h2 className="text-sm font-bold uppercase tracking-widest text-dark dark:text-white">{t('patrimony.liabilities.title')}</h2>
+            <Link to="/dividas" aria-label={t('patrimony.liabilities.title')} className="flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-coral/10 text-coral"><ArrowRight size={16} /></Link>
           </div>
           <div className="glass-card divide-y divide-white/5 overflow-hidden">
             {activeDebts.map(d => (
               <div key={d.id} className="p-4 flex justify-between items-center group">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400">
+                  <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-400">
                     <TrendingDown size={18} />
                   </div>
                   <div>
-                    <p className="text-xs font-black text-white">{d.creditor_name}</p>
-                    <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{ui("Dívida Ativa")}</p>
+                    <p className="text-xs font-bold text-dark dark:text-white">{d.creditor_name}</p>
+                    <p className="text-[9px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">{ui("Dívida Ativa")}</p>
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-0.5">
+                <div className="flex flex-col items-end gap-1">
                   {d.principal_amount > 0 && d.principal_amount !== d.total_amount && (
-                    <span className="text-[9px] font-bold text-gray-500"> {ui("Pedido:")} {showBalance ? fmt(d.principal_amount, currency) : '••••'}
+                    <span className="text-[9px] font-bold text-slate-600 dark:text-slate-400"> {ui("Pedido:")} {showBalance ? fmt(d.principal_amount, currency) : '••••'}
                     </span>
                   )}
-                  <span className="text-sm font-black text-coral">
+                  <span className="text-sm font-bold text-coral">
                     {showBalance ? fmt(d.remaining_amount, currency) : '••••'}
                   </span>
                   {d.total_amount > d.principal_amount && (
@@ -328,52 +328,52 @@ export default function Patrimony() {
       {/* SIMULATORS */}
       <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="glass-card p-6 border-indigo-500/10">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-indigo-400 mb-6 flex items-center gap-2"><Flame size={14} /> {ui("FIRE Simulator")}</h3>
+          <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-400 mb-6 flex items-center gap-2"><Flame size={14} /> {ui("FIRE Simulator")}</h3>
           <div className="grid grid-cols-2 gap-4 mb-6">
              <div className="space-y-1">
-               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{ui("Renda Alvo")}</label>
+               <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{ui("Renda Alvo")}</label>
                <input type="number" className="form-input text-xs" value={retireTargetIncome} onChange={e => setRetireTargetIncome(parseFloat(e.target.value) || 0)} />
              </div>
              <div className="space-y-1">
-               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{ui("Retorno %")}</label>
+               <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{ui("Retorno %")}</label>
                <input type="number" className="form-input text-xs" value={retireReturnRate} onChange={e => setRetireReturnRate(parseFloat(e.target.value) || 0)} />
              </div>
           </div>
           <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-             <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4">
+             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-4">
                <span>{ui("Progresso FIRE")}</span>
-               <span className="text-white">{yearsToFire} {ui("Anos")}</span>
+               <span className="text-dark dark:text-white">{yearsToFire} {ui("Anos")}</span>
              </div>
              <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
                <div className="h-full bg-indigo-500" style={{ width: `${Math.min(100, (netWorth / fireNumber) * 100)}%` }} />
              </div>
              <div className="flex justify-between mt-4 text-[10px] font-bold">
-               <span className="text-gray-500">{ui("Atual:")} {showBalance ? fmt(Math.max(0, netWorth), currency) : '••••'}</span>
+               <span className="text-slate-600 dark:text-slate-400">{ui("Atual:")} {showBalance ? fmt(Math.max(0, netWorth), currency) : '••••'}</span>
                <span className="text-indigo-400">{ui("Alvo:")} {showBalance ? fmt(fireNumber, currency) : '••••'}</span>
              </div>
           </div>
         </div>
 
         <div className="glass-card p-6 border-coral/10">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-coral-light mb-6 flex items-center gap-2"><ShieldAlert size={14} /> {ui("Impacto da Inflação")}</h3>
+          <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-coral-light mb-6 flex items-center gap-2"><ShieldAlert size={14} /> {ui("Impacto da Inflação")}</h3>
           <div className="grid grid-cols-2 gap-4 mb-6">
              <div className="space-y-1">
-               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{ui("Anos")}</label>
+               <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{ui("Anos")}</label>
                <input type="number" className="form-input text-xs" value={inflationYears} onChange={e => setInflationYears(parseInt(e.target.value) || 0)} />
              </div>
              <div className="space-y-1">
-               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{ui("Inflação %")}</label>
+               <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{ui("Inflação %")}</label>
                <input type="number" className="form-input text-xs" value={inflationRate} onChange={e => setInflationRate(parseFloat(e.target.value) || 0)} />
              </div>
           </div>
           <div className="space-y-3">
              <div className="flex justify-between items-center p-3 rounded-xl bg-white/5">
-               <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{ui("Poder de Compra")}</span>
-               <span className="text-sm font-black text-coral">{showBalance ? fmt(purchasingPower, currency) : '••••'}</span>
+               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{ui("Poder de Compra")}</span>
+               <span className="text-sm font-bold text-coral">{showBalance ? fmt(purchasingPower, currency) : '••••'}</span>
              </div>
              <div className="flex justify-between items-center p-3 rounded-xl bg-white/5">
-               <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{ui("Se Investido")}</span>
-               <span className="text-sm font-black text-leaf">{showBalance ? fmt(investedPower, currency) : '••••'}</span>
+               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{ui("Se Investido")}</span>
+               <span className="text-sm font-bold text-leaf">{showBalance ? fmt(investedPower, currency) : '••••'}</span>
              </div>
           </div>
         </div>
@@ -383,15 +383,15 @@ export default function Patrimony() {
       {showAccountModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-midnight/80 backdrop-blur-md">
           <div className="glass-card p-8 w-full max-w-md animate-scale-in">
-            <h3 className="text-xl font-black text-white mb-6">{ui("Nova Conta")}</h3>
+            <h3 className="text-xl font-bold text-white mb-6">{ui("Nova Conta")}</h3>
             <form onSubmit={handleAddAccount} className="space-y-4">
               <select className="form-input" value={accountForm.institution} onChange={e => setAccountForm({...accountForm, institution: e.target.value, type: MOZ_INSTITUTIONS.find(i=>i.name===e.target.value)?.type || 'other'})} required>
                 {MOZ_INSTITUTIONS.map(inst => <option key={inst.id} value={ui(inst.name)} className="text-black">{ui(inst.name)}</option>)}
               </select>
               <input type="number" className="form-input" placeholder={ui("Saldo Inicial")} required value={accountForm.initial_balance} onChange={e => setAccountForm({...accountForm, initial_balance: e.target.value})} />
               <div className="flex gap-4 pt-4">
-                <button type="button" className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-gray-400" onClick={() => setShowAccountModal(false)}>{ui("Cancelar")}</button>
-                <button type="submit" className="flex-1 btn-primary py-3 rounded-xl text-xs font-black uppercase tracking-widest">{ui("Adicionar")}</button>
+                <button type="button" className="flex-1 py-3 text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400" onClick={() => setShowAccountModal(false)}>{ui("Cancelar")}</button>
+                <button type="submit" className="flex-1 btn-primary py-3 rounded-xl text-xs font-bold uppercase tracking-widest">{ui("Adicionar")}</button>
               </div>
             </form>
           </div>
@@ -402,15 +402,15 @@ export default function Patrimony() {
       {editingAccount && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-midnight/80 backdrop-blur-md" onClick={() => { if (!savingBalance) setEditingAccount(null); }}>
           <div className="glass-card p-8 w-full max-w-md animate-scale-in" onClick={e => e.stopPropagation()}>
-            <h3 className="text-xl font-black text-white mb-2">{ui("Editar Conta")}</h3>
-            <p className="text-sm text-gray-400 mb-6">{ui("Corrigir o saldo de")} <span className="text-sky font-bold">{editingAccount.name}</span></p>
+            <h3 className="text-xl font-bold text-white mb-2">{ui("Editar Conta")}</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">{ui("Corrigir o saldo de")} <span className="text-sky font-bold">{editingAccount.name}</span></p>
             <form onSubmit={handleEditAccount} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">{ui("Saldo Actual (")}{currency})</label>
+                <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{ui("Saldo Actual (")}{currency})</label>
                 <input 
                   type="number" 
                   step="0.01"
-                  className="form-input text-lg font-black" 
+                  className="form-input text-lg font-bold" 
                   placeholder="0.00" 
                   required 
                   value={editBalance} 
@@ -422,8 +422,8 @@ export default function Patrimony() {
                 <p className="text-[10px] text-sky font-bold">{ui("💡 Insira o saldo real que tem agora nesta conta. O sistema irá actualizar automaticamente.")}</p>
               </div>
               <div className="flex gap-4 pt-4">
-                <button type="button" className="flex-1 py-3 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors" onClick={() => setEditingAccount(null)}>{ui("Cancelar")}</button>
-                <button type="submit" disabled={savingBalance} aria-busy={savingBalance} className="flex-1 btn-primary py-3 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-70">{savingBalance && <Loader2 size={14} className="animate-spin" />}{savingBalance ? t('common.saving') : ui("Guardar")}</button>
+                <button type="button" className="flex-1 py-3 text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:text-white transition-colors" onClick={() => setEditingAccount(null)}>{ui("Cancelar")}</button>
+                <button type="submit" disabled={savingBalance} aria-busy={savingBalance} className="flex-1 btn-primary py-3 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-70">{savingBalance && <Loader2 size={14} className="animate-spin" />}{savingBalance ? t('common.saving') : ui("Guardar")}</button>
               </div>
             </form>
           </div>

@@ -11,12 +11,12 @@ export default function HousingChart({ data, currency }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-gray-800 dark:text-white">{t('housing.chart.title')}</h3>
-          <p className="text-xs text-gray-500 mt-1">{t('housing.chart.subtitle')}</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{t('housing.chart.subtitle')}</p>
         </div>
       </div>
       
       {chartData.length === 0 ? (
-        <div className="h-[280px] rounded-2xl border border-dashed border-black/10 dark:border-white/10 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+        <div className="h-[280px] rounded-2xl border border-dashed border-black/10 dark:border-white/10 flex items-center justify-center text-sm text-slate-600 dark:text-slate-400">
           {t('housing.chart.no_data')}
         </div>
       ) : (

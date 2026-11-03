@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 /** Grelha de atalhos do Início: ícone grande e nome sempre visível. */
 export default function DashboardQuickActions({ quickActions, itemVariants }) {
   return (
-    <motion.div variants={itemVariants} className="glass-card gap-x-2 gap-y-5 p-5 sm:gap-x-6"
+    <motion.div variants={itemVariants} className="glass-card gap-x-2 gap-y-6 p-6 sm:gap-x-6"
       // Inline grid: the unlayered .glass-card rule would otherwise beat Tailwind's `grid`.
       style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}
     >

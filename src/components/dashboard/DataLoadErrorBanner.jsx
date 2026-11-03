@@ -18,18 +18,18 @@ export default function DataLoadErrorBanner() {
   };
 
   return (
-    <section role="alert" className="glass-card flex flex-col gap-3" style={{ padding: '1.25rem', borderLeft: '4px solid #f59e0b' }}>
+    <section role="alert" className="glass-card flex flex-col gap-3" style={{ padding: '1.5rem', borderLeft: '4px solid #f59e0b' }}>
       <div className="flex items-start gap-3">
         <AlertTriangle size={20} className="shrink-0 text-amber-500" />
         <div>
-          <h2 className="font-black text-base">{t('dashboard.load_error.title')}</h2>
+          <h2 className="font-bold text-base">{t('dashboard.load_error.title')}</h2>
           <p className="text-sm text-gray-600 dark:text-gray-300" style={{ marginTop: '0.25rem' }}>
             {t('dashboard.load_error.body')}
           </p>
-          <p className="text-xs font-mono text-gray-500 dark:text-gray-400" style={{ marginTop: '0.25rem' }}>{status}</p>
+          <p className="text-xs font-mono text-slate-600 dark:text-gray-400" style={{ marginTop: '0.25rem' }}>{status}</p>
         </div>
       </div>
-      <button type="button" className="btn btn-primary" style={{ width: 'auto', alignSelf: 'flex-start', padding: '0.4rem 0.9rem', fontSize: '0.8rem' }} onClick={retry} disabled={retrying}>
+      <button type="button" className="btn btn-primary" style={{ width: 'auto', alignSelf: 'flex-start', padding: '0.5rem 1rem', fontSize: '0.8rem' }} onClick={retry} disabled={retrying}>
         {retrying ? t('dashboard.load_error.retrying') : t('dashboard.load_error.retry')}
       </button>
     </section>

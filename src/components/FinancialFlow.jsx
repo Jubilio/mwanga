@@ -187,7 +187,7 @@ export default function FinancialFlow({ transactions, currency, monthKey, rendas
   return (
     <div className="glass-card p-6 overflow-visible">
       <div className="mb-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{t('reports.chart.sankey_title') || ui("Fluxo de Caixa Sankey")}</h3>
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400">{t('reports.chart.sankey_title') || ui("Fluxo de Caixa Sankey")}</h3>
         <p className="text-xs font-bold text-midnight dark:text-white mt-1">{t('reports.chart.sankey_subtitle') || ui("Sincronizado com os teus relatórios mensais")}</p>
       </div>
       <div className="dark:text-white" style={{ minHeight: '350px' }}>

@@ -147,21 +147,21 @@ export default function Goals() {
       <div className="glass-card p-6 border-ocean/10 bg-linear-to-br from-midnight to-dark-light text-white">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex-1">
-            <h1 className="text-2xl font-black mb-1">{t('goals.title')}</h1>
-            <p className="text-gray-400 text-sm">{t('goals.subtitle', { count: stats.activeGoals })}</p>
+            <h1 className="text-2xl font-bold mb-1">{t('goals.title')}</h1>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">{t('goals.subtitle', { count: stats.activeGoals })}</p>
             
             <div className="mt-6 flex flex-wrap gap-6">
               <div>
-                <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">{t('goals.stats.accumulated')}</span>
-                <div className="text-2xl font-black text-leaf-light">{fmt(stats.totalSaved, currency)}</div>
+                <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 tracking-wider">{t('goals.stats.accumulated')}</span>
+                <div className="text-2xl font-bold text-leaf-light">{fmt(stats.totalSaved, currency)}</div>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">{t('goals.stats.final_target')}</span>
-                <div className="text-2xl font-black text-white">{fmt(stats.totalTarget, currency)}</div>
+                <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 tracking-wider">{t('goals.stats.final_target')}</span>
+                <div className="text-2xl font-bold text-white">{fmt(stats.totalTarget, currency)}</div>
               </div>
               <div className="hidden sm:block">
-                <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">{t('goals.stats.global_progress')}</span>
-                <div className="text-2xl font-black text-sky">{Math.round(stats.globalProgress)}%</div>
+                <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 tracking-wider">{t('goals.stats.global_progress')}</span>
+                <div className="text-2xl font-bold text-sky">{Math.round(stats.globalProgress)}%</div>
               </div>
             </div>
           </div>
@@ -181,7 +181,7 @@ export default function Goals() {
                 </svg>
                 <div className="absolute flex flex-col items-center">
                   <span className="text-xl font-bold text-white">{Math.round(stats.globalProgress)}%</span>
-                  <span className="text-[8px] uppercase font-bold text-gray-400 tracking-tighter">{t('goals.stats.completed')}</span>
+                  <span className="text-[8px] uppercase font-bold text-slate-600 dark:text-slate-400 tracking-tighter">{t('goals.stats.completed')}</span>
                 </div>
              </div>
           </div>
@@ -207,8 +207,8 @@ export default function Goals() {
           <div className="p-6 border-t border-black/5 dark:border-white/5">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-gray-500 ml-1">{t('goals.form.name_label')}</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 ml-1">{t('goals.form.name_label')}</label>
                   <input 
                     type="text" 
                     className="form-input" 
@@ -218,8 +218,8 @@ export default function Goals() {
                     required 
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-gray-500 ml-1">{t('goals.form.target_label', { currency })}</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 ml-1">{t('goals.form.target_label', { currency })}</label>
                   <input 
                     type="number" 
                     className="form-input" 
@@ -229,8 +229,8 @@ export default function Goals() {
                     required 
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-gray-500 ml-1">{t('goals.form.saved_label', { currency })}</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 ml-1">{t('goals.form.saved_label', { currency })}</label>
                   <input 
                     type="number" 
                     className="form-input" 
@@ -239,8 +239,8 @@ export default function Goals() {
                     onChange={e => setForm({ ...form, poupado: e.target.value })} 
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-gray-500 ml-1">{t('goals.form.deadline_label')}</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 ml-1">{t('goals.form.deadline_label')}</label>
                   <input 
                     type="date" 
                     className="form-input" 
@@ -251,17 +251,17 @@ export default function Goals() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] uppercase font-bold text-gray-500 ml-1">{t('goals.form.icon_label')}</label>
+                <label className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 ml-1">{t('goals.form.icon_label')}</label>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(GOAL_ICONS).map(([key, IconComp]) => (
                     <button
                       key={key}
                       type="button"
                       onClick={() => setForm({ ...form, icon: key })}
-                      className={`p-2.5 rounded-xl border-2 transition-all ${
+                      className={`p-3 rounded-xl border-2 transition-all ${
                         form.icon === key 
                           ? 'bg-sky/20 border-sky text-sky' 
-                          : 'bg-black/5 border-transparent text-gray-400 dark:text-gray-500 hover:border-gray-300'
+                          : 'bg-black/5 border-transparent text-slate-600 dark:text-slate-400 hover:border-gray-300'
                       }`}
                     >
                       <IconComp size={20} />
@@ -274,7 +274,7 @@ export default function Goals() {
                 <button 
                   type="button" 
                   onClick={() => setIsFormOpen(false)}
-                  className="px-6 py-2.5 text-xs font-bold text-gray-500 uppercase tracking-widest"
+                  className="px-6 py-3 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest"
                 >
                   {t('goals.form.btn_cancel')}
                 </button>
@@ -294,8 +294,8 @@ export default function Goals() {
         {state.metas?.length === 0 ? (
           <div className="col-span-full py-16 text-center">
             <div className="text-6xl mb-4">🚩</div>
-            <p className="text-gray-400 font-bold">{t('goals.empty_state.title')}</p>
-            <p className="text-gray-500 text-xs mt-1">{t('goals.empty_state.subtitle')}</p>
+            <p className="text-slate-600 dark:text-slate-400 font-bold">{t('goals.empty_state.title')}</p>
+            <p className="text-slate-600 dark:text-slate-400 text-xs mt-1">{t('goals.empty_state.subtitle')}</p>
           </div>
         ) : (
           state.metas?.map((m, i) => {
@@ -316,7 +316,7 @@ export default function Goals() {
             return (
               <div
                 key={m.id}
-                className="glass-card p-5 group flex flex-col justify-between"
+                className="glass-card p-6 group flex flex-col justify-between"
               >
                 <div>
                   <div className="flex justify-between items-start mb-4">
@@ -324,36 +324,36 @@ export default function Goals() {
                       <GoalIcon size={24} strokeWidth={2.2} />
                     </div>
                     {days !== null && !isComplete && (
-                      <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter shadow-sm border ${
-                        days < 30 ? 'bg-coral/10 text-coral border-coral/20' : 'bg-leaf/10 text-leaf border-leaf/20'
+                      <div className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-tighter shadow-sm ${
+                        days < 30 ? 'bg-coral/10 text-coral ' : 'bg-leaf/10 text-leaf '
                       }`}>
                         <Clock size={11} className="inline mr-1" />
                         {t('goals.card.days_left', { count: days })}
                       </div>
                     )}
                     {isComplete && (
-                      <div className="bg-leaf/10 text-leaf dark:text-leaf-light px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border border-leaf/20">
+                      <div className="bg-leaf/10 text-leaf dark:text-leaf-light px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-tighter">
                         {t('goals.card.completed_badge')}
                       </div>
                     )}
                   </div>
 
                   <h3 className="font-bold text-base dark:text-white mb-1">{m.nome}</h3>
-                  <div className="text-xl font-black text-midnight dark:text-white mb-4">
+                  <div className="text-xl font-bold text-midnight dark:text-white mb-4">
                     {fmt(m.poupado, currency)}
-                    <span className="text-[10px] text-gray-500 font-bold uppercase ml-2 tracking-widest">
+                    <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold uppercase ml-2 tracking-widest">
                       {t('goals.card.of', { amount: fmt(m.alvo, currency) })}
                     </span>
                   </div>
 
-                  <div className="relative h-2 rounded-full bg-black/5 dark:bg-white/5 overflow-hidden mb-5">
+                  <div className="relative h-2 rounded-full bg-black/5 dark:bg-white/5 overflow-hidden mb-6">
                     <div 
                       style={{ width: `${pct}%` }}
                       className={`absolute h-full bg-linear-to-r ${theme} rounded-full`}
                     />
                   </div>
 
-                  <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">
                     <span>{t('goals.card.executed', { pct })}</span>
                     <span className="text-ocean dark:text-sky">
                       {t('goals.card.remaining', { amount: fmt(Number(m.alvo || 0) - Number(m.poupado || 0), currency) })}
@@ -365,13 +365,13 @@ export default function Goals() {
                   {!isComplete && (
                     <button 
                       onClick={() => handleOpenDeposit(m)}
-                      className="flex-1 btn btn-primary py-2.5 text-[11px] h-auto shadow-md active:scale-95 transition-all outline-none"
+                      className="flex-1 btn btn-primary py-3 text-[11px] h-auto shadow-md active:scale-95 transition-all outline-none"
                     >
                       <Plus size={14} className="mr-1" /> {t('goals.card.btn_deposit')}
                     </button>
                   )}
                   {isComplete && (
-                     <button className="flex-1 bg-leaf/10 text-leaf font-bold py-2.5 rounded-full text-[11px] flex items-center justify-center gap-1 cursor-default">
+                     <button className="flex-1 bg-leaf/10 text-leaf font-bold py-3 rounded-full text-[11px] flex items-center justify-center gap-1 cursor-default">
                         <CheckCircle2 size={14} /> {t('goals.card.btn_completed')}
                      </button>
                   )}
@@ -380,7 +380,7 @@ export default function Goals() {
                       setSelectedGoal(m);
                       setIsDeleteModalOpen(true);
                     }}
-                    className="p-2.5 rounded-full bg-black/5 dark:bg-white/5 text-gray-400 hover:text-coral hover:bg-coral/10 transition-all active:scale-90"
+                    className="p-3 rounded-full bg-black/5 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-coral hover:bg-coral/10 transition-all active:scale-90"
                     title={t('goals.card.delete_tooltip')}
                   >
                     <Trash2 size={16} />
@@ -440,23 +440,23 @@ export default function Goals() {
                   </div>
                   <div>
                     <h3 className="font-bold text-lg dark:text-white">{t('goals.deposit_modal.title')}</h3>
-                    <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">{t('goals.deposit_modal.meta_label', { name: selectedGoal?.nome })}</p>
+                    <p className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 tracking-wider">{t('goals.deposit_modal.meta_label', { name: selectedGoal?.nome })}</p>
                   </div>
                 </div>
-                <button onClick={() => setIsDepositModalOpen(false)} className="p-2 text-gray-400 hover:text-white transition-colors">
+                <button onClick={() => setIsDepositModalOpen(false)} className="p-2 text-slate-600 dark:text-slate-400 hover:text-white transition-colors">
                   <X size={20} />
                 </button>
               </div>
 
               <form onSubmit={handleConfirmDeposit} className="p-6 space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[11px] uppercase font-bold text-gray-500 ml-1">{t('goals.deposit_modal.amount_label')}</label>
+                  <label className="text-[11px] uppercase font-bold text-slate-600 dark:text-slate-400 ml-1">{t('goals.deposit_modal.amount_label')}</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-gray-400 text-lg">{currency}</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-600 dark:text-slate-400 text-lg">{currency}</span>
                     <input 
                       type="number" 
                       autoFocus
-                      className="w-full bg-black/5 dark:bg-white/5 border-2 border-transparent focus:border-ocean dark:focus:border-sky rounded-2xl py-4 pl-14 pr-4 text-2xl font-black dark:text-white transition-all outline-none" 
+                      className="w-full bg-black/5 dark:bg-white/5 border-2 border-transparent focus:border-ocean dark:focus:border-sky rounded-2xl py-4 pl-14 pr-4 text-2xl font-bold dark:text-white transition-all outline-none" 
                       placeholder="0.00"
                       value={depositForm.amount}
                       onChange={e => setDepositForm({ ...depositForm, amount: e.target.value })}
@@ -466,7 +466,7 @@ export default function Goals() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] uppercase font-bold text-gray-500 ml-1">{t('goals.deposit_modal.account_label')}</label>
+                  <label className="text-[11px] uppercase font-bold text-slate-600 dark:text-slate-400 ml-1">{t('goals.deposit_modal.account_label')}</label>
                   <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1 custom-scrollbar">
                     {state.contas?.length > 0 ? (
                       state.contas.map(acc => (
@@ -486,7 +486,7 @@ export default function Goals() {
                              </div>
                              <div className="text-left">
                                 <div className="text-sm font-bold dark:text-white leading-tight">{acc.name}</div>
-                                <div className="text-[10px] text-gray-500">{t('goals.deposit_modal.balance_label', { balance: fmt(acc.current_balance, currency) })}</div>
+                                <div className="text-[10px] text-slate-600 dark:text-slate-400">{t('goals.deposit_modal.balance_label', { balance: fmt(acc.current_balance, currency) })}</div>
                              </div>
                           </div>
                           {depositForm.account_id === acc.id && (
@@ -509,7 +509,7 @@ export default function Goals() {
                    type="submit" 
                    disabled={!depositForm.account_id || depositing}
                    aria-busy={depositing}
-                   className="w-full btn btn-primary py-4 text-sm font-black shadow-xl shadow-sky/20 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-2"
+                   className="w-full btn btn-primary py-4 text-sm font-bold shadow-xl shadow-sky/20 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-2"
                 >
                   {depositing && <Loader2 size={16} className="animate-spin" />}
                   {depositing ? t('common.saving') : t('goals.deposit_modal.btn_confirm')}

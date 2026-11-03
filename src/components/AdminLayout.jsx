@@ -125,7 +125,7 @@ export default function AdminLayout() {
       >
         {/* Sidebar header */}
         <div style={{
-          padding: '24px 20px',
+          padding: '24px 24px',
           borderBottom: `1px solid ${G.border}`,
           display: 'flex',
           alignItems: 'center',
@@ -142,10 +142,10 @@ export default function AdminLayout() {
               <Shield size={20} color="#fff" />
             </div>
             <div>
-              <div style={{ fontSize: '14px', fontWeight: 800, letterSpacing: '-0.01em' }}>
+              <div style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '-0.01em' }}>
                 Mwanga <span style={{ color: G.gold }}>Admin</span>
               </div>
-              <div style={{ fontSize: '10px', color: G.muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}> {ui("Gestão de plataforma")} </div>
+              <div style={{ fontSize: '10px', color: G.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}> {ui("Gestão de plataforma")} </div>
             </div>
           </div>
 
@@ -171,11 +171,11 @@ export default function AdminLayout() {
               onClick={() => setSidebarOpen(false)}
               style={({ isActive }) => ({
                 display: 'flex', alignItems: 'center', gap: '12px',
-                padding: '12px 14px',
+                padding: '12px 16px',
                 borderRadius: '14px',
                 textDecoration: 'none',
                 fontSize: '13px',
-                fontWeight: isActive ? 700 : 500,
+                fontWeight: isActive ? 700 : 400,
                 color: isActive ? G.gold : G.muted,
                 background: isActive ? `${G.gold}12` : 'transparent',
                 transition: 'all 0.2s',
@@ -194,8 +194,8 @@ export default function AdminLayout() {
           borderTop: `1px solid ${G.border}`,
         }}>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: '10px',
-            padding: '12px 14px',
+            display: 'flex', alignItems: 'center', gap: '12px',
+            padding: '12px 16px',
             borderRadius: '14px',
             background: G.card,
             marginBottom: '8px',
@@ -205,7 +205,7 @@ export default function AdminLayout() {
               background: `linear-gradient(135deg, ${G.gold}, ${G.gold2})`,
               borderRadius: '10px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '13px', fontWeight: 800, color: '#fff',
+              fontSize: '13px', fontWeight: 700, color: '#fff',
             }}>
               {user.name?.charAt(0)?.toUpperCase() || 'A'}
             </div>
@@ -224,7 +224,7 @@ export default function AdminLayout() {
             style={{
               width: '100%',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              padding: '10px 14px',
+              padding: '12px 16px',
               borderRadius: '14px',
               background: 'rgba(239,68,68,0.08)',
               border: '1px solid rgba(239,68,68,0.15)',
@@ -272,10 +272,10 @@ export default function AdminLayout() {
               <Menu size={20} />
             </button>
             <div>
-              <div style={{ fontSize: '10px', fontWeight: 800, color: G.gold, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: G.gold, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
                 Mwanga Admin
               </div>
-              <div style={{ fontSize: '16px', fontWeight: 800, letterSpacing: '-0.01em' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, letterSpacing: '-0.01em' }}>
                 {currentTitle}
               </div>
             </div>
@@ -288,12 +288,12 @@ export default function AdminLayout() {
                 background: G.card,
                 border: `1px solid ${G.border}`,
                 borderRadius: '12px',
-                padding: '8px 14px',
+                padding: '8px 16px',
                 color: G.muted,
                 cursor: 'pointer',
                 fontSize: '11px',
                 fontWeight: 700,
-                display: 'flex', alignItems: 'center', gap: '6px',
+                display: 'flex', alignItems: 'center', gap: '8px',
               }}
             > {ui("Ir para App")} </button>
             <div style={{
@@ -301,7 +301,7 @@ export default function AdminLayout() {
               background: `linear-gradient(135deg, ${G.gold}, ${G.gold2})`,
               borderRadius: '12px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '14px', fontWeight: 800, color: '#fff',
+              fontSize: '14px', fontWeight: 700, color: '#fff',
               cursor: 'pointer',
             }}
               onClick={() => setSidebarOpen(true)}

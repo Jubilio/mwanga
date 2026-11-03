@@ -78,21 +78,21 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
               </div>
               <div className="min-w-0">
                 <h3 className="truncate text-lg font-bold text-gray-800 dark:text-white">{ui("Feedback Mwanga")}</h3>
-                <p className="truncate text-xs text-gray-500 dark:text-gray-400">{ui("Sugestões ou reporte de erros")}</p>
+                <p className="truncate text-xs text-slate-600 dark:text-gray-400">{ui("Sugestões ou reporte de erros")}</p>
               </div>
             </div>
             <button 
               onClick={onClose}
               className="rounded-full p-2 hover:bg-black/5 dark:hover:bg-white/5"
             >
-              <X size={20} className="text-gray-400 hover:text-gray-600" />
+              <X size={20} className="text-slate-600 dark:text-slate-400 hover:text-gray-600" />
             </button>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6">
             <div className="mb-4">
-              <label className="mb-2 block text-xs font-black uppercase tracking-widest text-gray-400"> {ui("O que queres partilhar?")} </label>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400"> {ui("O que queres partilhar?")} </label>
               <textarea
                 value={ui(message)}
                 onChange={(e) => setMessage(e.target.value)}
@@ -103,7 +103,7 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
             </div>
 
             <div className="mb-6">
-              <label className="mb-2 block text-xs font-black uppercase tracking-widest text-gray-400"> {ui("Screenshot (Opcional)")} </label>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400"> {ui("Screenshot (Opcional)")} </label>
               
               {!previewUrl ? (
                 <button
@@ -111,8 +111,8 @@ export default function FeedbackModal({ isOpen, onClose, showToast }) {
                   onClick={() => fileInputRef.current?.click()}
                   className="flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-black/10 py-6 transition-colors hover:border-ocean/30 hover:bg-ocean/5 dark:border-white/10 dark:hover:border-aurora/30 dark:hover:bg-aurora/5"
                 >
-                  <Camera size={24} className="mb-2 text-gray-400" />
-                  <span className="text-xs font-bold text-gray-500">{ui("Tocar para anexar screenshot")}</span>
+                  <Camera size={24} className="mb-2 text-slate-600 dark:text-slate-400" />
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{ui("Tocar para anexar screenshot")}</span>
                 </button>
               ) : (
                 <div className="group relative overflow-hidden rounded-2xl border border-black/10 dark:border-white/10">

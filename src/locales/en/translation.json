@@ -945,7 +945,7 @@
         "credit_comp_msg": "In a bank scenario of 26% per year, a similar amount could cost approximately <strong className=\"text-white\">{{amount}}</strong> in interest over the same cycle."
       }
     },
-    "disclaimer": "These simulations are projections. Results depend on discipline, actual return, costs, and user context. <strong className=\"text-amber-500/80\"> Use Mwanga to make better decisions, but validate critical decisions with professional support when necessary.</strong>"
+    "disclaimer": "These simulations are projections. Results depend on discipline, actual return, costs, and user context. <strong> Use Mwanga to make better decisions, but validate critical decisions with professional support when necessary.</strong>"
   },
   "settings": {
     "title": "Settings",

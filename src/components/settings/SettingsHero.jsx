@@ -53,7 +53,7 @@ export default function SettingsHero({
                 disabled={disabled}
                 aria-label={t('settings.reliable.change_avatar')} aria-expanded={showAvatarGallery}
                 onClick={() => setShowAvatarGallery(!showAvatarGallery)}
-                className="absolute -bottom-2 -right-2 p-2.5 bg-white text-midnight rounded-2xl shadow-xl border border-slate-200 transition-transform hover:scale-105 active:scale-95 disabled:opacity-60"
+                className="absolute -bottom-2 -right-2 p-3 bg-white text-midnight rounded-2xl shadow-xl border border-slate-200 transition-transform hover:scale-105 active:scale-95 disabled:opacity-60"
                 style={{ width: 'auto' }}
               >
                 <Camera size={20} />
@@ -61,23 +61,23 @@ export default function SettingsHero({
             </div>
 
             <div className="flex-1 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-teal-400 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] mb-3 md:mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-teal-400 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] mb-3 md:mb-4">
                 <Sparkles size={12} /> {tierLabel}
               </div>
-              <h1 className="text-3xl md:text-5xl font-black font-serif text-white tracking-tight drop-shadow-2xl mb-2">
+              <h1 className="text-3xl md:text-5xl font-bold font-serif text-white tracking-tight drop-shadow-2xl mb-2">
                 {form.user_name || t('settings.hero.default_user_name')}
               </h1>
-              <p className="text-white/50 text-lg font-medium flex items-center justify-center md:justify-start gap-3">
+              <p className="text-white/50 text-lg font-normal flex items-center justify-center md:justify-start gap-3">
                 <HomeIcon size={18} className="text-teal-500/50" /> {form.household_name}
               </p>
 
               <div className="mt-6 md:mt-8 flex items-center justify-center md:justify-start gap-3 md:gap-4">
                 {isSaving ? (
-                  <div className="flex items-center gap-3 px-4 md:px-5 py-2 md:py-2.5 rounded-xl md:rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 text-white/70 text-[10px] md:text-xs font-bold animate-pulse">
+                  <div className="flex items-center gap-3 px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 text-white/70 text-[10px] md:text-xs font-bold animate-pulse">
                     <Loader2 size={14} className="animate-spin text-teal-400" /> {t('settings.hero.saving')}
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 px-4 md:px-5 py-2 md:py-2.5 rounded-xl md:rounded-2xl bg-teal-500/10 backdrop-blur-xl border border-teal-500/20 text-teal-400 text-[10px] md:text-xs font-bold animate-in fade-in slide-in-from-left-4">
+                  <div className="flex items-center gap-3 px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl bg-teal-500/10 backdrop-blur-xl border border-teal-500/20 text-teal-400 text-[10px] md:text-xs font-bold animate-in fade-in slide-in-from-left-4">
                     {saveStatus === 'error' ? <AlertTriangle size={14} className="text-red-400" /> : saveStatus === 'pending' ? <Clock size={14} className="text-amber-400" /> : <CloudCheck size={14} />} {t(`settings.reliable.status.${saveStatus}`)}
                   </div>
                 )}
@@ -86,24 +86,24 @@ export default function SettingsHero({
 
             <div className="hidden xl:flex items-center gap-6">
               <div className="glass-card bg-white/5! border-white/5! p-6 min-w-[140px] text-center backdrop-blur-3xl group">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-2 group-hover:text-teal-400 transition-colors">{t('settings.hero.currency_label')}</p>
-                <p className="text-2xl font-black font-serif text-white">{form.currency}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-2 group-hover:text-teal-400 transition-colors">{t('settings.hero.currency_label')}</p>
+                <p className="text-2xl font-bold font-serif text-white">{form.currency}</p>
               </div>
               <div className="glass-card bg-white/5! border-white/5! p-6 min-w-[140px] text-center backdrop-blur-3xl group">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-2 group-hover:text-indigo-400 transition-colors">{t('settings.hero.cycle_label')}</p>
-                <p className="text-2xl font-black font-serif text-white">{t('settings.hero.day_label', { day: form.financial_month_start_day })}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-2 group-hover:text-indigo-400 transition-colors">{t('settings.hero.cycle_label')}</p>
+                <p className="text-2xl font-bold font-serif text-white">{t('settings.hero.day_label', { day: form.financial_month_start_day })}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
       {showAvatarGallery && (
-        <div className="glass-card mt-4 p-5 flex flex-wrap items-center gap-3">
+        <div className="glass-card mt-4 p-6 flex flex-wrap items-center gap-3">
           <button
             type="button"
             disabled={disabled}
             onClick={() => fileInputRef.current?.click()}
-            className="btn btn-primary"
+            className="btn btn-secondary"
             style={{ width: 'auto' }}
           >
             {photoBusy ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
@@ -114,7 +114,7 @@ export default function SettingsHero({
               <Trash2 size={18} /> {t('settings.reliable.use_initials')}
             </button>
           ) : null}
-          <p className="w-full text-xs text-slate-500">{t('settings.reliable.photo_hint')}</p>
+          <p className="w-full text-xs text-slate-600 dark:text-slate-400">{t('settings.reliable.photo_hint')}</p>
           <input
             type="file"
             ref={fileInputRef}

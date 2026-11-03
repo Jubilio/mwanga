@@ -89,7 +89,7 @@ export default function NotificationPanel({
             {notifications.length > 0 && (
               <button
                 onClick={onClearAllClick}
-                className="mr-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 transition-colors hover:text-coral"
+                className="mr-2 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 transition-colors hover:text-coral"
               > {ui("Limpar Tudo")} </button>
             )}
             <button
@@ -103,7 +103,7 @@ export default function NotificationPanel({
 
         <div className="custom-scrollbar max-h-[calc(100vh-150px)] space-y-4 overflow-y-auto pr-2">
           {orderedNotifications.length === 0 ? (
-            <p className="py-10 text-center italic text-gray-500">{ui("Nenhuma notificação por agora.")}</p>
+            <p className="py-10 text-center italic text-slate-600 dark:text-slate-400">{ui("Nenhuma notificação por agora.")}</p>
           ) : (
             orderedNotifications.map((notification) => {
               const presentation = getNotificationPresentation(notification);
@@ -127,18 +127,18 @@ export default function NotificationPanel({
                     onClick={(event) => onDeleteOne(event, notification.id)}
                     className="absolute right-2 top-2 rounded-full p-1 transition-opacity hover:bg-red-500/10 md:opacity-0 md:group-hover:opacity-100"
                   >
-                    <X size={12} className="text-gray-400 hover:text-red-500" />
+                    <X size={12} className="text-slate-600 dark:text-slate-400 hover:text-red-500" />
                   </button>
 
                   <div className="mb-2 flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="mb-2 flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${presentation.accentClass}`}>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${presentation.accentClass}`}>
                           {getNotificationIcon(notification.type)}
                           {ui(presentation.label)}
                         </span>
                         {!notification.read && (
-                          <span className="inline-flex rounded-full bg-coral/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-coral"> {ui("Novo")} </span>
+                          <span className="inline-flex rounded-full bg-coral/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-coral"> {ui("Novo")} </span>
                         )}
                       </div>
                       <div className="pr-4 text-sm font-bold text-slate-800 dark:text-white">
@@ -155,7 +155,7 @@ export default function NotificationPanel({
                       {quickActions.map((item, idx) => (
                         <span
                           key={`${notification.id}-${ui(item?.title || item)}-${idx}`}
-                          className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${presentation.chipClass}`}
+                          className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${presentation.chipClass}`}
                         >
                           {item?.title || item}
                         </span>
@@ -163,7 +163,7 @@ export default function NotificationPanel({
                     </div>
                   )}
 
-                  <span className="mt-3 block text-[10px] font-medium uppercase tracking-[0.14em] text-gray-500">
+                  <span className="mt-3 block text-[10px] font-normal uppercase tracking-[0.14em] text-slate-600 dark:text-slate-400">
                     {new Date(notification.created_at).toLocaleString()}
                   </span>
                 </div>

@@ -57,14 +57,14 @@ export default function ResetPassword() {
       <div className="glass-card" style={{ width: '100%', maxWidth: '400px', padding: '2rem' }}>
         {!success ? (
           <>
-            <div style={{ textAlign: 'center', marginBottom: '1.6rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
               <div style={{
                 width: '60px', height: '60px', background: 'var(--color-ocean)', borderRadius: '15px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'white'
               }}>
                 <ShieldCheck size={30} />
               </div>
-              <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '0.5rem' }}>
+              <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '0.5rem' }}>
                 {t('auth.reset.title')}
               </h1>
               <p style={{ color: 'var(--color-muted)', fontSize: '0.9rem', margin: 0 }}>
@@ -72,7 +72,7 @@ export default function ResetPassword() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
                 <label htmlFor="reset-password" className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Lock size={14} /> {t('auth.forgot.new_password_label')}
@@ -80,14 +80,14 @@ export default function ResetPassword() {
                 <div style={{ position: 'relative' }}>
                   <input
                     id="reset-password" type={inputType} required minLength={8} maxLength={100} autoComplete="new-password"
-                    className="form-input" style={{ paddingRight: '2.8rem' }}
+                    className="form-input" style={{ paddingRight: '3rem' }}
                     placeholder={t('auth.forgot.new_password_placeholder')}
                     value={password} onChange={(e) => setPassword(e.target.value)}
                   />
                   <button
                     type="button" onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? t('auth.forgot.hide_password') : t('auth.forgot.show_password')}
-                    style={{ position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-muted)', cursor: 'pointer', padding: '0.3rem' }}
+                    style={{ position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-muted)', cursor: 'pointer', padding: '0.25rem' }}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -107,10 +107,10 @@ export default function ResetPassword() {
 
               {error && (
                 <div role="alert" style={{
-                  padding: '10px 12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)',
+                  padding: '12px 12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)',
                   borderRadius: '8px', color: 'var(--color-red)', fontSize: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '8px'
                 }}>
-                  <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '4px' }} />
                   <span>
                     {error}
                     {linkInvalid && (
@@ -131,7 +131,7 @@ export default function ResetPassword() {
         ) : (
           <div style={{ textAlign: 'center', padding: '1rem 0' }}>
             <CheckCircle2 size={60} strokeWidth={1.5} style={{ margin: '0 auto 1rem', color: 'var(--color-green)' }} />
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '0.8rem' }}>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '0.75rem' }}>
               {t('auth.reset.success_title')}
             </h2>
             <p style={{ color: 'var(--color-muted)', fontSize: '0.95rem', lineHeight: 1.5, marginBottom: '2rem' }}>

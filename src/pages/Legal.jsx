@@ -154,13 +154,13 @@ export default function Legal({ page }) {
       <div className="flex w-full max-w-3xl flex-col gap-8" style={{ margin: '0 auto' }}>
         <header className="flex items-center justify-between gap-4">
           <MwangaLogo variant="sidebar" />
-          <Link to="/bem-vindo" className="inline-flex items-center gap-1 text-sm font-semibold" style={muted}>
+          <Link to="/bem-vindo" className="inline-flex items-center gap-1 text-sm font-bold" style={muted}>
             <ArrowLeft size={16} /> Voltar
           </Link>
         </header>
 
         <section className="flex flex-col gap-3">
-          <h1 className="font-display text-3xl font-black leading-tight">{doc.title}</h1>
+          <h1 className="font-display text-3xl font-bold leading-tight">{doc.title}</h1>
           <p className="text-xs" style={muted}>Última atualização: {UPDATED}</p>
           <p className="text-base" style={muted}>{doc.intro}</p>
         </section>
@@ -168,11 +168,11 @@ export default function Legal({ page }) {
         {doc.sections.map((section) => (
           <section key={section.h} className="flex flex-col gap-3">
             <h2 className="text-lg font-bold">{section.h}</h2>
-            <ul className="flex list-disc flex-col gap-2 text-sm leading-relaxed" style={{ paddingLeft: '1.25rem' }}>
+            <ul className="flex list-disc flex-col gap-2 text-sm leading-relaxed" style={{ paddingLeft: '1.5rem' }}>
               {section.items.map((item) => <li key={item}>{item}</li>)}
             </ul>
             {section.link && (
-              <Link to={section.link.to} className="text-sm font-semibold underline">{section.link.label}</Link>
+              <Link to={section.link.to} className="text-sm font-bold underline">{section.link.label}</Link>
             )}
           </section>
         ))}

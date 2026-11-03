@@ -37,15 +37,15 @@ export default function FirstStepsCard() {
   };
 
   return (
-    <section className="glass-card flex flex-col gap-4" style={{ padding: '1.25rem' }} aria-labelledby="first-steps-title">
+    <section className="glass-card flex flex-col gap-4" style={{ padding: '1.5rem' }} aria-labelledby="first-steps-title">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 id="first-steps-title" className="font-black text-lg">{t('dashboard.first_steps.title')}</h2>
-          <p className="text-xs font-bold text-gray-500 dark:text-gray-400" style={{ marginTop: '0.25rem' }}>
+          <h2 id="first-steps-title" className="font-bold text-lg">{t('dashboard.first_steps.title')}</h2>
+          <p className="text-xs font-bold text-slate-600 dark:text-gray-400" style={{ marginTop: '0.25rem' }}>
             {t('dashboard.first_steps.progress', { current: doneCount, total: steps.length })}
           </p>
         </div>
-        <button type="button" onClick={dismiss} className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:underline">
+        <button type="button" onClick={dismiss} className="text-xs font-bold text-slate-600 dark:text-gray-400 hover:underline">
           {t('dashboard.first_steps.dismiss')}
         </button>
       </div>
@@ -57,14 +57,14 @@ export default function FirstStepsCard() {
       <ol className="flex flex-col gap-2">
         {steps.map(step => (
           <li key={step.id} className="flex items-center justify-between gap-3 text-sm">
-            <span className={`flex items-center gap-2 ${step.done ? 'text-gray-500 dark:text-gray-400 line-through' : 'font-semibold'}`}>
+            <span className={`flex items-center gap-2 ${step.done ? 'text-slate-600 dark:text-gray-400 line-through' : 'font-bold'}`}>
               <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${step.done ? 'bg-leaf text-white' : 'border border-gray-400'}`}>
                 {step.done && <Check size={12} strokeWidth={3} />}
               </span>
               {t(`dashboard.first_steps.steps.${step.id}.label`)}
             </span>
             {step === next && (
-              <button type="button" className="btn btn-primary shrink-0" style={{ padding: '0.4rem 0.9rem', fontSize: '0.8rem', width: 'auto' }} onClick={() => navigate(step.to, step.navState ? { state: step.navState } : undefined)}>
+              <button type="button" className="btn btn-primary shrink-0" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', width: 'auto' }} onClick={() => navigate(step.to, step.navState ? { state: step.navState } : undefined)}>
                 {t(`dashboard.first_steps.steps.${step.id}.cta`)}
               </button>
             )}

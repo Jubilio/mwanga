@@ -58,7 +58,7 @@ export default function Reports() {
         <button
           className="btn btn-primary"
           onClick={() => { exportToCSV(state.transacoes); showToast(t('common.toasts.csv_exported')); }}
-          style={{ marginLeft: 'auto', fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+          style={{ marginLeft: 'auto', fontSize: '0.75rem', padding: '0.25rem 0.75rem' }}
         >
           <Download size={13} /> {t('reports.btn_export')}
         </button>
@@ -105,7 +105,7 @@ export default function Reports() {
                 <div style={{ fontSize: '0.65rem', color: 'var(--color-muted)' }}>{t('reports.metrics.of_100')}</div>
               </div>
             </div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 600, marginTop: '0.5rem' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '0.5rem' }}>
               {risk.emoji} {ui(risk.label)}
             </div>
           </div>
@@ -115,11 +115,11 @@ export default function Reports() {
             <Metric label={t('reports.metrics.expenses')} value={fmt(totals.totalExpenses, currency)} color="var(--color-coral)" />
             <Metric label={t('reports.metrics.balance')} value={fmt(totals.saldo, currency)} color={totals.saldo >= 0 ? 'var(--color-leaf)' : 'var(--color-coral)'} />
             <div>
-              <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-muted)', marginBottom: '0.2rem' }}>
+              <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-muted)', marginBottom: '0.25rem' }}>
                 {t('reports.metrics.savings_rate')}
               </div>
               <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{savingsRate}%</div>
-              <div className="progress-bar-track" style={{ marginTop: '0.3rem', height: '6px' }}>
+              <div className="progress-bar-track" style={{ marginTop: '0.25rem', height: '6px' }}>
                 <div
                   className="progress-bar-fill"
                   style={{
@@ -129,7 +129,7 @@ export default function Reports() {
                   }}
                 />
               </div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--color-muted)', marginTop: '0.2rem' }}>{t('reports.metrics.recommended')}</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--color-muted)', marginTop: '0.25rem' }}>{t('reports.metrics.recommended')}</div>
             </div>
           </div>
         </div>
@@ -157,8 +157,8 @@ export default function Reports() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {categories.map(category => (
               <div key={category.category}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.3rem' }}>
-                  <span style={{ fontWeight: 500 }}>{getCategoryLabel(category.category)}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.25rem' }}>
+                  <span style={{ fontWeight: 400 }}>{getCategoryLabel(category.category)}</span>
                   <span style={{ color: 'var(--color-muted)' }}>{fmt(category.amount, currency)} {ui("(")}{category.percent}%)</span>
                 </div>
                 <div className="progress-bar-track" style={{ height: '8px' }}>
@@ -173,7 +173,7 @@ export default function Reports() {
       {history.length > 0 && (
         <>
           <div className="section-title">{t('reports.sections.evolution')}</div>
-          <div className="glass-card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
+          <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={history}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
@@ -208,11 +208,11 @@ export default function Reports() {
               ) : (
                 [...history].reverse().map(month => (
                   <tr key={month.month}>
-                    <td style={{ fontWeight: 500 }}>{ui(month.label)}</td>
+                    <td style={{ fontWeight: 400 }}>{ui(month.label)}</td>
                     <td style={{ color: 'var(--color-leaf)' }}>{fmt(month.receitas, currency)}</td>
                     <td style={{ color: 'var(--color-coral)' }}>{fmt(month.despesas, currency)}</td>
                     <td style={{ color: 'var(--color-gold)' }}>{fmt(month.renda, currency)}</td>
-                    <td style={{ fontWeight: 600, color: month.saldo >= 0 ? 'var(--color-leaf)' : 'var(--color-coral)' }}>
+                    <td style={{ fontWeight: 700, color: month.saldo >= 0 ? 'var(--color-leaf)' : 'var(--color-coral)' }}>
                       {fmt(month.saldo, currency)}
                     </td>
                   </tr>
@@ -230,7 +230,7 @@ function Metric({ label, value, color }) {
   useUiLanguage();
   return (
     <div>
-      <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-muted)', marginBottom: '0.2rem' }}>
+      <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-muted)', marginBottom: '0.25rem' }}>
         {ui(label)}
       </div>
       <div style={{ fontWeight: 700, fontSize: '1.1rem', color }}>{value}</div>

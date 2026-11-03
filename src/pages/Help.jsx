@@ -25,12 +25,12 @@ function CategoryChip({ active, onClick, icon: Icon, children }) {
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`flex shrink-0 items-center gap-1.5 rounded-full border text-sm font-bold transition-colors ${
+      className={`flex shrink-0 items-center gap-2 rounded-full border text-sm font-bold transition-colors ${
         active
           ? 'border-ocean bg-ocean text-white dark:border-sky dark:bg-sky/20 dark:text-sky-light'
           : 'border-slate-200 bg-white/70 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300'
       }`}
-      style={{ padding: '8px 14px', width: 'auto' }}
+      style={{ padding: '8px 16px', width: 'auto' }}
     >
       {Icon && <Icon size={15} />}
       {children}
@@ -49,14 +49,14 @@ function FaqItem({ faq, open, onToggle }) {
         aria-expanded={open}
         aria-controls={panelId}
         className="flex w-full items-center gap-3 text-left"
-        style={{ padding: '14px 4px' }}
+        style={{ padding: '16px 4px' }}
       >
         <span className="min-w-0 flex-1 text-[15px] font-bold leading-snug text-midnight dark:text-white">
           {t(`help.faq.${faq.id}.q`)}
         </span>
         <ChevronDown
           size={18}
-          className={`shrink-0 text-slate-400 transition-transform duration-300 ${open ? 'rotate-180 text-ocean dark:text-sky-light' : ''}`}
+          className={`shrink-0 text-slate-600 transition-transform duration-300 ${open ? 'rotate-180 text-ocean dark:text-sky-light' : ''}`}
         />
       </button>
       {open && (
@@ -68,7 +68,7 @@ function FaqItem({ faq, open, onToggle }) {
             <Link
               to={faq.to}
               className="mt-3 inline-flex items-center gap-1 rounded-full bg-ocean/10 text-sm font-bold text-ocean dark:bg-sky/15 dark:text-sky-light"
-              style={{ padding: '6px 14px' }}
+              style={{ padding: '8px 16px' }}
             >
               {t('help.open_page', { page: t(faq.page) })}
             </Link>
@@ -118,7 +118,7 @@ export default function Help() {
         className="relative overflow-hidden text-white shadow-xl shadow-ocean/20"
         style={{
           borderRadius: 28,
-          padding: '22px 18px 18px',
+          padding: '24px 16px 16px',
           marginBottom: 16,
           background: 'linear-gradient(140deg, var(--color-ocean) 0%, var(--color-sky) 62%, #2a9d8f 100%)',
         }}
@@ -130,7 +130,7 @@ export default function Help() {
             <LifeBuoy size={22} />
           </span>
           <div className="min-w-0">
-            <h1 className="font-display font-black leading-tight text-white" style={{ fontSize: '1.45rem', margin: 0 }}>
+            <h1 className="font-display font-bold leading-tight text-white" style={{ fontSize: '1.45rem', margin: 0 }}>
               {t('help.title')}
             </h1>
             <p className="mt-1 text-sm leading-snug text-white/75" style={{ marginBottom: 0 }}>{t('help.subtitle')}</p>
@@ -138,7 +138,7 @@ export default function Help() {
         </div>
 
         <div className="relative" style={{ marginTop: 16 }}>
-          <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400" />
           <input
             type="text"
             inputMode="search"
@@ -148,14 +148,14 @@ export default function Help() {
             placeholder={t('help.search_placeholder')}
             aria-label={t('help.search_placeholder')}
             className="w-full rounded-2xl border-0 bg-white text-[16px] text-midnight shadow-lg outline-none ring-2 ring-transparent placeholder:text-slate-400 focus:ring-white/60"
-            style={{ padding: '13px 44px 13px 42px' }}
+            style={{ padding: '12px 48px 12px 40px' }}
           />
           {searching && (
             <button
               type="button"
               onClick={() => { setQuery(''); setOpenId(null); }}
               aria-label={t('help.search_clear')}
-              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100"
+              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-100"
               style={{ width: 32 }}
             >
               <X size={16} />
@@ -166,7 +166,7 @@ export default function Help() {
 
       {/* Categories scroll sideways on narrow phones instead of wrapping into a wall of chips. */}
       {!searching && (
-        <div className="flex gap-2 overflow-x-auto" style={{ margin: '0 -4px 14px', padding: '2px 4px', maxWidth: 'calc(100% + 8px)', scrollbarWidth: 'none' }}>
+        <div className="flex gap-2 overflow-x-auto" style={{ margin: '0 -4px 16px', padding: '4px 4px', maxWidth: 'calc(100% + 8px)', scrollbarWidth: 'none' }}>
           <CategoryChip active={category === 'all'} onClick={() => setCategory('all')}>{t('help.all')}</CategoryChip>
           {HELP_CATEGORIES.map((cat) => (
             <CategoryChip key={cat.id} icon={cat.icon} active={category === cat.id} onClick={() => setCategory(cat.id)}>
@@ -177,7 +177,7 @@ export default function Help() {
       )}
 
       {searching && (
-        <p className="px-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-400" style={{ margin: '0 0 10px' }} aria-live="polite">
+        <p className="px-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-600 dark:text-slate-400" style={{ margin: '0 0 12px' }} aria-live="polite">
           {t(results.length === 1 ? 'help.results_one' : 'help.results_other', { count: results.length })}
         </p>
       )}
@@ -185,8 +185,8 @@ export default function Help() {
       {groups.length > 0 ? (
         <div style={{ display: 'grid', gap: 12 }}>
           {groups.map((group) => (
-            <section key={group.id} className="glass-card" style={{ margin: 0, padding: '14px 16px 4px' }}>
-              <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em] text-ocean dark:text-sky-light">
+            <section key={group.id} className="glass-card" style={{ margin: 0, padding: '16px 16px 4px' }}>
+              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-ocean dark:text-sky-light">
                 <group.icon size={14} /> {t(`help.categories.${group.id}`)}
               </div>
               <div style={{ marginTop: 4 }}>
@@ -205,25 +205,25 @@ export default function Help() {
       ) : (
         <div className="glass-card text-center" style={{ margin: 0, padding: 24 }}>
           <p className="font-bold text-midnight dark:text-white" style={{ margin: 0 }}>{t('help.empty_title', { query: query.trim() })}</p>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400" style={{ marginBottom: 0 }}>{t('help.empty_body')}</p>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400" style={{ marginBottom: 0 }}>{t('help.empty_body')}</p>
         </div>
       )}
 
       {/* Contact: a real person on WhatsApp, or the in-app report with a screenshot. */}
-      <section className="glass-card" style={{ margin: '20px 0 0', padding: 16 }}>
-        <h2 className="font-display font-black text-midnight dark:text-white" style={{ fontSize: '1.15rem', margin: 0 }}>
+      <section className="glass-card" style={{ margin: '24px 0 0', padding: 16 }}>
+        <h2 className="font-display font-bold text-midnight dark:text-white" style={{ fontSize: '1.15rem', margin: 0 }}>
           {t('help.contact.title')}
         </h2>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400" style={{ marginBottom: 14 }}>{t('help.contact.body')}</p>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400" style={{ marginBottom: 16 }}>{t('help.contact.body')}</p>
 
-        <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))' }}>
+        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))' }}>
           {whatsappUrl && (
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 rounded-2xl bg-[#1f9d55] text-white shadow-lg shadow-emerald-900/20 transition-transform active:scale-[0.98]"
-              style={{ padding: '12px 14px' }}
+              style={{ padding: '12px 16px' }}
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15"><MessageCircle size={20} /></span>
               <span className="min-w-0">
@@ -236,20 +236,20 @@ export default function Help() {
             type="button"
             onClick={() => setFeedbackOpen(true)}
             className="flex items-center gap-3 rounded-2xl border border-ocean/20 bg-ocean/5 text-left text-midnight transition-transform active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white"
-            style={{ padding: '12px 14px', width: '100%' }}
+            style={{ padding: '12px 16px', width: '100%' }}
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ocean/10 text-ocean dark:bg-sky/15 dark:text-sky-light">
               <MessageSquareWarning size={20} />
             </span>
             <span className="min-w-0">
               <span className="block font-bold">{t('help.contact.feedback')}</span>
-              <span className="block text-xs text-slate-500 dark:text-slate-400">{t('help.contact.feedback_desc')}</span>
+              <span className="block text-xs text-slate-600 dark:text-slate-400">{t('help.contact.feedback_desc')}</span>
             </span>
           </button>
         </div>
 
-        <p className="flex items-start gap-2 rounded-xl bg-gold/10 text-[13px] leading-snug text-slate-700 dark:text-slate-200" style={{ margin: '14px 0 0', padding: '10px 12px' }}>
-          <ShieldAlert size={16} className="mt-0.5 shrink-0 text-gold" />
+        <p className="flex items-start gap-2 rounded-xl bg-gold/10 text-[13px] leading-snug text-slate-700 dark:text-slate-200" style={{ margin: '16px 0 0', padding: '12px 12px' }}>
+          <ShieldAlert size={16} className="mt-1 shrink-0 text-gold" />
           {t('help.contact.safety')}
         </p>
       </section>

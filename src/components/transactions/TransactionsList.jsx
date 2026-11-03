@@ -17,7 +17,7 @@ export default function TransactionsList({
       {filtered.length === 0 ? (
         <div className="glass-card p-16 text-center flex flex-col items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-4xl">📝</div>
-          <p className="font-black text-slate-500">{t('transactions.empty')}</p>
+          <p className="font-bold text-slate-600 dark:text-slate-400">{t('transactions.empty')}</p>
         </div>
       ) : (
         filtered.map((tr, idx) => (
@@ -35,19 +35,19 @@ export default function TransactionsList({
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-bold text-midnight dark:text-white leading-tight truncate">{tr.desc}</span>
                 <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="whitespace-nowrap text-[9px] font-black uppercase tracking-widest text-slate-400">{tr.data}</span>
+                  <span className="whitespace-nowrap text-[9px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">{tr.data}</span>
                   <CategoryBadge category={tr.cat} />
                 </div>
               </div>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-4">
-              <span className={`whitespace-nowrap text-sm sm:text-base font-black tabular-nums ${tr.tipo === 'receita' ? 'text-leaf' : 'text-midnight dark:text-white'}`}>
+              <span className={`whitespace-nowrap text-sm sm:text-base font-bold tabular-nums ${tr.tipo === 'receita' ? 'text-leaf' : 'text-midnight dark:text-white'}`}>
                 {showBalance ? `${tr.tipo === 'receita' ? '+' : '-'}${fmt(tr.valor, currency)}` : '••••'}
               </span>
               {/* Always visible on touch screens: there is no hover on a phone. */}
               <div className="flex items-center gap-1 transition-all md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100">
-                <button onClick={() => handleEdit(tr)} aria-label={ui("Editar")} className="rounded-lg p-1.5 text-slate-400 hover:text-ocean"><Pencil size={14} /></button>
-                <button onClick={() => handleDelete(tr.id)} aria-label={ui("Eliminar")} className="rounded-lg p-1.5 text-slate-400 hover:text-coral"><Trash2 size={14} /></button>
+                <button onClick={() => handleEdit(tr)} aria-label={ui("Editar")} className="rounded-lg p-2 text-slate-600 dark:text-slate-400 hover:text-ocean"><Pencil size={14} /></button>
+                <button onClick={() => handleDelete(tr.id)} aria-label={ui("Eliminar")} className="rounded-lg p-2 text-slate-600 dark:text-slate-400 hover:text-coral"><Trash2 size={14} /></button>
               </div>
             </div>
           </motion.div>

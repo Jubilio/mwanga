@@ -81,35 +81,35 @@ export default function AiSettings() {
   const connectedOpenRouter = status?.configured && status?.provider === 'openrouter';
   const isAlert = ['error', 'rejected', 'expired', 'failed', 'unavailable'].includes(message);
 
-  return <section className="glass-card p-6 space-y-5">
-    <h2 className="text-2xl font-black">{t('ai_settings.title')}</h2>
-    <p className="text-sm text-slate-500">{t('ai_settings.scope')}</p>
+  return <section className="glass-card p-6 space-y-6">
+    <h2 className="text-2xl font-bold">{t('ai_settings.title')}</h2>
+    <p className="text-sm text-slate-600 dark:text-slate-400">{t('ai_settings.scope')}</p>
     <p>{t(status?.configured ? 'ai_settings.configured' : 'ai_settings.default', { provider: status?.provider })}</p>
     {status && !storageReady ? <p role="alert">{t('ai_settings.unavailable')}</p> : null}
 
     <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-3">
       <h3 className="text-lg font-bold">{t('ai_settings.easy_title')}</h3>
       <p className="text-sm">{t('ai_settings.easy_text')}</p>
-      <p className="text-xs text-slate-500">{t('ai_settings.easy_free')}</p>
-      <button className="btn btn-primary w-full sm:w-auto" disabled={busy || !storageReady} onClick={connectOpenRouter}>
+      <p className="text-xs text-slate-600 dark:text-slate-400">{t('ai_settings.easy_free')}</p>
+      <button className="btn btn-secondary w-full sm:w-auto" disabled={busy || !storageReady} onClick={connectOpenRouter}>
         {t(connectedOpenRouter ? 'ai_settings.reconnect_openrouter' : 'ai_settings.connect_openrouter')}
       </button>
     </div>
 
     {message ? <p role={isAlert ? 'alert' : 'status'}>{t(`ai_settings.${message}`)}</p> : null}
 
-    <p className="text-xs text-slate-500">{t('ai_settings.not_possible')}</p>
-    <p className="text-xs text-slate-500">{t('ai_settings.fallback_note')}</p>
+    <p className="text-xs text-slate-600 dark:text-slate-400">{t('ai_settings.not_possible')}</p>
+    <p className="text-xs text-slate-600 dark:text-slate-400">{t('ai_settings.fallback_note')}</p>
 
     <div className="space-y-4">
       <button type="button" className="btn btn-ghost" aria-expanded={showManual} onClick={() => setShowManual(open => !open)}>{t('ai_settings.manual_title')}</button>
       {showManual ? <div className="space-y-4">
-        <p className="text-xs text-slate-500">{t('ai_settings.manual_help')}</p>
+        <p className="text-xs text-slate-600 dark:text-slate-400">{t('ai_settings.manual_help')}</p>
         <label className="block">{t('ai_settings.provider')}<select className="form-input block w-full mt-2" value={provider} disabled={busy} onChange={event => { setProvider(event.target.value); setMessage(''); }}><option value="gemini">Google Gemini</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option></select></label>
         <label className="block">{t('ai_settings.key')}<input type="password" autoComplete="off" spellCheck={false} maxLength={512} className="form-input block w-full mt-2" value={apiKey} disabled={busy} onChange={event => { setApiKey(event.target.value); setMessage(''); }} /></label>
-        <p className="text-xs text-slate-500">{t('ai_settings.privacy')}</p>
-        <p className="text-xs text-slate-500">{t('ai_settings.test_note')}</p>
-        <div className="flex flex-wrap gap-3"><button className="btn btn-ghost" disabled={busy || apiKey.trim().length < 10} onClick={() => run('test')}>{t('ai_settings.test')}</button><button className="btn btn-primary" disabled={busy || !storageReady || apiKey.trim().length < 10} onClick={() => run('save')}>{t('ai_settings.save')}</button></div>
+        <p className="text-xs text-slate-600 dark:text-slate-400">{t('ai_settings.privacy')}</p>
+        <p className="text-xs text-slate-600 dark:text-slate-400">{t('ai_settings.test_note')}</p>
+        <div className="flex flex-wrap gap-3"><button className="btn btn-ghost" disabled={busy || apiKey.trim().length < 10} onClick={() => run('test')}>{t('ai_settings.test')}</button><button className="btn btn-secondary" disabled={busy || !storageReady || apiKey.trim().length < 10} onClick={() => run('save')}>{t('ai_settings.save')}</button></div>
       </div> : null}
       <button className="btn btn-ghost" disabled={busy || !status?.configured} onClick={() => run('remove')}>{t('ai_settings.remove')}</button>
     </div>

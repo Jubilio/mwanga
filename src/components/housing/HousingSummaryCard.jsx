@@ -20,7 +20,7 @@ export default function HousingSummaryCard({ totalInvested, currency, type }) {
         {/* Main Value Area */}
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-white/70 text-sm font-medium tracking-wide uppercase">
+            <span className="text-white/70 text-sm font-normal tracking-wide uppercase">
               {type === 'renda' ? t('housing.summary.total_rent_year') : t('housing.summary.total_own_year')}
             </span>
           </div>
@@ -29,11 +29,11 @@ export default function HousingSummaryCard({ totalInvested, currency, type }) {
           </div>
           
           <div className="flex flex-wrap items-center gap-4 text-sm">
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-md border border-white/5">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-md border border-white/5">
               <span className="w-2 h-2 rounded-full bg-leaf animate-pulse"></span>
               {t('housing.summary.status')}
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-md border border-white/5">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-md border border-white/5">
               <span>{t('housing.summary.next_payment', { date: t('housing.summary.next_month_01') })}</span>
             </div>
           </div>
@@ -54,7 +54,7 @@ export default function HousingSummaryCard({ totalInvested, currency, type }) {
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          <button className="text-xs font-semibold text-gold-light hover:text-gold flex items-center gap-1 transition-colors">
+          <button className="text-xs font-bold text-gold-light hover:text-gold flex items-center gap-1 transition-colors">
             {t('housing.summary.view_details')} <ChevronRight size={14} />
           </button>
         </div>

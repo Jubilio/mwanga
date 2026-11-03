@@ -29,7 +29,7 @@ const CATEGORY_CONFIG = {
   leisure: { icon: Palmtree, color: 'text-pink-500', bg: 'bg-pink-500/10' },
   investments: { icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
   savings: { icon: PiggyBank, color: 'text-leaf', bg: 'bg-leaf/10' },
-  other: { icon: Package, color: 'text-gray-500', bg: 'bg-gray-500/10' },
+  other: { icon: Package, color: 'text-slate-600 dark:text-slate-400', bg: 'bg-gray-500/10' },
 };
 
 export default function CategoryBadge({ category, className = "" }) {
@@ -40,9 +40,9 @@ export default function CategoryBadge({ category, className = "" }) {
   const Icon = config.icon;
 
   return (
-    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${config.bg} ${config.color} ${className}`}>
+    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${config.bg} ${config.color} ${className}`}>
       <Icon size={12} strokeWidth={2.5} />
-      <span className="text-[10px] font-black uppercase tracking-wider truncate max-w-[80px]">
+      <span className="text-[10px] font-bold uppercase tracking-wider truncate max-w-[80px]">
         {t(`common.categories.${key}`, { defaultValue: category })}
       </span>
     </div>

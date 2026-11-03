@@ -50,7 +50,7 @@ export default function NexoVibe() {
           background: 'rgba(255,255,255,0.05)', 
           borderRadius: '999px',
           fontSize: '0.8rem',
-          fontWeight: 600,
+          fontWeight: 700,
           color: 'var(--color-gold)',
           marginBottom: '1.5rem',
           border: '1px solid rgba(255,255,255,0.1)'
@@ -60,12 +60,10 @@ export default function NexoVibe() {
         <h1 style={{ 
           fontFamily: 'var(--font-display)', 
           fontSize: '3.5rem', 
-          fontWeight: 900, 
+          fontWeight: 700, 
           lineHeight: 1, 
           marginBottom: '1rem',
-          background: 'linear-gradient(to right, #fff, var(--color-sand))',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
+          color: '#fff'
         }}>
           NEXO VIBE
         </h1>
@@ -78,7 +76,7 @@ export default function NexoVibe() {
         }}> {ui("Smarter Connections, Better Vibes. Interligando Dados, Inteligência Artificial e Equipas de Alta Performance.")} </p>
 
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <a href="https://nexovibe.netlify.app/" target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ padding: '0.8rem 2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}> {ui("Explorar Serviços")} <ArrowRight size={18} />
+          <a href="https://nexovibe.netlify.app/" target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ padding: '0.75rem 2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}> {ui("Explorar Serviços")} <ArrowRight size={18} />
           </a>
           <a href="#contact" className="btn btn-ghost" style={{ color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}> {ui("Falar com Jubílio")} </a>
         </div>
@@ -149,7 +147,7 @@ export default function NexoVibe() {
               justifyContent: 'center',
               fontSize: '4rem',
               color: 'var(--color-sand)',
-              fontWeight: 900
+              fontWeight: 700
             }}>
               JM
             </div>
@@ -170,7 +168,7 @@ export default function NexoVibe() {
         </div>
 
         <div>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--color-ocean)' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--color-ocean)' }}>
             Jubílio Maússe
           </h2>
           <p style={{ color: 'var(--color-muted)', marginBottom: '1.5rem' }}> {ui("Fundador da **NEXO VIBE**. Apaixonado por transformar desafios complexos em soluções digitais elegantes. Com experiência sólida em Moçambique no setor de infraestrutura e análise de dados (ACTED e IMPACT), trago uma visão global para problemas locais.")} </p>
@@ -180,7 +178,7 @@ export default function NexoVibe() {
                 <Wallet size={18} />
               </div>
               <div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>Mwanga Lead Developer</div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>Mwanga Lead Developer</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>{ui("SaaS de Gestão Financeira Familiar")}</div>
               </div>
             </div>

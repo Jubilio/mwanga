@@ -56,7 +56,7 @@ export default function ConfirmModal({
             {/* Close Button */}
             <button 
               onClick={onCancel}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-200 transition-colors"
+              className="absolute top-4 right-4 p-2 text-slate-600 dark:text-slate-400 hover:text-gray-200 transition-colors"
             >
               <X size={18} />
             </button>
@@ -64,24 +64,24 @@ export default function ConfirmModal({
             <div className="flex flex-col items-center text-center">
               {/* Icon Circle */}
               <div 
-                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
+                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
                 style={{ background: theme.bg, color: theme.color, boxShadow: `0 8px 24px ${theme.shadow}` }}
               >
                 <Icon size={32} />
               </div>
 
-              <h3 className="text-lg font-black text-midnight dark:text-white mb-2 leading-tight">
+              <h3 className="text-lg font-bold text-midnight dark:text-white mb-2 leading-tight">
                 {ui(title)}
               </h3>
               
-              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-8">
+              <p className="text-sm text-slate-600 dark:text-gray-400 leading-relaxed mb-8">
                 {ui(message)}
               </p>
 
               <div className="flex flex-col w-full gap-3">
                 <button
                   onClick={onConfirm}
-                  className="w-full py-4 rounded-2xl font-black text-sm tracking-wider uppercase transition-all active:scale-95"
+                  className="w-full py-4 rounded-2xl font-bold text-sm tracking-wider uppercase transition-all active:scale-95"
                   style={{ 
                     background: variant === 'danger' ? 'linear-gradient(135deg, #FF4C4C, #e04444)' : 'linear-gradient(135deg, var(--color-ocean), var(--color-sky))',
                     color: '#fff',
@@ -93,7 +93,7 @@ export default function ConfirmModal({
                 
                 <button
                   onClick={onCancel}
-                  className="w-full py-3 rounded-2xl font-bold text-sm text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                  className="w-full py-3 rounded-2xl font-bold text-sm text-slate-600 dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                 >
                   {ui(cancelText)}
                 </button>

@@ -97,7 +97,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
     return (
       <Card style={{ textAlign: "center", padding: 40 }}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>🔒</div>
-        <div style={{ fontSize: 18, fontWeight: 700, color: G.red, marginBottom: 10 }}>{t('credit.apply.not_avail')}</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: G.red, marginBottom: 12 }}>{t('credit.apply.not_avail')}</div>
         <div style={{ fontSize: 14, color: G.muted, lineHeight: 1.7 }}>
           {t('credit.apply.not_avail_desc_1')}{scoreData?.score}/1000{t('credit.apply.not_avail_desc_2')}
         </div>
@@ -108,7 +108,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
   const steps = t('credit.apply.steps', { returnObjects: true }) || [ui("Verificação"), ui("Proposta"), ui("Documentos"), ui("Revisão")];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* Stepper */}
       {step <= 4 && (
         <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
@@ -122,7 +122,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
                   <div style={{
                     width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
                     background: done ? G.credit : active ? `linear-gradient(135deg,${G.credit},${G.credit2})` : G.muted3,
-                    color: done || active ? "#000" : G.muted, fontSize: 12, fontWeight: 900,
+                    color: done || active ? "#000" : G.muted, fontSize: 12, fontWeight: 700,
                     boxShadow: active ? `0 0 16px ${G.credit}50` : "none",
                     transition: "all 0.3s"
                   }}>{done ? "✓" : sn}</div>
@@ -138,15 +138,15 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
       {/* Step 1 — Pre-qualificação */}
       {step === 1 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Card glow={G.credit} style={{ textAlign: "center", padding: "28px 20px" }}>
+          <Card glow={G.credit} style={{ textAlign: "center", padding: "32px 24px" }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>✅</div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif", marginBottom: 8 }}>{t('credit.apply.pre_title')}</div>
-            <div style={{ fontSize: 14, color: G.muted, lineHeight: 1.7, marginBottom: 20 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: G.credit, fontFamily: "Sora,sans-serif", marginBottom: 8 }}>{t('credit.apply.pre_title')}</div>
+            <div style={{ fontSize: 14, color: G.muted, lineHeight: 1.7, marginBottom: 24 }}>
               {t('credit.apply.pre_desc_1')}
               <strong style={{ color: G.text }}> {fmtShort(scoreData.maxAmount)}</strong>.
               {t('credit.apply.pre_desc_2')} <strong style={{ color: G.credit }}>{scoreData.score}/100 — {ui(scoreData.label)}</strong>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: autoGrid(90), gap: 10, marginBottom: 20 }}>
+            <div style={{ display: "grid", gridTemplateColumns: autoGrid(90), gap: 12, marginBottom: 24 }}>
               {[
                 { l: t('credit.apply.pre_grid_1'), v: `${fmtShort(scoreData.maxAmount)}`, c: G.credit },
                 { l: t('credit.apply.pre_grid_2'), v: `${fmtShort(eligData.maxParcela)}`, c: G.gold },
@@ -154,7 +154,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
               ].map((s, i) => (
                 <div key={i} style={{ background: G.muted3, borderRadius: 12, padding: "12px 8px", textAlign: "center" }}>
                   <div style={{ fontSize: 10, color: G.muted, marginBottom: 4 }}>{s.l}</div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: s.c }}>{s.v}</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: s.c }}>{s.v}</div>
                 </div>
               ))}
             </div>
@@ -177,8 +177,8 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
               {/* Valor */}
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                  <label style={{ fontSize: 13, color: G.text, fontWeight: 600 }}>{t('credit.apply.req_amount')}</label>
-                  <span style={{ fontSize: 18, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif" }}>{fmtShort(form.amount)}</span>
+                  <label style={{ fontSize: 13, color: G.text, fontWeight: 700 }}>{t('credit.apply.req_amount')}</label>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: G.credit, fontFamily: "Sora,sans-serif" }}>{fmtShort(form.amount)}</span>
                 </div>
                 <input type="range" min={1000} max={scoreData.maxAmount} step={500} value={form.amount}
                   onChange={e => setForm(f => ({ ...f, amount: +e.target.value }))}
@@ -186,11 +186,11 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
               </div>
               {/* Prazo */}
               <div>
-                <label style={{ fontSize: 13, color: G.text, fontWeight: 600, display: "block", marginBottom: 8 }}>{t('credit.apply.req_term')}</label>
+                <label style={{ fontSize: 13, color: G.text, fontWeight: 700, display: "block", marginBottom: 8 }}>{t('credit.apply.req_term')}</label>
                 <div style={{ display: "flex", gap: 8 }}>
                   {[1, 2, 3, 6, 12].map(m => (
                     <button key={m} onClick={() => setForm(f => ({ ...f, months: m }))} style={{
-                      flex: 1, padding: "9px 4px", borderRadius: 10, border: "none", cursor: "pointer",
+                      flex: 1, padding: "8px 4px", borderRadius: 10, border: "none", cursor: "pointer",
                       background: form.months === m ? `linear-gradient(135deg,${G.credit},${G.credit2})` : G.muted3,
                       color: form.months === m ? "#000" : G.muted, fontWeight: 700, fontSize: 13, fontFamily: "inherit",
                     }}>{m}m</button>
@@ -199,14 +199,14 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
               </div>
               {/* Propósito */}
               <div>
-                <label style={{ fontSize: 13, color: G.text, fontWeight: 600, display: "block", marginBottom: 8 }}>{t('credit.apply.req_purpose')}</label>
+                <label style={{ fontSize: 13, color: G.text, fontWeight: 700, display: "block", marginBottom: 8 }}>{t('credit.apply.req_purpose')}</label>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {PURPOSES.map(p => (
                     <button key={p} onClick={() => setForm(f => ({ ...f, purpose: p }))} style={{
-                      padding: "7px 14px", borderRadius: 99, cursor: "pointer",
+                      padding: "8px 16px", borderRadius: 99, cursor: "pointer",
                       background: form.purpose === p ? `${G.credit}25` : G.muted3,
                       border: `1px solid ${form.purpose === p ? G.credit : "transparent"}`,
-                      color: form.purpose === p ? G.credit : G.muted, fontSize: 12, fontWeight: 600, fontFamily: "inherit",
+                      color: form.purpose === p ? G.credit : G.muted, fontSize: 12, fontWeight: 700, fontFamily: "inherit",
                     }}>{p}</button>
                   ))}
                 </div>
@@ -216,14 +216,14 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
 
           {/* Parceiro */}
           <Card>
-            <div style={{ fontSize: 12, fontWeight: 700, color: G.muted, letterSpacing: "0.12em", marginBottom: 14 }}>{t('credit.apply.choose_partner')}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: G.muted, letterSpacing: "0.12em", marginBottom: 16 }}>{t('credit.apply.choose_partner')}</div>
             {PARTNERS.map(p => (
               <div key={p.id} onClick={() => setForm(f => ({ ...f, partner: p.id }))} style={{
-                padding: "14px 16px", borderRadius: 14, cursor: "pointer", marginBottom: 10,
+                padding: "16px 16px", borderRadius: 14, cursor: "pointer", marginBottom: 12,
                 background: form.partner === p.id ? `${G.credit}10` : G.muted3,
                 border: `1px solid ${form.partner === p.id ? G.credit : "transparent"}`,
               }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <span style={{ fontSize: 14, fontWeight: 700, color: G.text }}>{p.name}</span>
                   <Badge label={p.rate} color={parseFloat(p.rate) >= 15 ? G.red : parseFloat(p.rate) >= 8 ? G.gold : G.credit} />
                 </div>
@@ -237,14 +237,14 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
 
           {/* Resumo */}
           <Card style={{ background: `${G.credit}08`, border: `1px solid ${G.credit}25` }}>
-            <div style={{ display: "grid", gridTemplateColumns: autoGrid(130), gap: 10 }}>
-              <div style={{ background: G.muted3, borderRadius: 12, padding: "12px 14px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: autoGrid(130), gap: 12 }}>
+              <div style={{ background: G.muted3, borderRadius: 12, padding: "12px 16px" }}>
                 <div style={{ fontSize: 11, color: G.muted }}>{t('credit.apply.summary_install')}</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif" }}>{fmt(parcela)}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: G.credit, fontFamily: "Sora,sans-serif" }}>{fmt(parcela)}</div>
               </div>
-              <div style={{ background: G.muted3, borderRadius: 12, padding: "12px 14px" }}>
+              <div style={{ background: G.muted3, borderRadius: 12, padding: "12px 16px" }}>
                 <div style={{ fontSize: 11, color: G.muted }}>{t('credit.apply.summary_total')}</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: G.text, fontFamily: "Sora,sans-serif" }}>{fmt(totalDue)}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: G.text, fontFamily: "Sora,sans-serif" }}>{fmt(totalDue)}</div>
               </div>
             </div>
           </Card>
@@ -271,7 +271,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
                 { key: "selfieDocument", label: t('credit.apply.doc_selfie_label'), desc: t('credit.apply.doc_selfie_desc'), icon: "🤳" },
               ].map(doc => (
                 <div key={doc.key} onClick={() => docRefs[doc.key].current?.click()} style={{
-                  display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14,
+                  display: "flex", alignItems: "center", gap: 16, padding: "16px 16px", borderRadius: 14,
                   background: docs[doc.key] ? `${G.credit}10` : G.muted3,
                   border: `1px solid ${docs[doc.key] ? G.credit : "transparent"}`,
                   cursor: "pointer", transition: "all 0.2s"
@@ -281,7 +281,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
                     {docs[doc.key] ? "✅" : doc.icon}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: docs[doc.key] ? G.credit : G.text }}>{ui(doc.label)}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: docs[doc.key] ? G.credit : G.text }}>{ui(doc.label)}</div>
                     <div style={{ fontSize: 12, color: docs[doc.key] ? G.credit : G.muted }}>
                       {docs[doc.key] ? docs[doc.key].name : doc.desc}
                     </div>
@@ -292,7 +292,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 14, padding: "10px 14px", background: "rgba(96,165,250,0.08)", border: `1px solid ${G.blue}25`, borderRadius: 12, fontSize: 12, color: G.blue, lineHeight: 1.6 }}>
+            <div style={{ marginTop: 16, padding: "12px 16px", background: "rgba(96,165,250,0.08)", border: `1px solid ${G.blue}25`, borderRadius: 12, fontSize: 12, color: G.blue, lineHeight: 1.6 }}>
               {t('credit.apply.docs_crypto')}
             </div>
           </Card>
@@ -316,7 +316,7 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
       {step === 4 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Card style={{ background: `${G.credit}06`, border: `1px solid ${G.credit}22` }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: G.credit, letterSpacing: "0.12em", marginBottom: 18 }}>{t('credit.apply.review_title')}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: G.credit, letterSpacing: "0.12em", marginBottom: 16 }}>{t('credit.apply.review_title')}</div>
             {[
               { l: t('credit.apply.rev_amount'), v: `${fmt(form.amount)}` },
               { l: t('credit.apply.rev_term'), v: `${form.months} ${form.months === 1 ? t('credit.simulator.month_single') : t('credit.simulator.months')}` },
@@ -329,9 +329,9 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
               { l: t('credit.apply.rev_partner'), v: PARTNERS.find(p => p.id === form.partner)?.name },
               { l: t('credit.apply.rev_docs'), v: "4 / 4 ✓", color: G.green },
             ].map((r, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: `1px solid ${G.border}` }}>
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${G.border}` }}>
                 <span style={{ fontSize: 13, color: G.muted }}>{r.l}</span>
-                <span style={{ fontSize: 13, fontWeight: r.strong ? 800 : 600, color: r.color || (r.strong ? G.credit : G.text) }}>{r.v}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: r.color || (r.strong ? G.credit : G.text) }}>{r.v}</span>
               </div>
             ))}
           </Card>
@@ -343,15 +343,15 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
           </Card>
 
           <Card style={{ border: `1px solid ${scoreConsent ? G.green : G.border}` }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: G.text, marginBottom: 8 }}>{t('credit.apply.consent_title')}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: G.text, marginBottom: 8 }}>{t('credit.apply.consent_title')}</div>
             <p style={{ fontSize: 12, color: G.muted, lineHeight: 1.7, margin: "0 0 12px" }}>{t('credit.apply.consent_body')}</p>
-            <label htmlFor="credit-score-consent" style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, color: G.text, cursor: "pointer", lineHeight: 1.5 }}>
+            <label htmlFor="credit-score-consent" style={{ display: "flex", gap: 12, alignItems: "flex-start", fontSize: 13, color: G.text, cursor: "pointer", lineHeight: 1.5 }}>
               <input
                 id="credit-score-consent"
                 type="checkbox"
                 checked={scoreConsent}
                 onChange={(event) => setScoreConsent(event.target.checked)}
-                style={{ marginTop: 3, width: 18, height: 18, flexShrink: 0 }}
+                style={{ marginTop: 4, width: 18, height: 18, flexShrink: 0 }}
               />
               <span>{t('credit.apply.consent_check')}</span>
             </label>
@@ -370,20 +370,20 @@ export default function TabApplication({ scoreData, eligData, onSuccess }) {
       {/* Step 5 — Submetido */}
       {step === 5 && (
         <Card style={{ textAlign: "center", padding: "40px 24px" }}>
-          <div style={{ fontSize: 56, marginBottom: 20 }}>🎉</div>
-          <div style={{ fontSize: 22, fontWeight: 900, color: G.credit, fontFamily: "Sora,sans-serif", marginBottom: 10 }}>
+          <div style={{ fontSize: 56, marginBottom: 24 }}>🎉</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: G.credit, fontFamily: "Sora,sans-serif", marginBottom: 12 }}>
             {t('credit.apply.sub_title')}
           </div>
           <div style={{ fontSize: 14, color: G.muted, lineHeight: 1.8, marginBottom: 24 }}>
             {t('credit.apply.sub_desc_1')} <strong style={{ color: G.text }}>{fmt(form.amount)}</strong> {t('credit.apply.sub_desc_2')} <strong style={{ color: G.text }}>{PARTNERS.find(p => p.id === form.partner)?.name}</strong>.
             {t('credit.apply.sub_desc_3')} <strong style={{ color: G.credit }}>{t('credit.apply.sub_desc_4')}</strong>.
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: autoGrid(130), gap: 10, marginBottom: 24 }}>
-            <div style={{ background: G.muted3, borderRadius: 14, padding: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: autoGrid(130), gap: 12, marginBottom: 24 }}>
+            <div style={{ background: G.muted3, borderRadius: 14, padding: 16 }}>
               <div style={{ fontSize: 11, color: G.muted }}>{t('credit.apply.sub_ref')}</div>
-              <div style={{ fontSize: 14, fontWeight: 800, color: G.text }}>MWG-2026-0{Math.floor(Math.random() * 999 + 100)}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: G.text }}>MWG-2026-0{Math.floor(Math.random() * 999 + 100)}</div>
             </div>
-            <div style={{ background: G.muted3, borderRadius: 14, padding: 14 }}>
+            <div style={{ background: G.muted3, borderRadius: 14, padding: 16 }}>
               <div style={{ fontSize: 11, color: G.muted }}>{t('credit.apply.sub_status')}</div>
               <Badge label={t('credit.apply.sub_status_val')} color={G.gold} />
             </div>

@@ -32,13 +32,13 @@ export function HubTiles({ items }) {
               <span className="flex items-center gap-2">
                 <span className="text-base font-bold text-midnight dark:text-white">{t(item.label)}</span>
                 {locked && (
-                  <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-gold">
+                  <span className="rounded-full bg-gold/15 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-gold">
                     {paidPlan}
                   </span>
                 )}
               </span>
               {item.desc && (
-                <span className="mt-0.5 block text-sm text-slate-500 dark:text-slate-400">{t(item.desc)}</span>
+                <span className="mt-1 block text-sm text-slate-600 dark:text-slate-400">{t(item.desc)}</span>
               )}
             </span>
             <ChevronRight size={18} className="shrink-0 text-slate-300" />
@@ -52,9 +52,9 @@ export function HubTiles({ items }) {
 export function HubHeader({ title, subtitle }) {
   const { t } = useTranslation();
   return (
-    <div style={{ marginBottom: 20 }}>
-      <h1 className="font-display text-2xl font-black text-midnight dark:text-white">{t(title)}</h1>
-      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t(subtitle)}</p>
+    <div style={{ marginBottom: 24 }}>
+      <h1 className="font-display text-2xl font-bold text-midnight dark:text-white">{t(title)}</h1>
+      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{t(subtitle)}</p>
     </div>
   );
 }
@@ -63,7 +63,7 @@ export function HubSection({ title, children }) {
   const { t } = useTranslation();
   return (
     <section style={{ marginBottom: 24 }}>
-      <div className="px-1 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400" style={{ marginBottom: 10 }}>{t(title)}</div>
+      <div className="px-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-600 dark:text-slate-400" style={{ marginBottom: 12 }}>{t(title)}</div>
       {children}
     </section>
   );

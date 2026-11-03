@@ -39,8 +39,8 @@ export default function PageTabs({ tabs }) {
               aria-selected={selected}
               onClick={() => select(tab.id)}
               style={{
-                flex: 1, minHeight: 44, padding: '10px 16px', borderRadius: 14, border: 'none',
-                cursor: 'pointer', fontSize: 14, fontWeight: 800, transition: 'background 0.2s, color 0.2s',
+                flex: 1, minHeight: 44, padding: '12px 16px', borderRadius: 14, border: 'none',
+                cursor: 'pointer', fontSize: 14, fontWeight: 700, transition: 'background 0.2s, color 0.2s',
                 background: selected ? 'linear-gradient(135deg, var(--color-ocean), var(--color-sky))' : 'transparent',
                 color: selected ? '#fff' : 'var(--color-muted, #8a9ab8)',
                 boxShadow: selected ? '0 6px 18px rgba(10, 77, 104, 0.35)' : 'none',
@@ -52,7 +52,7 @@ export default function PageTabs({ tabs }) {
         })}
       </div>
       <div role="tabpanel">
-        <Suspense fallback={<div className="py-16 text-center text-sm text-slate-400">…</div>}>
+        <Suspense fallback={<div className="py-16 text-center text-sm text-slate-600 dark:text-slate-400">…</div>}>
           {active.element}
         </Suspense>
       </div>

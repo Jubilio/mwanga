@@ -32,7 +32,7 @@ const TYPE_COLORS = (t) => ({
   deposit: { bg: 'bg-emerald-500/10', border: 'border-emerald-500', text: 'text-emerald-400', label: t('sms_import.result.labels.description') },
   payment: { bg: 'bg-orange-500/10', border: 'border-orange-500', text: 'text-orange-400', label: t('sms_import.result.labels.description') },
   fee: { bg: 'bg-coral/10', border: 'border-coral', text: 'text-coral', label: t('sms_import.result.labels.description') },
-  unknown: { bg: 'bg-slate-500/10', border: 'border-slate-500', text: 'text-slate-400', label: t('common.categories.other') },
+  unknown: { bg: 'bg-slate-500/10', border: 'border-slate-500', text: 'text-slate-600 dark:text-slate-400', label: t('common.categories.other') },
 });
 
 function ConfidenceBar({ score }) {
@@ -57,8 +57,8 @@ function DataRow({ label, value, accentClass }) {
 
   return (
     <div className="flex justify-between items-start gap-4 py-2 border-b border-white/5 last:border-0">
-      <span className="text-slate-400 text-xs font-mono uppercase tracking-wider min-w-[120px]">{ui(label)}</span>
-      <span className={`text-sm font-medium text-right max-w-[260px] break-words ${accentClass || 'text-slate-200'}`}>
+      <span className="text-slate-600 dark:text-slate-400 text-xs font-mono uppercase tracking-wider min-w-[120px]">{ui(label)}</span>
+      <span className={`text-sm font-normal text-right max-w-[260px] break-words ${accentClass || 'text-slate-200'}`}>
         {String(value)}
       </span>
     </div>
@@ -374,11 +374,11 @@ export default function SmsImport() {
   return (
     <div className="p-4 md:p-6 w-full max-w-none font-mono">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+        <h1 className="text-2xl font-bold text-dark dark:text-white flex items-center gap-3">
           <Zap className="text-gold" />
           {t('sms_import.title')}
         </h1>
-        <p className="text-slate-400 mt-2">
+        <p className="text-slate-600 dark:text-slate-400 mt-2">
           {t('sms_import.description')}
         </p>
         {quota.limited && (
@@ -391,7 +391,7 @@ export default function SmsImport() {
                 ? t('sms_quota.reached', { limit: quota.limit })
                 : t('sms_quota.used', { used: quota.used, limit: quota.limit })}
             </span>
-            <Link to="/pricing" className="font-bold text-gold">{t('sms_quota.see_plans')}</Link>
+            <Link to="/pricing" className="inline-flex min-h-11 items-center font-bold text-(--color-gold-text)">{t('sms_quota.see_plans')}</Link>
           </div>
         )}
       </div>
@@ -400,17 +400,17 @@ export default function SmsImport() {
         <div className="flex flex-col gap-6 min-w-0">
           <div className="glass-card overflow-hidden">
             <div className="bg-white/5 border-b border-white/5 p-3 flex items-center gap-2">
-              <div className="flex gap-1.5">
+              <div className="flex gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-coral" />
                 <div className="w-2.5 h-2.5 rounded-full bg-gold" />
                 <div className="w-2.5 h-2.5 rounded-full bg-aurora" />
               </div>
-              <span className="ml-2 text-xs text-slate-400 tracking-widest font-semibold flex items-center gap-2">
+              <span className="ml-2 text-xs text-slate-600 dark:text-slate-400 tracking-widest font-bold flex items-center gap-2">
                 <MessageSquare size={14} /> {t('sms_import.input_header')}
               </span>
             </div>
 
-            <div className="p-5 space-y-4">
+            <div className="p-6 space-y-4">
               <div className="rounded-2xl border border-sky/20 bg-sky/5 p-4 text-xs text-slate-300 leading-6">
                 <div className="flex items-center gap-2 font-bold text-sky mb-2">
                   <Smartphone size={14} /> {t('sms_import.mobile_tip.title')}
@@ -467,8 +467,8 @@ export default function SmsImport() {
             </div>
           </div>
 
-          <div className="glass-card p-5">
-            <div className="text-xs text-slate-400 tracking-widest font-semibold mb-4">{t('sms_import.examples_header')}</div>
+          <div className="glass-card p-6">
+            <div className="text-xs text-slate-600 dark:text-slate-400 tracking-widest font-bold mb-4">{t('sms_import.examples_header')}</div>
             <div className="flex flex-col gap-2">
               {SAMPLE_SMS.map((sample, index) => (
                 <button
@@ -478,7 +478,7 @@ export default function SmsImport() {
                   className={`p-3 rounded-lg text-xs text-left transition-all border leading-relaxed ${
                     smsText === sample
                       ? 'bg-gold/10 border-gold/40 text-gold shadow-[0_0_10px_rgba(201,150,58,0.1)]'
-                      : 'bg-black/20 border-white/5 text-slate-400 hover:bg-white/5 hover:text-slate-300'
+                      : 'bg-black/20 border-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/5 hover:text-slate-300'
                   }`}
                 >
                   {sample.length > 90 ? `${sample.slice(0, 90)}...` : sample}
@@ -491,14 +491,14 @@ export default function SmsImport() {
         <div className="flex flex-col gap-6 min-w-0">
           {result ? (
             <div className={`glass-card overflow-hidden border ${typeInfo?.border || 'border-white/10'} transition-all duration-500 animate-fade-in-up`}>
-              <div className={`px-5 py-4 border-b ${typeInfo?.bg || 'bg-white/5'} border-white/10 flex items-center justify-between gap-3`}>
+              <div className={`px-6 py-4 border-b ${typeInfo?.bg || 'bg-white/5'} border-white/10 flex items-center justify-between gap-3`}>
                 {result.is_financial === false ? (
-                  <span className="text-sm font-bold text-slate-400 flex items-center gap-2">
+                  <span className="text-sm font-bold text-slate-600 dark:text-slate-400 flex items-center gap-2">
                     <AlertCircle size={16} /> {t('sms_import.result.non_financial')}
                   </span>
                 ) : (
                   <>
-                    <span className={`text-xs font-bold border rounded-md px-2.5 py-1 tracking-wider ${typeInfo?.border} ${typeInfo?.text} bg-black/20`}>
+                    <span className={`text-xs font-bold rounded-md px-3 py-1 tracking-wider ${typeInfo?.text} bg-black/20`}>
                       {typeInfo?.label || 'UNKNOWN'}
                     </span>
                     <span className="text-lg md:text-xl font-bold text-white tracking-tight text-right break-words">
@@ -509,14 +509,14 @@ export default function SmsImport() {
               </div>
 
               {result.is_financial !== false && (
-                <div className="p-5">
+                <div className="p-6">
                   <div className="mb-6 bg-black/20 p-4 rounded-xl border border-white/5">
                     <div className="flex justify-between items-center mb-2 gap-3">
-                      <span className="text-xs text-slate-400 tracking-widest font-semibold flex items-center gap-1.5">
+                      <span className="text-xs text-slate-600 dark:text-slate-400 tracking-widest font-bold flex items-center gap-2">
                         <ShieldCheck size={14} className="text-aurora" /> {t('sms_import.result.confidence_label')}
                       </span>
                       {result.confidence_score >= 0.8 && (
-                        <span className="text-[10px] bg-aurora/20 text-aurora px-2 py-0.5 rounded-full">{t('sms_import.result.confidence_high')}</span>
+                        <span className="text-[10px] bg-aurora/20 text-aurora px-2 py-1 rounded-full">{t('sms_import.result.confidence_high')}</span>
                       )}
                     </div>
                     <ConfidenceBar score={result.confidence_score} />
@@ -537,8 +537,8 @@ export default function SmsImport() {
 
                   <div className="mt-6 space-y-3">
                     {state.contas?.length > 0 && (
-                      <label className="block text-xs text-slate-400">
-                        <span className="block mb-1.5 tracking-wider">{ui('Conta')}</span>
+                      <label className="block text-xs text-slate-600 dark:text-slate-400">
+                        <span className="block mb-2 tracking-wider">{ui('Conta')}</span>
                         <select
                           id="sms-import-account"
                           className="form-input w-full"
@@ -568,7 +568,7 @@ export default function SmsImport() {
                           <span className="block font-bold text-aurora">
                             {uiFill('Acertar o saldo de {{p0}} para {{p1}}', { p0: balancePreview.name, p1: formatMzn(balancePreview.smsBalance, result.currency || 'MZN') })}
                           </span>
-                          <span className="block text-slate-400">
+                          <span className="block text-slate-600 dark:text-slate-400">
                             {Math.abs(balancePreview.difference) < 0.005
                               ? ui('Bate certo com o saldo no Mwanga depois desta transação.')
                               : uiFill('No Mwanga ficaria {{p0}}. A diferença de {{p1}} fica registada como ajuste de saldo.', { p0: formatMzn(balancePreview.expected, result.currency || 'MZN'), p1: formatMzn(Math.abs(balancePreview.difference), result.currency || 'MZN') })}
@@ -581,7 +581,7 @@ export default function SmsImport() {
                     )}
                     {saveError && (
                       <div role="alert" className="flex items-start gap-2 rounded-xl border border-coral/40 bg-coral/10 p-3 text-xs text-coral leading-5">
-                        <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                        <AlertCircle size={16} className="shrink-0 mt-1" />
                         <span>{saveError}</span>
                       </div>
                     )}
@@ -594,7 +594,7 @@ export default function SmsImport() {
                       {saving ? <RefreshCw size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
                       {saving ? t('common.saving') : t('sms_import.result.btn_confirm')}
                     </button>
-                    <p className="text-center text-[10px] text-slate-500 leading-5">
+                    <p className="text-center text-[10px] text-slate-600 dark:text-slate-400 leading-5">
                       {t('sms_import.result.save_hint')}
                     </p>
                   </div>
@@ -604,9 +604,9 @@ export default function SmsImport() {
           ) : (
             <div className="glass-card flex flex-col items-center justify-center min-h-[400px] text-center p-8 border-dashed border-white/20">
               <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                <MessageSquare size={24} className="text-slate-500" />
+                <MessageSquare size={24} className="text-slate-600 dark:text-slate-400" />
               </div>
-              <p className="text-slate-400 leading-relaxed font-mono text-sm max-w-[260px]">
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-mono text-sm max-w-[260px]">
                 {t('sms_import.description')}
               </p>
             </div>
@@ -614,10 +614,10 @@ export default function SmsImport() {
 
           {result && (
             <div className="glass-card overflow-hidden opacity-60 hover:opacity-100 transition-opacity">
-              <div className="px-4 py-2 border-b border-white/5 text-[10px] text-slate-400 tracking-widest font-semibold">
+              <div className="px-4 py-2 border-b border-white/5 text-[10px] text-slate-600 dark:text-slate-400 tracking-widest font-bold">
                 PAYLOAD JSON (API)
               </div>
-              <pre className="p-4 text-[10px] text-slate-400 overflow-auto max-h-[220px] font-mono leading-relaxed bg-black/40">
+              <pre className="p-4 text-[10px] text-slate-600 dark:text-slate-400 overflow-auto max-h-[220px] font-mono leading-relaxed bg-black/40">
                 {JSON.stringify(result, null, 2)}
               </pre>
             </div>

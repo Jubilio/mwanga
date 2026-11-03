@@ -16,7 +16,7 @@ export function Card({ children, style = {}, onClick, glow }) {
       style={{
         background: h ? G.cardHov : G.card,
         border: `1px solid ${glow ? `${glow}35` : G.border}`,
-        borderRadius: 20, padding: 20, minWidth: 0,
+        borderRadius: 20, padding: 24, minWidth: 0,
         backdropFilter: "blur(16px)",
         boxShadow: glow ? `0 0 24px ${glow}18` : "none",
         transition: "all 0.2s",
@@ -69,7 +69,7 @@ export function Badge({ label, color }) {
   useUiLanguage();
   return (
     <span style={{
-      fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99,
+      fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 99,
       background: `${color}18`, color, border: `1px solid ${color}30`,
     }}>{ui(label)}</span>
   );
@@ -87,7 +87,7 @@ export function ScoreRing({ score, color, size = 80 }) {
         strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
         style={{ transition: "stroke-dasharray 1.5s cubic-bezier(0.4,0,0.2,1)" }} />
       <text x={size / 2} y={size / 2} textAnchor="middle" dominantBaseline="central"
-        style={{ fill: color, fontSize: size * 0.24, fontWeight: 900, fontFamily: "Sora,sans-serif", transform: "rotate(90deg)", transformOrigin: `${size / 2}px ${size / 2}px` }}>
+        style={{ fill: color, fontSize: size * 0.24, fontWeight: 700, fontFamily: "Sora,sans-serif", transform: "rotate(90deg)", transformOrigin: `${size / 2}px ${size / 2}px` }}>
         {score}
       </text>
     </svg>
@@ -117,14 +117,14 @@ export function ProGate({ children, isPro, title, description }) {
         borderRadius: 20, border: `1px solid ${G.gold}40`,
       }}>
         <div style={{ fontSize: 36 }}>👑</div>
-        <div style={{ fontSize: 16, fontWeight: 900, color: G.gold, fontFamily: "Sora,sans-serif", textAlign: "center" }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: G.gold, fontFamily: "Sora,sans-serif", textAlign: "center" }}>
           {title || t('credit.pro_gate.title')}
         </div>
         <div style={{ fontSize: 13, color: G.muted, textAlign: "center", lineHeight: 1.6, maxWidth: 280 }}>
           {description || t('credit.pro_gate.desc')}
         </div>
         <a href="/pricing" style={{
-          marginTop: 4, padding: "11px 28px", borderRadius: 12,
+          marginTop: 4, padding: "12px 32px", borderRadius: 12,
           background: `linear-gradient(135deg,${G.gold},${G.gold2})`,
           color: "#000", fontWeight: 700, fontSize: 14, textDecoration: "none",
           boxShadow: `0 4px 18px ${G.goldGlow}`,

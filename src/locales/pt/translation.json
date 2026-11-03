@@ -945,7 +945,7 @@
         "credit_comp_msg": "Num cenário bancário de 26% ao ano, um valor semelhante poderia custar aproximadamente <strong className=\"text-white\">{{amount}}</strong> em juros ao longo do mesmo ciclo."
       }
     },
-    "disclaimer": "Estas simulações são projeções. Os resultados dependem de disciplina, retorno real, custos e contexto do utilizador. <strong className=\"text-amber-500/80\"> Use o Mwanga para decidir melhor, mas valide decisões críticas com apoio profissional quando necessário.</strong>"
+    "disclaimer": "Estas simulações são projeções. Os resultados dependem de disciplina, retorno real, custos e contexto do utilizador. <strong> Use o Mwanga para decidir melhor, mas valide decisões críticas com apoio profissional quando necessário.</strong>"
   },
   "settings": {
     "title": "Configurações",

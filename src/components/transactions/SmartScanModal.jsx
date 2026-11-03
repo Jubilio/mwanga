@@ -26,11 +26,11 @@ export default function SmartScanModal({ isOpen, setIsOpen, isScanning, setIsSca
                   <FileText size={20} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-white">Binth Smart Scan</h2>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{ui("Análise de Extratos via IA")}</p>
+                  <h2 className="text-xl font-bold text-white">Binth Smart Scan</h2>
+                  <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">{ui("Análise de Extratos via IA")}</p>
                 </div>
               </div>
-              <button onClick={() => setIsOpen(false)} className="p-3 -mr-3 text-gray-500 hover:text-white transition-all active:scale-90">
+              <button onClick={() => setIsOpen(false)} className="p-3 -mr-3 text-slate-600 dark:text-slate-400 hover:text-white transition-all active:scale-90">
                 <X size={24} />
               </button>
             </div>
@@ -56,7 +56,7 @@ export default function SmartScanModal({ isOpen, setIsOpen, isScanning, setIsSca
                   />
                   <Sparkles size={40} className="mx-auto text-indigo-400 mb-4 group-hover:scale-110 transition-transform" />
                   <p className="text-sm font-bold text-white mb-2">{ui("Arraste o seu extrato PDF ou CSV aqui")}</p>
-                  <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">{ui("Ou clica para escolher o ficheiro")}</p>
+                  <p className="text-[10px] text-slate-600 dark:text-slate-400 uppercase font-bold tracking-widest">{ui("Ou clica para escolher o ficheiro")}</p>
                 </div>
               </div>
             ) : (
@@ -68,7 +68,7 @@ export default function SmartScanModal({ isOpen, setIsOpen, isScanning, setIsSca
                     <Brain size={32} className="text-indigo-400" />
                   </div>
                 </div>
-                <h3 className="text-lg font-black text-white animate-pulse">{ui("A Binth está a ler o teu extrato...")}</h3>
+                <h3 className="text-lg font-bold text-white animate-pulse">{ui("A Binth está a ler o teu extrato...")}</h3>
               </div>
             )}
           </motion.div>

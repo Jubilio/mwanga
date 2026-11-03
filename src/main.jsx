@@ -61,9 +61,9 @@ function renderApp() {
             <button
               onClick={() => window.location.reload()}
               style={{
-                padding: '10px 24px', borderRadius: '12px', border: 'none',
+                padding: '12px 24px', borderRadius: '12px', border: 'none',
                 background: 'linear-gradient(135deg, #0a4d68, #1a8fa8)',
-                color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '14px'
+                color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '14px'
               }}
             > {ui("Recarregar")} </button>
           </div>
