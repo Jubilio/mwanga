@@ -289,6 +289,21 @@ SMS recebido (texto)
 5. **Deduplicação**: Verifica se alerta semelhante foi enviado recentemente
 6. Despacho via canal adequado (VAPID ou FCM consoante `deviceType`)
 
+### Binth como consultora (`server/src/services/advisor/`)
+
+A Binth avisa, planeia e acompanha. Os avisos e planos vêm de regras (`advisorRules.js`, sem IA, sem custo de créditos); a IA só entra quando a pessoa conversa no chat.
+
+- **Regras**: dia do salário (maior entrada de cada mês, ±4 dias), previsão do saldo até ao salário, divisão do salário (renda, xitique, dívidas, dízimo, poupança), envelopes do mês, sair das dívidas (juro mais caro primeiro ou mais pequena primeiro), fundo de emergência, pronto para crédito (rendimento regular, 3+ meses, dívidas ≤35%, reserva ≥1 mês, sem atrasos), pagamentos recorrentes, resumo semanal e fecho do mês.
+- **Envio diário** (`advisorSweep.js`): cron `ADVISOR_CRON` (por omissão `7 6-18 * * *`, 08:00–20:59 em Maputo). No máximo uma mensagem por pessoa por dia (`advisor_daily`), nunca o mesmo aviso duas vezes (`advisor_sent_alerts`), nada nas horas de silêncio. Lembretes pedidos pela pessoa saem sempre no dia (`advisor_reminders`). Canal: notificação (push) e, se a pessoa ligar, WhatsApp via Evolution API (`EVOLUTION_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_INSTANCE`; sem estas variáveis a opção não aparece).
+- **Nível de iniciativa** (`settings`: `advisor_level` off/discreet/normal/close, `advisor_quiet_start/end`, `advisor_weekly`, `advisor_whatsapp`, `advisor_tithe_rate`, `advisor_savings_rate`). Estas chaves só se mudam por `/api/advisor/settings`.
+- **Memória com consentimento** (`advisor_memory`, máx. 30 factos, mascarados): a Binth propõe lembrar; a pessoa confirma; pode apagar nas Definições.
+- **Planos** (`advisor_plans`): guardar o plano do mês também define os orçamentos.
+- **Registo** (`advisor_log`): cada mensagem enviada e a base de cálculo, para auditoria (sandbox BdM).
+- **Chat**: ferramentas `forecastBalance`, `findRecurringPayments`, `simulateDebtPayoff`, `checkCreditReadiness` (leitura) e `propose*` (plano do mês, dívidas, fundo de emergência, orçamento, meta, reforço de meta, lembrete, lembrar facto). Nenhuma escreve: a app mostra Confirmar/Cancelar.
+- **Rotas**: `GET /api/advisor/today | plan | weekly | month-close?month=AAAA-MM`, `GET/PUT /api/advisor/settings`, `GET/POST/DELETE /api/advisor/memory[/:id]`, `GET/POST/DELETE /api/advisor/plans[/:id]`, `GET/POST/DELETE /api/advisor/reminders[/:id]`.
+- **App**: cartão "Hoje" no início, página `/plano` (Plano do mês; `?salario=1`, `?semana=1`, `?fecho=AAAA-MM`), e "Binth como consultora" nas Definições (separador IA).
+- **Limite regulatório**: organiza e planeia; não recomenda produtos financeiros concretos. Aviso mostrado: "A Binth ajuda a organizar. Não é aconselhamento financeiro licenciado."
+
 ---
 
 ## 12. Resiliência Offline e PWA
@@ -412,6 +427,12 @@ BINTH_FREE_DAILY_LIMIT=20              # Respostas/dia com as chaves do Mwanga n
 OLLAMA_ENABLED=true                    # Habilita o uso de Ollama local como primeira opção em desenvolvimento
 OLLAMA_URL=http://localhost:11434/api/chat
 OLLAMA_MODEL=gemma4                    # Modelo local instalado no Ollama
+
+# Binth consultora
+ADVISOR_CRON=7 6-18 * * *              # Envio diário (UTC); uma mensagem por pessoa por dia no máximo
+EVOLUTION_URL=...                      # WhatsApp (Evolution API); sem as três, a opção WhatsApp não aparece
+EVOLUTION_API_KEY=...
+EVOLUTION_INSTANCE=...
 
 ### Comandos de Execução
 

@@ -30,6 +30,7 @@ import {
  */
 
 export const PLAN_ITEMS = [
+  { to: '/plano', icon: Compass, label: 'nav.month_plan', desc: 'nav.desc_month_plan' },
   { to: '/orcamento', icon: PieChart, label: 'nav.budget', desc: 'nav.desc_budget', feature: 'orcamento' },
   { to: '/metas', icon: Target, label: 'nav.goals', desc: 'nav.desc_goals', feature: 'metas' },
   { to: '/xitique', icon: Wallet, label: 'nav.xitique', desc: 'nav.desc_xitique', feature: 'xitique' },

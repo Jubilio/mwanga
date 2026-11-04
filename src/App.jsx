@@ -35,6 +35,7 @@ const Landing = lazy(() => import('./pages/Landing'));
 const Download = lazy(() => import('./pages/Download'));
 const Legal = lazy(() => import('./pages/Legal'));
 const Planear = lazy(() => import('./pages/Planear'));
+const PlanoMes = lazy(() => import('./pages/PlanoMes'));
 const Mais = lazy(() => import('./pages/Mais'));
 const GoalsHub = lazy(() => import('./pages/hubs').then((m) => ({ default: m.GoalsHub })));
 const DebtsHub = lazy(() => import('./pages/hubs').then((m) => ({ default: m.DebtsHub })));
@@ -184,6 +185,7 @@ export default function App() {
                 <Route path="time-machine" element={<Navigate to={LEGACY_REDIRECTS['/time-machine']} replace />} />
                 <Route path="help" element={<ErrorBoundary context="Ajuda"><Help /></ErrorBoundary>} />
                 <Route path="planear" element={<ErrorBoundary context="Planear"><Planear /></ErrorBoundary>} />
+                <Route path="plano" element={<ErrorBoundary context="PlanoMes"><PlanoMes /></ErrorBoundary>} />
                 <Route path="mais" element={<ErrorBoundary context="Mais"><Mais /></ErrorBoundary>} />
                 <Route path="quick-add" element={<Dashboard />} />
               </Route>

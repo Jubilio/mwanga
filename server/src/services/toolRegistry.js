@@ -154,6 +154,141 @@ tools.push(
   }
 );
 
+// Advisor tools (Binth as a financial advisor). Read tools return numbers the
+// rules computed; propose tools prepare a card the person confirms in the app.
+const advisor = () => require('./advisor/advisorActions');
+tools.push(
+  {
+    name: 'forecastBalance',
+    description: 'Previsão do saldo até ao próximo salário: quanto sobra, se o dinheiro acaba antes e em que dia, compromissos que vencem (xitique, renda, dívidas) e quanto cortar por dia. Usa quando perguntam "chego ao fim do mês?" ou "quanto posso gastar?".',
+    parameters: { type: 'object', properties: { horizonDays: { type: 'number', description: 'Ignorado: o horizonte é o próximo salário (opcional)' } } },
+    execute: async (args) => advisor().forecastBalanceTool(args),
+  },
+  {
+    name: 'findRecurringPayments',
+    description: 'Lista pagamentos que se repetem todos os meses (recargas, assinaturas, propinas) com valor médio e próxima data provável.',
+    parameters: { type: 'object', properties: { minAmount: { type: 'number', description: 'Valor mínimo em MT (opcional)' } } },
+    execute: async (args) => advisor().recurringTool(args),
+  },
+  {
+    name: 'simulateDebtPayoff',
+    description: 'Simula como sair das dívidas pagando um valor por mês: estratégia juro mais caro primeiro (avalanche) e dívida mais pequena primeiro (bola de neve), com meses e juros totais.',
+    parameters: {
+      type: 'object',
+      properties: {
+        monthlyBudget: { type: 'number', description: 'Quanto o utilizador pode pagar por mês no total, em MT' },
+        strategy: { type: 'string', enum: ['avalanche', 'snowball'], description: 'Estratégia preferida (opcional)' },
+      },
+    },
+    execute: async (args) => advisor().debtPayoffTool(args),
+  },
+  {
+    name: 'checkCreditReadiness',
+    description: 'Diz se o utilizador está pronto para pedir crédito: rendimento estável, histórico, peso das dívidas, reserva e atrasos, com a prestação máxima sensata. Não recomenda produtos de crédito.',
+    parameters: { type: 'object', properties: { amount: { type: 'number', description: 'Valor que pensa pedir, em MT (opcional)' } } },
+    execute: async (args) => advisor().creditReadinessTool(args),
+  },
+  {
+    name: 'proposeMonthlyPlan',
+    description: 'Prepara um plano do mês com envelopes por categoria (orçamentos) a partir do rendimento e dos gastos reais. O utilizador confirma no ecrã.',
+    parameters: { type: 'object', properties: { note: { type: 'string', description: 'Pedido especial do utilizador (opcional)' } } },
+    proposal: true,
+    execute: async (args) => advisor().proposeMonthlyPlan(args),
+  },
+  {
+    name: 'proposeDebtPlan',
+    description: 'Prepara um plano para sair das dívidas com um valor por mês. Pergunta primeiro quanto pode pagar por mês se não souberes.',
+    parameters: {
+      type: 'object',
+      properties: {
+        monthlyBudget: { type: 'number', description: 'Total por mês para dívidas, em MT' },
+        strategy: { type: 'string', enum: ['avalanche', 'snowball'], description: 'avalanche (juro mais caro primeiro) ou snowball (mais pequena primeiro)' },
+      },
+      required: ['monthlyBudget'],
+    },
+    proposal: true,
+    execute: async (args) => advisor().proposeDebtPlan(args),
+  },
+  {
+    name: 'proposeEmergencyFund',
+    description: 'Prepara um plano de fundo de emergência (meses de despesas essenciais) com quanto poupar por mês.',
+    parameters: {
+      type: 'object',
+      properties: {
+        months: { type: 'number', description: 'Meses de despesas a cobrir, 1 a 12 (por omissão 3)' },
+        monthly: { type: 'number', description: 'Quanto quer poupar por mês, em MT (opcional)' },
+      },
+    },
+    proposal: true,
+    execute: async (args) => advisor().proposeEmergencyFund(args),
+  },
+  {
+    name: 'proposeBudgetChange',
+    description: 'Prepara a alteração do orçamento mensal de uma categoria. O utilizador confirma no ecrã.',
+    parameters: {
+      type: 'object',
+      properties: {
+        category: { type: 'string', enum: actions.CATEGORIES, description: 'Categoria' },
+        limit: { type: 'number', description: 'Novo limite mensal em MT' },
+      },
+      required: ['category', 'limit'],
+    },
+    proposal: true,
+    execute: async (args) => advisor().proposeBudgetChange(args),
+  },
+  {
+    name: 'proposeGoal',
+    description: 'Prepara uma nova meta de poupança (ex: "quero juntar 20 mil para a escola até Janeiro").',
+    parameters: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Nome curto da meta' },
+        target: { type: 'number', description: 'Valor a juntar em MT' },
+        deadline: { type: 'string', description: 'Data limite AAAA-MM-DD (opcional)' },
+        monthly: { type: 'number', description: 'Quanto pôr por mês em MT (opcional)' },
+      },
+      required: ['name', 'target'],
+    },
+    proposal: true,
+    execute: async (args) => advisor().proposeGoal(args),
+  },
+  {
+    name: 'proposeGoalTopUp',
+    description: 'Prepara um reforço de uma meta existente (ex: "pus 2000 na meta da escola").',
+    parameters: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Nome ou parte do nome da meta' },
+        amount: { type: 'number', description: 'Valor em MT' },
+      },
+      required: ['amount'],
+    },
+    proposal: true,
+    execute: async (args) => advisor().proposeGoalTopUp(args),
+  },
+  {
+    name: 'proposeReminder',
+    description: 'Prepara um lembrete para um dia (ex: "lembra-me de pagar a escola no dia 5"). A Binth envia no dia, por notificação.',
+    parameters: {
+      type: 'object',
+      properties: {
+        date: { type: 'string', description: 'Dia AAAA-MM-DD, de hoje até um ano' },
+        text: { type: 'string', description: 'Texto curto do lembrete' },
+      },
+      required: ['date', 'text'],
+    },
+    proposal: true,
+    execute: async (args) => advisor().proposeReminder(args),
+  },
+  {
+    name: 'proposeRememberFact',
+    description: 'Pede autorização para lembrar um facto útil e duradouro que o utilizador contou (ex: "recebo a 25", "pago a escola dos filhos em Fevereiro"). Nunca guardes números de conta, PINs, senhas ou dados de saúde.',
+    parameters: { type: 'object', properties: { fact: { type: 'string', description: 'O facto numa frase curta, na terceira pessoa' } }, required: ['fact'] },
+    proposal: true,
+    execute: async (args) => advisor().proposeRememberFact(args),
+  }
+);
+
 class ToolRegistry {
   /**
    * Converte o esquema interno das nossas Tools para o formato universal JSON Schema

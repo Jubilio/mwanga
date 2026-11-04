@@ -2870,7 +2870,9 @@
     "tab_home": "Renda e casa",
     "tab_future": "Futuro",
     "sms_button": "Importar SMS",
-    "sms_short": "SMS"
+    "sms_short": "SMS",
+    "month_plan": "Plano do mês",
+    "desc_month_plan": "Previsão, envelopes e planos da Binth"
   },
   "sms_quota": {
     "used": "{{used}} de {{limit}} SMS importados este mês no plano grátis.",
@@ -2995,5 +2997,154 @@
     "failed": "Não consegui registar. Tenta de novo.",
     "queued": "Guardado no telemóvel. Envio quando houver internet.",
     "already_done": "Isto já estava registado. Não registei de novo."
+  },
+  "advisor": {
+    "retry": "Tentar de novo",
+    "kinds": {
+      "xitique": "Xitique",
+      "rent": "Renda",
+      "debt": "Prestação"
+    },
+    "today": {
+      "title": "Hoje",
+      "open_plan": "Plano do mês",
+      "error": "Não consegui carregar o resumo de hoje.",
+      "all_good": "Nada urgente hoje. Continua assim.",
+      "until_payday": "Até ao salário ({{date}})",
+      "next_30": "Nos próximos 30 dias",
+      "runs_out": "o saldo acaba a {{date}}",
+      "left": "sobram {{amount}}"
+    },
+    "plan": {
+      "title": "Plano do mês",
+      "subtitle": "O que a Binth vê nos teus números, e o que propõe para este mês.",
+      "error": "Não consegui carregar o plano."
+    },
+    "close": {
+      "title": "O teu mês ({{month}})",
+      "income": "Entrou",
+      "expenses": "Saiu",
+      "saved": "Ficou",
+      "highlight": "Destaque: gastaste menos {{amount}} em {{category}}.",
+      "challenge": "Desafio: {{category}} passou {{amount}} do previsto.",
+      "opportunity": "Oportunidade: {{name}} custa {{amount}} por ano."
+    },
+    "forecast": {
+      "title": "Previsão do saldo",
+      "until_payday": "No dia do salário ({{date}}) deves ter",
+      "next_30": "Daqui a 30 dias deves ter",
+      "runs_out": "Acaba a {{date}}",
+      "cut": "Cortar cerca de {{amount}} por dia resolve.",
+      "chart_label": "Gráfico do saldo previsto dia a dia",
+      "daily": "Gasto médio por dia"
+    },
+    "salary": {
+      "title": "Divisão do salário ({{amount}})",
+      "rent": "Renda / casa",
+      "xitique": "Xitique",
+      "debt": "Dívidas do mês",
+      "tithe": "Dízimo",
+      "savings": "Poupança",
+      "free": "Livre para o mês",
+      "per_day": "Cerca de {{amount}} por dia.",
+      "save": "Guardar esta divisão",
+      "plan_title": "Divisão do salário"
+    },
+    "monthly": {
+      "title": "Envelopes do mês",
+      "empty": "Ainda não há gastos suficientes. Regista despesas durante umas semanas e a Binth propõe os envelopes.",
+      "income": "Rendimento",
+      "commitments": "Compromissos",
+      "savings": "Poupança",
+      "average": "média {{amount}}",
+      "tight": "O rendimento não chega para os gastos habituais: os envelopes foram reduzidos.",
+      "save": "Guardar plano e orçamentos",
+      "plan_title": "Plano do mês"
+    },
+    "weekly": {
+      "title": "Esta semana",
+      "spent": "Gastaste",
+      "previous": "Semana anterior",
+      "less": "{{pct}}% menos que na semana anterior",
+      "more": "{{pct}}% mais que na semana anterior",
+      "top": "Maior gasto: {{category}} ({{amount}})"
+    },
+    "debt": {
+      "title": "Sair das dívidas",
+      "avalanche": "Juro mais caro primeiro",
+      "snowball": "Dívida mais pequena primeiro",
+      "result": "{{months}} meses pagando {{amount}} por mês (juros {{interest}})",
+      "not_feasible": "Com as prestações actuais as dívidas não acabam.",
+      "ask": "Quero um plano para sair das dívidas. Quanto devo pagar por mês?",
+      "ask_button": "Fazer plano com a Binth"
+    },
+    "emergency": {
+      "title": "Fundo de emergência",
+      "target": "Meta ({{months}} meses de essenciais)",
+      "saved": "Já tens",
+      "pace": "Poupando {{amount}} por mês, chegas lá em {{months}} meses.",
+      "save": "Guardar este plano",
+      "plan_title": "Fundo de emergência ({{months}} meses)"
+    },
+    "credit": {
+      "title": "Pronto para crédito?",
+      "ready": "Estás pronto. Prestação máxima sensata: {{amount}} por mês.",
+      "not_yet": "Ainda não. Falta:",
+      "ok": "Cumprido",
+      "missing": "Em falta",
+      "checks": {
+        "stable_income": "Rendimento regular",
+        "history": "Pelo menos 3 meses de registos ({{value}})",
+        "debt_ratio": "Dívidas até 35% do rendimento ({{value}}%)",
+        "buffer": "Reserva de pelo menos 1 mês ({{value}})",
+        "no_overdue": "Nenhuma prestação em atraso"
+      },
+      "note": "A Binth não recomenda produtos de crédito. Um pedido é analisado por uma instituição licenciada.",
+      "open": "Ver opções de crédito"
+    },
+    "recurring": {
+      "title": "Pagamentos que se repetem",
+      "per_month": "{{amount}} por mês"
+    },
+    "goals": {
+      "title": "Metas atrasadas",
+      "behind": "{{name}}: precisas de {{amount}} por mês para chegar a tempo."
+    },
+    "plans": {
+      "title": "Planos guardados",
+      "archive": "Arquivar {{title}}"
+    },
+    "settings": {
+      "title": "Binth como consultora",
+      "intro": "Quando e como a Binth fala contigo primeiro.",
+      "level": "Iniciativa",
+      "levels": {
+        "off": "Desligada",
+        "discreet": "Discreta",
+        "normal": "Normal",
+        "close": "Próxima"
+      },
+      "level_help": {
+        "off": "Só fala quando perguntas. Os lembretes que pediste chegam na mesma.",
+        "discreet": "Só o urgente: saldo a acabar, pagamentos de hoje ou em atraso.",
+        "normal": "Urgente e importante, no máximo uma mensagem por dia.",
+        "close": "Também orçamentos a 80% e metas atrasadas, no máximo uma por dia."
+      },
+      "quiet_start": "Silêncio a partir de",
+      "quiet_end": "Silêncio até",
+      "weekly": "Resumo da semana à segunda-feira",
+      "whatsapp": "Receber também no WhatsApp",
+      "whatsapp_help": "Usa o número do teu perfil.",
+      "tithe": "Dízimo (% do salário)",
+      "savings": "Poupança (% do salário)",
+      "memory": "O que a Binth sabe de ti",
+      "memory_empty": "Nada guardado. A Binth pede autorização antes de lembrar algo.",
+      "forget_one": "Esquecer: {{fact}}",
+      "forget_all": "Esquecer tudo",
+      "reminders": "Lembretes",
+      "remove_reminder": "Apagar lembrete: {{text}}",
+      "saved": "Guardado.",
+      "error": "Não consegui guardar. Tenta de novo."
+    }
   }
 }

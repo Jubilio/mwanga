@@ -125,11 +125,16 @@ function proposalResponse(proposal, language = 'pt') {
     message = en
       ? `Shall I record a payment of ${money(proposal.payload.amount, language)} MT to **${proposal.creditor}**? ${money(proposal.remainingAfter, language)} MT will be left.`
       : `Queres que registe um pagamento de MT ${money(proposal.payload.amount, language)} a **${proposal.creditor}**? Fica a faltar MT ${money(proposal.remainingAfter, language)}.`;
-  } else {
+  } else if (proposal.action === 'pay_xitique') {
     const due = proposal.dueDate ? (en ? ` (due ${proposal.dueDate})` : ` (vence ${proposal.dueDate})`) : '';
     message = en
       ? `Shall I mark the ${money(proposal.amount, language)} MT contribution to **${proposal.name}**${due} as paid?`
       : `Queres que marque como paga a contribuição de MT ${money(proposal.amount, language)} do xitique **${proposal.name}**${due}?`;
+  } else {
+    // Advisor proposals (plans, budgets, goals, reminders, memory). Required here
+    // so the two modules don't load each other at start-up.
+    message = require('./advisor/advisorActions').advisorProposalMessage(proposal, language)
+      || (en ? 'Shall I go ahead?' : 'Posso avançar?');
   }
   return { message, insight_type: 'action', biblical_insight: null, alerta: null, quick_actions: [], pending_action: proposal, data: { proposal: true } };
 }
