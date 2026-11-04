@@ -1,4 +1,5 @@
 import AiSettings from '../components/settings/AiSettings';
+import AdvisorSettings from '../components/settings/AdvisorSettings';
 import { useEffect, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -110,7 +111,7 @@ export default function Settings() {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <div className="lg:col-span-8">
         <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">{t(['perfil', 'ai'].includes(activeTab) ? 'settings.reliable.account_scope' : activeTab === 'notifications' ? 'settings.reliable.device_scope' : 'settings.reliable.household_scope')}</p>
-        {activeTab === 'ai' ? <AiSettings /> : null}
+        {activeTab === 'ai' ? <><AiSettings /><AdvisorSettings /></> : null}
         {activeTab === 'familia' ? <HouseholdSettings showToast={showToast} /> : null}
         <fieldset disabled={busy} className="min-w-0 disabled:opacity-60">
           {activeTab === 'perfil' ? <TabPerfil form={form} setFormDirty={setFormDirty} state={state} /> : null}

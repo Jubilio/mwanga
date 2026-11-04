@@ -2870,7 +2870,9 @@
     "tab_home": "Rent and home",
     "tab_future": "Future",
     "sms_button": "Import SMS",
-    "sms_short": "SMS"
+    "sms_short": "SMS",
+    "month_plan": "Month plan",
+    "desc_month_plan": "Forecast, envelopes and Binth's plans"
   },
   "sms_quota": {
     "used": "{{used}} of {{limit}} SMS imported this month on the free plan.",
@@ -2995,5 +2997,154 @@
     "failed": "I could not save it. Please try again.",
     "queued": "Saved on this phone. It will be sent when you are back online.",
     "already_done": "This was already recorded. I did not record it again."
+  },
+  "advisor": {
+    "retry": "Try again",
+    "kinds": {
+      "xitique": "Xitique",
+      "rent": "Rent",
+      "debt": "Instalment"
+    },
+    "today": {
+      "title": "Today",
+      "open_plan": "Month plan",
+      "error": "Couldn't load today's summary.",
+      "all_good": "Nothing urgent today. Keep it up.",
+      "until_payday": "Until payday ({{date}})",
+      "next_30": "In the next 30 days",
+      "runs_out": "money runs out on {{date}}",
+      "left": "{{amount}} left"
+    },
+    "plan": {
+      "title": "Month plan",
+      "subtitle": "What Binth sees in your numbers, and what she suggests for this month.",
+      "error": "Couldn't load the plan."
+    },
+    "close": {
+      "title": "Your month ({{month}})",
+      "income": "In",
+      "expenses": "Out",
+      "saved": "Kept",
+      "highlight": "Highlight: you spent {{amount}} less on {{category}}.",
+      "challenge": "Challenge: {{category}} went {{amount}} over plan.",
+      "opportunity": "Opportunity: {{name}} costs {{amount}} a year."
+    },
+    "forecast": {
+      "title": "Balance forecast",
+      "until_payday": "On payday ({{date}}) you should have",
+      "next_30": "In 30 days you should have",
+      "runs_out": "Runs out on {{date}}",
+      "cut": "Cutting about {{amount}} a day fixes it.",
+      "chart_label": "Chart of the expected balance day by day",
+      "daily": "Average spending per day"
+    },
+    "salary": {
+      "title": "Salary split ({{amount}})",
+      "rent": "Rent / home",
+      "xitique": "Xitique",
+      "debt": "Debt payments",
+      "tithe": "Tithe",
+      "savings": "Savings",
+      "free": "Free for the month",
+      "per_day": "About {{amount}} a day.",
+      "save": "Save this split",
+      "plan_title": "Salary split"
+    },
+    "monthly": {
+      "title": "Envelopes for the month",
+      "empty": "Not enough spending yet. Record expenses for a few weeks and Binth will suggest envelopes.",
+      "income": "Income",
+      "commitments": "Commitments",
+      "savings": "Savings",
+      "average": "avg {{amount}}",
+      "tight": "Income doesn't cover your usual spending: the envelopes were reduced.",
+      "save": "Save plan and budgets",
+      "plan_title": "Month plan"
+    },
+    "weekly": {
+      "title": "This week",
+      "spent": "You spent",
+      "previous": "Previous week",
+      "less": "{{pct}}% less than the week before",
+      "more": "{{pct}}% more than the week before",
+      "top": "Biggest spend: {{category}} ({{amount}})"
+    },
+    "debt": {
+      "title": "Getting out of debt",
+      "avalanche": "Most expensive interest first",
+      "snowball": "Smallest debt first",
+      "result": "{{months}} months paying {{amount}} a month (interest {{interest}})",
+      "not_feasible": "With the current instalments the debts never end.",
+      "ask": "I want a plan to get out of debt. How much should I pay a month?",
+      "ask_button": "Make a plan with Binth"
+    },
+    "emergency": {
+      "title": "Emergency fund",
+      "target": "Target ({{months}} months of essentials)",
+      "saved": "You have",
+      "pace": "Saving {{amount}} a month, you get there in {{months}} months.",
+      "save": "Save this plan",
+      "plan_title": "Emergency fund ({{months}} months)"
+    },
+    "credit": {
+      "title": "Ready for credit?",
+      "ready": "You're ready. Sensible maximum instalment: {{amount}} a month.",
+      "not_yet": "Not yet. Missing:",
+      "ok": "Done",
+      "missing": "Missing",
+      "checks": {
+        "stable_income": "Regular income",
+        "history": "At least 3 months of records ({{value}})",
+        "debt_ratio": "Debts up to 35% of income ({{value}}%)",
+        "buffer": "At least 1 month of savings ({{value}})",
+        "no_overdue": "No overdue instalments"
+      },
+      "note": "Binth does not recommend credit products. A request is assessed by a licensed institution.",
+      "open": "See credit options"
+    },
+    "recurring": {
+      "title": "Payments that repeat",
+      "per_month": "{{amount}} a month"
+    },
+    "goals": {
+      "title": "Goals behind schedule",
+      "behind": "{{name}}: you need {{amount}} a month to make it."
+    },
+    "plans": {
+      "title": "Saved plans",
+      "archive": "Archive {{title}}"
+    },
+    "settings": {
+      "title": "Binth as your advisor",
+      "intro": "When and how Binth talks to you first.",
+      "level": "Initiative",
+      "levels": {
+        "off": "Off",
+        "discreet": "Discreet",
+        "normal": "Normal",
+        "close": "Close"
+      },
+      "level_help": {
+        "off": "Only talks when you ask. Reminders you asked for still arrive.",
+        "discreet": "Only urgent things: money running out, payments due today or overdue.",
+        "normal": "Urgent and important, at most one message a day.",
+        "close": "Also budgets at 80% and goals behind, at most one a day."
+      },
+      "quiet_start": "Quiet from",
+      "quiet_end": "Quiet until",
+      "weekly": "Weekly summary on Monday",
+      "whatsapp": "Also send on WhatsApp",
+      "whatsapp_help": "Uses the number in your profile.",
+      "tithe": "Tithe (% of salary)",
+      "savings": "Savings (% of salary)",
+      "memory": "What Binth knows about you",
+      "memory_empty": "Nothing saved. Binth asks before remembering anything.",
+      "forget_one": "Forget: {{fact}}",
+      "forget_all": "Forget everything",
+      "reminders": "Reminders",
+      "remove_reminder": "Delete reminder: {{text}}",
+      "saved": "Saved.",
+      "error": "Couldn't save. Try again."
+    }
   }
 }

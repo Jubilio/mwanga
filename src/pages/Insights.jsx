@@ -7,6 +7,7 @@ import api from '../utils/api';
 import { db } from '../db/db';
 import { ensureChatOwner } from '../utils/localChat';
 import { toRequestId } from '../utils/offlineQueue';
+import { runProposal } from '../utils/advisorProposal';
 import { useFinance } from '../hooks/useFinance';
 import { useStewardship } from '../hooks/useStewardship';
 import { parseMobileMoneySMS } from '../utils/smsParser';
@@ -86,8 +87,8 @@ export default function Insights() {
   const { stats } = useStewardship();
   const [actionBusy, setActionBusy] = useState(null);
 
-  // A Binth proposal (expense, debt payment, xitique) is only written when the
-  // person taps "Confirmar"; it goes through the same actions as the rest of the app.
+  // A Binth proposal (expense, debt payment, xitique, plan, goal, budget, reminder,
+  // memory) is only written when the person taps "Confirmar"; see runProposal.
   async function resolveProposal(msg, confirmed) {
     if (actionBusy !== null) return;
     const action = msg.pending_action;
@@ -97,19 +98,7 @@ export default function Insights() {
       // One key per proposal: confirming the same card again can never record twice.
       const requestId = toRequestId(`binth-${action.action}-${msg.timestamp}`) || undefined;
       try {
-        let outcome;
-        if (action.action === 'add_transaction') {
-          const p = action.payload;
-          const account = p.tipo === 'receita'
-            ? state.settings?.default_income_account_id
-            : state.settings?.default_expense_account_id;
-          outcome = await dispatch({ type: 'ADD_TRANSACTION', requestId, payload: { ...p, account_id: account || null } });
-        } else if (action.action === 'pay_debt') {
-          outcome = await dispatch({ type: 'PAY_DEBT', requestId, payload: { debtId: action.payload.debtId, amount: action.payload.amount, account_id: state.settings?.default_expense_account_id || null, payment_date: new Date().toISOString() } });
-        } else if (action.action === 'pay_xitique') {
-          outcome = await dispatch({ type: 'PAY_XITIQUE', requestId, payload: { contributionId: action.payload.contributionId, date: new Date().toISOString().slice(0, 10), account_id: state.settings?.default_expense_account_id || null } });
-        }
-        status = outcome === 'queued' ? 'queued' : outcome === 'already_done' ? 'already_done' : 'done';
+        status = await runProposal(action, { dispatch, state, requestId });
         showToast(t(`binth_actions.${status}`), status === 'done' ? 'success' : 'info');
       } catch {
         status = null;

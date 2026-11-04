@@ -18,6 +18,7 @@ import {
 // Sub-components
 import JourneySummary from '../components/journey/JourneySummary';
 import FirstStepsCard from '../components/dashboard/FirstStepsCard';
+import TodayCard from '../components/dashboard/TodayCard';
 import DataLoadErrorBanner from '../components/dashboard/DataLoadErrorBanner';
 import TrialBanner from '../components/dashboard/TrialBanner';
 import DashboardHero from '../components/dashboard/DashboardHero';
@@ -190,6 +191,12 @@ export default function Dashboard() {
         quickActions={quickActions} 
         itemVariants={itemVariants} 
       />
+
+      {!state.loadError && (
+        <MotionDiv variants={itemVariants}>
+          <TodayCard hidden={!showBalance} />
+        </MotionDiv>
+      )}
 
       {!state.loadError && <FirstStepsCard />}
 
