@@ -56,7 +56,8 @@ Regras:
 - Escala de 8px: 8, 16, 24, 32, 40, 48. 4 e 12 só dentro de componentes.
 - Margem lateral de 16px no telemóvel; padding de cartão 24px (16px em listas densas).
 - Raio: cartões `rounded-2xl` (16px) a `28px` no `.glass-card`; botões `rounded-xl`.
-- Uma borda **ou** uma sombra, nunca as duas. Sombra só no que flutua.
+- Cartões de vidro (`.glass-card`: fundo translúcido, desfoque 12px, borda fina) são a
+  assinatura da marca e ficam. Não empilhar vidro sobre vidro; sombras fortes só no que flutua.
 
 ## Componentes
 

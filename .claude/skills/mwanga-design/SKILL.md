@@ -68,8 +68,11 @@ Um ecrã de app é usado todos os dias, não lido uma vez. Regras tiradas de um 
   por ecrã. Uma série não leva legenda. 3-5 linhas de grelha suaves, sem eixo Y desenhado.
   Linha de 2px reta, sem pontos em cada valor. Donut fino, valores numa lista ao lado.
   Gráfico vazio desenha a linha do zero e uma frase, não uma ilustração.
-- **Superfícies:** uma borda **ou** uma sombra, nunca as duas. Sombra só no que flutua
-  (menu, folha, modal, toast). Um raio escolhido e repetido.
+- **Superfícies:** o vidro (`.glass-card`) é parte da marca, por decisão do dono
+  (2026-11-04). Usa o `.glass-card` em vez de inventar outro cartão; não empilhes vidro
+  sobre vidro nem acrescentes `backdrop-blur` extra dentro de um cartão de vidro; o texto
+  sobre vidro cumpre 4.5:1 nos dois temas. Sombras fortes (`shadow-2xl`) só no que
+  flutua (menu, folha, modal, toast). Um raio escolhido e repetido.
 - **Pills** só dentro de linhas ou ao lado de um valor: fundo pálido, texto escuro do
   mesmo tom, 16-24px de altura. Nunca por cima de um título.
 - **Ícones:** um só conjunto (`lucide-react`), 14-20px, contorno, cinzento. **Nunca emoji
@@ -108,7 +111,6 @@ Nenhum está proibido por ser feio; estão proibidos por aparecerem por defeito,
 | --- | --- |
 | "Bem-vindo de volta 👋" e saudação com emoji | Título com nome do ecrã, ou uma frase com dado real ("Sobram 4 200 MT até dia 30") |
 | Orbes desfocados a pulsar no fundo (`blur-[100px] animate-pulse`) | Fundo sólido; a luz vem do dourado num dado |
-| Vidro em tudo (`backdrop-blur` em cartões que não flutuam) | Superfície opaca um tom acima do fundo |
 | Gradiente em fundos de cartão, texto, KPIs | Cor plana (o botão principal é a exceção definida na `ui-design-rules`) |
 | Ícone num quadrado colorido em cada cartão ou cada linha | Um ícone cinzento de 16px onde ajuda, ou nenhum |
 | Ponto de estado a pulsar ou `animate-ping` em avisos | Ponto estático; a urgência diz-se com a cor e a palavra |
