@@ -53,7 +53,7 @@ export default function BinthContextual({ page }) {
 
   return (
     <div 
-      className={`glass-card p-4 relative overflow-hidden group transition-all duration-500 ${isHighUrgency ? 'ring-2 ring-coral/20 bg-coral/5 dark:bg-coral/10 animate-pulse-slow' : ''}`} 
+      className={`glass-card p-4 relative overflow-hidden group transition-all duration-500 ${isHighUrgency ? 'ring-2 ring-coral/20 bg-coral/5 dark:bg-coral/10' : ''}`} 
       style={{ borderLeft: `3px solid ${borderColor}` }}
     >
       {/* Background Sparkle Effect */}
@@ -62,7 +62,7 @@ export default function BinthContextual({ page }) {
       </div>
 
       <div className="flex items-start gap-3 relative z-10">
-        <div className="w-10 h-10 rounded-full bg-linear-to-br from-gold to-yellow-600 flex items-center justify-center shrink-0 animate-pulse-slow">
+        <div className="w-10 h-10 rounded-full bg-linear-to-br from-gold to-yellow-600 flex items-center justify-center shrink-0">
           <span className="text-lg font-bold text-white">B</span>
         </div>
         

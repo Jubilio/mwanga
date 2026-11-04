@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useFinance } from '../hooks/useFinance';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Plus, Trash2, AlertTriangle, CheckCircle, PieChart, BookOpen } from 'lucide-react';
 import { fmt, calcCategoryBreakdown, getFinancialMonthKey } from '../utils/calculations';
 import { normalizeCategory, MAIN_CATEGORIES } from '../utils/categories';
 
@@ -72,7 +72,7 @@ export default function Budget() {
       {state.budgets.length === 0 ? (
         <div className="glass-card">
           <div className="empty-state">
-            <div className="icon">📊</div>
+            <div className="icon"><PieChart size={40} className="mx-auto" aria-hidden="true" /></div>
             <div className="title">{t('budget.empty_title')}</div>
             <div className="subtitle">{t('budget.empty_subtitle')}</div>
           </div>
@@ -80,7 +80,7 @@ export default function Budget() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div className="flex items-start gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-indigo-700 dark:border-indigo-700/30 dark:bg-indigo-900/10 dark:text-indigo-400">
-            <span className="text-base shrink-0">📖</span>
+            <BookOpen size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
             <div className="text-[12px] leading-relaxed">
               <span className="font-bold">{t('budget.bible_principle_title')}: </span>
               {t('budget.bible_principle_text')}
@@ -149,7 +149,7 @@ export default function Budget() {
 
                 {isOver && (
                   <div style={{ marginTop: '0.5rem', fontSize: '0.68rem', color: 'var(--color-coral)', display: 'flex', gap: 4, alignItems: 'flex-start', opacity: 0.9 }}>
-                    <span>📖</span>
+                    <BookOpen size={12} className="mt-0.5 shrink-0" aria-hidden="true" />
                     <em>{t('budget.over_principle')}</em>
                   </div>
                 )}

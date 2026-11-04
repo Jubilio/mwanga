@@ -1,5 +1,5 @@
 import { ui } from '../../utils/uiTranslation';
-import { ArrowUpRight, ArrowDownToLine, Pencil, Trash2 } from 'lucide-react';
+import { ArrowUpRight, ArrowDownToLine, Pencil, Trash2, ReceiptText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fmt } from '../../utils/calculations';
 import CategoryBadge from '../CategoryBadge';
@@ -16,7 +16,7 @@ export default function TransactionsList({
     <div className="flex flex-col gap-3">
       {filtered.length === 0 ? (
         <div className="glass-card p-16 text-center flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-4xl">📝</div>
+          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-400"><ReceiptText size={28} aria-hidden="true" /></div>
           <p className="font-bold text-slate-600 dark:text-slate-400">{t('transactions.empty')}</p>
         </div>
       ) : (
@@ -25,7 +25,8 @@ export default function TransactionsList({
             key={tr.id} 
             initial={{ opacity: 0, y: 10 }} 
             animate={{ opacity: 1, y: 0 }} 
-            transition={{ delay: idx * 0.03 }} 
+            // Only the first rows cascade: with 200 movements an uncapped delay kept the last ones hidden for 6s.
+            transition={{ delay: Math.min(idx, 8) * 0.03 }} 
             className="glass-card p-3 sm:p-4 flex items-center justify-between gap-2 sm:gap-3 group hover:bg-white/8 transition-all"
           >
             <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">

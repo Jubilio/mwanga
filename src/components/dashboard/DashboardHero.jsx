@@ -20,9 +20,9 @@ export default function DashboardHero({
   useUiLanguage();
   return (
     <motion.div variants={itemVariants} className="relative overflow-hidden rounded-[32px] bg-linear-to-br from-midnight via-[#12232e] to-midnight p-8 shadow-2xl">
-      {/* Animated Orbs for Depth */}
-      <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-ocean/10 blur-[100px] animate-pulse" />
-      <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-gold/5 blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+      {/* Soft light for depth. Static: a looping pulse behind the balance only distracts. */}
+      <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-ocean/10 blur-[100px]" />
+      <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-gold/5 blur-[100px]" />
 
       <div className="relative z-10 flex flex-col items-center">
         <div className="mb-4 flex items-center justify-center gap-2">
@@ -50,7 +50,7 @@ export default function DashboardHero({
             {showBalance ? (
               <>
                 <span className="text-4xl font-bold sm:text-5xl">{formattedBalance.integer}</span>
-                <span className="text-xl font-bold opacity-30 sm:text-2xl">,{formattedBalance.decimal}</span>
+                <span className="text-xl font-bold opacity-30 sm:text-2xl">{formattedBalance.separator || ','}{formattedBalance.decimal}</span>
                 <span className="ml-2 text-base font-bold text-gold-light tracking-widest sm:text-lg">{currency}</span>
               </>
             ) : (
@@ -59,6 +59,8 @@ export default function DashboardHero({
           </div>
           <button
             onClick={toggleBalance}
+            aria-label={showBalance ? t('dashboard.hide_balance') : t('dashboard.show_balance')}
+            aria-pressed={!showBalance}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 text-slate-600 dark:text-slate-400 backdrop-blur-md transition-all hover:bg-white/10 hover:text-white active:scale-90"
           >
             {showBalance ? <Eye size={18} /> : <EyeOff size={18} />}

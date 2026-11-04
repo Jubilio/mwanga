@@ -9,6 +9,10 @@ Seis regras que toda a interface do Mwanga segue. Vieram do checklist
 "Antes de entregar a sua próxima interface" (WCAG 2.2, Material 8dp, Apple HIG, NN/g).
 Aplica-as em código novo e corrige-as quando tocares num ecrã antigo.
 
+Para o resto (como compor um ecrã de app, estados vazios e de erro, qualidade de UX,
+movimento e `prefers-reduced-motion`) lê também a skill [`mwanga-design`](../mwanga-design/SKILL.md)
+e o [`DESIGN.md`](../../../DESIGN.md) na raiz. Se as duas skills discordarem, ganha esta.
+
 ## 1. Contraste mínimo 4.5:1
 
 - Texto normal: 4.5:1 ou mais. Títulos grandes (24px+, ou 18.66px+ bold): 3:1.

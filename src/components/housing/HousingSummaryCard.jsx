@@ -30,7 +30,7 @@ export default function HousingSummaryCard({ totalInvested, currency, type }) {
           
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-md border border-white/5">
-              <span className="w-2 h-2 rounded-full bg-leaf animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-leaf"></span>
               {t('housing.summary.status')}
             </div>
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-md border border-white/5">

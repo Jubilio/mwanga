@@ -4,7 +4,7 @@ import { useFinance } from '../hooks/useFinance';
 import { fmt, getMonthKey } from '../utils/calculations';
 import { getPaymentMethodLabel } from '../utils/paymentMethods';
 import { ui } from '../utils/uiTranslation';
-import { Plus, Trash2, CheckCircle2, AlertCircle, RefreshCcw, Wallet } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, AlertCircle, RefreshCcw, Wallet, Repeat } from 'lucide-react';
 
 export default function Xitique() {
   const { t } = useTranslation();
@@ -154,7 +154,7 @@ export default function Xitique() {
 
       {state.xitiques.length === 0 ? (
         <div className="glass-card" style={{ padding: '3rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔁</div>
+          <Repeat size={40} className="mx-auto mb-4 text-slate-600 dark:text-slate-400" aria-hidden="true" />
           <h3>{t('xitique.empty.title')}</h3>
           <p style={{ color: 'var(--color-muted)' }}>{t('xitique.empty.subtitle')}</p>
         </div>

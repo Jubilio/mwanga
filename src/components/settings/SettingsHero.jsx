@@ -26,7 +26,7 @@ export default function SettingsHero({
       <div className="h-auto py-10 md:py-0 md:h-72 rounded-3xl md:rounded-[3.5rem] bg-midnight relative overflow-hidden shadow-[0_40px_80px_-20px_rgba(10,25,38,0.5)] border border-white/5">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 bg-linear-to-br from-ocean/40 via-transparent to-indigo-900/40" />
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px]" />
         <div className="absolute top-1/2 -right-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-[100px]" />
 
         <div className="relative px-6 md:px-12 z-10 h-full flex items-center">

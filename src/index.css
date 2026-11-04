@@ -274,6 +274,20 @@ textarea {
 }
 
 /* ═══ Animations ═══ */
+/* Less motion when the system asks for it. Animations end at once on their final frame,
+   so nothing that fades in stays invisible. Framer Motion, GSAP and Lenis are handled in
+   main.jsx, useMwangaAnimations.js and App.jsx. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;

@@ -427,7 +427,7 @@ export default function Layout() {
         className="fixed bottom-[calc(6.5rem+var(--sab))] right-4 z-49 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/20 bg-ocean/90 text-white shadow-xl shadow-ocean/30 backdrop-blur-md transition-all hover:scale-110 hover:bg-ocean active:scale-95 dark:border-white/10 dark:bg-aurora/90 dark:shadow-aurora/20 md:bottom-8 md:right-8"
         title={ui("Enviar Feedback ou Reportar Erro")}
       >
-        <MessageSquare size={20} className="animate-pulse" />
+        <MessageSquare size={20} />
       </button>
     </div>
   );

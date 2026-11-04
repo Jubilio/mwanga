@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { fmt } from '../utils/calculations';
 import { motion } from 'framer-motion';
+import { TrendingUp } from 'lucide-react';
 
 export default function BalanceTrendChart({ data, currency }) {
   useUiLanguage();
@@ -12,7 +13,7 @@ export default function BalanceTrendChart({ data, currency }) {
   if (!data || data.length === 0) {
     return (
       <div className="glass-card p-6 flex flex-col items-center justify-center min-h-[200px] text-center">
-        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-xl mb-3">📈</div>
+        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mb-3 text-slate-600 dark:text-slate-400"><TrendingUp size={20} aria-hidden="true" /></div>
         <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">{t('dashboard.charts.trend_empty') || ui("Tendência não disponível")}</p>
       </div>
     );

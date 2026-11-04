@@ -145,7 +145,7 @@ export default function NotificationPanel({
                         {ui(displayTitle)}
                       </div>
                     </div>
-                    {!notification.read && <div className="h-2 w-2 shrink-0 rounded-full bg-ocean animate-pulse dark:bg-aurora" />}
+                    {!notification.read && <div className="h-2 w-2 shrink-0 rounded-full bg-ocean dark:bg-aurora" />}
                   </div>
 
                   <p className="pr-4 text-sm leading-6 text-gray-700 dark:text-gray-200">{ui(displayMessage)}</p>

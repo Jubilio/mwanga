@@ -37,7 +37,7 @@ export default function FinancialCoachCard({ coach, loading, error, onRefresh })
       <div className="relative flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
-            <Sparkles size={14} className="animate-pulse" />
+            <Sparkles size={14} />
           </div>
           <span className="text-[10px] font-bold tracking-[0.25em] text-indigo-300 uppercase">Binth Intelligence</span>
         </div>

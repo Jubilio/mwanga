@@ -74,6 +74,9 @@ export function useStewardship() {
   // Achievement Detection Logic
   useEffect(() => {
     const checkAchievements = async () => {
+      // A new account has no debts, so "integrity" scored 100 and confetti fired on an empty
+      // dashboard. Badges are earned from real records only.
+      if (!state.transacoes?.length) return;
       const activeBadges = badges.filter(b => b.active).map(b => b.id);
       const storedBadges = JSON.parse(localStorage.getItem('mwanga-unlocked-badges') || '[]');
 
@@ -86,6 +89,7 @@ export function useStewardship() {
             particleCount: 150,
             spread: 70,
             origin: { y: 0.6 },
+            disableForReducedMotion: true,
             colors: ['#7C3AED', '#4F46E5', '#C9963A', '#00D68F']
           });
         } catch (confettiErr) {
@@ -111,7 +115,7 @@ export function useStewardship() {
     if (state.user?.id) {
         checkAchievements();
     }
-  }, [badges, state.user?.id]);
+  }, [badges, state.user?.id, state.transacoes?.length]);
 
   return { stats, badges };
 }
