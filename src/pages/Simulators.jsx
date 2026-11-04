@@ -31,7 +31,7 @@ function TabButton({ active, icon, label, onClick }) {
       ref={ref}
       onClick={onClick}
       style={{
-        flex: 1,
+        flex: '1 0 auto', // grow to fill, never shrink below the label (the 44px touch min-width disables flex's auto minimum)
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
