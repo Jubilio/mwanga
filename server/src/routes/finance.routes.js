@@ -17,11 +17,30 @@ const { idempotency } = require('../middleware/idempotency.middleware');
 const vslaRoutes = require('./vsla.routes');
 
 const realityReview = require('../controllers/realityReview.controller');
+const advisorCtl = require('../controllers/advisor.controller');
 const router = express.Router();
 
 router.use((req, res, next) => auth.authenticate(req, res, next));
 // Writes that carry an Idempotency-Key are saved at most once.
 router.use(idempotency());
+
+// Binth as an advisor (alerts, plans, memory, reminders)
+router.get('/advisor/today', advisorCtl.today);
+router.get('/advisor/plan', advisorCtl.plan);
+router.get('/advisor/weekly', advisorCtl.weekly);
+router.get('/advisor/month-close', advisorCtl.monthClose);
+router.get('/advisor/settings', advisorCtl.getSettings);
+router.put('/advisor/settings', advisorCtl.updateSettings);
+router.get('/advisor/memory', advisorCtl.listMemory);
+router.post('/advisor/memory', advisorCtl.addMemory);
+router.delete('/advisor/memory', advisorCtl.clearMemory);
+router.delete('/advisor/memory/:id', advisorCtl.deleteMemory);
+router.get('/advisor/plans', advisorCtl.listPlans);
+router.post('/advisor/plans', advisorCtl.createPlan);
+router.delete('/advisor/plans/:id', advisorCtl.archivePlan);
+router.get('/advisor/reminders', advisorCtl.listReminders);
+router.post('/advisor/reminders', advisorCtl.createReminder);
+router.delete('/advisor/reminders/:id', advisorCtl.deleteReminder);
 
 router.get('/reality-review', realityReview.get);
 router.post('/reality-review/visit', realityReview.visit);

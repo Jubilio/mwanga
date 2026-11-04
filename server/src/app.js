@@ -27,6 +27,7 @@ const { initSecureFilesSchema } = require('./services/secureFiles.service');
 const { initCreditSchema } = require('./services/credit.service');
 const { initIdempotencySchema } = require('./middleware/idempotency.middleware');
 const { initBinthQuotaSchema } = require('./services/binthQuota');
+const { initAdvisorSchema } = require('./services/advisor/advisor.service');
 const logger = require('./utils/logger');
 
 const app = express();
@@ -41,6 +42,7 @@ initSecureFilesSchema();
 initCreditSchema();
 initIdempotencySchema();
 initBinthQuotaSchema();
+initAdvisorSchema();
 
 app.set('trust proxy', 1);
 

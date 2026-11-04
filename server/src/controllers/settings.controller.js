@@ -18,7 +18,7 @@ const updateHouseholdSchema = z.object({
 
 // Plan and trial state are only changed by the server (startTrial) or an admin, never by the client.
 const BILLING_KEYS = ['subscription_tier', 'subscription_expires_at', 'trial_ends_at'];
-const isReservedSettingKey = (key) => key.startsWith('ai_') || key.startsWith('rr_') || BILLING_KEYS.includes(key) || isMemberPhotoKey(key);
+const isReservedSettingKey = (key) => key.startsWith('ai_') || key.startsWith('advisor_') || key.startsWith('rr_') || BILLING_KEYS.includes(key) || isMemberPhotoKey(key);
 
 const TRIAL_DAYS = 14;
 const TRIAL_MIN_ACCOUNT_AGE_DAYS = 30;

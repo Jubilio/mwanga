@@ -6,6 +6,7 @@ const { checkRedis } = require('./config/redis');
 const logger = require('./utils/logger');
 const { startNotificationEventEngine } = require('./services/notificationEventEngine.service');
 const { startNotificationScheduler } = require('./services/notificationScheduler.service');
+const { startAdvisorScheduler } = require('./services/advisor/advisorSweep');
 const { resumePendingCampaigns } = require('./services/emailCampaign.service');
 
 const PORT = process.env.PORT || 3001;
@@ -26,6 +27,7 @@ async function startServer() {
 
     startNotificationEventEngine();
     startNotificationScheduler();
+    startAdvisorScheduler();
     // Campanhas de email interrompidas por um reinício continuam de onde pararam.
     setTimeout(resumePendingCampaigns, 10_000);
 
