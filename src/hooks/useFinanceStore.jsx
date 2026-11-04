@@ -206,6 +206,12 @@ function reducer(state, action) {
       }
       return { ...state, budgets: [...state.budgets, action.payload] };
     }
+    // Budgets the server already saved (e.g. from a confirmed Binth monthly plan).
+    case 'MERGE_BUDGETS': {
+      const byCat = new Map(state.budgets.map(b => [b.category, b]));
+      for (const b of action.payload || []) byCat.set(b.category, { ...(byCat.get(b.category) || {}), ...b });
+      return { ...state, budgets: [...byCat.values()] };
+    }
     case 'DELETE_BUDGET': return { ...state, budgets: state.budgets.filter(b => b.id !== action.payload && b.category !== action.meta?.category) };
     case 'UPDATE_SETTING': return { ...state, settings: { ...state.settings, [action.payload.key]: action.payload.value } };
     case 'JOURNEY_SAVED': return { ...state, settings: { ...state.settings, [JOURNEY_SETTING_KEY]: action.payload } };
@@ -329,6 +335,24 @@ export function FinanceProvider({ children }) {
             const r = await apiCall('rentals');
             dispatch({ type: 'SET_DATA', payload: { rendas: r.map(mapRental) } });
           },
+        });
+      }
+      case 'ADD_META': {
+        // Goals used to be kept only on this device; they are now saved on the server.
+        const body = {
+          name: String(payload.nome || '').trim(),
+          targetAmount: Number(payload.alvo) || 0,
+          savedAmount: Number(payload.poupado) || 0,
+          ...(payload.prazo ? { deadline: String(payload.prazo).slice(0, 10) } : {}),
+          ...(payload.cat ? { category: String(payload.cat).slice(0, 50) } : {}),
+          monthlySaving: Number(payload.mensal) || 0,
+        };
+        return persistWrite(body, {
+          refresh: async () => {
+            const g = await apiCall('goals');
+            dispatch({ type: 'SET_DATA', payload: { metas: g.map(mapGoal) } });
+          },
+          offline: () => db.metas.add(mapGoal({ id: `offline-${Date.now()}`, name: body.name, target_amount: body.targetAmount, saved_amount: body.savedAmount, deadline: body.deadline, category: body.category, monthly_saving: body.monthlySaving })),
         });
       }
       case 'UPDATE_META': {

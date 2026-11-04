@@ -29,6 +29,7 @@ export function describeRequest(type, payload) {
     case 'UPDATE_TRANSACTION': return { endpoint: `transactions/${payload.id}`, method: 'PUT', body: payload };
     case 'DELETE_TRANSACTION': return { endpoint: `transactions/${payload}`, method: 'DELETE' };
     case 'ADD_RENDA': return { endpoint: 'rentals', method: 'POST', body: payload };
+    case 'ADD_META': return { endpoint: 'goals', method: 'POST', body: payload };
     case 'UPDATE_META': {
       const { id, ...body } = payload;
       return { endpoint: `goals/${id}`, method: 'PUT', body };
@@ -60,7 +61,7 @@ export function describeRequest(type, payload) {
 }
 
 export const QUEUEABLE_TYPES = [
-  'ADD_TRANSACTION', 'UPDATE_TRANSACTION', 'DELETE_TRANSACTION', 'ADD_RENDA', 'UPDATE_META',
+  'ADD_TRANSACTION', 'UPDATE_TRANSACTION', 'DELETE_TRANSACTION', 'ADD_RENDA', 'ADD_META', 'UPDATE_META',
   'ADD_DEBT', 'UPDATE_DEBT', 'PAY_DEBT', 'ADD_XITIQUE', 'DELETE_XITIQUE', 'PAY_XITIQUE', 'RECEIVE_XITIQUE',
 ];
 
