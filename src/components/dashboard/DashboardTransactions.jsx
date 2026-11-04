@@ -1,5 +1,5 @@
 import { ui, useUiLanguage } from '../../utils/uiTranslation';
-import { ArrowDownToLine, ArrowUpRight } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpRight, ReceiptText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fmt } from '../../utils/calculations';
 
@@ -35,7 +35,7 @@ export default function DashboardTransactions({ latestTransactions, navigate, sh
 
         {latestTransactions.length === 0 && (
           <div className="py-12 text-center">
-             <span className="text-3xl opacity-20">📝</span>
+             <ReceiptText size={28} className="mx-auto text-slate-600 dark:text-slate-400" aria-hidden="true" />
              <p className="mt-2 text-xs font-bold text-slate-600 dark:text-slate-400">{ui("Sem registos recentes")}</p>
           </div>
         )}

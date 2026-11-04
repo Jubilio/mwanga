@@ -414,7 +414,6 @@ export default function Dividas() {
                       <div className="font-bold">{debt.creditor_name}</div>
                       {isToxic && (
                         <span className="flex h-2 w-2 relative" title={ui("Dívida Tóxica (Juros muito altos)")}>
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                         </span>
                       )}
@@ -436,7 +435,7 @@ export default function Dividas() {
                     <div className="flex flex-col justify-center">
                       <span>{showBalance ? fmt(getDynamicRemainingAmount(debt), currency) : '••••'}</span>
                       {getElapsedMonths(debt.due_date || debt.created_at) > 0 && getMonthlyRate(debt) > 0 && debt.status !== 'paid' && (
-                        <span className="text-[9px] text-red-500 uppercase tracking-wider font-bold animate-pulse"> {ui("+ Juros Compostos")} </span>
+                        <span className="text-[9px] text-red-500 uppercase tracking-wider font-bold"> {ui("+ Juros Compostos")} </span>
                       )}
                     </div>
                   </td>
@@ -615,7 +614,7 @@ export default function Dividas() {
                           {elapsed > 0 && mRate > 0.05 && (
                             <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-800 dark:text-red-200 text-xs space-y-2 mb-4">
                               <div className="flex items-center gap-2 font-bold text-red-600 dark:text-red-400">
-                                <span className="animate-pulse flex h-2.5 w-2.5 rounded-full bg-red-500"></span> {ui("ALERTA DE ANÁLISE DE MORA: Dívida Tóxica em Acumulação!")} </div>
+                                <span className="flex h-2.5 w-2.5 rounded-full bg-red-500"></span> {ui("ALERTA DE ANÁLISE DE MORA: Dívida Tóxica em Acumulação!")} </div>
                               <p className="leading-relaxed"> {ui("Esta dívida foi contraída em")} <strong className="text-black dark:text-white">{ui("Março/Início")}</strong> {ui("(há")} <strong>{elapsed} {ui("meses decorridos")}</strong>{ui(") e possui uma taxa de juro severa de")} <strong className="text-black dark:text-white">{(mRate * 100).toFixed(0)}{ui("% ao mês")}</strong>{ui(". Como não foram registados pagamentos suficientes, acumulou um montante significativo de juros de mora.")} </p>
                               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                                 <div className="p-3 rounded-lg bg-black/5 dark:bg-black/35">

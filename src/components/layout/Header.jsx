@@ -51,8 +51,7 @@ export default function Header({
           <Bell size={20} strokeWidth={2} />
           {unreadCount > 0 && (
             <span className="absolute right-2.5 top-2.5 flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-coral opacity-75"></span>
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-coral shadow-[0_0_8px_rgba(224,122,95,0.6)]"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-coral"></span>
             </span>
           )}
         </button>

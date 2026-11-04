@@ -56,7 +56,7 @@ export function AlertsCard({ navigate, totalAlerts, pendingDebts, pendingHousing
     >
       <div className="flex items-center justify-between">
          <div className="flex items-center gap-3">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${totalAlerts > 0 ? 'bg-coral/10 text-coral animate-pulse' : 'bg-leaf/10 text-leaf'}`}>
+            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${totalAlerts > 0 ? 'bg-coral/10 text-coral' : 'bg-leaf/10 text-leaf'}`}>
               <Bell size={20} />
             </div>
             <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400">{ui("Alertas & Pendentes")}</span>

@@ -108,11 +108,15 @@ export default function Dashboard() {
   ];
 
   const formattedBalance = useMemo(() => {
-    const raw = fmt(realBalance, '');
-    const [intPart, ...decParts] = raw.split(',');
+    // fmt() writes "1.234,56" in Portuguese and "1,234.56" in English. Splitting on a fixed
+    // comma showed "0.00,00" and "1,234.56,00" in English.
+    const raw = fmt(realBalance, '').trim();
+    const separator = uiLocale().startsWith('en') ? '.' : ',';
+    const cut = raw.lastIndexOf(separator);
     return {
-      integer: intPart || '0',
-      decimal: decParts.join(',') || '00',
+      integer: (cut >= 0 ? raw.slice(0, cut) : raw) || '0',
+      decimal: (cut >= 0 ? raw.slice(cut + 1) : '') || '00',
+      separator,
     };
   }, [realBalance]);
 

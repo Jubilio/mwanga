@@ -7,6 +7,7 @@ import Layout from './components/Layout';
 import { useFinance } from './hooks/useFinance';
 import ErrorBoundary from './components/ErrorBoundary';
 import Lenis from 'lenis';
+import { prefersReducedMotion } from './utils/motion';
 import { MwangaTooltipProvider } from './components/ui/MwangaTooltip';
 import { Capacitor } from '@capacitor/core';
 import { LEGACY_REDIRECTS } from './config/navigation';
@@ -125,6 +126,8 @@ export default function App() {
   useUiLanguage();
   // ── Lenis: Scroll suave global para toda a aplicação ──────────────────────
   useEffect(() => {
+    // Smooth scrolling is motion too: keep the native scroll when less motion is asked for.
+    if (prefersReducedMotion()) return undefined;
     const lenis = new Lenis({
       duration: 1.1,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

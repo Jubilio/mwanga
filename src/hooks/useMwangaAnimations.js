@@ -20,6 +20,7 @@ import { uiLocale } from '../utils/uiTranslation';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { prefersReducedMotion } from '../utils/motion';
 
 gsap.registerPlugin(useGSAP);
 
@@ -32,6 +33,8 @@ export function useMwangaAnimations() {
    * @param {Object} options - Opções adicionais de animação.
    */
   const animateIn = (selector, options = {}) => {
+    // GSAP ignores the system setting; without this the content still slides in.
+    if (prefersReducedMotion()) return;
     const elements = document.querySelectorAll(selector);
     if (!elements.length) return;
 
@@ -53,6 +56,8 @@ export function useMwangaAnimations() {
    * @param {string} selector - Seletor CSS dos cartões (ex: '.metric-card').
    */
   const animateCards = (selector) => {
+    // GSAP ignores the system setting; without this the content still slides in.
+    if (prefersReducedMotion()) return;
     const cards = document.querySelectorAll(selector);
     if (!cards.length) return;
 
@@ -82,6 +87,10 @@ export function useMwangaAnimations() {
    */
   const animateCounter = (ref, from, to, duration = 1.5, formatter = null) => {
     if (!ref?.current) return;
+    if (prefersReducedMotion()) {
+      ref.current.textContent = formatter ? formatter(Math.round(to)) : Math.round(to).toLocaleString(uiLocale());
+      return;
+    }
 
     const obj = { val: from };
     gsap.to(obj, {
@@ -106,6 +115,7 @@ export function useMwangaAnimations() {
    * @param {string} selector - Seletor CSS do elemento de alerta.
    */
   const animatePulse = (selector) => {
+    if (prefersReducedMotion()) return;
     gsap.to(selector, {
       scale: 1.03,
       duration: 0.5,
@@ -123,6 +133,7 @@ export function useMwangaAnimations() {
    * @param {string} selector - Seletor CSS da bolha de chat.
    */
   const animateBinthMessage = (selector) => {
+    if (prefersReducedMotion()) return;
     gsap.from(selector, {
       y: 20,
       opacity: 0,

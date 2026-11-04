@@ -159,7 +159,7 @@ export default function TabPreferences({
             ) : null}
             {!isSupported ? <p role="status" className="mb-4 text-sm">{t('settings.reliable.push_unsupported')}</p> : null}
             {permission === 'denied' && (
-              <div className="mb-8 flex items-start gap-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 p-6 text-white animate-pulse-slow">
+              <div className="mb-8 flex items-start gap-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 p-6 text-white">
                 <div className="shrink-0 p-3 rounded-xl bg-amber-500/20 text-amber-300">
                   <AlertTriangle size={20} />
                 </div>

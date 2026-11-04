@@ -10,6 +10,7 @@ import * as Sentry from '@sentry/react'
 import { Capacitor } from '@capacitor/core'
 import { loadToken } from './utils/authToken'
 import { scheduleSplashFallback } from './utils/splash'
+import { MotionConfig } from 'framer-motion'
 
 // ── Sentry: Monitorização de erros em tempo real ───────────────────────────
 // Activo apenas em produção para evitar ruído em desenvolvimento.
@@ -70,7 +71,11 @@ function renderApp() {
         }
       >
         <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-          <App />
+          {/* reducedMotion="user": with the system's reduce-motion setting on, Framer Motion
+              skips movement and keeps only fades. */}
+          <MotionConfig reducedMotion="user">
+            <App />
+          </MotionConfig>
         </GoogleOAuthProvider>
       </Sentry.ErrorBoundary>
     </StrictMode>,
