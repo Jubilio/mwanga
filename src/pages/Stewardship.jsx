@@ -487,28 +487,31 @@ export default function Stewardship() {
           >
             {/* ─── FP&A SUB-NAVIGATION & SELECTOR ─── */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-2">
-              <div className="flex gap-2 overflow-x-auto w-full sm:w-auto">
-                <button
-                  onClick={() => setFpaSubTab('dre')}
-                  className={`px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all duration-300 flex items-center gap-2 ${
-                    fpaSubTab === 'dre' ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <BarChart3 size={14} /> {ui("Demonstração de Resultados (DRE)")} </button>
-                <button
-                  onClick={() => setFpaSubTab('cashflow')}
-                  className={`px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all duration-300 flex items-center gap-2 ${
-                    fpaSubTab === 'cashflow' ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <Scale size={14} /> {ui("Fluxo de Caixa (Inflows vs Outflows)")} </button>
-                <button
-                  onClick={() => setFpaSubTab('pyramid')}
-                  className={`px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all duration-300 flex items-center gap-2 ${
-                    fpaSubTab === 'pyramid' ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <Layers size={14} /> {ui("Pirâmide de Relatório Financeiro")} </button>
+              {/* Three equal tabs that always fit the phone width. The global 44px min-width on
+                  buttons removes flex's auto minimum, so nowrap labels in a scrolling row used to
+                  shrink and draw over each other. Short visible labels, full name for screen readers. */}
+              <div role="tablist" aria-label={ui("Painel FP&A")} className="flex w-full gap-2 sm:w-auto">
+                {[
+                  { id: 'dre', icon: BarChart3, short: "DRE", full: "Demonstração de Resultados (DRE)" },
+                  { id: 'cashflow', icon: Scale, short: "Fluxo de Caixa", full: "Fluxo de Caixa (Inflows vs Outflows)" },
+                  { id: 'pyramid', icon: Layers, short: "Pirâmide", full: "Pirâmide de Relatório Financeiro" },
+                ].map(({ id, icon: Icon, short, full }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={fpaSubTab === id}
+                    aria-label={ui(full)}
+                    title={ui(full)}
+                    onClick={() => setFpaSubTab(id)}
+                    className={`flex min-h-12 min-w-0 flex-1 basis-0 items-center justify-center gap-2 rounded-xl px-2 py-2 text-center text-xs font-bold leading-tight transition-colors duration-300 sm:flex-none sm:basis-auto sm:px-4 ${
+                      fpaSubTab === id ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Icon size={14} className="shrink-0" aria-hidden="true" />
+                    <span>{ui(short)}</span>
+                  </button>
+                ))}
               </div>
 
               {/* DYNAMIC MONTH SELECTOR */}
