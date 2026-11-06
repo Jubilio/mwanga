@@ -419,6 +419,7 @@ GEMINI_MODEL=...                       # Modelo Gemini directo (default: gemini-
 GROQ_MODEL=...                         # Modelo Groq (default: llama-3.1-8b-instant)
 GEMINI_FALLBACK_MODEL=...              # Modelo Gemini se o principal estiver sobrecarregado (default: gemini-2.0-flash)
 BINTH_FREE_DAILY_LIMIT=20              # Respostas/dia com as chaves do Mwanga no plano grátis (contador no Redis, senão na tabela binth_daily_usage; se não contar, recusa)
+AI_MONTHLY_BUDGET_USD=20               # Tecto mensal das chaves do Mwanga (email aos admins a 80 %, pára a 100 %). Custos e qualidade: GET /api/admin/ai-metrics, tabela ai_calls
 # Binth: prazo absoluto de 25 s por resposta (a chave pessoal usa no máximo os primeiros 12 s).
 # Escritas financeiras: o app envia Idempotency-Key; o servidor guarda em idempotency_keys (14 dias)
 # e responde igual a um pedido repetido, sem gravar duas vezes.
