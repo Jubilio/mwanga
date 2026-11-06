@@ -39,7 +39,8 @@ class WhatsAppService {
       const binthResponse = await callBinth({
         messages: [{ role: 'user', content: text }],
         householdId: user.household_id,
-        userId: user.id
+        userId: user.id,
+        feature: 'whatsapp'
       });
 
       // 3. Format response for WhatsApp

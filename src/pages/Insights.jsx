@@ -107,6 +107,11 @@ export default function Insights() {
         setActionBusy(null);
       }
     }
+    // Quality signal for Binth: was the proposal right? (ids only, no content)
+    if (msg.call_id) {
+      const outcome = status === null ? 'failed' : (status === 'cancelled' ? 'cancelled' : 'confirmed');
+      api.post(`/binth/calls/${msg.call_id}/outcome`, { outcome }).catch(() => {});
+    }
     if (!status) return;
     setMessages(prev => prev.map(m => (m === msg ? { ...m, action_status: status } : m)));
     if (msg.timestamp) db.mensagens.where('timestamp').equals(msg.timestamp).modify({ action_status: status }).catch(() => {});

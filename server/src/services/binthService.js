@@ -7,6 +7,8 @@ const advisorService = require('./advisor/advisor.service');
 const { getNotificationReadValue } = require('./notificationRead.service');
 const logger = require('../utils/logger');
 const { proposalResponse, detectQuickTransaction } = require('./binthActions');
+const aiTelemetry = require('./aiTelemetry');
+const { isOverBudget } = require('./aiBudget');
 const { checkDailyAiQuota } = require('./binthQuota');
 const { maskFreeText, maskLabel, maskDeep } = require('../utils/privacyMask');
 
@@ -578,6 +580,15 @@ function openRouterPaidModel() {
   const configured = String(process.env.OPENROUTER_MODEL || '').trim();
   return configured && !configured.endsWith(':free') ? configured : 'google/gemini-2.5-flash';
 }
+// The model each provider is asked for, used when the response does not say.
+function configuredModel(p, opts = {}) {
+  if (p === 'gemini') return geminiModel(opts);
+  if (p === 'groq') return process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
+  if (p === 'openrouter') return openRouterPaidModel();
+  if (p === 'openrouter_free') return 'openrouter/free';
+  if (p === 'ollama') return process.env.OLLAMA_MODEL || 'gemma4';
+  return null;
+}
 function openRouterFreeModels() {
   const configured = String(process.env.OPENROUTER_FREE_MODEL || '').trim();
   return [...new Set([configured, 'openrouter/free'].filter(Boolean))];
@@ -1101,23 +1112,24 @@ function timeLeft(deadline) {
   return left;
 }
 
-async function callProvider(p, activeKey, messages, activeSystem, householdId, summary, deadline = Date.now() + TOTAL_BUDGET_MS, language = 'pt') {
+async function callProvider(p, activeKey, messages, activeSystem, householdId, summary, deadline = Date.now() + TOTAL_BUDGET_MS, language = 'pt', trace = null) {
   const config = PROVIDERS[p];
+  const track = (data, o) => { aiTelemetry.addUsage(trace, p, data, configuredModel(p, o)); return data; };
   const tools = ToolRegistry.getToolsSchema();
   const left = () => timeLeft(deadline);
   let data;
   let opts = {};
   try {
-    data = await postProvider(config, activeKey, config.body(messages, activeSystem, tools, opts), left(), opts);
+    data = track(await postProvider(config, activeKey, config.body(messages, activeSystem, tools, opts), left(), opts), opts);
   } catch (err) {
     if (p === 'gemini' && [429, 500, 503].includes(err.status) && err.kind !== 'no_credits' && geminiModel() !== GEMINI_FALLBACK_MODEL) {
       // Gemini "high demand": try the lighter model once.
       logger.warn({ provider: p, status: err.status, fallback: GEMINI_FALLBACK_MODEL }, 'Binth Gemini busy; retrying with fallback model');
       opts = { model: GEMINI_FALLBACK_MODEL };
-      data = await postProvider(config, activeKey, config.body(messages, activeSystem, tools, opts), left(), opts);
+      data = track(await postProvider(config, activeKey, config.body(messages, activeSystem, tools, opts), left(), opts), opts);
     } else if (tools.length > 0 && rejectsTools(err)) {
       logger.warn({ provider: p, status: err.status, detail: maskFreeText(err.detail) }, 'Binth provider rejected tools; retrying without tools');
-      data = await postProvider(config, activeKey, config.body(messages, activeSystem, [], opts), left(), opts);
+      data = track(await postProvider(config, activeKey, config.body(messages, activeSystem, [], opts), left(), opts), opts);
     } else {
       throw err;
     }
@@ -1126,10 +1138,14 @@ async function callProvider(p, activeKey, messages, activeSystem, householdId, s
   const toolCall = config.extractToolCall(data);
   if (toolCall) {
     logger.info({ tool: toolCall.name }, 'Binth AI requested tool call');
+    if (trace) trace.tool = toolCall.name;
     // The household always comes from the session, never from the model.
     const toolResult = await ToolRegistry.executeTool(toolCall.name, { ...toolCall.args, householdId });
     // A ready proposal goes straight to the confirmation card: no second AI call.
-    if (toolResult?.proposal) return proposalResponse(toolResult.proposal, language);
+    if (toolResult?.proposal) {
+      if (trace) trace.proposalAction = toolResult.proposal.action;
+      return proposalResponse(toolResult.proposal, language);
+    }
     // Hand the result back inside the last user turn: this works the same way on
     // every provider, without provider-specific tool-result message formats.
     const last = messages[messages.length - 1];
@@ -1140,7 +1156,7 @@ async function callProvider(p, activeKey, messages, activeSystem, householdId, s
         content: `${last?.content || ''}\n\n[Dados calculados pelo Mwanga (${toolCall.name}): ${JSON.stringify(maskDeep(toolResult.data))}]\nResponde à pergunta acima com base nestes dados, no formato JSON pedido.`,
       },
     ];
-    const data2 = await postProvider(config, activeKey, config.body(nextMessages, activeSystem, [], opts), left(), opts);
+    const data2 = track(await postProvider(config, activeKey, config.body(nextMessages, activeSystem, [], opts), left(), opts), opts);
     const raw2 = config.extract(data2) || '';
     if (!raw2.trim()) throw providerError(0, '', 'unavailable');
     return parseBinthResponse(raw2, summary);
@@ -1149,8 +1165,14 @@ async function callProvider(p, activeKey, messages, activeSystem, householdId, s
   return parseBinthResponse(raw, summary);
 }
 
-async function callBinth({ messages, apiKey, provider = 'gemini', householdId, userId, language = 'pt', countTowardsQuota = false }) {
+async function callBinth({ messages, apiKey, provider = 'gemini', householdId, userId, language = 'pt', countTowardsQuota = false, feature = 'chat' }) {
   const startedAt = Date.now();
+  const trace = aiTelemetry.createTrace(feature);
+  // Every answer carries call_id, so the app can report Confirmar/Cancelar.
+  const finish = (response, outcome) => {
+    aiTelemetry.recordAiCall(trace, { userId, householdId, outcome });
+    return { ...response, call_id: trace.id };
+  };
   const deadline = startedAt + TOTAL_BUDGET_MS;
   let personal = null;
   try { personal = await aiSettings.credentials(householdId, userId); }
@@ -1191,6 +1213,7 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
   // and paid plans are not limited. Page insights are cached and not counted.
   // Counted only when the answer would come from Mwanga's keys.
   let quota = null;
+  let overBudget = null;
   for (const attempt of attempts) {
     const { p, key } = attempt;
     if (p !== 'ollama' && !key) continue;
@@ -1209,15 +1232,24 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
     }
     if (!attempt.personal && quota && !quota.allowed) continue;
     if (!attempt.personal && p !== 'ollama' && await isProviderTemporarilyDisabled(p)) continue;
+    // Monthly ceiling on Mwanga's own keys (AI_MONTHLY_BUDGET_USD).
+    if (!attempt.personal && p !== 'ollama') {
+      if (overBudget === null) overBudget = await isOverBudget().catch(() => false);
+      if (overBudget) { if (!trace.errors.includes('budget')) trace.errors.push('budget'); continue; }
+    }
+    trace.attempts += 1;
     const activeSystem = p === 'ollama'
       ? OLLAMA_SYSTEM_PROMPT.replace('{user_context}', userContext.textMinimized) + languageInstruction
       : system;
     try {
-      const response = await callProvider(p, key, providerMessages, activeSystem, householdId, userContext.summary, attemptDeadline, language);
+      const response = await callProvider(p, key, providerMessages, activeSystem, householdId, userContext.summary, attemptDeadline, language, trace);
       if (personalIssue && !attempt.personal) response.data = { ...response.data, ai_notice: `personal_${personalIssue}`, ai_detail: personalDetail };
-      return withFreshness(response, userContext.summary, language, isFirstTurn);
+      trace.provider = p;
+      trace.keyOwner = attempt.personal ? 'personal' : (p === 'ollama' ? 'local' : 'mwanga');
+      return finish(withFreshness(response, userContext.summary, language, isFirstTurn), 'ok');
     } catch (err) {
       const kind = err.kind || 'unavailable';
+      trace.errors.push(`${p}:${kind}`);
       if (attempt.personal) {
         // Keep the most actionable reason across the paid and free attempts.
         if (!personalIssue || personalIssue === 'unavailable' || kind === 'no_credits') personalIssue = kind;
@@ -1252,7 +1284,11 @@ async function callBinth({ messages, apiKey, provider = 'gemini', householdId, u
       ...(quota && !quota.allowed && !quota.unavailable ? { daily_limit: quota.limit } : {}),
     },
   };
-  return withFreshness(fallback, userContext.summary, language, isFirstTurn);
+  trace.provider = 'local';
+  trace.keyOwner = 'local';
+  trace.model = null;
+  if (quick) trace.proposalAction = quick.action;
+  return finish(withFreshness(fallback, userContext.summary, language, isFirstTurn), 'fallback');
 }
 
 // The "data needs confirmation" notice is shown once per conversation, not on every reply.

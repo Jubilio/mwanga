@@ -10,7 +10,7 @@ const { getSettings, upsertSetting, updateHousehold, startTrial } = require('../
 const { getOverview: getInsights } = require('../controllers/insights.controller');
 const { getDebts, addDebt, deleteDebt, addPayment, updateDebt } = require('../controllers/debt.controller');
 const { getAccounts, addAccount, updateAccountBalance, deleteAccount } = require('../controllers/account.controller');
-const { chat: binthChat, getScore: binthScore, getPageInsight, getPriority } = require('../controllers/binth.controller');
+const { chat: binthChat, getScore: binthScore, getPageInsight, getPriority, proposalOutcome } = require('../controllers/binth.controller');
 const { getDashboardSummary } = require('../controllers/dashboard.controller');
 const auth = require('../middleware/auth.middleware');
 const { idempotency } = require('../middleware/idempotency.middleware');
@@ -124,5 +124,6 @@ router.post('/binth/chat', binthChat);
 router.get('/binth/score', binthScore);
 router.get('/binth/insights/:page', getPageInsight);
 router.get('/binth/priority', getPriority);
+router.post('/binth/calls/:id/outcome', proposalOutcome);
 
 module.exports = router;

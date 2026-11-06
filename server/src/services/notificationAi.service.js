@@ -148,6 +148,7 @@ async function generatePersonalizedNotification({
       householdId,
       userId,
       provider: process.env.NOTIFICATION_AI_PROVIDER || 'gemini',
+      feature: 'notification',
       messages: [
         {
           role: 'user',
