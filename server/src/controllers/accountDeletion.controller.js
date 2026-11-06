@@ -23,4 +23,20 @@ const deleteMyAccount = async (req, res) => {
   }
 };
 
-module.exports = { deleteMyAccount, CONFIRMATION_WORD };
+// GET /api/auth/account/export: everything stored about the person, as a JSON file.
+const exportMyData = async (req, res) => {
+  try {
+    const { exportUserData } = require('../services/dataExport.service');
+    const data = await exportUserData(req.user.id);
+    const day = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Disposition', `attachment; filename="mwanga-dados-${day}.json"`);
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json(data);
+  } catch (error) {
+    if (error.message === 'NOT_FOUND') return res.status(404).json({ error: 'Conta não encontrada.' });
+    logger.error(`Falha ao exportar os dados de ${req.user.id}: ${error.message}`);
+    return res.status(500).json({ error: 'Não foi possível exportar os dados agora. Tente de novo.' });
+  }
+};
+
+module.exports = { deleteMyAccount, exportMyData, CONFIRMATION_WORD };

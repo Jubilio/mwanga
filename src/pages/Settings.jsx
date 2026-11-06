@@ -15,6 +15,7 @@ import PasswordSettings from '../components/settings/PasswordSettings';
 import PasskeySettings from '../components/settings/PasskeySettings';
 import IdentitySettings from '../components/settings/IdentitySettings';
 import DeleteAccountSettings from '../components/settings/DeleteAccountSettings';
+import ExportDataSettings from '../components/settings/ExportDataSettings';
 import HouseholdSettings from '../components/settings/HouseholdSettings';
 import { prepareProfilePhoto } from '../utils/avatar';
 import { settingsForm, changedSettings, validateSettings, settingsActions } from '../utils/settingsForm';
@@ -118,7 +119,7 @@ export default function Settings() {
           {activeTab === 'financas' ? <TabFinancas form={form} setFormDirty={setFormDirty} state={state} /> : null}
           {['pref', 'notifications'].includes(activeTab) ? <TabPreferences section={activeTab} form={form} setFormDirty={setFormDirty} state={state} dispatch={dispatch} pushProps={pushProps} showToast={showToast} /> : null}
         </fieldset>
-        {activeTab === 'perfil' ? <><PasswordSettings dispatch={dispatch} /><PasskeySettings showToast={showToast} /><IdentitySettings showToast={showToast} /><DeleteAccountSettings /></> : null}
+        {activeTab === 'perfil' ? <><PasswordSettings dispatch={dispatch} /><PasskeySettings showToast={showToast} /><IdentitySettings showToast={showToast} /><ExportDataSettings /><DeleteAccountSettings /></> : null}
         <section className="glass-card p-6 mt-6" aria-live="polite">
           <p className="text-sm font-bold">{t(`settings.reliable.status.${status}`)}</p>
           {error ? <p role="alert" className="text-sm text-red-600 dark:text-red-400 mt-2">{t(`settings.reliable.${error}`)}</p> : null}
