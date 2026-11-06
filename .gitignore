@@ -59,3 +59,6 @@ evolution-api/
 *.jks
 *.keystore
 keystore.properties
+
+# Binth evaluation reports (may contain model answers)
+evals/binth/results/

@@ -234,7 +234,22 @@ const createPasswordResetLink = async (req, res) => {
   }
 };
 
+// AI cost, latency and quality per day and per model (from the ai_calls table),
+// plus this month's spend against AI_MONTHLY_BUDGET_USD.
+const getAiMetrics = async (req, res) => {
+  try {
+    const aiTelemetry = require('../services/aiTelemetry');
+    const { budgetState } = require('../services/aiBudget');
+    const [data, budget] = await Promise.all([aiTelemetry.metrics(req.query.days), budgetState()]);
+    res.json({ ...data, budget });
+  } catch (error) {
+    logger.error(`Erro ao ler métricas de IA: ${error.message}`);
+    res.status(500).json({ error: 'Não foi possível ler as métricas de IA.' });
+  }
+};
+
 module.exports = {
+  getAiMetrics,
   getUsers,
   createPasswordResetLink,
   getCreditApplications,

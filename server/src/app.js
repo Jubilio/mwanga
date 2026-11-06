@@ -27,6 +27,8 @@ const { initSecureFilesSchema } = require('./services/secureFiles.service');
 const { initCreditSchema } = require('./services/credit.service');
 const { initIdempotencySchema } = require('./middleware/idempotency.middleware');
 const { initBinthQuotaSchema } = require('./services/binthQuota');
+const { initAiTelemetrySchema } = require('./services/aiTelemetry');
+const { initAiBudgetSchema } = require('./services/aiBudget');
 const { initAdvisorSchema } = require('./services/advisor/advisor.service');
 const logger = require('./utils/logger');
 
@@ -42,6 +44,8 @@ initSecureFilesSchema();
 initCreditSchema();
 initIdempotencySchema();
 initBinthQuotaSchema();
+initAiTelemetrySchema();
+initAiBudgetSchema();
 initAdvisorSchema();
 
 app.set('trust proxy', 1);

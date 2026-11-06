@@ -10,6 +10,7 @@ router.get('/stats', authenticate, isAdmin, adminController.getPlatformStats);
 router.get('/credit-applications', authenticate, isAdmin, adminController.getCreditApplications);
 router.post('/kyc/status', authenticate, isAdmin, adminController.updateKycStatus);
 router.post('/notifications/broadcast', authenticate, isAdmin, adminController.broadcastNotification);
+router.get('/ai-metrics', authenticate, isAdmin, adminController.getAiMetrics);
 
 router.get('/emails/status', authenticate, isAdmin, adminEmail.getStatus);
 router.post('/emails/test', authenticate, isAdmin, adminEmail.sendTest);

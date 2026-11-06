@@ -4,6 +4,8 @@ const { callBinth, buildUserContext } = require('../services/binthService');
 const { db } = require('../config/db');
 const { cacheKey, getCachedInsight, setCachedInsight } = require('../services/binthInsightCache');
 const { z } = require('zod');
+const aiTelemetry = require('../services/aiTelemetry');
+const logger = require('../utils/logger');
 
 const chatSchema = z.object({
   message: z.string().trim().min(1).max(2000),
@@ -42,7 +44,8 @@ const chat = async (req, res, next) => {
       householdId: req.user.householdId,
       userId: req.user.id,
       language: resolveLanguage(language || req.get('Accept-Language')),
-      countTowardsQuota: true
+      countTowardsQuota: true,
+      feature: 'chat'
     });
 
     res.json(response);
@@ -238,7 +241,8 @@ const getPageInsight = async (req, res, next) => {
       messages: [{ role: 'user', content: prompt }],
       householdId,
       userId: req.user.id,
-      language
+      language,
+      feature: `insight:${page}`
     });
     if (!version.startsWith('nocache-')) await setCachedInsight(key, response);
 
@@ -302,4 +306,23 @@ const getPriority = async (req, res) => {
   }
 };
 
-module.exports = { chat, getScore, getPageInsight, getPriority, dataVersion };
+// ─── POST /api/binth/calls/:id/outcome ────────────────────────────────────────
+// The app reports whether the person confirmed or cancelled a Binth proposal.
+// It is the clearest quality signal there is: a cancelled proposal usually means
+// Binth understood the request wrongly.
+const outcomeSchema = z.object({ outcome: z.enum(aiTelemetry.PROPOSAL_OUTCOMES) }).strict();
+const callIdSchema = z.string().uuid();
+const proposalOutcome = async (req, res) => {
+  try {
+    const callId = callIdSchema.parse(req.params.id);
+    const { outcome } = outcomeSchema.parse(req.body);
+    const updated = await aiTelemetry.recordProposalOutcome({ callId, userId: req.user.id, outcome });
+    return res.status(updated ? 204 : 404).end();
+  } catch (err) {
+    if (err instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed' });
+    logger.warn({ err: err.message }, 'Could not record proposal outcome');
+    return res.status(500).json({ error: 'Could not record outcome' });
+  }
+};
+
+module.exports = { chat, getScore, getPageInsight, getPriority, dataVersion, proposalOutcome };

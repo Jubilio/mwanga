@@ -1,0 +1,86 @@
+name: Database backup (with restore test)
+
+# Every Monday: dump the production database, restore it into a throwaway
+# PostgreSQL and compare row counts table by table, then keep the dump
+# (encrypted) for 30 days as a workflow artifact.
+#
+# Needs two repository secrets (Settings > Secrets and variables > Actions):
+#   BACKUP_DATABASE_URL  Supabase *session pooler* URL (port 5432), read access is enough
+#   BACKUP_PASSPHRASE    long random passphrase; the dump is encrypted with it
+# The repository is public: never upload an unencrypted dump.
+# Restore steps: docs/BACKUP_E_RESTAURO.md
+
+on:
+  schedule:
+    - cron: '30 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      restore:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: restore
+          POSTGRES_DB: restore
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      SOURCE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Check configuration
+        id: config
+        run: |
+          if [ -z "$SOURCE_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::warning::Backup skipped: set the BACKUP_DATABASE_URL and BACKUP_PASSPHRASE repository secrets (see docs/BACKUP_E_RESTAURO.md)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.config.outputs.ready == 'true'
+
+      - name: Install PostgreSQL 17 client
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y -qq postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
+      - name: Dump, restore and compare
+        if: steps.config.outputs.ready == 'true'
+        env:
+          RESTORE_URL: postgres://postgres:restore@localhost:5432/restore
+          OUT: ${{ runner.temp }}/mwanga.dump
+        run: bash server/scripts/backup-and-verify.sh
+
+      - name: Encrypt the dump
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          name="mwanga-$(date -u +%Y-%m-%d).dump.gpg"
+          gpg --batch --yes --pinentry-mode loopback --symmetric --cipher-algo AES256 \
+            --passphrase "$BACKUP_PASSPHRASE" --output "$RUNNER_TEMP/$name" "$RUNNER_TEMP/mwanga.dump"
+          rm -f "$RUNNER_TEMP/mwanga.dump"
+          echo "BACKUP_FILE=$RUNNER_TEMP/$name" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        if: steps.config.outputs.ready == 'true'
+        with:
+          name: mwanga-db-backup
+          path: ${{ env.BACKUP_FILE }}
+          retention-days: 30
+          if-no-files-found: error

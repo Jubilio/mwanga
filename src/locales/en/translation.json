@@ -1191,6 +1191,14 @@
       "busy": "Deleting…",
       "done": "Account deleted.",
       "error": "The account could not be deleted. Nothing was deleted. Please try again."
+    },
+    "export_data": {
+      "title": "Export my data",
+      "body": "Download a file with everything Mwanga stores about you and your household: transactions, accounts, debts, goals, xitiques, plans and Binth memories. Passwords, codes and keys are not included.",
+      "button": "Export data",
+      "busy": "Preparing…",
+      "done": "File ready.",
+      "error": "Could not export right now. Please try again."
     }
   },
   "pricing": {

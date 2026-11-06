@@ -13,6 +13,7 @@ router.post('/refresh', authenticate, refresh);
 router.put('/profile', authenticate, updateProfile);
 // Apagar conta e dados pessoais (Google Play + protecção de dados).
 router.delete('/account', authenticate, require('../controllers/accountDeletion.controller').deleteMyAccount);
+router.get('/account/export', authenticate, require('../controllers/accountDeletion.controller').exportMyData);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 

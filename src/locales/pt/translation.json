@@ -1191,6 +1191,14 @@
       "busy": "A apagar…",
       "done": "Conta apagada.",
       "error": "Não foi possível apagar a conta. Nada foi apagado. Tente de novo."
+    },
+    "export_data": {
+      "title": "Exportar os meus dados",
+      "body": "Descarrega um ficheiro com tudo o que o Mwanga guarda sobre si e a sua família: transacções, contas, dívidas, metas, xitiques, planos e memórias da Binth. Palavras-passe, códigos e chaves não são incluídos.",
+      "button": "Exportar dados",
+      "busy": "A preparar…",
+      "done": "Ficheiro pronto.",
+      "error": "Não foi possível exportar agora. Tente de novo."
     }
   },
   "pricing": {

@@ -9,7 +9,8 @@
     "dev": "nodemon src/server.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "setup:whatsapp": "node scripts/setup_evolution.js"
+    "setup:whatsapp": "node scripts/setup_evolution.js",
+    "eval:binth": "node evals/binth/run.js"
   },
   "keywords": [],
   "author": "",
