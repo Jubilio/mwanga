@@ -1,4 +1,5 @@
 const logger = require('../utils/logger');
+const { hintPhone } = require('../utils/privacyMask');
 const { callBinth } = require('./binthService');
 const { db } = require('../config/db');
 
@@ -23,7 +24,7 @@ class WhatsAppService {
       // Ignora as nossas próprias mensagens e eventos sem texto (estado, QR, etc.)
       if (fromMe || !from || !text) return null;
       
-      logger.info({ from, pushName }, '[WhatsApp] Message received');
+      logger.info({ from: hintPhone(from) }, '[WhatsApp] Message received');
 
       // 1. Identify user by phone number
       const user = await this._findUserByPhone(from);
@@ -139,13 +140,13 @@ class WhatsAppService {
 
       return await response.json();
     } catch (error) {
-      logger.error({ error, to }, '[WhatsApp] Failed to send via Evolution');
+      logger.error({ err: error.message, to: hintPhone(to) }, '[WhatsApp] Failed to send via Evolution');
     }
   }
 
   async _sendTwilio(to, text) {
     // Implementation for Twilio if needed later
-    logger.info({ to, text }, '[WhatsApp] Twilio send placeholder');
+    logger.info({ to: hintPhone(to) }, '[WhatsApp] Twilio send placeholder');
   }
 }
 

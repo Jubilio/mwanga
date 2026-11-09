@@ -31,6 +31,7 @@ const { initAiTelemetrySchema } = require('./services/aiTelemetry');
 const { initAiBudgetSchema } = require('./services/aiBudget');
 const { initAdvisorSchema } = require('./services/advisor/advisor.service');
 const logger = require('./utils/logger');
+const { safeRequestPath } = require('./utils/privacyMask');
 
 const app = express();
 
@@ -153,8 +154,8 @@ app.use((req, res, next) => {
 
 // 7. Request Logging
 app.use((req, res, next) => {
-  // The OpenRouter callback carries a one-time code in the query; keep it out of logs.
-  logger.info(`${req.method} ${req.path.startsWith('/api/ai-connect/') ? req.path : req.url}`);
+  // The query string can carry secrets (webhook ?token=, OAuth ?code=); log the path only.
+  logger.info(`${req.method} ${safeRequestPath(req)}`);
   next();
 });
 

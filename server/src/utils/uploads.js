@@ -19,6 +19,20 @@ const DOCUMENT_TYPES = [...IMAGE_TYPES, 'application/pdf'];
 
 const CATEGORIES = ['kyc', 'credit', 'feedback'];
 
+// The declared type comes from the client and can lie. Before anything is
+// stored, the first bytes must match the format the client claimed.
+const MAGIC_BYTES = {
+  'image/jpeg': (b) => b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
+  'image/png': (b) => b.length >= 8 && b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
+  'image/webp': (b) => b.length >= 12 && b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 12) === 'WEBP',
+  'application/pdf': (b) => b.length >= 5 && b.toString('ascii', 0, 5) === '%PDF-',
+};
+
+const contentMatchesType = (buffer, mimeType) => {
+  const check = MAGIC_BYTES[mimeType];
+  return Boolean(check && Buffer.isBuffer(buffer) && check(buffer));
+};
+
 /**
  * Cria um uploader que só aceita os tipos indicados. Os ficheiros ficam em
  * memória só durante o pedido: depois são cifrados e guardados na tabela
@@ -61,6 +75,12 @@ const createUploader = (category, allowedTypes, prefix = '') => {
         const files = [];
         if (req.file) files.push(req.file);
         if (req.files) files.push(...(Array.isArray(req.files) ? req.files : Object.values(req.files).flat()));
+        // Check every file before storing any, so a bad second file leaves no orphan.
+        if (files.some((file) => !contentMatchesType(file.buffer, file.mimetype))) {
+          const error = new Error('O conteúdo do ficheiro não corresponde ao tipo indicado. Envie JPG, PNG, WEBP ou PDF.');
+          error.code = 'INVALID_FILE_TYPE';
+          return next(error);
+        }
         for (const file of files) await persist(req, file);
         return next();
       } catch (error) {
@@ -101,6 +121,7 @@ const resolveFile = (category, filename) => {
 
 module.exports = {
   createUploader,
+  contentMatchesType,
   handleUploadErrors,
   isOwner,
   resolveFile,
