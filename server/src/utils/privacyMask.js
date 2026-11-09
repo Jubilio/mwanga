@@ -45,4 +45,23 @@ function maskDeep(value, depth = 0) {
   return value;
 }
 
-module.exports = { maskFreeText, maskLabel, maskDeep };
+// Log-safe hints: enough to tell two entries apart, never the full contact.
+// "jubilio@gmail.com" -> "j***@gmail.com", "258841234567" -> "***4567".
+function hintEmail(email) {
+  const [user, domain] = String(email ?? '').split('@');
+  if (!user || !domain) return '[email]';
+  return `${user[0]}***@${domain}`;
+}
+
+function hintPhone(phone) {
+  const digits = String(phone ?? '').replace(/\D/g, '');
+  return digits.length >= 4 ? `***${digits.slice(-4)}` : '[telefone]';
+}
+
+// Path of a request without the query string, which can carry secrets
+// (webhook ?token=, OAuth ?code=) that must not reach the logs.
+function safeRequestPath(req) {
+  return String(req?.originalUrl || req?.url || '').split('?')[0];
+}
+
+module.exports = { maskFreeText, maskLabel, maskDeep, hintEmail, hintPhone, safeRequestPath };

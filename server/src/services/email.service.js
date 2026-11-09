@@ -2,6 +2,7 @@ const nodemailer = require('nodemailer');
 const axios = require('axios');
 const { OAuth2Client } = require('google-auth-library');
 const logger = require('../utils/logger');
+const { hintEmail } = require('../utils/privacyMask');
 
 const GMAIL_SEND_URL = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send';
 
@@ -100,7 +101,7 @@ class EmailService {
     if (this.mode === 'gmail') return this.sendWithGmail(message);
     if (this.mode === 'smtp') return this.transporter.sendMail(message);
 
-    logger.info(`[EMAIL LOG] "${subject}" para ${to}`);
+    logger.info(`[EMAIL LOG] "${subject}" para ${hintEmail(to)}`);
     return { logged: true };
   }
 
@@ -153,7 +154,7 @@ class EmailService {
     `;
 
     if (!this.isConfigured()) {
-      logger.warn(`[EMAIL] Password reset requested for ${to}, but email is not configured. The user cannot receive it.`);
+      logger.warn(`[EMAIL] Password reset requested for ${hintEmail(to)}, but email is not configured. The user cannot receive it.`);
       if (this.isDevelopment) logger.info(`[RECOVERY LINK]: ${resetUrl} code=${code}`);
       return false;
     }
@@ -162,7 +163,7 @@ class EmailService {
       await this.send({ to, subject, text, html, fromName: 'Mwanga ✦' });
       return true;
     } catch (error) {
-      logger.error(`Failed to send password reset email to ${to}: ${describeError(error)}`);
+      logger.error(`Failed to send password reset email to ${hintEmail(to)}: ${describeError(error)}`);
       if (this.isDevelopment) logger.info(`[RECOVERY LINK]: ${resetUrl} code=${code}`);
       return false;
     }

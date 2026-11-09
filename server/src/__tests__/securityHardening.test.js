@@ -144,11 +144,24 @@ describe('upload filter', () => {
   });
   afterAll(() => server.close());
 
-  const send = (type, filename) => {
+  const PNG = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from('x')]);
+  const send = (type, filename, content = PNG) => {
     const form = new FormData();
-    form.append('document', new Blob(['x'], { type }), filename);
+    form.append('document', new Blob([content], { type }), filename);
     return fetch(url, { method: 'POST', body: form });
   };
+
+  test('refuses a file whose bytes do not match the declared type', async () => {
+    const before = db.execute.mock.calls.length;
+    expect((await send('image/png', 'fake.png', '<html><script>alert(1)</script></html>')).status).toBe(400);
+    expect((await send('application/pdf', 'fake.pdf', '<svg onload=alert(1)>')).status).toBe(400);
+    const inserts = db.execute.mock.calls.slice(before).filter(([q]) => /INSERT INTO secure_files/.test(q.sql));
+    expect(inserts).toHaveLength(0);
+  });
+
+  test('accepts a real PDF', async () => {
+    expect((await send('application/pdf', 'doc.pdf', '%PDF-1.7\n')).status).toBe(200);
+  });
 
   test('refuses HTML', async () => {
     expect((await send('text/html', 'page.html')).status).toBe(400);
@@ -167,8 +180,8 @@ describe('upload filter', () => {
     const insert = db.execute.mock.calls.find(([q]) => /INSERT INTO secure_files/.test(q.sql));
     expect(insert).toBeDefined();
     const [, category, userId, mime, size, content] = insert[0].args;
-    expect([category, userId, mime, size]).toEqual(['kyc', 5, 'image/png', 1]);
-    expect(require('../services/secureFiles.service').decrypt(content).toString()).toBe('x');
+    expect([category, userId, mime, size]).toEqual(['kyc', 5, 'image/png', PNG.length]);
+    expect(require('../services/secureFiles.service').decrypt(content).equals(PNG)).toBe(true);
   });
 
   test('answers 503 when the database cannot store the file', async () => {

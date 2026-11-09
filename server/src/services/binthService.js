@@ -1341,7 +1341,7 @@ function parseBinthResponse(raw, contextSummary = {}) {
     try {
       return personalizeBinthPayload(JSON.parse(potentialJson), contextSummary);
     } catch(e) {
-      logger.debug({ error: e.message, raw: clean }, 'Binth JSON parse error');
+      logger.debug({ error: e.message, length: clean.length }, 'Binth JSON parse error');
     }
   }
 
