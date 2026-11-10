@@ -7,6 +7,8 @@ import { fetchLatestRelease, RELEASES_PAGE } from '../utils/latestRelease';
 import MwangaLogo from '../components/MwangaLogo';
 import IosInstallGuide from '../components/IosInstallGuide';
 import { currentInstallPlatform } from '../utils/installPlatform';
+import { useSeo } from '../utils/seo';
+import { trackEvent } from '../utils/analytics';
 
 /**
  * Public page with the official Android download (GitHub Releases), install steps
@@ -16,6 +18,11 @@ import { currentInstallPlatform } from '../utils/installPlatform';
 export default function Download() {
   useUiLanguage();
   const { t } = useTranslation();
+  useSeo({
+    title: t('download.seo_title'),
+    description: t('download.seo_description'),
+    path: '/baixar',
+  });
   const [release, setRelease] = useState(null);
   const [status, setStatus] = useState('loading');
   const platform = useMemo(() => currentInstallPlatform(), []);
@@ -50,7 +57,7 @@ export default function Download() {
           <HeroTitle className="font-display text-3xl font-bold leading-tight sm:text-4xl">{t('download.title')}</HeroTitle>
           <p className="max-w-xl text-base" style={muted}>{t('download.subtitle')}</p>
           <div className="flex flex-col items-start gap-2">
-            <a href={downloadUrl} className="btn btn-primary inline-flex items-center gap-2" style={{ padding: '1rem 2rem', fontSize: '1rem' }}>
+            <a href={downloadUrl} onClick={() => trackEvent('download_apk', { version: release?.version || 'unknown' })} className="btn btn-primary inline-flex items-center gap-2" style={{ padding: '1rem 2rem', fontSize: '1rem' }}>
               <DownloadIcon size={18} /> {t('download.cta')}
             </a>
             <p className="text-xs" style={muted} aria-live="polite">

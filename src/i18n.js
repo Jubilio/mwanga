@@ -10,11 +10,17 @@ const resources = {
   en: { translation: translationEN },
 };
 
+// Search engines and link previews crawl with an English browser language. The site's
+// main language is Portuguese, so crawlers always get the Portuguese pages.
+const isCrawler = typeof navigator !== 'undefined'
+  && /bot|crawl|spider|slurp|facebookexternalhit|whatsapp|lighthouse/i.test(navigator.userAgent || '');
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
+    ...(isCrawler ? { lng: 'pt' } : {}),
     fallbackLng: 'pt',
     supportedLngs: ['pt', 'en'],
     load: 'languageOnly',
