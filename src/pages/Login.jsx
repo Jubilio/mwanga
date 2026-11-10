@@ -9,6 +9,8 @@ import { passkeysAvailable, loginWithPasskey } from '../utils/passkeys';
 import { useFinance } from '../hooks/useFinance';
 import MwangaLogo from '../components/MwangaLogo';
 import { setToken } from '../utils/authToken';
+import { useSeo } from '../utils/seo';
+import { trackEvent } from '../utils/analytics';
 
 function getApiUrl() {
   let apiUrl = import.meta.env.VITE_API_URL || '';
@@ -27,6 +29,7 @@ function getApiErrorMessage(data, fallback) {
 export default function Login() {
   useUiLanguage();
   const { t } = useTranslation();
+  useSeo({ title: t('auth.seo_title'), description: t('auth.seo_description'), path: '/login' });
   const [searchParams] = useSearchParams();
   const inviteFromLink = searchParams.get('convite') || '';
   const [isLogin, setIsLogin] = useState(searchParams.get('modo') !== 'registo' && !inviteFromLink);
@@ -73,6 +76,7 @@ export default function Login() {
       setToken(data.token);
       await reloadData({ preferredUser: data.user });
 
+      trackEvent(isLogin ? 'login' : 'sign_up', { method: 'email' });
       showToast(isLogin ? t('auth.login.toasts.success') : t('auth.register.toasts.success'));
       navigate('/');
     } catch (err) {
@@ -91,6 +95,7 @@ export default function Login() {
     setToken(data.token);
     await reloadData({ preferredUser: data.user });
 
+    trackEvent(data.created ? 'sign_up' : 'login', { method: 'google' });
     showToast(data.created ? t('auth.register.toasts.google_success') : t('auth.login.toasts.welcome_google'));
     navigate('/');
   }

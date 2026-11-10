@@ -1621,7 +1621,9 @@
       },
       "confirm_label": "Confirm new password",
       "request_new": "Request a new code"
-    }
+    },
+    "seo_title": "Sign in or create an account",
+    "seo_description": "Sign in to Mwanga or create your free account with Google or email in under a minute."
   },
   "quick_add": {
     "title": "Quick Add",
@@ -2933,7 +2935,9 @@
       "open_app": "Go to Mwanga",
       "sms_note": "On iPhone, automatic import of M-Pesa, e-Mola and mKesh SMS is not available, because iOS does not let apps read messages. You can add transactions by hand in seconds.",
       "android_hint": "Have Android? The Android app is further down."
-    }
+    },
+    "seo_title": "Download the Android app",
+    "seo_description": "Download the official Mwanga APK for Android, follow the install steps and check the file fingerprint. On iPhone, install from Safari."
   },
   "sms_permission": {
     "title": "Import your M-Pesa, e-Mola and mKesh transactions",
@@ -3154,5 +3158,13 @@
       "saved": "Saved.",
       "error": "Couldn't save. Try again."
     }
+  },
+  "not_found": {
+    "seo_title": "Page not found",
+    "code": "Error 404",
+    "title": "This page does not exist.",
+    "body": "The address may have changed or contain a typo. Go back to the start to continue.",
+    "cta": "Back to start",
+    "download": "Download the Android app"
   }
 }

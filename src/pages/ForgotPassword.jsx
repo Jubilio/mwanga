@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Mail, ArrowLeft, Send, CheckCircle2, KeyRound, MessageCircle, Eye, EyeOff, RotateCw } from 'lucide-react';
 import { getSupportWhatsAppUrl } from '../utils/support';
+import { useSeo } from '../utils/seo';
 
 function getApiUrl() {
   const apiUrl = import.meta.env.VITE_API_URL || '';
@@ -28,6 +29,7 @@ const RESEND_SECONDS = 60;
 export default function ForgotPassword() {
   useUiLanguage();
   const { t } = useTranslation();
+  useSeo({ title: t('auth.seo_title'), path: '/forgot-password', noindex: true });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState('email'); // email | code | done

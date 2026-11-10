@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Lock, CheckCircle2, ShieldCheck, AlertCircle, Key, Eye, EyeOff } from 'lucide-react';
+import { useSeo } from '../utils/seo';
 
 function getApiUrl() {
   const apiUrl = import.meta.env.VITE_API_URL || '';
@@ -13,6 +14,7 @@ function getApiUrl() {
 export default function ResetPassword() {
   useUiLanguage();
   const { t } = useTranslation();
+  useSeo({ title: t('auth.seo_title'), path: '/reset-password', noindex: true });
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
 

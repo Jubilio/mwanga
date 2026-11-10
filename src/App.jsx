@@ -11,6 +11,7 @@ import { prefersReducedMotion } from './utils/motion';
 import { MwangaTooltipProvider } from './components/ui/MwangaTooltip';
 import { Capacitor } from '@capacitor/core';
 import { LEGACY_REDIRECTS } from './config/navigation';
+import { initAnalytics, trackPageView } from './utils/analytics';
 
 // Critical path — loaded immediately
 import Dashboard from './pages/Dashboard';
@@ -34,6 +35,7 @@ const Help = lazy(() => import('./pages/Help'));
 const Landing = lazy(() => import('./pages/Landing'));
 const Download = lazy(() => import('./pages/Download'));
 const Legal = lazy(() => import('./pages/Legal'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 const Planear = lazy(() => import('./pages/Planear'));
 const PlanoMes = lazy(() => import('./pages/PlanoMes'));
 const Mais = lazy(() => import('./pages/Mais'));
@@ -123,6 +125,18 @@ function RequireAuth({ children }) {
   );
 }
 
+// Sends one page view per route change (path only, never query strings or hashes).
+function RouteAnalytics() {
+  const { pathname } = useLocation();
+  useEffect(() => { initAnalytics(); }, []);
+  useEffect(() => {
+    // Wait a tick so the page has set its own title.
+    const id = setTimeout(() => trackPageView(pathname), 0);
+    return () => clearTimeout(id);
+  }, [pathname]);
+  return null;
+}
+
 export default function App() {
   useUiLanguage();
   // ── Lenis: Scroll suave global para toda a aplicação ──────────────────────
@@ -158,6 +172,7 @@ export default function App() {
     <FinanceProvider>
       <AppSplash />
       <BrowserRouter>
+        <RouteAnalytics />
         <ErrorBoundary context={ui("Aplicação")}>
           <Suspense fallback={<PageLoader />}>
             <Routes>
@@ -208,6 +223,9 @@ export default function App() {
               <Route path="login" element={<Login />} />
               <Route path="forgot-password" element={<ForgotPassword />} />
               <Route path="reset-password" element={<ResetPassword />} />
+
+              {/* ── Any other address: custom 404 ── */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </ErrorBoundary>

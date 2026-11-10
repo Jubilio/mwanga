@@ -2,18 +2,76 @@
 <html lang="pt">
   <head>
     <meta charset="UTF-8" />
-    <link id="favicon" rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link id="favicon" rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Mwanga" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- SEO: defaults for the landing page. Public pages update these at runtime (src/utils/seo.js).
+         Social apps (WhatsApp, Facebook) do not run JavaScript, so they always read these. -->
+    <title>Mwanga — Gestão financeira para famílias moçambicanas</title>
     <meta
       name="description"
-      content="Mwanga — Gestão financeira inteligente para a sua família"
+      content="Registe gastos, importe SMS do M-Pesa e e-Mola, controle o xitique, metas e dívidas. A app de finanças pessoais feita para Moçambique. Grátis."
     />
-    <title>Mwanga — Gestão Financeira</title>
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://mwanga-opal.vercel.app/bem-vindo" />
+
+    <!-- Open Graph / partilha -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mwanga" />
+    <meta property="og:locale" content="pt_MZ" />
+    <meta property="og:title" content="Mwanga — Gestão financeira para famílias moçambicanas" />
+    <meta property="og:description" content="Registe gastos, importe SMS do M-Pesa e e-Mola, controle o xitique, metas e dívidas. Feito em Moçambique. Grátis." />
+    <meta property="og:url" content="https://mwanga-opal.vercel.app/bem-vindo" />
+    <meta property="og:image" content="https://mwanga-opal.vercel.app/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Logótipo do Mwanga e a frase: Saiba para onde vai o seu dinheiro." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mwanga — Gestão financeira para famílias moçambicanas" />
+    <meta name="twitter:description" content="Registe gastos, importe SMS do M-Pesa e e-Mola, controle o xitique, metas e dívidas. Feito em Moçambique. Grátis." />
+    <meta name="twitter:image" content="https://mwanga-opal.vercel.app/og-image.jpg" />
+
+    <!-- Dados estruturados (Schema.org) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://mwanga-opal.vercel.app/#org",
+            "name": "NexoVibe",
+            "url": "https://mwanga-opal.vercel.app/",
+            "logo": "https://mwanga-opal.vercel.app/icon-512.png"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://mwanga-opal.vercel.app/#website",
+            "name": "Mwanga",
+            "url": "https://mwanga-opal.vercel.app/",
+            "inLanguage": "pt-MZ",
+            "publisher": { "@id": "https://mwanga-opal.vercel.app/#org" }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "name": "Mwanga",
+            "description": "Gestão financeira para famílias moçambicanas: despesas, orçamento, importação de SMS do M-Pesa e e-Mola, xitique, metas e dívidas.",
+            "url": "https://mwanga-opal.vercel.app/bem-vindo",
+            "image": "https://mwanga-opal.vercel.app/og-image.jpg",
+            "applicationCategory": "FinanceApplication",
+            "operatingSystem": "Android, Web",
+            "inLanguage": "pt-MZ",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "MZN" },
+            "publisher": { "@id": "https://mwanga-opal.vercel.app/#org" }
+          }
+        ]
+      }
+    </script>
+
     <meta name="theme-color" content="#0a4d68" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0a1926" media="(prefers-color-scheme: dark)" />
     <link rel="manifest" href="/manifest.json" />

@@ -2,6 +2,14 @@
   publish = "dist"
   command = "npm run build"
 
+# The web app now lives on Vercel. Send visitors and search engines from the old
+# Netlify address to the same page there (301 = moved for good).
+[[redirects]]
+  from = "https://mwangafin.netlify.app/*"
+  to = "https://mwanga-opal.vercel.app/:splat"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

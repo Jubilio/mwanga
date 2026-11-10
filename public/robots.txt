@@ -1,0 +1,9 @@
+# Mwanga — https://mwanga-opal.vercel.app
+User-agent: *
+Allow: /
+# Área de administração e páginas de conta não precisam de aparecer nas pesquisas
+Disallow: /admin
+Disallow: /reset-password
+Disallow: /forgot-password
+
+Sitemap: https://mwanga-opal.vercel.app/sitemap.xml

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import MwangaLogo from '../components/MwangaLogo';
+import { useSeo } from '../utils/seo';
 
 /**
  * Páginas públicas de Política de Privacidade (/privacidade) e Termos de Utilização (/termos).
@@ -38,7 +39,8 @@ const PRIVACY = {
       h: 'Com quem partilhamos',
       items: [
         'Não vendemos os seus dados.',
-        'Usamos fornecedores que guardam ou processam dados por nossa conta: alojamento da base de dados (Supabase), servidores (Render, Vercel, Netlify), cache (Upstash), notificações (Google Firebase), envio de email (Gmail), monitorização de erros (Sentry) e os fornecedores de IA indicados acima.',
+        'Usamos fornecedores que guardam ou processam dados por nossa conta: alojamento da base de dados (Supabase), servidores (Render, Vercel, Netlify), cache (Upstash), notificações (Google Firebase), envio de email (Gmail), monitorização de erros (Sentry), estatísticas de visitas do site (Google Analytics) e os fornecedores de IA indicados acima.',
+        'No site usamos o Google Analytics só para contar visitas às páginas e acções como criar conta ou descarregar a app. Não enviamos valores, nomes, emails, números de telefone nem o conteúdo das suas mensagens. A app Android não usa o Google Analytics.',
         'Se pedir crédito a um parceiro através da app, partilhamos com esse parceiro os dados do pedido, só com a sua autorização.',
         'Podemos divulgar dados quando a lei o exigir.',
       ],
@@ -148,6 +150,13 @@ const TERMS = {
 export default function Legal({ page }) {
   const doc = page === 'terms' ? TERMS : PRIVACY;
   const muted = { color: 'var(--color-muted)' };
+  useSeo({
+    title: doc.title,
+    description: page === 'terms'
+      ? 'Termos de utilização do Mwanga, a app de gestão financeira da NexoVibe.'
+      : 'Como o Mwanga recolhe, usa e protege os seus dados financeiros e pessoais.',
+    path: page === 'terms' ? '/termos' : '/privacidade',
+  });
 
   return (
     <div className="min-h-screen w-full" style={{ background: 'var(--color-cream)', color: 'var(--color-text)', padding: '1.5rem 1rem' }}>

@@ -6,6 +6,8 @@ import { useUiLanguage } from '../utils/uiTranslation';
 import { getSupportWhatsAppUrl } from '../utils/support';
 import MwangaLogo from '../components/MwangaLogo';
 import { getToken } from '../utils/authToken';
+import { useSeo, DEFAULT_SEO } from '../utils/seo';
+import { trackEvent } from '../utils/analytics';
 
 const FEATURE_ICONS = [Wallet, Target, Users, Home];
 const REGISTER_PATH = '/login?modo=registo';
@@ -20,6 +22,7 @@ export default function Landing() {
   const supportUrl = getSupportWhatsAppUrl();
   const features = t('landing.features', { returnObjects: true });
   const steps = t('landing.steps', { returnObjects: true });
+  useSeo({ description: DEFAULT_SEO.description, path: '/bem-vindo' });
 
   if (getToken()) return <Navigate to="/" replace />;
 
@@ -42,7 +45,7 @@ export default function Landing() {
             {t('landing.subtitle')}
           </p>
           <div className="flex flex-col items-start gap-3">
-            <Link to={REGISTER_PATH} className="btn btn-primary inline-flex items-center gap-2" style={{ padding: '1rem 2rem', fontSize: '1rem' }}>
+            <Link to={REGISTER_PATH} onClick={() => trackEvent('cta_click', { location: 'landing_hero' })} className="btn btn-primary inline-flex items-center gap-2" style={{ padding: '1rem 2rem', fontSize: '1rem' }}>
               {t('landing.cta')} <ArrowRight size={18} />
             </Link>
             <p className="text-xs" style={{ color: 'var(--color-muted)' }}>{t('landing.cta_note')}</p>
