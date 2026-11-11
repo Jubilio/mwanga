@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { MAIN_CATEGORIES } from '../utils/categories';
 import { usePageAnimation } from '../hooks/useMwangaAnimations';
 import { useRevealOnOpen } from '../hooks/useRevealOnOpen';
+import { useCategorySuggester, reportCategorySuggestion } from '../hooks/useCategorySuggester';
 
 // Sub-components
 import TransactionsHeader from '../components/transactions/TransactionsHeader';
@@ -64,6 +65,23 @@ export default function Transactions() {
   // Show the form when it opens, even if the user tapped "edit" far down the list.
   useRevealOnOpen(formRef, isFormOpen, editingId);
 
+  // Category learned from this household's own history. It pre-fills the
+  // category while the person types, until they pick one themselves.
+  const suggestCategory = useCategorySuggester(state.transacoes);
+  const [catTouched, setCatTouched] = useState(false);
+  const [catSuggestion, setCatSuggestion] = useState(null);
+
+  function handleDescChange(desc) {
+    const suggestion = !editingId && !catTouched ? suggestCategory(desc, form.tipo) : null;
+    setCatSuggestion(suggestion);
+    setForm({ ...form, desc, ...(suggestion ? { cat: suggestion.category } : {}) });
+  }
+
+  function handleCategoryChange(cat) {
+    setCatTouched(true);
+    setForm({ ...form, cat });
+  }
+
   useEffect(() => {
     if (location.state?.openModal) {
       setIsFormOpen(true);
@@ -101,6 +119,8 @@ export default function Transactions() {
         type: 'ADD_TRANSACTION',
         payload: { ...form, valor: parseFloat(form.valor), account_id: form.account_id || null },
       });
+      // Measures how often suggestions are kept or corrected (no description is sent).
+      reportCategorySuggestion(catSuggestion, form.cat, 'manual');
       showToast(t('transactions.toast_added'));
       
       if (form.tipo === 'receita' && form.cat === 'salary' && parseFloat(form.valor) > 0) {
@@ -108,6 +128,8 @@ export default function Transactions() {
       }
     }
     setForm({ ...form, desc: '', valor: '', nota: '', account_id: '' });
+    setCatTouched(false);
+    setCatSuggestion(null);
     setIsFormOpen(false);
   }
 
@@ -238,6 +260,9 @@ export default function Transactions() {
         setIsMagicPasteOpen={setIsMagicPasteOpen}
         form={form}
         setForm={setForm}
+        onDescChange={handleDescChange}
+        onCategoryChange={handleCategoryChange}
+        catSuggestion={catTouched ? null : catSuggestion}
         t={t}
         TYPES={TYPES}
         CATEGORIES={CATEGORIES}

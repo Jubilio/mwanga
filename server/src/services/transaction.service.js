@@ -4,6 +4,8 @@ const { publishNotificationEvent } = require('./notificationEventEngine.service'
 const redis = require('../utils/redis');
 const { logAction } = require('../utils/audit');
 const logger = require('../utils/logger');
+const { trackBehaviorEvent } = require('./behaviorTracking.service');
+const { isSmsNote } = require('./smsQuota.service');
 
 const getTransactions = async (householdId, filters) => {
   const { page = 1, limit = 50, category, type, startDate, endDate } = filters;
@@ -195,6 +197,17 @@ const updateTransaction = async (householdId, txId, data) => {
   }
 
   await db.batch(queries, 'write');
+
+  // A changed category is a correction: the label the category model learns from
+  // next time, and the signal used to monitor how often its suggestions are wrong.
+  if (data.category && oldTx.category && data.category !== oldTx.category) {
+    trackBehaviorEvent({
+      householdId,
+      eventName: 'transaction_category_corrected',
+      eventSource: isSmsNote(oldTx.note) ? 'sms' : 'manual',
+      context: { from: oldTx.category, to: data.category },
+    }).catch(() => {});
+  }
 
   if (redis) {
     try {

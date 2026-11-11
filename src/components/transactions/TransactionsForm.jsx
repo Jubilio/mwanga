@@ -9,6 +9,9 @@ export default function TransactionsForm({
   setIsMagicPasteOpen,
   form,
   setForm,
+  onDescChange,
+  onCategoryChange,
+  catSuggestion,
   t,
   TYPES,
   CATEGORIES,
@@ -52,7 +55,7 @@ export default function TransactionsForm({
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400"><Plus size={11} className="inline mr-1" /> {t('transactions.description')}</label>
-                <input type="text" className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm" placeholder={t('transactions.desc_placeholder')} value={form.desc} onChange={e => setForm({ ...form, desc: e.target.value })} />
+                <input type="text" className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm" placeholder={t('transactions.desc_placeholder')} value={form.desc} onChange={e => (onDescChange ? onDescChange(e.target.value) : setForm({ ...form, desc: e.target.value }))} />
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400"><CreditCard size={11} className="inline mr-1" /> {ui("Valor (")}{currency})</label>
@@ -60,9 +63,15 @@ export default function TransactionsForm({
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400"><Tag size={11} className="inline mr-1" /> {t('transactions.category')}</label>
-                <select className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm" value={form.cat} onChange={e => setForm({ ...form, cat: e.target.value })}>
+                <select className="form-input h-10 bg-black/5 dark:bg-white/5 border-transparent focus:border-ocean/20 rounded-xl text-sm" value={form.cat} onChange={e => (onCategoryChange ? onCategoryChange(e.target.value) : setForm({ ...form, cat: e.target.value }))}>
                   {CATEGORIES.map(c => <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={c.id} value={c.id}>{t(`common.categories.${c.key}`)}</option>)}
                 </select>
+                {catSuggestion && catSuggestion.category === form.cat && (
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1" aria-live="polite">
+                    <Sparkles size={11} className="text-gold" />
+                    {catSuggestion.source === 'rules' ? ui("Sugerida pela descrição. Podes mudar.") : ui("Sugerida pelo teu histórico. Podes mudar.")}
+                  </p>
+                )}
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400"><Wallet size={11} className="inline mr-1" /> {ui("Conta")}</label>

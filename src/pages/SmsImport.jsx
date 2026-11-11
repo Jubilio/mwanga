@@ -9,6 +9,7 @@ import { Capacitor } from '@capacitor/core';
 import { useSmsSync } from '../hooks/useSmsSync';
 import { SMS_INBOX_ENABLED, getEffectiveTier } from '../config/features';
 import { useFinance } from '../hooks/useFinance';
+import { useCategorySuggester } from '../hooks/useCategorySuggester';
 import { getSmsQuota } from '../utils/smsQuota';
 
 const SAMPLE_SMS = [
@@ -71,10 +72,16 @@ function inferTransactionType(result) {
   return INCOME_TYPES.includes(result.transaction_type) ? 'receita' : 'despesa';
 }
 
+// Fallback when the household's history has nothing confident to say.
 function inferCategory(result) {
   const type = result.transaction_type;
   if (type === 'credit') return 'salary';
   return 'other';
+}
+
+// Who received the money says what it was for. The raw SMS text would only add noise.
+function categoryText(result) {
+  return [result.recipient_name, result.merchant_name].filter(Boolean).join(' ');
 }
 
 // Plain words for the transaction description, e.g. "BCI - Compra - CENTRO MED".
@@ -189,6 +196,7 @@ export default function SmsImport() {
   const { syncSms } = useSmsSync(showToast);
   const [syncing, setSyncing] = useState(false);
   const { state, reloadData } = useFinance();
+  const suggestCategory = useCategorySuggester(state.transacoes);
   const [saveError, setSaveError] = useState('');
   const [accountId, setAccountId] = useState('');
   const [syncBalance, setSyncBalance] = useState(false);
@@ -320,12 +328,14 @@ export default function SmsImport() {
 
     setSaving(true);
     try {
+      const txType = inferTransactionType(result);
+      const suggestion = suggestCategory(categoryText(result), txType);
       const payload = {
         date: toIsoDate(result.transaction_datetime),
-        type: inferTransactionType(result),
+        type: txType,
         amount,
         description: buildDescription(result),
-        category: inferCategory(result),
+        category: suggestion?.category || inferCategory(result),
         note: buildNote(result, smsText, t),
       };
       if (accountId) payload.account_id = Number(accountId);

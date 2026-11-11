@@ -67,7 +67,8 @@ it('saves the parsed SMS when Confirm is tapped', async () => {
 
   const [url, payload] = api.post.mock.calls[1];
   expect(url).toBe('/transactions');
-  expect(payload).toMatchObject({ date: '2026-10-31', type: 'despesa', amount: 2580, category: 'other', account_id: 3 });
+  // "CENTRO MED" is categorised as health instead of the old fixed "other".
+  expect(payload).toMatchObject({ date: '2026-10-31', type: 'despesa', amount: 2580, category: 'health', account_id: 3 });
   expect(payload.description).toContain('CENTRO MED');
   expect(payload.note).toContain('SMS: ');
   expect(showToast).toHaveBeenCalledWith('Transaction recorded successfully!', 'success');
