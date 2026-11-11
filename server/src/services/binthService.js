@@ -245,6 +245,7 @@ function firstName(name) {
 
 function formatRate(debt) {
   const pct = Number(debt.interest_rate || 0) * 100;
+  if (debt.interest_period === 'term') return `${Number(pct.toFixed(2))}% de taxa única pelo prazo`;
   const period = debt.interest_period === 'annual' ? 'ao ano' : 'ao mês';
   return `${Number(pct.toFixed(2))}% ${period}`;
 }

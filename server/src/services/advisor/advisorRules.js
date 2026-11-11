@@ -285,6 +285,8 @@ function goalStatus(goal, today) {
 // ---------- debts ----------
 
 function monthlyRate(d) {
+  // 'term' (Txuna M-Pesa): one service fee for the whole term, already in the total.
+  if (d.interest_period === 'term') return 0;
   const r = num(d.interest_rate);
   return d.interest_period === 'annual' ? r / 12 : r;
 }
@@ -503,7 +505,7 @@ function buildAlerts(snapshot, today, lang = 'pt') {
     alerts.push({
       id: `due:${c.id}:${c.date}`, kind: 'due', priority: c.overdue || c.date === today ? 1 : 2,
       title: en ? `${what[0].toUpperCase()}${what.slice(1)} ${when}` : `${what[0].toUpperCase()}${what.slice(1)} ${when}`,
-      body: `${c.label ? `${c.label}: ` : ''}${money(c.amount, lang)}.`,
+      body: `${c.label ? `${c.label}: ` : ''}${money(c.amount, lang)}.${c.kind === 'debt' && /txuna/i.test(c.label || '') ? (en ? ' Paying late can lower your limit, block new Txuna loans and be reported to the Banco de Moçambique credit registry.' : ' Em atraso, o banco pode baixar o teu limite, suspender novos Txuna e reportar à Central de Risco de Crédito.') : ''}`,
       action,
       data: c,
     });

@@ -374,7 +374,8 @@ export function FinanceProvider({ children }) {
           interest_period: payload.interest_period || 'monthly',
           months_duration: payload.months_duration || 0,
           monthly_payment: payload.monthly_payment || 0,
-          principal_amount: payload.principal_amount || payload.total_amount
+          principal_amount: payload.principal_amount || payload.total_amount,
+          ...(payload.start_date ? { start_date: payload.start_date } : {})
         };
         return persistWrite(body, {
           refresh: refreshDebts,

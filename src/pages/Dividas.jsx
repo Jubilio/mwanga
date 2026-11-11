@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { fmt } from '../utils/calculations';
 import { getPaymentMethodLabel } from '../utils/paymentMethods';
 import BinthContextual from '../components/BinthContextual';
+import { TXUNA_TERMS, buildTxunaDebt, computeTxunaLoan, isTxunaDebt, localToday, txunaStatus, txunaTermDays } from '../utils/txuna';
 
 export default function Dividas() {
   useUiLanguage();
@@ -25,6 +26,11 @@ export default function Dividas() {
     account_id: '' 
   });
 
+  // 'normal' = empréstimo com juros ao mês/ano; 'txuna' = Txuna M-Pesa (taxa única por prazo).
+  const [debtKind, setDebtKind] = useState('normal');
+  const [txuna, setTxuna] = useState({ principal: '', days: 30, loan_date: localToday(), account_id: '' });
+  const txunaLoan = computeTxunaLoan(txuna.principal, txuna.days, txuna.loan_date);
+
   const [showPayForm, setShowPayForm] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentAccount, setPaymentAccount] = useState('');
@@ -37,6 +43,8 @@ export default function Dividas() {
   const getMonthlyRate = (debt) => {
     const rawRate = Number(debt.interest_rate || 0);
     if (rawRate <= 0) return 0;
+    // Txuna: a taxa de serviço é única e já está no total; não rende juros ao mês.
+    if (isTxunaDebt(debt)) return 0;
     // Fallback: if period doesn't exist, assume rate > 0.1 is annual, else monthly
     const isAnnual = debt.interest_period === 'annual' || (!debt.interest_period && rawRate > 0.1);
     return isAnnual ? rawRate / 12 : rawRate;
@@ -196,6 +204,17 @@ export default function Dividas() {
     setShowAddForm(false);
   };
 
+  const handleAddTxuna = (e) => {
+    e.preventDefault();
+    if (!txunaLoan) return;
+    dispatch({ type: 'ADD_DEBT', payload: { ...buildTxunaDebt(txunaLoan, txuna.account_id), start_date: txunaLoan.loanDate } });
+    setTxuna({ principal: '', days: 30, loan_date: localToday(), account_id: '' });
+    setDebtKind('normal');
+    setShowAddForm(false);
+  };
+
+  const mpesaAccountId = (state.contas || []).find(c => /m-?pesa/i.test(c.name || ''))?.id;
+
   const handlePay = (debtId) => {
     if (!paymentAmount) return;
 
@@ -270,6 +289,96 @@ export default function Dividas() {
             <h3 className="font-bold text-lg flex items-center gap-2"><span className="text-gold">✦</span> {t('debts.form.title')}</h3>
             <span className="text-xs px-2 py-1 bg-gold/10 text-gold rounded-full font-normal">BETA Calculator</span>
           </div>
+          <div className="grid grid-cols-2 gap-2 mb-5" role="tablist">
+            {[['normal', ui("Empréstimo normal")], ['txuna', 'Txuna M-Pesa']].map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={debtKind === key}
+                onClick={() => {
+                  setDebtKind(key);
+                  if (key === 'txuna' && !txuna.account_id && mpesaAccountId) setTxuna(v => ({ ...v, account_id: String(mpesaAccountId) }));
+                }}
+                className={`min-h-11 rounded-xl border text-sm font-bold transition-colors ${debtKind === key ? 'border-gold bg-gold/10 text-gold' : 'border-gray-200 dark:border-white/10 text-slate-600 dark:text-gray-400'}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {debtKind === 'txuna' && (
+            <form onSubmit={handleAddTxuna} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 border-l-4 border-l-gold pl-4">
+              <div>
+                <label htmlFor="txuna-principal" className="block text-xs font-bold mb-1 uppercase tracking-wide text-slate-600 dark:text-gray-400">{ui("Valor que recebeste")}</label>
+                <input id="txuna-principal" type="number" inputMode="decimal" className="form-input bg-gray-50 dark:bg-[#0c1018]" required min="1" step="any" value={txuna.principal} onChange={e => setTxuna({ ...txuna, principal: e.target.value })} placeholder="1000" />
+              </div>
+              <div>
+                <label htmlFor="txuna-date" className="block text-xs font-bold mb-1 uppercase tracking-wide text-slate-600 dark:text-gray-400">{ui("Dia em que pediste")}</label>
+                <input id="txuna-date" type="date" className="form-input bg-gray-50 dark:bg-[#0c1018]" required max={localToday()} value={txuna.loan_date} onChange={e => setTxuna({ ...txuna, loan_date: e.target.value })} />
+              </div>
+              <div className="md:col-span-2">
+                <span className="block text-xs font-bold mb-1 uppercase tracking-wide text-slate-600 dark:text-gray-400">{ui("Prazo e taxa de serviço")}</span>
+                <div className="grid grid-cols-3 gap-2">
+                  {TXUNA_TERMS.map(term => (
+                    <button
+                      key={term.days}
+                      type="button"
+                      aria-pressed={Number(txuna.days) === term.days}
+                      onClick={() => setTxuna({ ...txuna, days: term.days })}
+                      className={`min-h-14 rounded-xl border px-2 py-2 text-center transition-colors ${Number(txuna.days) === term.days ? 'border-gold bg-gold/10 text-gold' : 'border-gray-200 dark:border-white/10 text-slate-700 dark:text-gray-300'}`}
+                    >
+                      <span className="block text-sm font-bold">{term.days} {ui("dias")}</span>
+                      <span className="block text-[11px]">{ui("taxa")} {Math.round(term.fee * 100)}%</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor="txuna-account" className="block text-xs font-bold mb-1 uppercase tracking-wide text-slate-600 dark:text-gray-400">{ui("Conta M-Pesa onde o dinheiro entrou (Opcional)")}</label>
+                <select id="txuna-account" className="form-input bg-green-50/30 dark:bg-green-900/10 border-green-200/50 focus:border-green-500" value={txuna.account_id} onChange={e => setTxuna({ ...txuna, account_id: e.target.value })}>
+                  <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" value="">{ui("Não registar entrada em conta")}</option>
+                  {state.contas?.map(acc => (
+                    <option className="text-slate-900 bg-white dark:bg-slate-800 dark:text-white" key={acc.id} value={acc.id}>{acc.name} • {fmt(acc.current_balance, currency)}</option>
+                  ))}
+                </select>
+              </div>
+
+              {txunaLoan && (
+                <div className="md:col-span-2 rounded-xl border border-gold/30 bg-gold/5 p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gold mb-3">{ui("✦ Resumo do Txuna")}</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="text-center p-2 rounded-lg bg-black/5 dark:bg-white/5">
+                      <p className="text-[9px] uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-1">{ui("Recebes")}</p>
+                      <p className="text-sm font-bold text-dark dark:text-white">{fmt(txunaLoan.principal, currency)}</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-black/5 dark:bg-white/5">
+                      <p className="text-[9px] uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-1">{ui("Taxa de serviço")}</p>
+                      <p className="text-sm font-bold text-red-500">{fmt(txunaLoan.fee, currency)}</p>
+                      <p className="text-[9px] text-slate-600 dark:text-slate-400">{Math.round(txunaLoan.feeRate * 100)}%</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-coral/10 border border-coral/20">
+                      <p className="text-[9px] uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-1">{ui("Total a pagar")}</p>
+                      <p className="text-sm font-bold text-coral">{fmt(txunaLoan.total, currency)}</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-black/5 dark:bg-white/5">
+                      <p className="text-[9px] uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-1">{ui("Pagar até")}</p>
+                      <p className="text-sm font-bold text-dark dark:text-white">{txunaLoan.dueDate}</p>
+                      <p className="text-[9px] text-slate-600 dark:text-slate-400">{txunaLoan.days} {ui("dias")}</p>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">{ui("Podes pagar de uma vez ou aos poucos, desde que tudo fique pago até à data limite. Em atraso, o banco pode baixar o teu limite, suspender novos Txuna e reportar à Central de Risco de Crédito do Banco de Moçambique.")}</p>
+                </div>
+              )}
+
+              <div className="md:col-span-2 flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-white/5">
+                <button type="button" className="btn bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-6" onClick={() => setShowAddForm(false)}>{t('debts.form.cancel')}</button>
+                <button type="submit" disabled={!txunaLoan} className="btn bg-linear-to-r from-gold to-yellow-600 border-none text-black font-bold px-8 shadow-lg shadow-gold/20 disabled:opacity-50">{ui("Guardar Txuna")}</button>
+              </div>
+            </form>
+          )}
+
+          {debtKind === 'normal' && (
           <form onSubmit={handleAddDebt} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 border-l-4 border-l-gold pl-4">
             <div className="md:col-span-2">
               <label className="block text-xs font-bold mb-1 uppercase tracking-wide text-slate-600 dark:text-gray-400">{t('debts.form.creditor_label')}</label>
@@ -379,6 +488,7 @@ export default function Dividas() {
               <button type="submit" className="btn bg-linear-to-r from-gold to-yellow-600 border-none text-black font-bold px-8 shadow-lg shadow-gold/20">{t('debts.form.save')}</button>
             </div>
           </form>
+          )}
         </div>
       )}
 
@@ -405,6 +515,13 @@ export default function Dividas() {
               {sortedDebts.map(debt => {
                 const monthlyRate = getMonthlyRate(debt);
                 const isToxic = debt.status !== 'paid' && monthlyRate > 0.05; // > 5% per month
+                const isTxuna = isTxunaDebt(debt);
+                const tx = isTxuna ? txunaStatus(debt) : null;
+                const txLabel = !tx || tx.level === 'paid' || tx.daysLeft === null ? null
+                  : tx.level === 'overdue' ? ui("Em atraso há {{p0}} dia(s)", { p0: Math.abs(tx.daysLeft) })
+                  : tx.level === 'today' ? ui("Vence hoje")
+                  : ui("Faltam {{p0}} dia(s)", { p0: tx.daysLeft });
+                const txUrgent = tx && ['overdue', 'today', 'soon'].includes(tx.level);
 
                 return (
                 <React.Fragment key={`debt-${debt.id}`}>
@@ -419,6 +536,14 @@ export default function Dividas() {
                       )}
                     </div>
                     <div className="text-[10px] text-muted hide-desktop">{debt.due_date || t('debts.table.no_date')}</div>
+                    {isTxuna && debt.status !== 'paid' && (
+                      <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px] font-bold">
+                        <span className="px-2 py-0.5 rounded-full bg-gold/10 text-(--color-gold-text)">{txunaTermDays(debt)} {ui("dias")} • {ui("taxa")} {Math.round(Number(debt.interest_rate || 0) * 100)}%</span>
+                        {txLabel && (
+                          <span className={`px-2 py-0.5 rounded-full ${txUrgent ? 'bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-leaf/10 text-leaf'}`}>{txLabel}</span>
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td className="hide-mobile text-muted">
                     <div className="flex flex-col gap-1">
@@ -454,6 +579,10 @@ export default function Dividas() {
                           onClick={() => {
                             setShowPayForm(showPayForm === debt.id ? null : debt.id);
                             setShowScheduleId(null);
+                            if (isTxuna) {
+                              setPaymentAmount(String(Number(debt.remaining_amount || 0)));
+                              setPaymentAccount(mpesaAccountId ? String(mpesaAccountId) : '');
+                            }
                           }}
                           className="text-leaf hover:opacity-70 p-1"
                           title={ui("Registar Pagamento")}
@@ -461,7 +590,7 @@ export default function Dividas() {
                           <CheckCircle2 size={18} />
                         </button>
                       )}
-                      {debt.status !== 'paid' && (
+                      {debt.status !== 'paid' && !isTxuna && (
                         <button
                           onClick={() => {
                             setShowScheduleId(showScheduleId === debt.id ? null : debt.id);
@@ -489,7 +618,18 @@ export default function Dividas() {
                   <tr className="bg-gray-50/50 dark:bg-[#151c27]">
                     <td colSpan="5" className="p-4 border-t border-gray-100 dark:border-white/5">
                       <div className="flex flex-col gap-4">
-                        {!isToxic && hasToxicDebtsPending && (
+                        {isTxuna && (
+                          <div className={`flex items-start gap-2 px-3 py-3 rounded-lg border text-[12px] leading-snug ${txUrgent ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-700/30 text-red-700 dark:text-red-400' : 'bg-gold/5 border-gold/20 text-slate-700 dark:text-slate-300'}`}>
+                            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                            <div>
+                              <span className="font-bold">{ui("Falta pagar {{p0}}", { p0: fmt(debt.remaining_amount, currency) })}{debt.due_date ? ` ${ui("até")} ${debt.due_date}` : ''}. </span>
+                              {tx?.level === 'overdue'
+                                ? ui("O prazo já passou. O banco pode baixar o teu limite, suspender novos Txuna e reportar à Central de Risco de Crédito do Banco de Moçambique. Paga o que falta o mais cedo possível.")
+                                : ui("Podes pagar tudo ou uma parte agora; o resto tem de entrar até à data limite. Paga no *150#, opção 8, ou na app Meu M-Pesa, e regista aqui.")}
+                            </div>
+                          </div>
+                        )}
+                        {!isTxuna && !isToxic && hasToxicDebtsPending && (
                           <div className="flex items-start gap-2 px-3 py-3 rounded-lg bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-700/30 text-orange-700 dark:text-orange-400 shadow-sm">
                             <span className="text-sm shrink-0 mt-1">⚠️</span>
                             <div className="text-[12px] leading-snug">

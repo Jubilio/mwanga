@@ -11,6 +11,7 @@ import { SMS_INBOX_ENABLED, getEffectiveTier } from '../config/features';
 import { useFinance } from '../hooks/useFinance';
 import { useCategorySuggester } from '../hooks/useCategorySuggester';
 import { getSmsQuota } from '../utils/smsQuota';
+import { TXUNA_TERMS, planTxunaSmsAction } from '../utils/txuna';
 
 const SAMPLE_SMS = [
   'A conta 406659018 foi debitada no valor de 20.00 MZN as 23:17 do dia 24/02/26. Millennium bim',
@@ -216,6 +217,16 @@ export default function SmsImport() {
   }
   const textareaRef = useRef(null);
 
+  // Txuna M-Pesa goes to Dívidas (new loan or repayment), not to a loose transaction.
+  // The bank's loan SMS does not say the term, so the person picks it here.
+  const [txunaDays, setTxunaDays] = useState(null);
+  const txunaPlan = useMemo(
+    () => (result && result.is_financial !== false
+      ? planTxunaSmsAction(smsText, { debts: state.dividas || [], accountId: accountId ? Number(accountId) : null, days: txunaDays })
+      : null),
+    [result, smsText, state.dividas, accountId, txunaDays],
+  );
+
   const typeInfo = useMemo(() => {
     if (!result?.transaction_type) return null;
     const types = TYPE_COLORS(t);
@@ -243,6 +254,7 @@ export default function SmsImport() {
 
       const parsedData = res.data.data.parsed_data;
       setResult(parsedData);
+      setTxunaDays(null);
       setSaveError('');
       const pickedAccount = parsedData ? String(pickAccountId(parsedData, state.contas, state.settings) ?? '') : '';
       setAccountId(pickedAccount);
@@ -323,6 +335,39 @@ export default function SmsImport() {
       const message = t('sms_quota.reached', { limit: quota.limit });
       setSaveError(message);
       showToast(message, 'error');
+      return;
+    }
+
+    if (txunaPlan) {
+      if (txunaPlan.type === 'add_debt' && txunaPlan.assumedTerm) {
+        setSaveError(ui('Escolhe o prazo do Txuna (7, 14 ou 30 dias) antes de confirmar.'));
+        return;
+      }
+      if (txunaPlan.type === 'skip') {
+        setSaveError(ui('Este Txuna já está nas Dívidas, ou não há nenhum Txuna em aberto para abater.'));
+        return;
+      }
+      setSaving(true);
+      try {
+        if (txunaPlan.type === 'add_debt') await api.post('/debts', txunaPlan.body);
+        else await api.post(`/debts/${txunaPlan.debtId}/pay`, txunaPlan.body);
+        const txunaBalance = toBalance(result.balance_after);
+        if (syncBalance && accountId && txunaBalance !== null) {
+          await api.put(`/accounts/${accountId}/balance`, { current_balance: txunaBalance }).catch((error) => console.warn('Balance sync after Txuna failed:', error));
+        }
+        setSavedHere((count) => count + 1);
+        showToast(ui('Txuna M-Pesa actualizado nas Dívidas.'), 'success');
+        setResult(null);
+        setSmsText('');
+        Promise.resolve(reloadData?.()).catch((error) => console.warn('Reload after SMS save failed:', error));
+      } catch (error) {
+        console.error(error);
+        const message = saveErrorMessage(error, t);
+        setSaveError(message);
+        showToast(message, 'error');
+      } finally {
+        setSaving(false);
+      }
       return;
     }
 
@@ -588,6 +633,40 @@ export default function SmsImport() {
                           )}
                         </span>
                       </label>
+                    )}
+                    {txunaPlan && txunaPlan.type !== 'skip' && (
+                      <div className="rounded-xl border border-gold/30 bg-gold/5 p-3 text-xs leading-5 text-slate-300">
+                        <span className="block font-bold text-gold">Txuna M-Pesa</span>
+                        {txunaPlan.type === 'add_debt' ? (
+                          <>
+                            {!txunaPlan.termFromSms && (
+                              <span className="block mb-2">
+                                <span className="block mb-1">{ui('O SMS do banco não diz o prazo. Qual escolheste no *150#?')}</span>
+                                <span className="grid grid-cols-3 gap-2">
+                                  {TXUNA_TERMS.map((term) => (
+                                    <button
+                                      key={term.days}
+                                      type="button"
+                                      aria-pressed={txunaDays === term.days}
+                                      onClick={() => { setTxunaDays(term.days); setSaveError(''); }}
+                                      className={`min-h-11 rounded-lg border px-2 text-center font-bold ${txunaDays === term.days ? 'border-gold bg-gold/15 text-gold' : 'border-white/15 text-slate-300'}`}
+                                    >
+                                      {term.days} {ui('dias')} • {Math.round(term.fee * 100)}%
+                                    </button>
+                                  ))}
+                                </span>
+                              </span>
+                            )}
+                            {!txunaPlan.assumedTerm && (
+                              <span className="block">
+                                {uiFill('Vai para as Dívidas: recebeste {{p0}}, pagas {{p1}} até {{p2}}.', { p0: formatMzn(txunaPlan.loan.principal), p1: formatMzn(txunaPlan.loan.total), p2: txunaPlan.loan.dueDate })}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="block">{uiFill('Abate {{p0}} no teu Txuna em aberto nas Dívidas.', { p0: formatMzn(txunaPlan.body.amount) })}</span>
+                        )}
+                      </div>
                     )}
                     {saveError && (
                       <div role="alert" className="flex items-start gap-2 rounded-xl border border-coral/40 bg-coral/10 p-3 text-xs text-coral leading-5">
