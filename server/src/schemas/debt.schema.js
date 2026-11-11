@@ -10,6 +10,8 @@ const addDebtSchema = z.object({
   months_duration: z.coerce.number().optional().nullable(),
   monthly_payment: z.coerce.number().optional().nullable(),
   principal_amount: z.coerce.number().optional().nullable(),
+  // Day the money came in (YYYY-MM-DD), for the deposit transaction. Defaults to today.
+  start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
 });
 
 const addPaymentSchema = z.object({

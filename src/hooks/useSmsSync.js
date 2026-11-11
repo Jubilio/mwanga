@@ -4,6 +4,7 @@ import { getSmsPermission, isSmsInboxSupported, listMoneySms } from '../services
 import { ensureSmsAccess } from '../services/smsAccess';
 import { useFinance } from './useFinance';
 import { parseMobileMoneySMS } from '../utils/smsParser';
+import { planTxunaSmsAction } from '../utils/txuna';
 import api from '../utils/api';
 import { SMS_INBOX_ENABLED, getEffectiveTier } from '../config/features';
 import { getSmsQuota } from '../utils/smsQuota';
@@ -14,7 +15,7 @@ import { useCategorySuggester } from './useCategorySuggester';
 export function useSmsSync(showToast) {
   useUiLanguage();
   const { state, dispatch, reloadData } = useFinance();
-  const { settings, contas, transacoes } = state;
+  const { settings, contas, transacoes, dividas } = state;
   // Saved without review, so only a confident suggestion replaces "other".
   const suggestCategory = useCategorySuggester(transacoes, { threshold: 0.7 });
 
@@ -52,12 +53,43 @@ export function useSmsSync(showToast) {
       // loop, the sync date only advances to the last imported SMS so nothing is skipped.
       const quota = getSmsQuota(getEffectiveTier(settings), transacoes);
       let stoppedAt = null;
+      // Working copy, so two Txuna SMS in the same sync see each other.
+      const txunaDebts = (dividas || []).map(d => ({ ...d }));
+      let txunaCount = 0;
 
       for (const sms of filteredList) {
         if (parsedCount >= quota.remaining) {
           stoppedAt = sms.date;
           break;
         }
+        // Txuna M-Pesa: o empréstimo e os reembolsos vão para as Dívidas, não para uma transação solta.
+        const smsDay = new Date(sms.date).toISOString().split('T')[0];
+        const mpesaAccount = contas?.find(c => /m-?pesa/i.test(c.name || ''));
+        const txunaAction = planTxunaSmsAction(sms.body, { debts: txunaDebts, smsDay, accountId: mpesaAccount?.id || null });
+        if (txunaAction) {
+          try {
+            if (txunaAction.type === 'add_debt') {
+              const res = await api.post('/debts', txunaAction.body);
+              txunaDebts.push({ ...txunaAction.body, id: res.data?.id, payments: [] });
+              parsedCount++;
+              txunaCount++;
+            } else if (txunaAction.type === 'pay_debt') {
+              await api.post(`/debts/${txunaAction.debtId}/pay`, txunaAction.body);
+              const paid = txunaDebts.find(d => d.id === txunaAction.debtId);
+              if (paid) {
+                paid.remaining_amount = Math.max(0, Number(paid.remaining_amount) - txunaAction.body.amount);
+                if (paid.remaining_amount === 0) paid.status = 'paid';
+                paid.payments = [...(paid.payments || []), { amount: txunaAction.body.amount, payment_date: txunaAction.body.payment_date }];
+              }
+              parsedCount++;
+              txunaCount++;
+            }
+          } catch (err) {
+            console.error('Failed to sync Txuna SMS:', err);
+          }
+          continue;
+        }
+
         const result = parseMobileMoneySMS(sms.body);
         if (result && result.amount) {
            let accountId = null;
@@ -124,6 +156,7 @@ export function useSmsSync(showToast) {
 
       if (parsedCount > 0) {
         showToast?.(ui("Sucesso! {{p0}} transações importadas do SMS.", { p0: parsedCount }), 'success');
+        if (txunaCount > 0) showToast?.(ui("Txuna M-Pesa actualizado nas Dívidas."), 'info');
         // Load the new transactions and updated balances into the app.
         await reloadData?.();
       } else {
@@ -146,7 +179,7 @@ export function useSmsSync(showToast) {
       console.error('SMS Sync Error:', error);
       if (manual) showToast?.(ui("Erro ao tentar sincronizar SMS."), 'error');
     }
-  }, [settings, contas, transacoes, dispatch, reloadData, showToast, suggestCategory]);
+  }, [settings, contas, transacoes, dividas, dispatch, reloadData, showToast, suggestCategory]);
 
   return { syncSms };
 }

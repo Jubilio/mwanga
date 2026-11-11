@@ -28,7 +28,7 @@ const getDebts = async (householdId) => {
 };
 
 const addDebt = async (householdId, data) => {
-  const { creditor_name, total_amount, due_date, account_id, interest_rate, interest_period, months_duration, monthly_payment, principal_amount } = data;
+  const { creditor_name, total_amount, due_date, account_id, interest_rate, interest_period, months_duration, monthly_payment, principal_amount, start_date } = data;
 
   const queries = [
     {
@@ -50,7 +50,7 @@ const addDebt = async (householdId, data) => {
   ];
 
   if (account_id) {
-    const today = new Date().toISOString().split('T')[0];
+    const today = start_date || new Date().toISOString().split('T')[0];
     const injectionAmount = principal_amount || total_amount;
     
     queries.push({
