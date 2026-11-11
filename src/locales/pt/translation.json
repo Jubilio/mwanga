@@ -1684,6 +1684,8 @@
     "concentration": "{{category}} representa a maior parcela das despesas. Revê o que é essencial antes de ajustar o orçamento."
   },
   "uiText": {
+    "sTxuna27": "Escolhe o prazo do Txuna (7, 14 ou 30 dias) antes de confirmar.",
+    "sTxuna28": "O SMS do banco não diz o prazo. Qual escolheste no *150#?",
     "sTxuna01": "Empréstimo normal",
     "sTxuna02": "Valor que recebeste",
     "sTxuna03": "Dia em que pediste",

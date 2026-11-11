@@ -127,6 +127,10 @@ export function pickTxunaDebtForRepayment(debts = []) {
 // ---------- SMS ----------
 
 const MONEY = /([\d][\d.,]*)\s*(?:MT|MZN)\b/gi;
+
+// Real loan SMS (2026-11-10) never says "Txuna": the money comes from the bank's
+// M-Pesa short code, e.g. "Recebeste 3,335.00MT de 902114 - Access Bank".
+const TXUNA_SOURCE = /txuna|\b902114\b|access\s*bank|first\s*capital/i;
 const DATE = /(\d{1,2})\/(\d{1,2})\/(\d{2,4})/;
 
 function smsDate(fragment) {
@@ -150,12 +154,12 @@ function amountAfter(text, keywords) {
  */
 export function parseTxunaSms(input) {
   const text = String(input || '').replace(/\s+/g, ' ').trim();
-  if (!/txuna/i.test(text)) return null;
+  if (!TXUNA_SOURCE.test(text)) return null;
 
   const amounts = [...text.matchAll(MONEY)].map((m) => parseAmount(m[1])).filter((n) => Number.isFinite(n) && n > 0);
   if (amounts.length === 0) return null;
 
-  const transactionId = (text.match(/^([A-Z0-9]{8,14})\s+confirmad[oa]/) || text.match(/ID\s*Trans[:\s]+([A-Za-z0-9.]*[A-Za-z0-9])/i) || [])[1] || null;
+  const transactionId = (text.match(/^([A-Z0-9]{8,14})\s+confirmad[oa]/) || text.match(/^confirmad[oa]\s+([A-Z0-9]{8,14})\b/i) || text.match(/ID\s*Trans[:\s]+([A-Za-z0-9.]*[A-Za-z0-9])/i) || [])[1] || null;
   const dueFragment = text.match(/(?:at[eé]|vence|prazo|data limite|limite)[^\d]{0,25}(\d{1,2}\/\d{1,2}\/\d{2,4})/i);
   const dueDate = dueFragment ? smsDate(dueFragment[1]) : null;
   const firstDate = smsDate(dueFragment ? text.replace(dueFragment[0], '') : text);
@@ -163,12 +167,12 @@ export function parseTxunaSms(input) {
 
   const lower = text.toLowerCase();
   const loanWords = /recebeste|recebeu|creditad|concedid|aprovad|desembols|foi transferid/.test(lower);
-  const payWords = /pagaste|pagou|pagamento|reembols|liquidad|liquidaste|amortiz/.test(lower);
+  const payWords = /pagaste|pagou|pagamento|reembols|liquidad|liquidaste|amortiz|transferiste|enviaste/.test(lower);
   const kind = loanWords ? 'loan' : payWords ? 'repayment' : /empr[eé]stimo|pediste|solicitaste/.test(lower) ? 'loan' : null;
   if (!kind) return null;
 
   if (kind === 'repayment') {
-    const amount = amountAfter(text, 'pagaste|pagou|pagamento de|reembolso de|reembolsaste|valor de') ?? amounts[0];
+    const amount = amountAfter(text, 'pagaste|pagou|pagamento de|reembolso de|reembolsaste|transferiste|enviaste|valor de') ?? amounts[0];
     const remaining = amountAfter(text, 'em d[ií]vida|por pagar|falta(?:m)?|saldo do empr[eé]stimo|valor em falta|remanescente');
     const settled = /liquidad|totalmente pago|pago na totalidade/.test(lower) || remaining === 0;
     return { kind, amount, remaining: remaining ?? (settled ? 0 : null), date: firstDate, transactionId };
@@ -214,12 +218,13 @@ export function loanFromSms(parsed, fallbackDays = 30, today = localToday()) {
  *  { type: 'skip' }                     já registado, ou reembolso sem Txuna em aberto
  * Devolve null quando o SMS não é Txuna.
  */
-export function planTxunaSmsAction(smsText, { debts = [], smsDay = localToday(), accountId = null } = {}) {
+export function planTxunaSmsAction(smsText, { debts = [], smsDay = localToday(), accountId = null, days = null } = {}) {
   const parsed = parseTxunaSms(smsText);
   if (!parsed) return null;
 
   if (parsed.kind === 'loan') {
-    const loan = loanFromSms({ ...parsed, loanDate: parsed.loanDate || smsDay }, 30, smsDay);
+    // The bank SMS gives no term; the person picks it (days), otherwise 30.
+    const loan = loanFromSms({ ...parsed, days: parsed.days || termForDays(days)?.days || null, loanDate: parsed.loanDate || smsDay }, 30, smsDay);
     if (!loan) return { type: 'skip' };
     const already = debts.some((d) => isTxunaDebt(d)
       && Math.abs(Number(d.principal_amount || 0) - loan.principal) < 0.01
@@ -229,7 +234,8 @@ export function planTxunaSmsAction(smsText, { debts = [], smsDay = localToday(),
       type: 'add_debt',
       loan,
       // Sem prazo no SMS assumimos 30 dias; a pessoa pode corrigir nas Dívidas.
-      assumedTerm: !parsed.days,
+      assumedTerm: !parsed.days && !termForDays(days),
+      termFromSms: Boolean(parsed.days),
       body: { ...buildTxunaDebt(loan, accountId), start_date: loan.loanDate },
     };
   }

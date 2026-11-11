@@ -68,6 +68,33 @@ describe('parseTxunaSms', () => {
   });
 });
 
+// Real SMS from 2026-11-10 (Access Bank Txuna loan); it never says "Txuna".
+const REAL_LOAN_SMS = 'Confirmado DKA1M9YZ4FH. Recebeste  3,335.00MT de 902114 - Access Bank aos 10/11/26  as 10:09 AM o novo saldo  M-Pesa e de 3,335.28MT. Aproveita e transfere SEM TAXAS de M-Pesa para M-Pesa. Em caso de duvida, liga 100.';
+
+describe('real Txuna SMS', () => {
+  it('reads the Access Bank loan SMS', () => {
+    expect(parseTxunaSms(REAL_LOAN_SMS)).toMatchObject({
+      kind: 'loan', principal: 3335, total: null, days: null, loanDate: '2026-11-10', dueDate: null, transactionId: 'DKA1M9YZ4FH',
+    });
+  });
+
+  it('uses the term the person picks, since the SMS does not give it', () => {
+    const plan = planTxunaSmsAction(REAL_LOAN_SMS, { days: 14 });
+    expect(plan).toMatchObject({ type: 'add_debt', assumedTerm: false });
+    expect(plan.body).toMatchObject({ principal_amount: 3335, total_amount: 3735.2, interest_rate: 0.12, due_date: '2026-11-24', start_date: '2026-11-10' });
+    expect(planTxunaSmsAction(REAL_LOAN_SMS).body).toMatchObject({ total_amount: 3835.25, due_date: '2026-12-10' });
+  });
+
+  it('treats money sent to the bank short code as a repayment', () => {
+    const sms = 'Confirmado DKC2AB34CDE. Transferiste 1,000.00MT para 902114 - Access Bank aos 15/11/26 as 9:00 AM o novo saldo M-Pesa e de 500.00MT.';
+    expect(parseTxunaSms(sms)).toMatchObject({ kind: 'repayment', amount: 1000, date: '2026-11-15', transactionId: 'DKC2AB34CDE' });
+  });
+
+  it('leaves ordinary M-Pesa transfers alone', () => {
+    expect(parseTxunaSms('Confirmado DKA1M9YZ4FH. Recebeste 500.00MT de 841234567 - ANA COSSA aos 10/11/26 as 10:09 AM.')).toBeNull();
+  });
+});
+
 describe('planTxunaSmsAction', () => {
   const loanSms = 'DKA5XY12ABC confirmado. Recebeste 1,000.00MT do Txuna M-Pesa no dia 10/11/26. Prazo de 14 dias. Total a pagar 1,120.00MT ate 24/11/2026.';
   const paySms = 'DKB7QQ90XYZ confirmado. Pagaste 400.00MT do teu emprestimo Txuna M-Pesa no dia 12/11/26.';

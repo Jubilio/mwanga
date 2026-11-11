@@ -1684,6 +1684,8 @@
     "concentration": "{{category}} makes up the largest share of expenses. Review essential spending before adjusting your budget."
   },
   "uiText": {
+    "sTxuna27": "Pick the Txuna term (7, 14 or 30 days) before confirming.",
+    "sTxuna28": "The bank SMS does not give the term. Which one did you pick on *150#?",
     "sTxuna01": "Regular loan",
     "sTxuna02": "Amount you received",
     "sTxuna03": "Day you took it",
