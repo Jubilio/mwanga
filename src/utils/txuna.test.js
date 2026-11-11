@@ -90,6 +90,21 @@ describe('real Txuna SMS', () => {
     expect(parseTxunaSms(sms)).toMatchObject({ kind: 'repayment', amount: 1000, date: '2026-11-15', transactionId: 'DKC2AB34CDE' });
   });
 
+  // Real repayment SMS (2026-10-29): 4,025 = 3,500 + 15% (30 days), paid in full.
+  const REAL_PAY_SMS = 'Confirmado DJT4M4RHFTU. Pagaste o teu Txuna M-Pesa de 4,025.00MT ao Access Bank, aos 29/10/26  as 4:45 PM. O teu novo saldo M-Pesa e 2,976.28MT. Em caso de duvida, ligue para 100. M-Pesa e facil!';
+
+  it('reads the real repayment SMS', () => {
+    expect(parseTxunaSms(REAL_PAY_SMS)).toMatchObject({ kind: 'repayment', amount: 4025, date: '2026-10-29', transactionId: 'DJT4M4RHFTU' });
+  });
+
+  it('settles the open Txuna with the real repayment SMS', () => {
+    const debt = { id: 4, ...buildTxunaDebt(computeTxunaLoan(3500, 30, '2026-10-01')), payments: [] };
+    expect(debt.total_amount).toBe(4025);
+    expect(planTxunaSmsAction(REAL_PAY_SMS, { debts: [debt], accountId: 2 })).toEqual({
+      type: 'pay_debt', debtId: 4, body: { amount: 4025, payment_date: '2026-10-29', account_id: 2 },
+    });
+  });
+
   it('leaves ordinary M-Pesa transfers alone', () => {
     expect(parseTxunaSms('Confirmado DKA1M9YZ4FH. Recebeste 500.00MT de 841234567 - ANA COSSA aos 10/11/26 as 10:09 AM.')).toBeNull();
   });
