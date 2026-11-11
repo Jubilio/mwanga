@@ -9,11 +9,14 @@ import { SMS_INBOX_ENABLED, getEffectiveTier } from '../config/features';
 import { getSmsQuota } from '../utils/smsQuota';
 import { planBalanceSyncs } from '../utils/smsBalance';
 import i18n from '../i18n';
+import { useCategorySuggester } from './useCategorySuggester';
 
 export function useSmsSync(showToast) {
   useUiLanguage();
   const { state, dispatch, reloadData } = useFinance();
   const { settings, contas, transacoes } = state;
+  // Saved without review, so only a confident suggestion replaces "other".
+  const suggestCategory = useCategorySuggester(transacoes, { threshold: 0.7 });
 
   const syncSms = useCallback(async (manual = false) => {
     if (!SMS_INBOX_ENABLED) return;
@@ -89,7 +92,7 @@ export function useSmsSync(showToast) {
                 date: new Date(sms.date).toISOString().split('T')[0],
                 type: isIncome ? 'receita' : 'despesa',
                 amount: result.amount,
-                category: result.category || ui("Outros"),
+                category: suggestCategory(result.description, isIncome ? 'receita' : 'despesa')?.category || result.category || ui("Outros"),
                 description: `${result.description || 'Auto-Sync SMS'} ${result.transaction_id ? `(${result.transaction_id})` : ''}`,
                 note: uniqueNote,
                 account_id: accountId ? Number(accountId) : null
@@ -143,7 +146,7 @@ export function useSmsSync(showToast) {
       console.error('SMS Sync Error:', error);
       if (manual) showToast?.(ui("Erro ao tentar sincronizar SMS."), 'error');
     }
-  }, [settings, contas, transacoes, dispatch, reloadData, showToast]);
+  }, [settings, contas, transacoes, dispatch, reloadData, showToast, suggestCategory]);
 
   return { syncSms };
 }
