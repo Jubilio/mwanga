@@ -26,7 +26,7 @@ const submitApplication = async (req, res, next) => {
   } catch (error) {
     // Pedido recusado: não guardar BI, selfie e comprovativos sem motivo.
     await secureFiles.deleteFiles(secureFiles.uploadedFilenames(req));
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     if (error.message === 'CONSENT_REQUIRED') {
       return res.status(400).json({ error: 'Consentimento necessário', message: 'Para pedir crédito, autorize o cálculo do score com as suas transacções.' });
     }
@@ -69,7 +69,7 @@ const recordPartnerDisbursement = async (req, res, next) => {
     const loanId = await creditService.recordPartnerDisbursement(applicationId, data);
     res.json({ message: 'Desembolso do parceiro registado', loanId });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     if (error.message === 'NOT_FOUND') return res.status(404).json({ error: 'Pedido não encontrado' });
     if (error.message === 'INVALID_STATUS') return res.status(400).json({ error: 'Pedido já processado ou em estado inválido' });
     

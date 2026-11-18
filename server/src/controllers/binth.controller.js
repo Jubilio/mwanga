@@ -50,7 +50,7 @@ const chat = async (req, res, next) => {
 
     res.json(response);
   } catch (err) {
-    if (err instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: err.errors });
+    if (err instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: err.issues });
     console.error('[Binth Chat Error]', err.message);
     res.status(500).json({
       message: resolveLanguage(req.body?.language || req.get('Accept-Language')) === 'en' ? 'I could not process your request. Please try again.' : 'Tive um problema a processar o teu pedido. Tenta novamente!',
@@ -248,7 +248,7 @@ const getPageInsight = async (req, res, next) => {
 
     res.json(response);
   } catch (err) {
-    if (err instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: err.errors });
+    if (err instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: err.issues });
     console.error('[Binth Insights Error]', err.message);
     res.status(500).json({
       message: resolveLanguage(req.query?.language || req.get('Accept-Language')) === 'en' ? 'I could not generate an insight. Please try again.' : 'Não consegui gerar uma sugestão. Tenta novamente.',

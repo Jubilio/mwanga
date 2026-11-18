@@ -19,7 +19,7 @@ const createGoal = async (req, res, next) => {
     const result = await goalService.createGoal(req.user.householdId, data);
     res.status(201).json(result);
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     next(error);
   }
 };
@@ -30,7 +30,7 @@ const updateGoalProgress = async (req, res, next) => {
     const finalSavedAmount = await goalService.updateGoalProgress(req.user.householdId, req.params.id, data);
     res.json({ success: true, savedAmount: finalSavedAmount });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     if (error.message === 'NOT_FOUND') return res.status(404).json({ error: 'Meta não encontrada' });
     logger.error({ err: error }, 'Error updating goal progress');
     next(error);

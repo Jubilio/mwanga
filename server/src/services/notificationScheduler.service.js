@@ -9,6 +9,7 @@ const logger = require('../utils/logger');
 const { runScheduledEngagementSweep } = require('./notificationEventEngine.service');
 const { processNotificationCandidates } = require('./notificationEngine.service');
 const axios = require('axios');
+const { runExclusive } = require('../utils/jobLock');
 
 const HEARTBEAT_URL = 'https://ping.checklyhq.com/340611d0-3a15-4e1f-beb5-ac7a4e05cdfc';
 
@@ -21,7 +22,8 @@ function startNotificationScheduler() {
   cron.schedule(SCHEDULER_INTERVAL, async () => {
     try {
       logger.info('[Scheduler] Running engagement sweep...');
-      await runScheduledEngagementSweep();
+      const { ran } = await runExclusive('notification-engagement-sweep', runScheduledEngagementSweep);
+      if (!ran) return;
       // Ping Checkly Heartbeat
       await axios.get(HEARTBEAT_URL).catch(err => logger.error(`[Scheduler] Heartbeat ping failed: ${err.message}`));
     } catch (error) {
@@ -34,7 +36,8 @@ function startNotificationScheduler() {
   cron.schedule('1-59/5 * * * *', async () => {
     try {
       logger.info('[Scheduler] Running intelligent notification engine...');
-      await processNotificationCandidates();
+      const { ran } = await runExclusive('notification-decision-engine', processNotificationCandidates);
+      if (!ran) return;
       // Ping Checkly Heartbeat (redundant but ensures either job keeps it alive)
       await axios.get(HEARTBEAT_URL).catch(err => logger.error(`[Scheduler] Heartbeat ping failed: ${err.message}`));
     } catch (error) {

@@ -15,7 +15,8 @@ jest.mock('../utils/audit', () => ({
 }));
 
 jest.mock('../utils/redis', () => ({
-  del: jest.fn()
+  del: jest.fn(),
+  incr: jest.fn(),
 }));
 
 describe('Account Service', () => {
@@ -66,7 +67,7 @@ describe('Account Service', () => {
         sql: expect.stringContaining('INSERT INTO transactions'),
         args: [today, 'Saldo inicial: Cash', 1000, MOCK_HOUSEHOLD_ID, 6]
       });
-      expect(redis.del).toHaveBeenCalledWith(`transactions:${MOCK_HOUSEHOLD_ID}:1:50:all:all:all:all`);
+      expect(redis.incr).toHaveBeenCalledWith(`transactions:ver:${MOCK_HOUSEHOLD_ID}`);
       expect(redis.del).toHaveBeenCalledWith(`dashboard:${MOCK_HOUSEHOLD_ID}`);
       expect(result).toBe(6);
     });

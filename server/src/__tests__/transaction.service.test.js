@@ -16,6 +16,7 @@ jest.mock('../utils/redis', () => ({
   get: jest.fn(),
   setex: jest.fn(),
   del: jest.fn(),
+  incr: jest.fn(),
 }));
 
 jest.mock('../utils/audit', () => ({
@@ -39,19 +40,24 @@ describe('Transaction Service', () => {
   });
 
   describe('getTransactions', () => {
+    // The first redis.get reads the household's cache version, the second the page.
+    const mockRedisGets = (version, page) => {
+      redis.get.mockImplementation(async (key) => (key.startsWith('transactions:ver:') ? version : page));
+    };
+
     it('should return cached transactions if available in Redis', async () => {
       const mockTransactions = [{ id: 1, amount: 100 }];
-      redis.get.mockResolvedValueOnce(JSON.stringify(mockTransactions));
+      mockRedisGets('3', JSON.stringify(mockTransactions));
 
       const result = await transactionService.getTransactions(MOCK_HOUSEHOLD_ID, {});
 
-      expect(redis.get).toHaveBeenCalledWith(`transactions:${MOCK_HOUSEHOLD_ID}:1:50:all:all:all:all`);
+      expect(redis.get).toHaveBeenCalledWith(`transactions:${MOCK_HOUSEHOLD_ID}:v3:1:50:all:all:all:all`);
       expect(result).toEqual(mockTransactions);
       expect(db.execute).not.toHaveBeenCalled();
     });
 
     it('should fetch from DB and cache if not in Redis', async () => {
-      redis.get.mockResolvedValueOnce(null);
+      mockRedisGets(null, null);
       const mockTransactions = [{ id: 2, amount: 200 }];
       db.execute.mockResolvedValueOnce({ rows: mockTransactions });
 
@@ -61,8 +67,29 @@ describe('Transaction Service', () => {
         sql: expect.stringContaining('LIMIT ? OFFSET ?'),
         args: [MOCK_HOUSEHOLD_ID, 10, 0]
       });
-      expect(redis.setex).toHaveBeenCalledWith(`transactions:${MOCK_HOUSEHOLD_ID}:1:10:all:all:all:all`, 300, JSON.stringify(mockTransactions));
+      expect(redis.setex).toHaveBeenCalledWith(`transactions:${MOCK_HOUSEHOLD_ID}:v0:1:10:all:all:all:all`, 300, JSON.stringify(mockTransactions));
       expect(result).toEqual(mockTransactions);
+    });
+
+    it('caps the page size so one request cannot pull the whole table', async () => {
+      mockRedisGets(null, null);
+      db.execute.mockResolvedValueOnce({ rows: [] });
+
+      await transactionService.getTransactions(MOCK_HOUSEHOLD_ID, { limit: 100000, page: 2 });
+
+      const max = transactionService.MAX_PAGE_SIZE;
+      expect(db.execute).toHaveBeenCalledWith(expect.objectContaining({ args: [MOCK_HOUSEHOLD_ID, max, max] }));
+    });
+
+    it('skips the cache when the version cannot be read, instead of serving a stale page', async () => {
+      redis.get.mockRejectedValue(new Error('redis down'));
+      db.execute.mockResolvedValueOnce({ rows: [{ id: 9 }] });
+
+      const result = await transactionService.getTransactions(MOCK_HOUSEHOLD_ID, {});
+
+      expect(result).toEqual([{ id: 9 }]);
+      expect(redis.setex).not.toHaveBeenCalled();
+      redis.get.mockReset();
     });
   });
 
@@ -95,7 +122,7 @@ describe('Transaction Service', () => {
         householdId: MOCK_HOUSEHOLD_ID,
         transaction: { id: 99, ...data }
       });
-      expect(redis.del).toHaveBeenCalled();
+      expect(redis.incr).toHaveBeenCalledWith(`transactions:ver:${MOCK_HOUSEHOLD_ID}`);
       expect(result.id).toBe(99);
     });
 
@@ -130,7 +157,7 @@ describe('Transaction Service', () => {
       // For 'despesa', original change was -200, so reverting means current_balance - (-200) -> +200
       expect(batchQueries[1].args).toEqual([-200, 10, MOCK_HOUSEHOLD_ID]);
       expect(logAction).toHaveBeenCalledWith(MOCK_HOUSEHOLD_ID, 'TX_DELETE', 'TRANSACTION', MOCK_TX_ID);
-      expect(redis.del).toHaveBeenCalled();
+      expect(redis.incr).toHaveBeenCalledWith(`transactions:ver:${MOCK_HOUSEHOLD_ID}`);
       expect(result).toEqual({ success: true });
     });
 
@@ -163,7 +190,7 @@ describe('Transaction Service', () => {
       expect(batchQueries[2].args).toEqual([150, 5, MOCK_HOUSEHOLD_ID]);
 
       expect(result.id).toBe(MOCK_TX_ID);
-      expect(redis.del).toHaveBeenCalled();
+      expect(redis.incr).toHaveBeenCalledWith(`transactions:ver:${MOCK_HOUSEHOLD_ID}`);
     });
   });
 });

@@ -1,6 +1,7 @@
 const { db } = require('../config/db');
 const { logAction } = require('../utils/audit');
 const redis = require('../utils/redis');
+const { invalidateTransactionsCache } = require('../utils/transactionsCache');
 const logger = require('../utils/logger');
 
 const getAccounts = async (householdId) => {
@@ -32,7 +33,7 @@ const addAccount = async (householdId, data) => {
     
     if (redis) {
       try {
-        await redis.del(`transactions:${householdId}:1:50:all:all:all:all`);
+        await invalidateTransactionsCache(householdId);
         await redis.del(`dashboard:${householdId}`);
       } catch (err) {}
     }
@@ -65,7 +66,7 @@ const updateAccountBalance = async (householdId, accountId, newBalance) => {
 
       if (redis) {
         try {
-          await redis.del(`transactions:${householdId}:1:50:all:all:all:all`);
+          await invalidateTransactionsCache(householdId);
           await redis.del(`dashboard:${householdId}`);
         } catch (err) {}
       }

@@ -162,7 +162,8 @@ function defaultDeps() {
 function startAdvisorScheduler() {
   const pattern = process.env.ADVISOR_CRON || '7 6-18 * * *';
   cron.schedule(pattern, () => {
-    runAdvisorSweep().catch(err => logger.error(`[Advisor] sweep crashed: ${err.message}`));
+    require('../../utils/jobLock').runExclusive('advisor-sweep', () => runAdvisorSweep())
+      .catch(err => logger.error(`[Advisor] sweep crashed: ${err.message}`));
   }, { recoverMissedExecutions: false });
   logger.info(`Advisor scheduler started with pattern: ${pattern}`);
 }
