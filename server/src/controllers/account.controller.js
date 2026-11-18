@@ -19,7 +19,7 @@ const addAccount = async (req, res, next) => {
     const accountId = await accountService.addAccount(req.user.householdId, data);
     res.status(201).json({ id: accountId, message: 'Account added successfully' });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     next(error);
   }
 };
@@ -30,7 +30,7 @@ const updateAccountBalance = async (req, res, next) => {
     await accountService.updateAccountBalance(req.user.householdId, req.params.id, current_balance);
     res.json({ message: 'Account balance updated and adjustment recorded' });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     next(error);
   }
 };

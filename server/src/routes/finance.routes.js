@@ -14,6 +14,7 @@ const { chat: binthChat, getScore: binthScore, getPageInsight, getPriority, prop
 const { getDashboardSummary } = require('../controllers/dashboard.controller');
 const auth = require('../middleware/auth.middleware');
 const { idempotency } = require('../middleware/idempotency.middleware');
+const { invalidateTransactionsCache } = require('../utils/transactionsCache');
 const vslaRoutes = require('./vsla.routes');
 
 const realityReview = require('../controllers/realityReview.controller');
@@ -23,6 +24,18 @@ const router = express.Router();
 router.use((req, res, next) => auth.authenticate(req, res, next));
 // Writes that carry an Idempotency-Key are saved at most once.
 router.use(idempotency());
+
+// Goals, debts, xitique, rentals and accounts also write transactions. Any successful
+// write here makes the cached transaction list stale, so it is invalidated once the
+// response is sent (cheap: one Redis INCR), instead of in every service.
+router.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    res.on('finish', () => {
+      if (res.statusCode < 400) invalidateTransactionsCache(req.user?.householdId);
+    });
+  }
+  next();
+});
 
 // Binth as an advisor (alerts, plans, memory, reminders)
 router.get('/advisor/today', advisorCtl.today);

@@ -19,7 +19,7 @@ const upsertBudget = async (req, res, next) => {
     const result = await budgetService.upsertBudget(req.user.householdId, data);
     res.json(result);
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     next(error);
   }
 };

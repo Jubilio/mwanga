@@ -12,7 +12,7 @@ function handle(fn) {
     try {
       await fn(req, res);
     } catch (error) {
-      if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+      if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
       const known = { EMPTY: 400, FULL: 409, BAD_KIND: 400, BAD_DATE: 400 };
       if (known[error.message]) return res.status(known[error.message]).json({ error: error.message, code: error.message });
       logger.error({ err: error.message }, '[Advisor] request failed');

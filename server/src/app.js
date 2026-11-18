@@ -31,7 +31,8 @@ const { initAiTelemetrySchema } = require('./services/aiTelemetry');
 const { initAiBudgetSchema } = require('./services/aiBudget');
 const { initAdvisorSchema } = require('./services/advisor/advisor.service');
 const logger = require('./utils/logger');
-const { safeRequestPath } = require('./utils/privacyMask');
+const { requestLog } = require('./middleware/requestLog.middleware');
+const { initPerformanceIndexes } = require('./config/indexes');
 
 const app = express();
 
@@ -48,8 +49,13 @@ initBinthQuotaSchema();
 initAiTelemetrySchema();
 initAiBudgetSchema();
 initAdvisorSchema();
+initPerformanceIndexes();
 
 app.set('trust proxy', 1);
+
+// Request id + one log line per request (path only: the query string can carry
+// secrets such as webhook ?token= or OAuth ?code=).
+app.use(requestLog);
 
 // 1. Security Middlewares
 app.use(helmet({
@@ -152,12 +158,7 @@ app.use((req, res, next) => {
 
 // 6. Ficheiros enviados (KYC, crédito, feedback) só passam pela rota autenticada /api/files.
 
-// 7. Request Logging
-app.use((req, res, next) => {
-  // The query string can carry secrets (webhook ?token=, OAuth ?code=); log the path only.
-  logger.info(`${req.method} ${safeRequestPath(req)}`);
-  next();
-});
+// 7. Request logging is registered first (see top), so rate-limited requests are logged too.
 
 // 8. Health Check
 app.get('/api/health', async (req, res) => {

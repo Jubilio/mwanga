@@ -19,7 +19,7 @@ const addDebt = async (req, res, next) => {
     const debtId = await debtService.addDebt(req.user.householdId, data);
     res.status(201).json({ id: debtId, message: 'Dívida adicionada com sucesso' });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     next(error);
   }
 };
@@ -40,7 +40,7 @@ const addPayment = async (req, res, next) => {
     await debtService.addPayment(req.user.householdId, req.params.id, data);
     res.status(201).json({ message: 'Pagamento registado com sucesso' });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     if (error.message === 'NOT_FOUND') return res.status(404).json({ error: 'Dívida não encontrada' });
     if (error.message === 'ALREADY_PAID') return res.status(409).json({ error: 'Esta dívida já está paga', code: 'ALREADY_PAID' });
     next(error);
@@ -53,7 +53,7 @@ const updateDebt = async (req, res, next) => {
     await debtService.updateDebt(req.user.householdId, req.params.id, data);
     res.json({ message: 'Dívida atualizada com sucesso' });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     next(error);
   }
 };

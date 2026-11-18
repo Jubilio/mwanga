@@ -45,7 +45,7 @@ exports.parseSmsMessage = async (req, res, next) => {
     });
 
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     logger.error('Error in parseSmsMessage:', error);
     next(error);
   }

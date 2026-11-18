@@ -24,7 +24,7 @@ const createTransaction = async (req, res, next) => {
     const result = await transactionService.createTransaction(req.user.id, req.user.householdId, data);
     res.status(201).json(result);
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     if (error.message === 'SMS_LIMIT_REACHED') {
       return res.status(402).json({
         error: `Chegou ao limite de ${error.limit} SMS importados este mês no plano grátis.`,
@@ -53,7 +53,7 @@ const updateTransaction = async (req, res, next) => {
     const result = await transactionService.updateTransaction(req.user.householdId, req.params.id, data);
     res.json({ success: true, ...result });
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     if (error.message === 'NOT_FOUND') return res.status(404).json({ error: 'Transação não encontrada' });
     next(error);
   }

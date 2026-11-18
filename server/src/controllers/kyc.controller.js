@@ -48,7 +48,7 @@ const uploadDocument = async (req, res, next) => {
     res.status(201).json({ message: 'Documento enviado com sucesso', documentUrl });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+      return res.status(400).json({ error: 'Validation failed', details: error.issues });
     }
     logger.error('Error uploading KYC document:', error);
     next(error);

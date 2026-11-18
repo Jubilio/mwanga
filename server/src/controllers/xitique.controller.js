@@ -18,7 +18,7 @@ const createXitique = async (req, res, next) => {
     const result = await xitiqueService.createXitique(req.user.householdId, data);
     res.status(201).json(result);
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     if (error.message === 'POSITION_OUT_OF_BOUNDS') return res.status(400).json({ error: 'Sua posição não pode ser maior que o total de participantes' });
     next(error);
   }
@@ -39,7 +39,7 @@ const payContribution = async (req, res, next) => {
     const result = await xitiqueService.payContribution(req.user.householdId, req.params.contributionId, data);
     res.json(result);
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     if (error.message === 'NOT_FOUND') return res.status(403).json({ error: 'Acesso negado ou contribuição não encontrada' });
     next(error);
   }
@@ -51,7 +51,7 @@ const receiveFunds = async (req, res, next) => {
     const result = await xitiqueService.receiveFunds(req.user.householdId, req.params.receiptId, data);
     res.json(result);
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     if (error.message === 'NOT_FOUND') return res.status(403).json({ error: 'Acesso negado ou recebimento não encontrado' });
     next(error);
   }

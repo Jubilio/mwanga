@@ -6,16 +6,22 @@ const { logAction } = require('../utils/audit');
 const logger = require('../utils/logger');
 const { trackBehaviorEvent } = require('./behaviorTracking.service');
 const { isSmsNote } = require('./smsQuota.service');
+const { getTransactionsCacheVersion, invalidateTransactionsCache } = require('../utils/transactionsCache');
+
+// One page never returns more than this, whatever the client asks for.
+const MAX_PAGE_SIZE = 200;
 
 const getTransactions = async (householdId, filters) => {
   const { page = 1, limit = 50, category, type, startDate, endDate } = filters;
   const pageNumber = Math.max(1, Number.parseInt(page, 10) || 1);
-  const limitNumber = Math.max(1, Number.parseInt(limit, 10) || 50);
+  const limitNumber = Math.min(MAX_PAGE_SIZE, Math.max(1, Number.parseInt(limit, 10) || 50));
   const offset = (pageNumber - 1) * limitNumber;
 
-  const cacheKey = `transactions:${householdId}:${pageNumber}:${limitNumber}:${category || 'all'}:${type || 'all'}:${startDate || 'all'}:${endDate || 'all'}`;
+  const version = await getTransactionsCacheVersion(householdId);
+  const useCache = redis && version !== null;
+  const cacheKey = `transactions:${householdId}:v${version}:${pageNumber}:${limitNumber}:${category || 'all'}:${type || 'all'}:${startDate || 'all'}:${endDate || 'all'}`;
 
-  if (redis) {
+  if (useCache) {
     try {
       const cached = await redis.get(cacheKey);
       if (cached) return typeof cached === 'string' ? JSON.parse(cached) : cached;
@@ -50,7 +56,7 @@ const getTransactions = async (householdId, filters) => {
   const result = await db.execute({ sql, args });
   const transactions = result.rows;
 
-  if (redis) {
+  if (useCache) {
     try {
       await redis.setex(cacheKey, 300, JSON.stringify(transactions));
     } catch (err) {
@@ -110,13 +116,7 @@ const createTransaction = async (userId, householdId, data) => {
     }
   }
 
-  if (redis) {
-    try {
-      await redis.del(`transactions:${householdId}:1:50:all:all:all:all`);
-    } catch (err) {
-      logger.warn({ err }, 'Redis cache invalidation failed');
-    }
-  }
+  await invalidateTransactionsCache(householdId);
 
   await logAction(householdId, 'TX_CREATE', 'TRANSACTION', txId);
   publishNotificationEvent('transaction.created', { userId, householdId, transaction: { id: txId, ...data } });
@@ -150,13 +150,7 @@ const deleteTransaction = async (householdId, txId) => {
 
   await db.batch(queries, 'write');
 
-  if (redis) {
-    try {
-      await redis.del(`transactions:${householdId}:1:50:all:all:all:all`);
-    } catch (err) {
-      logger.warn({ err }, 'Redis cache invalidation failed');
-    }
-  }
+  await invalidateTransactionsCache(householdId);
 
   await logAction(householdId, 'TX_DELETE', 'TRANSACTION', txId);
   return { success: true };
@@ -209,19 +203,14 @@ const updateTransaction = async (householdId, txId, data) => {
     }).catch(() => {});
   }
 
-  if (redis) {
-    try {
-      await redis.del(`transactions:${householdId}:1:50:all:all:all:all`);
-    } catch (err) {
-      logger.warn({ err }, 'Redis cache invalidation failed');
-    }
-  }
+  await invalidateTransactionsCache(householdId);
 
   return { id: txId, ...data };
 };
 
 module.exports = {
   getTransactions,
+  MAX_PAGE_SIZE,
   createTransaction,
   deleteTransaction,
   updateTransaction

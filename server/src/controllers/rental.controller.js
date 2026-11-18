@@ -52,7 +52,7 @@ const createRental = async (req, res, next) => {
     res.status(201).json({ id: rentalId, ...data });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+      return res.status(400).json({ error: 'Validation failed', details: error.issues });
     }
     next(error);
   }

@@ -17,7 +17,7 @@ const createAsset = async (req, res, next) => {
     const result = await patrimonyService.createAsset(req.user.householdId, data);
     res.status(201).json(result);
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     next(error);
   }
 };
@@ -46,7 +46,7 @@ const createLiability = async (req, res, next) => {
     const result = await patrimonyService.createLiability(req.user.householdId, data);
     res.status(201).json(result);
   } catch (error) {
-    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    if (error instanceof z.ZodError) return res.status(400).json({ error: 'Validation failed', details: error.issues });
     next(error);
   }
 };
