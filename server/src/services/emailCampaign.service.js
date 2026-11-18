@@ -51,6 +51,8 @@ async function initEmailCampaignSchema() {
       PRIMARY KEY (campaign_id, user_id)
     )`,
     'CREATE INDEX IF NOT EXISTS idx_email_recipients_status ON email_campaign_recipients (campaign_id, status)',
+    // When a recipient was taken by an instance for sending (see claimBatch).
+    'ALTER TABLE email_campaign_recipients ADD COLUMN IF NOT EXISTS claimed_at TIMESTAMP',
     'CREATE INDEX IF NOT EXISTS idx_email_recipients_sent_at ON email_campaign_recipients (sent_at)',
     // Sem políticas: a API pública do Supabase não lê estas tabelas; o backend (dono) continua a ler.
     'ALTER TABLE email_campaigns ENABLE ROW LEVEL SECURITY',
@@ -273,15 +275,7 @@ async function processCampaign(id) {
 
       // Volta a ler a preferência no momento do envio: quem cancelou a subscrição
       // depois de a campanha começar já não recebe.
-      const batch = await db.execute({
-        sql: `SELECT r.user_id, r.email, r.name, COALESCE(u.email_opt_out, FALSE) AS opted_out
-              FROM email_campaign_recipients r
-              JOIN public.users u ON u.id = r.user_id
-              WHERE r.campaign_id = ? AND r.status = 'pending'
-              ORDER BY r.user_id
-              LIMIT ?`,
-        args: [id, Math.min(batchSize, allowance)],
-      });
+      const batch = await claimBatch(id, Math.min(batchSize, allowance));
 
       if (batch.rows.length === 0) {
         await db.execute({
@@ -318,6 +312,40 @@ async function processCampaign(id) {
   }
 }
 
+// Takes the next recipients for this instance and marks them 'sending' in the same
+// statement. FOR UPDATE SKIP LOCKED means two instances (two Render instances, or the
+// old and new one during a deploy) never take the same person, so nobody gets the
+// email twice. A deleted account counts as opted out and is skipped.
+async function claimBatch(campaignId, limit) {
+  return db.execute({
+    sql: `WITH claimed AS (
+            UPDATE email_campaign_recipients r SET status = 'sending', claimed_at = NOW()
+            WHERE r.campaign_id = ? AND r.user_id IN (
+              SELECT user_id FROM email_campaign_recipients
+              WHERE campaign_id = ? AND status = 'pending'
+              ORDER BY user_id
+              LIMIT ?
+              FOR UPDATE SKIP LOCKED)
+            RETURNING r.user_id, r.email, r.name)
+          SELECT c.user_id, c.email, c.name, COALESCE(u.email_opt_out, u.id IS NULL) AS opted_out
+          FROM claimed c
+          LEFT JOIN public.users u ON u.id = c.user_id
+          ORDER BY c.user_id`,
+    args: [campaignId, campaignId, limit],
+  });
+}
+
+// An instance that stopped mid-batch (crash, deploy) leaves people in 'sending'.
+// After 15 minutes they go back to 'pending'. At most one batch is affected, and
+// someone in it may get the email twice if it went out just before the stop.
+async function releaseStaleClaims() {
+  await db.execute({
+    sql: `UPDATE email_campaign_recipients SET status = 'pending', claimed_at = NULL
+          WHERE status = 'sending' AND claimed_at < NOW() - INTERVAL '15 minutes'`,
+    args: [],
+  });
+}
+
 async function markRecipient(campaignId, userId, status, error) {
   await db.execute({
     sql: `UPDATE email_campaign_recipients SET status = ?, error = ?, sent_at = ${status === 'sent' ? 'NOW()' : 'NULL'}
@@ -328,6 +356,7 @@ async function markRecipient(campaignId, userId, status, error) {
 
 async function resumePendingCampaigns() {
   try {
+    await releaseStaleClaims();
     const result = await db.execute({ sql: `SELECT id FROM email_campaigns WHERE status = 'sending'`, args: [] });
     for (const row of result.rows) {
       logger.info(`Resuming email campaign ${row.id}`);
@@ -345,7 +374,7 @@ async function listCampaigns() {
                  COUNT(*) FILTER (WHERE r.status = 'sent') AS sent,
                  COUNT(*) FILTER (WHERE r.status = 'failed') AS failed,
                  COUNT(*) FILTER (WHERE r.status = 'skipped') AS skipped,
-                 COUNT(*) FILTER (WHERE r.status = 'pending') AS pending
+                 COUNT(*) FILTER (WHERE r.status IN ('pending', 'sending')) AS pending
           FROM email_campaigns c
           LEFT JOIN email_campaign_recipients r ON r.campaign_id = c.id
           LEFT JOIN public.users u ON u.id = c.created_by
@@ -365,6 +394,8 @@ async function listCampaigns() {
 }
 
 module.exports = {
+  claimBatch,
+  releaseStaleClaims,
   initEmailCampaignSchema,
   unsubscribeToken,
   verifyUnsubscribeToken,
