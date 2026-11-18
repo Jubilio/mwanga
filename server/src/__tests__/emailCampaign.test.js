@@ -156,8 +156,8 @@ describe('processCampaign', () => {
       calls.push(sql);
       if (sql.startsWith('SELECT status FROM email_campaigns')) return { rows: [{ status: 'sending' }] };
       if (sql.includes("COUNT(*) AS count FROM email_campaign_recipients")) return { rows: [{ count: 0 }] };
-      if (sql.includes('FROM email_campaign_recipients r')) {
-        const done = calls.filter((s) => s.includes('FROM email_campaign_recipients r')).length > 1;
+      if (sql.includes('WITH claimed')) {
+        const done = calls.filter((s) => s.includes('WITH claimed')).length > 1;
         return { rows: done ? [] : [
           { user_id: 1, email: 'a@x.com', name: 'Ana', opted_out: false },
           { user_id: 2, email: 'b@x.com', name: 'Beto', opted_out: true },
@@ -171,6 +171,27 @@ describe('processCampaign', () => {
     expect(emailService.send).toHaveBeenCalledWith(expect.objectContaining({ to: 'a@x.com', subject: 'Oi' }));
     expect(db.execute).toHaveBeenCalledWith(expect.objectContaining({ args: ['skipped', null, 11, 2] }));
     expect(calls.some((s) => s.includes("status = 'sent', finished_at"))).toBe(true);
+    db.execute.mockReset();
+  });
+});
+
+describe('sending is safe with two instances', () => {
+  test('claims recipients atomically and skips rows another instance holds', async () => {
+    db.execute.mockResolvedValueOnce({ rows: [] });
+    await campaigns.claimBatch(7, 25);
+    const { sql, args } = db.execute.mock.calls[0][0];
+    expect(sql).toContain("SET status = 'sending'");
+    expect(sql).toContain('FOR UPDATE SKIP LOCKED');
+    expect(args).toEqual([7, 7, 25]);
+    db.execute.mockReset();
+  });
+
+  test('resuming releases claims left by an instance that stopped', async () => {
+    db.execute.mockResolvedValue({ rows: [] });
+    await campaigns.resumePendingCampaigns();
+    const first = db.execute.mock.calls[0][0].sql;
+    expect(first).toContain("SET status = 'pending'");
+    expect(first).toContain("INTERVAL '15 minutes'");
     db.execute.mockReset();
   });
 });

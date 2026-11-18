@@ -1,0 +1,84 @@
+# Render configuration for the Mwanga API, kept in the repository so it is
+# reviewed like code. It describes the service that already runs today
+# ("mwanga", free plan, Oregon, auto-deploy from main).
+#
+# This file changes nothing on its own. Render only reads it if you create a
+# Blueprint (Dashboard > Blueprints > New Blueprint Instance) and link the existing
+# "mwanga" service. Secrets are never stored here: `sync: false` means the value is
+# set in the dashboard, and existing values are kept.
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: mwanga
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: server
+    branch: main
+    autoDeploy: true
+    # npm ci installs exactly what package-lock.json says.
+    buildCommand: npm ci
+    startCommand: npm start
+    # Render waits for this to answer 200 before switching traffic to a new deploy,
+    # and restarts the instance if it stops answering. It also checks the database.
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_FORMAT
+        value: json
+      # Database and cache
+      - key: DATABASE_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      # Auth and encryption
+      - key: JWT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: RP_ID
+        sync: false
+      - key: EXPECTED_ORIGIN
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: AI_CREDENTIALS_ENCRYPTION_KEY
+        sync: false
+      - key: FILE_ENCRYPTION_KEY
+        sync: false
+      - key: EMAIL_UNSUBSCRIBE_SECRET
+        sync: false
+      # Errors and costs
+      - key: SENTRY_DSN
+        sync: false
+      - key: AI_MONTHLY_BUDGET_USD
+        sync: false
+      # AI providers
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      # Push notifications
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        sync: false
+      # WhatsApp (Evolution API)
+      - key: EVOLUTION_URL
+        sync: false
+      - key: EVOLUTION_API_KEY
+        sync: false
+      - key: EVOLUTION_INSTANCE
+        sync: false
+      - key: WHATSAPP_WEBHOOK_SECRET
+        sync: false
