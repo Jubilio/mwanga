@@ -8,7 +8,7 @@ jest.mock('../config/db', () => ({
       const upd = sql.startsWith('UPDATE'); const id = `${args[upd ? 2 : 0]}:${args[upd ? 3 : 1]}`;
       if (sql.startsWith('INSERT INTO idempotency_keys')) {
         if (mockStore.has(id)) return { rows: [], rowCount: 0 };
-        mockStore.set(id, { method: args[2], path: args[3], status_code: null, response: null, stale: false });
+        mockStore.set(id, { method: args[2], path: args[3], request_hash: args[4], status_code: null, response: null, stale: false });
         return { rows: [{ idem_key: args[1] }], rowCount: 1 };
       }
       if (sql.startsWith('SELECT')) return { rows: mockStore.has(id) ? [mockStore.get(id)] : [], rowCount: mockStore.has(id) ? 1 : 0 };
@@ -27,7 +27,7 @@ jest.mock('../config/db', () => ({
 }));
 jest.mock('../utils/logger', () => ({ info: jest.fn(), warn: jest.fn(), error: jest.fn() }));
 
-const { idempotency } = require('../middleware/idempotency.middleware');
+const { idempotency, bodyHash } = require('../middleware/idempotency.middleware');
 
 function buildApp(handler) {
   const app = express();
@@ -113,6 +113,29 @@ describe('idempotency middleware', () => {
     mockStore.set('1:key-00000005', { method: 'POST', path: '/pay/2', status_code: 200, response: {}, stale: false });
     const res = await request(buildApp((req, r) => r.json({}))).post('/pay/1').set('Idempotency-Key', 'key-00000005').send({});
     expect(res.status).toBe(422);
+  });
+
+  it('refuses the same key sent with different data', async () => {
+    const handler = jest.fn((req, res) => res.status(201).json({ id: 7 }));
+    const app = buildApp(handler);
+    await request(app).post('/pay/1').set('Idempotency-Key', 'key-00000006').send({ amount: 100 });
+    await flush();
+    const res = await request(app).post('/pay/1').set('Idempotency-Key', 'key-00000006').send({ amount: 900 });
+    expect(res.status).toBe(422);
+    expect(res.body.code).toBe('IDEMPOTENCY_KEY_REUSED');
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it('still replays keys saved before the body hash existed', async () => {
+    mockStore.set('1:key-00000007', { method: 'POST', path: '/pay/1', status_code: 201, response: { id: 3 }, stale: false });
+    const res = await request(buildApp((req, r) => r.json({}))).post('/pay/1').set('Idempotency-Key', 'key-00000007').send({ amount: 5 });
+    expect(res.status).toBe(201);
+    expect(res.body).toEqual({ id: 3 });
+  });
+
+  it('hashes an empty body the same whether it is missing or {}', () => {
+    expect(bodyHash(undefined)).toBe(bodyHash({}));
+    expect(bodyHash({ a: 1 })).not.toBe(bodyHash({ a: 2 }));
   });
 
   it('rejects malformed keys and ignores requests without a key', async () => {

@@ -15,7 +15,7 @@ const authenticate = async (req, res, next) => {
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ error: 'Unauthorized: Token não fornecido.' });
+    return res.status(401).json({ error: 'Sessão em falta. Faça login.', code: 'AUTH_TOKEN_MISSING' });
   }
 
   try {
@@ -29,7 +29,7 @@ const authenticate = async (req, res, next) => {
     // Validação estrita de Tenancy (Isolamento de Dados)
     if (!req.user.id) {
        logger.error(`Tentativa de acesso com token sem ID de utilizador válido.`);
-       return res.status(401).json({ error: 'Unauthorized: Token corrompido ou inválido.' });
+       return res.status(401).json({ error: 'Sessão inválida. Faça login novamente.', code: 'AUTH_TOKEN_INVALID' });
     }
 
     if (!req.user.householdId || isNaN(req.user.householdId)) {
@@ -47,17 +47,17 @@ const authenticate = async (req, res, next) => {
         }
       } catch (dbError) {
         logger.error(`Falha ao recuperar householdId para user ${req.user.id}: ${dbError.message}`);
-        return res.status(403).json({ error: 'Acesso Negado: Utilizador não pertence a nenhum agregado familiar.' });
+        return res.status(403).json({ error: 'Acesso negado: utilizador não pertence a nenhum agregado familiar.', code: 'NO_HOUSEHOLD' });
       }
     }
 
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Sessão expirada. Por favor, faça login novamente.' });
+      return res.status(401).json({ error: 'Sessão expirada. Por favor, faça login novamente.', code: 'AUTH_SESSION_EXPIRED' });
     }
     logger.warn(`Tentativa de uso de token inválido: ${error.message}`);
-    return res.status(401).json({ error: 'Unauthorized: Token inválido ou expirado.' });
+    return res.status(401).json({ error: 'Sessão inválida ou expirada. Faça login novamente.', code: 'AUTH_TOKEN_INVALID' });
   }
 };
 
@@ -77,7 +77,7 @@ const isAdmin = async (req, res, next) => {
     return res.status(500).json({ error: 'Não foi possível verificar permissões.' });
   }
   logger.warn(`Tentativa de acesso administrativo não autorizada pelo utilizador: ${req.user?.id}`);
-  return res.status(403).json({ error: 'Acesso negado: Requer privilégios de administrador.' });
+  return res.status(403).json({ error: 'Acesso negado: requer privilégios de administrador.', code: 'ADMIN_REQUIRED' });
 };
 
 module.exports = { authenticate, isAdmin, JWT_SECRET };

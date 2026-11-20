@@ -2,6 +2,19 @@ const logger = require('../utils/logger');
 const { safeRequestPath } = require('../utils/privacyMask');
 const { captureException } = require('../utils/sentry');
 
+// Stable codes the app can branch on, instead of matching the Portuguese text.
+const STATUS_CODES = {
+  400: 'BAD_REQUEST', 401: 'UNAUTHORIZED', 403: 'FORBIDDEN', 404: 'NOT_FOUND',
+  409: 'CONFLICT', 413: 'PAYLOAD_TOO_LARGE', 422: 'UNPROCESSABLE', 429: 'RATE_LIMITED',
+};
+
+function errorCode(err, statusCode) {
+  // A 500's own code (ECONNREFUSED, a driver code...) is an internal detail: never sent.
+  if (statusCode >= 500) return 'INTERNAL_ERROR';
+  if (typeof err.code === 'string' && /^[A-Z][A-Z0-9_]{2,60}$/.test(err.code)) return err.code;
+  return STATUS_CODES[statusCode] || 'ERROR';
+}
+
 const errorHandler = (err, req, res, next) => {
   const statusCode = err.statusCode || err.status || 500;
   const message = err.message || 'Internal Server Error';
@@ -25,6 +38,9 @@ const errorHandler = (err, req, res, next) => {
   res.status(statusCode).json({
     status: 'error',
     statusCode,
+    code: errorCode(err, statusCode),
+    // `error` and `message` carry the same text: older screens read one, newer the other.
+    error: clientMessage,
     message: clientMessage,
     // Quoted by the user when they report a problem, to find the log line.
     ...(req.id && { requestId: req.id }),
@@ -33,3 +49,4 @@ const errorHandler = (err, req, res, next) => {
 };
 
 module.exports = errorHandler;
+module.exports.errorCode = errorCode;

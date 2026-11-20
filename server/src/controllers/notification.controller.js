@@ -18,7 +18,7 @@ const create = async (req, res) => {
 
     if (!userId || !householdId) {
       logger.error(`Create notification failed: Missing user context. UserID: ${userId}, HouseholdID: ${householdId}`);
-      return res.status(401).json({ status: 'error', message: 'Unauthorized: Missing user or household context.' });
+      return res.status(403).json({ status: 'error', error: 'Acesso negado: utilizador sem agregado familiar.', message: 'Acesso negado: utilizador sem agregado familiar.', code: 'NO_HOUSEHOLD' });
     }
 
     if (!message) {
@@ -53,7 +53,7 @@ const subscribe = async (req, res) => {
 
     if (!userId || !householdId) {
       logger.error(`Subscribe failed: Missing user context. UserID: ${userId}, HouseholdID: ${householdId}`);
-      return res.status(401).json({ status: 'error', message: 'Unauthorized: Missing user or household context.' });
+      return res.status(403).json({ status: 'error', error: 'Acesso negado: utilizador sem agregado familiar.', message: 'Acesso negado: utilizador sem agregado familiar.', code: 'NO_HOUSEHOLD' });
     }
 
     if (!subscription || !subscription.endpoint) {
@@ -86,7 +86,7 @@ const unsubscribe = async (req, res) => {
 
     if (!userId || !householdId) {
       logger.error(`Unsubscribe failed: Missing user context. UserID: ${userId}, HouseholdID: ${householdId}`);
-      return res.status(401).json({ status: 'error', message: 'Unauthorized: Missing user or household context.' });
+      return res.status(403).json({ status: 'error', error: 'Acesso negado: utilizador sem agregado familiar.', message: 'Acesso negado: utilizador sem agregado familiar.', code: 'NO_HOUSEHOLD' });
     }
 
     if (!endpoint) {
@@ -174,7 +174,7 @@ const deleteOne = async (req, res) => {
     }
 
     if (!userId || !householdId) {
-       return res.status(401).json({ status: 'error', message: 'Unauthorized: Missing household or user context.' });
+       return res.status(403).json({ status: 'error', error: 'Acesso negado: utilizador sem agregado familiar.', message: 'Acesso negado: utilizador sem agregado familiar.', code: 'NO_HOUSEHOLD' });
     }
 
     await notificationService.removeNotification({
