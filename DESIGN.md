@@ -6,6 +6,7 @@ dos valores é `src/index.css`; quando mudares um token lá, muda aqui no mesmo 
 
 Regras detalhadas: `.claude/skills/ui-design-rules/SKILL.md` (seis regras duras) e
 `.claude/skills/mwanga-design/SKILL.md` (ecrãs, UX e movimento).
+Páginas públicas (/bem-vindo, /baixar, campanhas): `.claude/skills/mwanga-landing/SKILL.md`.
 
 ## Ideia
 
