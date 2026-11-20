@@ -2813,48 +2813,51 @@
   },
   "landing": {
     "login": "Entrar",
-    "title": "Saiba para onde vai o seu dinheiro, em meticais.",
-    "subtitle": "Registe despesas, controle o orçamento da casa e acompanhe o seu xitique, tudo num só lugar. Grátis para começar.",
+    "title": "Sabe para onde vai o teu dinheiro, em meticais.",
+    "subtitle": "Regista despesas, controla o orçamento da casa e acompanha o teu xitique, tudo num só lugar. Grátis para começar.",
     "cta": "Começar grátis",
-    "cta_note": "Sem cartão. Entre com Google ou email em menos de um minuto.",
-    "login_link": "Já tenho conta",
+    "cta_note": "Sem cartão. Entra com Google ou email em menos de um minuto.",
     "trust": {
       "local": "Feito em Moçambique pela NexoVibe",
       "security": "Ligação encriptada",
-      "whatsapp": "Fale connosco no WhatsApp"
+      "whatsapp": "Fala connosco no WhatsApp"
     },
-    "features_title": "O que pode fazer no plano grátis",
+    "features_title": "O que podes fazer no plano grátis",
     "features": [
       {
         "title": "Despesas e orçamento",
-        "desc": "Veja num só ecrã quanto entrou, quanto saiu e que categoria passou do limite."
+        "desc": "Vê num só ecrã quanto entrou, quanto saiu e que categoria passou do limite."
       },
       {
         "title": "Metas de poupança",
-        "desc": "Defina um objectivo e acompanhe quanto falta, mês a mês."
+        "desc": "Define um objectivo e acompanha quanto falta, mês a mês."
       },
       {
         "title": "Xitique",
-        "desc": "Registe contribuições e saiba quando é a sua vez de receber."
+        "desc": "Regista contribuições e sabe quando é a tua vez de receber."
       },
       {
         "title": "Habitação e rendas",
-        "desc": "Acompanhe a renda e os compromissos fixos da casa."
+        "desc": "Acompanha a renda e os compromissos fixos da casa."
       }
     ],
-    "steps_title": "Comece em três passos",
+    "steps_title": "Começa em três passos",
     "steps": [
-      "Crie a conta grátis",
-      "Registe a primeira despesa",
-      "Defina um orçamento e uma meta"
+      "Cria a conta grátis",
+      "Regista a primeira despesa",
+      "Define um orçamento e uma meta"
     ],
     "honest_title": "Ainda estamos a crescer",
     "honest_body": "O Mwanga funciona no navegador do telemóvel e do computador, e já tem uma app Android para descarregar. Ainda não está na Google Play.",
-    "final_title": "Comece hoje a organizar o próximo mês.",
+    "final_title": "Começa hoje a organizar o próximo mês.",
     "footer": "Mwanga · um produto NexoVibe",
     "download_link": "Descarregar a app Android",
-    "video_title": "Veja o Mwanga em ação",
-    "video_subtitle": "Um minuto para ver como o Mwanga junta o banco, o M-Pesa e o e-Mola, importa SMS, organiza metas e o xitique."
+    "video_title": "Vê o Mwanga em ação",
+    "video_subtitle": "Um minuto para ver como o Mwanga junta o banco, o M-Pesa e o e-Mola, importa SMS, organiza metas e o xitique.",
+    "skip": "Saltar para o conteúdo",
+    "tagline": "Mwanga quer dizer luz. Quando vês para onde vai cada metical, o fim do mês deixa de ser surpresa.",
+    "tagline_highlight": "luz",
+    "faq_title": "Perguntas frequentes"
   },
   "nav": {
     "home": "Início",

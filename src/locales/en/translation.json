@@ -2817,7 +2817,6 @@
     "subtitle": "Record expenses, manage the household budget and track your xitique, all in one place. Free to start.",
     "cta": "Start free",
     "cta_note": "No card. Sign in with Google or email in under a minute.",
-    "login_link": "I already have an account",
     "trust": {
       "local": "Made in Mozambique by NexoVibe",
       "security": "Encrypted connection",
@@ -2854,7 +2853,11 @@
     "footer": "Mwanga · a NexoVibe product",
     "download_link": "Download the Android app",
     "video_title": "See Mwanga in action",
-    "video_subtitle": "One minute to see how Mwanga brings together your bank, M-Pesa and e-Mola, imports SMS, and organises goals and xitique."
+    "video_subtitle": "One minute to see how Mwanga brings together your bank, M-Pesa and e-Mola, imports SMS, and organises goals and xitique.",
+    "skip": "Skip to content",
+    "tagline": "Mwanga means light. When you see where every metical goes, the end of the month stops being a surprise.",
+    "tagline_highlight": "light",
+    "faq_title": "Frequently asked questions"
   },
   "nav": {
     "home": "Home",
