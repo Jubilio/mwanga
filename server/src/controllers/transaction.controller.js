@@ -7,7 +7,7 @@ const { isSmsNote, assertSmsQuota } = require('../services/smsQuota.service');
 const getTransactions = async (req, res) => {
   try {
     const householdId = req.user?.householdId;
-    if (!householdId) return res.status(401).json({ error: 'Unauthorized: No household ID' });
+    if (!householdId) return res.status(403).json({ error: 'Acesso negado: utilizador sem agregado familiar.', code: 'NO_HOUSEHOLD' });
 
     const transactions = await transactionService.getTransactions(householdId, req.query);
     res.json(transactions);
@@ -41,7 +41,7 @@ const deleteTransaction = async (req, res) => {
     await transactionService.deleteTransaction(req.user.householdId, req.params.id);
     res.json({ success: true });
   } catch (error) {
-    if (error.message === 'NOT_FOUND') return res.status(403).json({ error: 'Acesso negado ou não encontrado' });
+    if (error.message === 'NOT_FOUND') return res.status(404).json({ error: 'Transação não encontrada', code: 'NOT_FOUND' });
     logger.error({ err: error }, 'Error deleting transaction');
     res.status(500).json({ error: 'Erro interno do servidor' });
   }

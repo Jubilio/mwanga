@@ -80,31 +80,42 @@ app.use(cors(corsOptions));
 app.use(compression());
 
 // 4. Rate Limiting
-// 300 req/15min por IP é mais que suficiente para uso legítimo de uma fintech.
-// Reduzido de 5000 que era demasiado permissivo e não protegia contra scraping/DoS.
+// Mobile operators in Mozambique put many customers behind one public IP (CGNAT).
+// A limit per IP would block a whole neighbourhood once a few people open the app,
+// so signed-in requests are counted per user. Requests without a valid session
+// are counted per IP, and a much higher ceiling per IP still stops floods.
+const { rateLimitKey } = require('./utils/rateLimitKey');
+
+function tooManyRequests(message) {
+  return (req, res) => {
+    res.status(429).json({ status: 'error', code: 'RATE_LIMITED', error: message, message });
+  };
+}
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
   standardHeaders: true,
   legacyHeaders: false,
-  handler: (req, res) => {
-    res.status(429).json({
-      status: 'error',
-      message: 'Demasiados pedidos a partir deste IP. Por favor, tente novamente em 15 minutos.'
-    });
-  }
+  keyGenerator: rateLimitKey,
+  handler: tooManyRequests('Demasiados pedidos. Por favor, tente novamente em 15 minutos.'),
 });
+const ipCeiling = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10000,
+  standardHeaders: false,
+  legacyHeaders: false,
+  handler: tooManyRequests('Demasiados pedidos a partir desta rede. Tente novamente em 15 minutos.'),
+});
+app.use('/api', ipCeiling);
 app.use('/api', limiter);
 
 const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 100,
-  handler: (req, res) => {
-    res.status(429).json({
-      status: 'error',
-      message: 'Demasiadas tentativas de login. Tente novamente em uma hora.'
-    });
-  }
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: tooManyRequests('Demasiadas tentativas de login. Tente novamente em uma hora.'),
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
@@ -115,13 +126,9 @@ app.use('/api/auth/webauthn/verify-authentication', authLimiter);
 const passwordResetLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 10,
-  handler: (req, res) => {
-    res.status(429).json({
-      status: 'error',
-      error: 'Demasiados pedidos de recuperação de senha. Tente novamente daqui a uma hora.',
-      message: 'Demasiados pedidos de recuperação de senha. Tente novamente daqui a uma hora.'
-    });
-  }
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: tooManyRequests('Demasiados pedidos de recuperação de senha. Tente novamente daqui a uma hora.'),
 });
 app.use('/api/auth/forgot-password', passwordResetLimiter);
 app.use('/api/auth/reset-password', passwordResetLimiter);

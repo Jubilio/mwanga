@@ -20,7 +20,12 @@ const corsOptions = {
   origin: allowedOrigins,
   credentials: true,
   methods: allowedMethods,
-  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
+  // Without this list the browser hides these headers from the web app.
+  exposedHeaders: [
+    'X-Request-Id', 'Idempotent-Replayed', 'Retry-After',
+    'RateLimit-Limit', 'RateLimit-Remaining', 'RateLimit-Reset', 'RateLimit-Policy',
+  ]
 };
 
 module.exports = { corsOptions, allowedOrigins, allowedMethods };

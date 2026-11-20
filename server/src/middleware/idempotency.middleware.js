@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { db } = require('../config/db');
 const logger = require('../utils/logger');
 
@@ -8,6 +9,11 @@ const logger = require('../utils/logger');
 const KEY_PATTERN = /^[A-Za-z0-9_-]{8,100}$/;
 const KEEP_DAYS = 14;
 const WRITE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+
+function bodyHash(body) {
+  const text = body && typeof body === 'object' && Object.keys(body).length ? JSON.stringify(body) : '';
+  return crypto.createHash('sha256').update(text).digest('hex');
+}
 
 async function initIdempotencySchema() {
   const statements = [
@@ -23,6 +29,8 @@ async function initIdempotencySchema() {
     )`,
     'CREATE INDEX IF NOT EXISTS idx_idempotency_keys_created ON idempotency_keys (created_at)',
     'ALTER TABLE idempotency_keys ENABLE ROW LEVEL SECURITY',
+    // Fingerprint of the body: the same key sent with other data is a client bug, not a retry.
+    'ALTER TABLE idempotency_keys ADD COLUMN IF NOT EXISTS request_hash TEXT',
   ];
   try {
     for (const sql of statements) await db.execute({ sql, args: [] });
@@ -49,34 +57,37 @@ function idempotency() {
     const householdId = req.user?.householdId;
     if (!key || !WRITE_METHODS.has(req.method) || !householdId) return next();
     if (!KEY_PATTERN.test(key)) {
-      return res.status(400).json({ error: 'Idempotency-Key inválida' });
+      return res.status(400).json({ error: 'Idempotency-Key inválida', code: 'IDEMPOTENCY_KEY_INVALID' });
     }
 
     const path = req.originalUrl.split('?')[0];
+    const requestHash = bodyHash(req.body);
     let claimed;
     try {
       claimed = await db.execute({
-        sql: `INSERT INTO idempotency_keys (household_id, idem_key, method, path)
-              VALUES (?, ?, ?, ?) ON CONFLICT (household_id, idem_key) DO NOTHING RETURNING idem_key`,
-        args: [householdId, key, req.method, path],
+        sql: `INSERT INTO idempotency_keys (household_id, idem_key, method, path, request_hash)
+              VALUES (?, ?, ?, ?, ?) ON CONFLICT (household_id, idem_key) DO NOTHING RETURNING idem_key`,
+        args: [householdId, key, req.method, path, requestHash],
       });
     } catch (error) {
       // Without the table the write cannot be protected. Refuse it rather than risk a
       // duplicate: the app keeps the action queued and tries again later.
       logger.error(`Idempotency check failed: ${error.message}`);
-      return res.status(503).json({ error: 'Serviço temporariamente indisponível' });
+      return res.status(503).json({ error: 'Serviço temporariamente indisponível', code: 'SERVICE_UNAVAILABLE', retryable: true });
     }
 
     if (claimed.rowCount === 0) {
       const existing = await db.execute({
-        sql: `SELECT method, path, status_code, response,
+        sql: `SELECT method, path, request_hash, status_code, response,
                      created_at < NOW() - INTERVAL '10 minutes' AS stale
               FROM idempotency_keys WHERE household_id = ? AND idem_key = ?`,
         args: [householdId, key],
       }).catch(() => ({ rows: [] }));
       const row = existing.rows[0];
-      if (row && (row.method !== req.method || row.path !== path)) {
-        return res.status(422).json({ error: 'Idempotency-Key já usada noutro pedido' });
+      // Rows saved before the hash column existed have no hash: only method and path are compared.
+      if (row && (row.method !== req.method || row.path !== path
+        || (row.request_hash && row.request_hash !== requestHash))) {
+        return res.status(422).json({ error: 'Idempotency-Key já usada noutro pedido', code: 'IDEMPOTENCY_KEY_REUSED' });
       }
       if (row && row.status_code) {
         res.set('Idempotent-Replayed', 'true');
@@ -90,7 +101,7 @@ function idempotency() {
           args: [householdId, key],
         }).catch(() => {});
       }
-      return res.status(409).json({ error: 'Pedido igual ainda em processamento', retryable: true });
+      return res.status(409).json({ error: 'Pedido igual ainda em processamento', code: 'REQUEST_IN_PROGRESS', retryable: true });
     }
 
     cleanupOldKeys();
@@ -113,4 +124,4 @@ function idempotency() {
   };
 }
 
-module.exports = { idempotency, initIdempotencySchema, KEY_PATTERN };
+module.exports = { idempotency, initIdempotencySchema, KEY_PATTERN, bodyHash };
